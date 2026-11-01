@@ -583,8 +583,11 @@ function renderFloat(){
 const ACT=[{k:'RANDOM',max:10},{k:'IDA',max:10},{k:'VUELTA',max:10},{k:'ACAPELLA',max:4},{k:'DELUXE',max:10}];
 const ACTR={n:'Planilla actual',act:1,p:[]};
 const REPA={n:'Réplica',rep:1,act:1,p:[]};
+const REPA6={n:'Réplica',rep:1,act:1,six:1,p:[]};
+const repN=()=>(S.sc&&S.sc[1]&&S.sc[1][0])?S.sc[1][0].length:6;
+const repMaxA=()=>repN()===1?10:4;
 function fmtRounds(f,l){if(f==='actual')return [ACTR];if(S.libre)return RF.libre.slice();if(S.temp==='2017')return RF.t17.slice();if(S.temp==='2021')return RF.t21.slice();if(S.temp==='2020')return RF.t20.slice();if(S.temp==='2018'||S.temp==='2019')return RF.t18.slice();return RF[l.f].slice()}
-function szOf(rd){return rd.act?(rd.rep?1:ACT.length):sz(rd)}
+function szOf(rd){return rd.act?(rd.rep?(rd.six?6:1):ACT.length):sz(rd)}
 function bodyV(){if(S.fmt==='actual')return actualV();return S.ri>=S.rounds.length?summaryV():roundV()}
 function hasScores(){return (S.sc||[]).some(rd=>rd.some(side=>side.some(v=>v!=null)))}
 function fmtSeg(){const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
@@ -594,12 +597,12 @@ function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.f
 const isPC=()=>!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);
 let KBUF='',KT=null;
 function pickA(ri,m,idx){KBUF='';clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
-const maxA=c=>c.ri===1?10:ACT[c.idx].max;
-function aOrder(){const o=[];ACT.forEach((x,i)=>{o.push({ri:0,m:0,idx:i},{ri:0,m:1,idx:i})});if(S.rep==='voted')o.push({ri:1,m:0,idx:0},{ri:1,m:1,idx:0});return o}
+const maxA=c=>c.ri===1?repMaxA():ACT[c.idx].max;
+function aOrder(){const o=[];ACT.forEach((x,i)=>{o.push({ri:0,m:0,idx:i},{ri:0,m:1,idx:i})});if(S.rep==='voted'){for(let i=0;i<repN();i++)o.push({ri:1,m:0,idx:i},{ri:1,m:1,idx:i})}return o}
 function aCur(){if(S.sheet&&S.sheet.ri!=null)return {ri:S.sheet.ri,m:S.sheet.m,idx:S.sheet.idx};return S.selA||null}
 function aGo(c){KBUF='';clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.kpe=''}else{S.selA={ri:c.ri,m:c.m,idx:c.idx}}R()}
 function aStep(c,d){const o=aOrder(),i=o.findIndex(x=>x.ri===c.ri&&x.m===c.m&&x.idx===c.idx);if(i<0)return c;return o[Math.max(0,Math.min(o.length-1,i+d))]}
-function aVert(c,d){const o=aOrder(),n=o.find(x=>x.m===c.m&&((x.ri===c.ri&&x.idx===c.idx+d)||(d>0&&c.ri===0&&c.idx===ACT.length-1&&x.ri===1)||(d<0&&c.ri===1&&x.ri===0&&x.idx===ACT.length-1)));return n||c}
+function aVert(c,d){const o=aOrder(),n=o.find(x=>x.m===c.m&&((x.ri===c.ri&&x.idx===c.idx+d)||(d>0&&c.ri===0&&c.idx===ACT.length-1&&x.ri===1)||(d<0&&c.ri===1&&c.idx===0&&x.ri===0&&x.idx===ACT.length-1)));return n||c}
 function aOpenSheet(){const c=S.selA;if(!c)return;S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.selA=null;S.kpe='';R()}
 function aKey(e){
  if(e.ctrlKey||e.metaKey||e.altKey)return;
@@ -625,8 +628,9 @@ function aKey(e){
 }
 document.addEventListener('keydown',aKey);
 function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
-function votarReplicaA(){S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;R()}
-function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:v.sc[1].a[0],tb:v.sc[1].b[0]});return rows}
+function votarReplicaA(){if(S.rep==='voted')return;S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;S.selA=null;R()}
+function quitarReplicaA(){const k=S.rounds.findIndex(r=>r.rep);if(k>=0){S.rounds.splice(k,1);S.sc.splice(k,1)}S.rep=null;S.selA=null;S.sheet=null;S.ri=0;R()}
+function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
 function actualV(){
  const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
  const complete=c1.every(x=>x!=null)&&c2.every(x=>x!=null);
@@ -634,15 +638,18 @@ function actualV(){
  const cell=(ri,m,idx)=>{const v=S.sc[ri][m][idx];const sl=S.selA&&S.selA.ri===ri&&S.selA.m===m&&S.selA.idx===idx;return `<button class="cell ${v==null?'empty':'set'}${m?' b':''}${sl?' sel':''}" onclick="pickA(${ri},${m},${idx})">${v==null?'–':v}</button>`};
  const rows=ACT.map((x,i)=>`<div class="arow"><span class="alab">${x.k}</span>${cell(0,0,i)}${cell(0,1,i)}</div>`).join('');
  const totRow=`<div class="arow atot"><span class="alab">TOTAL</span><div class="tot">${S.hideTot?'·':ma}</div><div class="tot">${S.hideTot?'·':mb}</div></div>`;
- const rep=S.rep==='voted'?`<div class="pbt" style="margin:14px 0 6px">Réplica · 0 a 10</div><div class="arow"><span class="alab">RÉPLICA</span>${cell(1,0,0)}${cell(1,1,0)}</div>`:'';
- const repOk=S.rep!=='voted'||(S.sc[1]&&S.sc[1][0][0]!=null&&S.sc[1][1][0]!=null);
- const canSave=complete&&(!tie||S.rep==='skipped'||(S.rep==='voted'&&repOk));
+ const nR=S.rep==='voted'&&S.sc[1]?S.sc[1][0].length:0;
+ const rA=nR?sum(S.sc[1][0]):0,rB=nR?sum(S.sc[1][1]):0;
+ const repRows=nR===1?`<div class="arow"><span class="alab">RÉPLICA</span>${cell(1,0,0)}${cell(1,1,0)}</div>`:Array.from({length:nR},(_,i)=>`<div class="arow"><span class="alab">PATRÓN ${i+1}</span>${cell(1,0,i)}${cell(1,1,i)}</div>`).join('')+`<div class="arow atot"><span class="alab">TOT. RÉPLICA</span><div class="tot">${S.hideTot?'·':rA}</div><div class="tot">${S.hideTot?'·':rB}</div></div>`;
+ const rep=nR?`<div class="pbt" style="margin:14px 0 6px">Réplica · ${nR===1?'0 a 10':nR+' patrones, 0 a '+repMaxA()+' cada uno'}</div>${repRows}`:'';
+ const repOk=S.rep!=='voted'||(S.sc[1]&&S.sc[1][0].every(x=>x!=null)&&S.sc[1][1].every(x=>x!=null));
+ const canSave=complete&&(S.rep==='voted'?repOk:(!tie||S.rep==='skipped'));
  const prompt=tie&&!S.rep?`<div class="card" style="text-align:center;margin-top:12px"><b>Empate ${ma} – ${mb}</b><div class="mu" style="margin:6px 0 12px">Como los dos sacaron el mismo puntaje, la réplica decide el ganador. Si no la juegas, queda empate.</div><button class="btn" onclick="votarReplicaA()">Jugar réplica</button><button class="btn s" onclick="omitirReplica()">No jugar réplica</button></div>`:'';
- const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:'';
+ const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">Completa los ${repN()} patrones de la réplica de cada MC, o quita la réplica.</div>`:'');
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
  <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
  <div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
- ${kbHint()}${note}${prompt}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
+ ${kbHint()}${note}${prompt}${(tie&&!S.rep)?'':repToggleH('A')}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
 }
 let VKEY=null;
 function R(){
@@ -675,8 +682,10 @@ function homeV(){
 }
 function openLg(i){S.lg=i;S.err='';go('lg')}
 const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
+function repTot(v){if(v.ra!=null&&v.rb!=null)return [v.ra,v.rb];if(v.fmt==='actual'&&v.sc&&v.sc[1]&&v.sc[1].a)return [sum(v.sc[1].a),sum(v.sc[1].b)];return null}
 function voteRes(v){
  const fa=v.ta,fb=v.tb;
+ if(v.ra!=null&&v.rb!=null)return v.ra!==v.rb?{w:v.ra>v.rb?'a':'b',k:'r'}:{w:null,k:null};
  if(v.fmt==='actual'){
   if(fa!==fb)return {w:fa>fb?'a':'b',k:'d'};
   if(v.sc&&v.sc[1]){const ra=sum(v.sc[1].a),rb=sum(v.sc[1].b);if(ra!==rb)return {w:ra>rb?'a':'b',k:'r'}}
@@ -700,12 +709,12 @@ function standings(lg,votes,temp){
  uniq.forEach(v=>{
   const na=al(nrm(v.a)),nb=al(nrm(v.b));if(!na||!nb||na===nb)return;
   const pk=[na,nb].sort();const k=pk.join('|');if(exhSet(lg,temp).has(k))return;
-  const g=G[k]||(G[k]={p:pk[0],q:pk[1],n:0,sp:0,sq:0,nAct:0,nr:0,rp:0,rq:0});
+  const g=G[k]||(G[k]={p:pk[0],q:pk[1],n:0,sp:0,sq:0,nAct:0,nr:0,nro:0,rp:0,rq:0});
   const flip=na!==g.p;
   const ta=flip?v.tb:v.ta, tb=flip?v.ta:v.tb;
   g.n++;g.sp+=ta;g.sq+=tb;
   if(v.fmt==='actual')g.nAct++;
-  if(v.sc&&v.sc[1]){const ra=sum(v.sc[1].a),rb=sum(v.sc[1].b);g.nr++;g.rp+=flip?rb:ra;g.rq+=flip?ra:rb}
+  const rt=repTot(v);if(rt){const ra=rt[0],rb=rt[1];g.nr++;if(v.ra!=null)g.nro++;g.rp+=flip?rb:ra;g.rq+=flip?ra:rb}
  });
  Object.values(G).forEach(g=>{
   const pIn=idx[g.p],qIn=idx[g.q];
@@ -715,7 +724,8 @@ function standings(lg,votes,temp){
   if(qIn)T[qIn].ptb+=aq;
   const thr=g.nAct*2>g.n?0:1;
   let w=null,kind=null;
-  if(d>0){w=ap>aq?'p':'q';kind=(thr===0||d>=1)?'d':'r'}
+  if(g.nro>0&&g.nro*2>g.n){const rp=g.rp/g.nr,rq=g.rq/g.nr;if(rp!==rq){w=rp>rq?'p':'q';kind='r'}}
+  else if(d>0){w=ap>aq?'p':'q';kind=(thr===0||d>=1)?'d':'r'}
   else if(g.nr>0){const rp=g.rp/g.nr,rq=g.rq/g.nr;if(rp!==rq){w=rp>rq?'p':'q';kind='r'}}
   if(!w){if(pIn)T[pIn].pts+=1;if(qIn)T[qIn].pts+=1;return}
   const wIn=w==='p'?pIn:qIn, lIn=w==='p'?qIn:pIn;
@@ -828,7 +838,7 @@ function start(b){const l=curL();S.bt=b;S.libre=!!b.libre;S.temp=b.temp||'2026';
 function sumR(k,m){return sum(S.sc[k][m])}
 function tot(m){return S.rounds.reduce((a,_,k)=>a+sumR(k,m),0)}
 function mainTot(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?0:sumR(k,m)),0)}
-function counted(m){return S.rep==='voted'?tot(m):mainTot(m)}
+function counted(m){return mainTot(m)}
 
 function voteV(){
  const b=S.bt,l=curL(),done=S.ri>=S.rounds.length;const [ac1,ac2]=accentOf(l);if(!S.firstSet)return startScreenV(b,l);
@@ -854,24 +864,28 @@ function roundV(){
   <div class="pl-scroll"><div class="pblock">${head}${rows}</div></div>
   ${foot}
  </div>
- <div class="row" style="gap:8px;margin-top:12px"><button class="btn s" style="margin:0" onclick="mv(-1)" ${i?'':'disabled'}>Anterior</button><button class="btn" style="margin:0" onclick="mv(1)">${i===n-1?'Ver resultado':'Siguiente'}</button></div>`;
+ <div class="row" style="gap:8px;margin-top:12px"><button class="btn s" style="margin:0" onclick="mv(-1)" ${i?'':'disabled'}>Anterior</button><button class="btn" style="margin:0" onclick="mv(1)">${i===n-1?'Ver resultado':'Siguiente'}</button></div>
+ ${repToggleH('R')}`;
 }
 function summaryV(){
  const ma=mainTot(0),mb=mainTot(1),md=Math.abs(ma-mb);
  if(!S.rep&&md<1)return repPrompt(ma,mb,md);
- const a=counted(0),b=counted(1),d=Math.abs(a-b);
- const tag=S.rep==='voted'?'Ganador con réplica':S.rep==='skipped'?'Ganador sin réplica':'Ganador directo';
- const w=a===b?'Empate':`${tag}: ${a>b?S.bt.a:S.bt.b}, por ${fmt(d)} punto${d===1?'':'s'}`;
+ const voted=S.rep==='voted',ra=repTotM(0),rb=repTotM(1),rd=Math.abs(ra-rb);
+ const w=voted?(ra===rb?'Empate en la réplica':`Ganador tras réplica: ${ra>rb?S.bt.a:S.bt.b}, por ${fmt(rd)} punto${rd===1?'':'s'}`):(ma===mb?'Empate':`${S.rep==='skipped'?'Ganador sin réplica':'Ganador directo'}: ${ma>mb?S.bt.a:S.bt.b}, por ${fmt(md)} punto${md===1?'':'s'}`);
  const rows=S.rounds.map((r,k)=>`<span class="n">${esc(r.n)}</span><span class="c">${fmt(sumR(k,0))}</span><span class="c">${fmt(sumR(k,1))}</span>`).join('');
  return `<div class="win">${w}</div>
- <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(a)} – ${fmt(b)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>
- <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>Total</b><span class="c">${fmt(a)}</span><span class="c">${fmt(b)}</span></div></div>
- <button class="btn" onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
+ <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ma)} – ${fmt(mb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>${voted?`<div class="mu" style="text-align:center;margin:-4px 0 12px">Réplica: ${fmt(ra)} – ${fmt(rb)}</div>`:''}
+ <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>${voted?'Total (sin réplica)':'Total'}</b><span class="c">${fmt(ma)}</span><span class="c">${fmt(mb)}</span></div></div>
+ ${repToggleH('S')}<button class="btn" style="margin-top:12px" onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
 }
 function repPrompt(ma,mb,md){
  return `<div class="card" style="text-align:center"><div class="mu">Diferencia de ${fmt(md)} punto${md===0?'':'s'}</div><div style="font-weight:900;font-size:19px;margin:6px 0 12px">Hay réplica</div><div class="score" style="margin-bottom:12px"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)} ${fmt(ma)}</span><span class="mu">vs</span><span style="color:var(--b2);font-weight:800">${fmt(mb)} ${esc(S.bt.b)}</span></div><div class="mu">Una diferencia menor a 1 punto necesita réplica. Puedes votarla o dejarla fuera.</div></div><button class="btn" onclick="votarReplica()">Votar réplica</button><button class="btn s" onclick="omitirReplica()">Omitir réplica</button>`;
 }
-function votarReplica(){S.rounds.push(REP);S.sc.push([Array(sz(REP)).fill(null),Array(sz(REP)).fill(null)]);S.rep='voted';S.ri=S.rounds.length-1;S.pi=0;R()}
+function votarReplica(stay){if(S.rep==='voted')return;S.rounds.push(REP);S.sc.push([Array(sz(REP)).fill(null),Array(sz(REP)).fill(null)]);S.rep='voted';if(!stay){S.ri=S.rounds.length-1;S.pi=0}R()}
+function quitarReplica(){const onSum=S.ri>=S.rounds.length;const k=S.rounds.findIndex(r=>r.rep);if(k<0)return;S.rounds.splice(k,1);S.sc.splice(k,1);S.rep=null;if(onSum){S.ri=S.rounds.length;S.pi=0}else if(S.ri>=S.rounds.length){S.ri=S.rounds.length-1;S.pi=S.rounds[S.ri].p.length-1}R()}
+function repTotM(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?sumR(k,m):0),0)}
+function repToggleH(mode){const v=S.rep==='voted';const fn=v?(mode==='A'?'quitarReplicaA()':'quitarReplica()'):(mode==='A'?'votarReplicaA()':mode==='R'?'votarReplica(1)':'votarReplica()');
+ return `<div class="card" style="margin-top:12px"><div style="font-weight:800">Réplica <span class="mu" style="font-weight:600">(opcional)</span></div><div class="mu" style="margin:4px 0 10px">${v?'Quítala si la batalla oficial no fue a réplica.':'Agrégala si la batalla oficial se fue a réplica, aunque tu planilla haya dado ganador directo. Con réplica, gana quien gane la réplica.'}</div><button class="btn s" style="margin:0" onclick="${fn}">${v?'Quitar réplica':'Agregar réplica'}</button></div>`}
 function omitirReplica(){S.rep='skipped';R()}
 function goR(k){S.ri=k;S.pi=S.rounds[k].p.length-1;R()}
 function stepsList(){const out=[];S.rounds.forEach((rd,ri)=>rd.p.forEach((part,pi)=>{let lab=part.t||rd.n;lab=lab.replace(' Mode','').replace('Primera Temática','Temática 1').replace('Segunda Temática','Temática 2').replace(/^Minuto (\d)$/,'Minuto libre $1');out.push({ri,pi,lab,rep:!!rd.rep})}));return out}
@@ -897,23 +911,23 @@ function kpOk(){const str=(S.sheet.str||'').trim();if(str===''){return setV(null
  setV(v)}
 function sheetH(){const h=S.sheet;
  let vals=[];
- if(h.ri!=null){const max=h.ri===1?10:ACT[h.idx].max;for(let i=0;i<=max;i++)vals.push(i)}
+ if(h.ri!=null){const max=h.ri===1?repMaxA():ACT[h.idx].max;for(let i=0;i<=max;i++)vals.push(i)}
  else{const mx=h.max||4;for(let i=0;i<=mx*2;i++)vals.push(i/2)}
  const title=h.m?S.bt.b:S.bt.a;
- const lab=h.ri!=null?(h.ri===1?'Réplica':ACT[h.idx].k):'';
- const range=h.ri!=null?`0 a ${h.ri===1?10:ACT[h.idx].max}`:`De 0 a ${h.max||4}, con medio punto`;
+ const lab=h.ri!=null?(h.ri===1?(repN()>1?'Réplica · Patrón '+(h.idx+1):'Réplica'):ACT[h.idx].k):'';
+ const range=h.ri!=null?`0 a ${h.ri===1?repMaxA():ACT[h.idx].max}`:`De 0 a ${h.max||4}, con medio punto`;
  return `<div class="ov" onclick="closeSheet()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;margin-bottom:14px"><b style="font-size:17px">${esc(title)}${lab?' · '+lab:''}</b><span class="mu">${range}</span></div><div class="pk">${vals.map(v=>`<button onclick="setV(${v})">${fmt(v)}</button>`).join('')}<button class="clr" onclick="setV(null)">Borrar</button></div></div></div>`}
-function buildVote(){const act=S.fmt==='actual';const a=act?mainTot(0):counted(0),b=act?mainTot(1):counted(1);
+function buildVote(){const act=S.fmt==='actual';const a=mainTot(0),b=mainTot(1);
  const rows=S.rounds.map((r,k)=>({r:r.n,ta:sumR(k,0),tb:sumR(k,1),rep:!!r.rep})).filter(r=>S.rep==='voted'||!r.rep);
- return {l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:S.rep||'none',fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,sc:S.sc.map(p=>({a:p[0],b:p[1]}))}}
-function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{sa+=r.ta;sb+=r.tb;if(r.ta>r.tb)wa++;else if(r.tb>r.ta)wb++});return {n:rows.length,wa,wb,sa,sb}}
+ const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:S.rep||'none',fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,sc:S.sc.map(p=>({a:p[0],b:p[1]}))};if(S.rep==='voted'){bv.ra=repTotM(0);bv.rb=repTotM(1)}return bv}
+function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{sa+=r.ta;sb+=r.tb;const w=(r.ra!=null&&r.rb!=null)?(r.ra>r.rb?1:r.rb>r.ra?-1:0):(r.ta>r.tb?1:r.tb>r.ta?-1:0);if(w>0)wa++;else if(w<0)wb++});return {n:rows.length,wa,wb,sa,sb}}
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
 async function pushVote2(v){
  let prevRank=null,newRank=null;
  v.uid=S.me.uid;v.u=S.me.u;v.key=ck(v.free?'libre':v.l,v.a,v.b);v.ts=Date.now();
  let c={n:0,wa:0,wb:0};try{c=summ(await B.votesKey(v.key))}catch(e){}
- const cw=c.wa>=c.wb?0:1,uw=v.ta===v.tb?-1:(v.ta>v.tb?0:1);
+ const cw=c.wa>=c.wb?0:1,uw=(v.ra!=null&&v.rb!=null)?(v.ra===v.rb?-1:(v.ra>v.rb?0:1)):(v.ta===v.tb?-1:(v.ta>v.tb?0:1));
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
  try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
  notifyFriends(v);S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up)S.rankUp={from:prevRank,to:newRank};R();window.scrollTo(0,0);(async()=>{try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}})();
@@ -924,7 +938,7 @@ function resV(){const v=S.last;if(!v)return homeV();const c=S.comm;const tw=c?c.
  return `<div class="ok">${S.dupNote?esc(S.dupNote):'Voto guardado en tu perfil'}</div>
  <div class="card"><b>Resultados de la comunidad</b>${c?`<div class="row" style="justify-content:space-between;margin-top:10px"><b style="color:var(--ac)">${esc(v.a)} ${tw?pa:'–'}%</b><b style="color:var(--b2)">${tw?100-pa:'–'}% ${esc(v.b)}</b></div><div class="bar"><i style="width:${pa}%"></i></div><div class="mu">${c.n} ${c.n===1?'voto':'votos'} en esta batalla</div>`:'<div class="mu" style="margin-top:8px">Cargando resultados…</div>'}</div>
  ${c&&c.n?`<div class="stats"><div class="stat"><big>${fmt(Math.round(c.sa/c.n*10)/10)}</big><span>Media de ${esc(v.a)}</span></div><div class="stat"><big>${fmt(Math.round(c.sb/c.n*10)/10)}</big><span>Media de ${esc(v.b)}</span></div></div>`:''}
- <div class="card" style="margin-top:12px"><b>Tu voto</b><div class="mu" style="margin-top:4px">${fmt(v.ta)} – ${fmt(v.tb)} · ${esc(v.msg||'')}</div></div>
+ <div class="card" style="margin-top:12px"><b>Tu voto</b><div class="mu" style="margin-top:4px">${fmt(v.ta)} – ${fmt(v.tb)}${v.ra!=null?' · Réplica '+fmt(v.ra)+' – '+fmt(v.rb):''} · ${esc(v.msg||'')}</div></div>
  <button class="btn" onclick="go('perfil')">Ver mi perfil</button><button class="btn s" onclick="go('home')">Votar otra batalla</button>`}
 
 const MES_C=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
@@ -974,7 +988,7 @@ function userV(){if(!S.uProf)return `<button class="back" onclick="go('search')"
  const btn=(!S.me||mine)?'':st==='friend'?'<span class="pill next">Son amigos</span>':st==='sent'?`<button class="btn s" onclick="rejectFriend('${fr.id}')">Solicitud enviada · Cancelar</button>`:st==='incoming'?`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Aceptar solicitud de amistad</button>`:`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Enviar solicitud de amistad</button>`;
  const body=canSee?`${statsCard(S.uVotes||[])}<div class="sec"><span>Historial de batallas</span><span>${(S.uVotes||[]).length}</span></div>${voteList(S.uVotes,'user')}`:`<div class="card" style="text-align:center"><b>Historial privado</b><div class="mu" style="margin-top:6px">Solo los amigos pueden ver las batallas votadas de este usuario. Envíale una solicitud y, cuando la acepte, podrás verlo.</div></div>`;
  return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
-function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const a=v.ta,b=v.tb,w=a===b?'Empate':`Ganador: ${a>b?v.a:v.b} por ${fmt(Math.abs(a-b))} puntos`,l=L.find(x=>x.i===v.l);
+function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const a=v.ta,b=v.tb,rt=(v.ra!=null||a===b)?repTot(v):null,w=rt?(rt[0]===rt[1]?'Empate en la réplica':`Ganador tras réplica: ${rt[0]>rt[1]?v.a:v.b} por ${fmt(Math.abs(rt[0]-rt[1]))} puntos`):(a===b?'Empate':`Ganador: ${a>b?v.a:v.b} por ${fmt(Math.abs(a-b))} puntos`),l=L.find(x=>x.i===v.l);
  return `<button class="back" onclick="go('${S.vb==='perfil'?'perfil':'user'}')">${ico('back',18)} Volver</button><div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,56)}<div style="flex:1;min-width:0"><span class="kicker">Voto de ${esc(v.u||'')}</span><h1 style="font-size:19px">${esc(v.a)} vs ${esc(v.b)}</h1><p>${esc(l.n)} · ${esc(v.date||'')}</p></div></div><div class="win">${w}</div><div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(v.a)}</span><span class="h" style="color:var(--b2)">${esc(v.b)}</span>${(v.fmt==='actual'&&v.sc?actRowsV(v):v.rows).map(r=>`<span class="n">${esc(r.r)}</span><span class="c">${fmt(r.ta)}</span><span class="c">${fmt(r.tb)}</span>`).join('')}<b>Total</b><span class="c">${fmt(a)}</span><span class="c">${fmt(b)}</span></div></div>${S.vb==='perfil'?`<div class="row" style="gap:8px;margin-top:6px"><button class="btn" style="margin:0" onclick="editMine()">Editar voto</button><button class="btn s" style="margin:0" onclick="deleteMine()">Borrar voto</button></div>`:'<div class="mu" style="text-align:center">Solo lectura: este voto no se puede modificar.</div>'}`}
 
 function perfilV(){
@@ -1130,7 +1144,7 @@ function startEdit(v){
  const l=L.find(x=>x.i===v.l)||L[0];
  S.lg=v.l;S.libre=!!v.free;S.temp=v.temp||'2026';S.first=v.first||0;S.firstSet=true;
  S.bt={a:v.a,b:v.b,j:v.j||(v.free?'Batalla libre':l.n+' · '+v.date),y:v.y||null,libre:!!v.free};
- S.fmt=v.fmt==='actual'?'actual':'antigua';S.rounds=fmtRounds(S.fmt,l);if(v.rep==='voted')S.rounds.push(S.fmt==='actual'?REPA:REP);
+ S.fmt=v.fmt==='actual'?'actual':'antigua';S.rounds=fmtRounds(S.fmt,l);if(v.rep==='voted')S.rounds.push(S.fmt==='actual'?((v.sc[1]&&v.sc[1].a&&v.sc[1].a.length===1)?REPA:REPA6):REP);
  S.rep=v.rep==='voted'?'voted':(v.rep==='skipped'?'skipped':null);
  S.sc=v.sc.map(p=>[p.a,p.b]);if(S.sc.length!==S.rounds.length||S.rounds.some((rd,k)=>S.sc[k][0].length!==szOf(rd))){S.msgP='Esta votación es de antes del formato nuevo. Bórrala y vótala otra vez.';S.v='perfil';return R()}
  S.ri=0;S.pi=0;S.editId=v.id;S.v='vote';R();window.scrollTo(0,0);
