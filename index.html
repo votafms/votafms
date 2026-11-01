@@ -463,7 +463,7 @@ function setMe(uid,prof){S.me={uid,...prof};S.auth=(S.auth&&S.auth.mode==='newpw
 function watchAuth(){
  FB.am.onAuthStateChanged(FB.auth,async(user)=>{
   if(S.authBusy)return;
-  if(!user){S.me=null;S.myVotes=null;R();return}
+  if(!user){S.me=null;S.myVotes=null;watchInbox();R();return}
   try{
    const prof=await B.getUser(user.uid);
    if(!prof){S.me=null;S.auth={mode:'google',step:'user',un:'',err:'',busy:false};return R()}
@@ -1024,7 +1024,7 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>`}
 async function saveProf(){const m=S.me;if(!m)return;const prof={p:document.getElementById('pf-p').value.trim(),m:document.getElementById('pf-m').value.trim(),a:document.getElementById('pf-a').value.trim()};
  try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
-async function logout(){try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.msgP='';go('home')}
+async function logout(){try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.msgP='';watchInbox();go('home')}
 
 function openAuth(mode){S.auth={mode,step:'mail',email:'',un:'',pw:'',pw2:'',err:'',busy:false};R()}
 function closeAuth(){const googleStep=S.auth&&S.auth.mode==='google';S.auth=null;S.pend=null;if(googleStep&&FB&&FB.auth.currentUser){FB.am.signOut(FB.auth)}R()}
@@ -1156,7 +1156,7 @@ function lbStart(){const B2=S.lb;const a=B2.a.trim(),b=B2.b.trim();
  B2.err='';S.lg=B2.lg;start({a,b,j:'Batalla libre',y,libre:true})}
 
 function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&v.key===key)||null}
-async function refreshMine(){if(!S.me)return;try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R()}catch(e){}}
+async function refreshMine(){if(!S.me)return;watchInbox();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R()}catch(e){}}
 function startEdit(v){
  if(!v.sc){S.msgP='Esta votación es antigua y no se puede editar. Bórrala y vótala otra vez.';S.v='perfil';return R()}
  const l=L.find(x=>x.i===v.l)||L[0];
@@ -1193,6 +1193,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T13:00:00-04:00'),text:'Bandeja de entrada: ahora tiene dos botones, Actualizaciones y Actividad de tus amigos. Los votos de tus amigos llegan al momento, sin recargar la página, y la bandeja ya no se vacía sola.'},
  {ts:Date.parse('2026-11-01T12:40:00-04:00'),text:'Planilla actual en computadora: ahora el 10 se escribe con calma. Pulsa 1 y luego 0 sin prisa; la casilla espera tu 0. Si solo quieres un 1, pulsa Enter, Tab o una flecha, o escribe otro número para seguir.'},
  {ts:Date.parse('2026-11-01T12:15:00-04:00'),text:'Réplica: si agregas la réplica y no le pones puntos, ahora igual puedes guardar tu voto (la réplica sin puntos no se toma en cuenta). Además, el resultado de la réplica ya no aparece dentro de la tabla de rondas: ahora se ve en la tarjeta de Réplica.'},
  {ts:Date.parse('2026-11-01T09:56:00-04:00'),text:'Planilla actual en computadora: ahora puedes seleccionar una casilla y escribir los puntos con tu teclado. Usa las flechas, Tab o Enter para moverte y Retroceso para borrar.'},
@@ -1215,19 +1216,37 @@ const AVISOS=[
 ];
 S.inbox={notifs:[],avisos:[]};S.unread=0;S.inboxOpen=false;
 function avisosVisibles(){const h=(S.me&&S.me.avisosOcultos)||[];return AVISOS.filter(x=>!h.includes(x.ts))}
+let _inboxUnsub=null,_inboxUid=null;
+function watchInbox(){
+ if(!S.me||!FB){if(_inboxUnsub){try{_inboxUnsub()}catch(e){}}_inboxUnsub=null;_inboxUid=null;return}
+ if(_inboxUid===S.me.uid&&_inboxUnsub)return;
+ if(_inboxUnsub){try{_inboxUnsub()}catch(e){}}
+ const fm=FB.fm;_inboxUid=S.me.uid;
+ try{_inboxUnsub=fm.onSnapshot(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',S.me.uid),fm.limit(100)),snap=>{
+  if(!S.me)return;
+  const n=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const a=avisosVisibles();S.inbox={notifs:n,avisos:a};const vis=S.me.avisosVistos||0;
+  S.unread=n.filter(x=>!x.read).length+a.filter(x=>x.ts>vis).length;
+  const t=document.getElementById('top');if(t)t.innerHTML=topH();
+  if(S.inboxOpen&&!S.auth&&!S.fb&&!S.sheet)R()
+ },e=>console.error('bandeja',e))}catch(e){console.error(e)}}
 async function loadInbox(){if(!S.me)return;try{const n=await B.getNotifs(S.me.uid);const a=avisosVisibles();S.inbox={notifs:n,avisos:a};const vis=S.me.avisosVistos||0;S.unread=n.filter(x=>!x.read).length+a.filter(x=>x.ts>vis).length}catch(e){}}
 async function notifyFriends(v){if(!S.me)return;const me=S.me;const lg=L.find(x=>x.i===v.l);const liga=v.free?'batalla libre':(lg?lg.n:'');
+ await refreshFriends();
  const acc=(S.fr||[]).filter(f=>f.status==='accepted');
- for(const f of acc){const to=f.from===me.uid?f.to:f.from;try{await B.addNotif({to,from:me.uid,fromName:me.u,text:me.u+' votó '+v.a+' vs '+v.b+' · '+liga,ts:Date.now(),read:false})}catch(e){}}}
+ for(const f of acc){const to=f.from===me.uid?f.to:f.from;try{await B.addNotif({to,from:me.uid,fromName:me.u,text:me.u+' votó '+v.a+' vs '+v.b+' · '+liga,ts:Date.now(),read:false,type:'vote'})}catch(e){console.error('notifyFriends',e)}}}
 async function notifyRankUp(r){if(!S.me)return;const me=S.me;
  try{await B.addNotif({to:me.uid,from:'system',fromName:'VotaFMS',text:'🏆 ¡Subiste de rango! Ahora eres '+r.name+' ('+r.n+' puntos).',ts:Date.now(),read:false,type:'rankup'})}catch(e){}
+  await refreshFriends();
  const acc=(S.fr||[]).filter(f=>f.status==='accepted');
  for(const f of acc){const to=f.from===me.uid?f.to:f.from;try{await B.addNotif({to,from:me.uid,fromName:me.u,text:'🏆 '+me.u+' subió de rango a '+r.name+' ('+r.n+' puntos)',ts:Date.now(),read:false,type:'rankup'})}catch(e){}}}
 function rankUpAnim(){const r=S.rankUp.to,f=S.rankUp.from;return `<div class="rankup-ov" onclick="S.rankUp=null;R()" style="--tc:${rcol(r.t)}"><div class="rankup-box" onclick="event.stopPropagation()"><div class="rankup-glow"><div class="rankup-badge">${rankBadge(r.t,110)}</div></div><div class="rankup-k">¡Subiste de rango!</div><h2>${esc(r.name)}</h2><div class="mu" style="margin-bottom:6px">${esc(f?f.name:'')} → ${esc(r.name)}</div><div class="mu" style="margin-bottom:14px">${r.n} puntos totales · ${r.next?`faltan ${r.next} pts para el siguiente`:'rango máximo'}</div><div class="bar" style="margin:0 auto 16px;width:200px"><i style="width:${r.pct}%"></i></div><button class="btn" onclick="S.rankUp=null;R()">Seguir votando</button></div></div>`}
 async function openInbox(){S.inboxOpen=true;R();
- try{const n=S.inbox.notifs||[];for(const x of n.filter(x=>!x.read)){await B.readNotif(x.id)}
+ try{await loadInbox();const n=S.inbox.notifs||[];
+  S.inbNew=new Set(n.filter(x=>!x.read).map(x=>x.id));S.inbVis=S.me.avisosVistos||0;
+  S.inbTab=n.some(x=>!x.read&&x.from!=='system')?'amigos':'upd';R();
+  for(const x of n.filter(x=>!x.read)){await B.readNotif(x.id)}
   const now=Date.now();await B.updateUser(S.me.uid,{avisosVistos:now});S.me={...S.me,avisosVistos:now};
-  if(n.length>=5){for(const x of n){await B.delNotif(x.id)}}
   S.unread=0}catch(e){}
  R();}
 function closeInbox(){S.inboxOpen=false;R()}
@@ -1235,8 +1254,16 @@ async function delNotifFromInbox(id){try{await B.delNotif(id);S.msgP='Notificaci
 async function delAviso(ts){if(!S.me)return;try{const h=[...new Set([...(S.me.avisosOcultos||[]),ts])];await B.updateUser(S.me.uid,{avisosOcultos:h});S.me={...S.me,avisosOcultos:h};S.msgP='Mensaje eliminado';await loadInbox();R()}catch(e){S.msgP='No se pudo eliminar el mensaje.';R()}}
 async function clearAllInbox(){if(!confirm('¿Eliminar todos los mensajes de la bandeja? Esta acción no se puede deshacer.'))return;try{const n=S.inbox.notifs||[];for(const x of n){await B.delNotif(x.id)}const h=AVISOS.map(x=>x.ts);await B.updateUser(S.me.uid,{avisosOcultos:h});S.me={...S.me,avisosOcultos:h};S.msgP='Bandeja vaciada';await loadInbox();R()}catch(e){S.msgP='No se pudo vaciar la bandeja.';R()}}
 function inboxSheet(){const n=S.inbox.notifs||[],a=S.inbox.avisos||[];
- const items=[...a.map(x=>({ts:x.ts||0,t:'Actualización',txt:x.text||'',k:'av',id:x.id})),...n.map(x=>({ts:x.ts||0,t:x.from==='system'?'Rango':'Amigo',txt:x.text||'',k:'nt',id:x.id}))].sort((p,q)=>q.ts-p.ts);
- return `<div class="ov" onclick="closeInbox()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Bandeja de entrada</b><div class="mu" style="margin:4px 0 12px">Actualizaciones de la app y actividad de tus amigos.</div>${items.length?`<div style="margin-bottom:10px"><button class="btn s" style="width:100%;margin-bottom:6px" onclick="event.stopPropagation();clearAllInbox()">Borrar toda la bandeja</button><div class="mu" style="font-size:12px;margin:0 2px 8px">O elimina un mensaje con el botón Borrar de cada uno.</div>${items.map(it=>`<div class="frow" style="align-items:flex-start"><div style="flex:1;min-width:0"><span class="pill ${it.k==='av'?'next':''}">${it.t}</span><div style="margin-top:6px;font-size:14px">${esc(it.txt)}</div><div class="mu" style="font-size:11px;margin-top:2px">${it.ts?new Date(it.ts).toLocaleString('es'):''}</div></div><button class="fbtn sent" onclick="event.stopPropagation();${it.k==='av'?'delAviso('+it.ts+')':'delNotifFromInbox(\''+esc(it.id)+'\')'}">Borrar</button></div>`).join('')}</div>`:'<div class="mu">No tienes mensajes.</div>'}${n.length>=5?'<div class="mu" style="margin-top:10px">Al cerrar esta bandeja se vacía, porque llegaron 5 notificaciones.</div>':''}</div></div>`}
+ const tab=S.inbTab||'upd',nw=S.inbNew||new Set(),vis=S.inbVis||0;
+ const fr=n.filter(x=>x.from!=='system'),sy=n.filter(x=>x.from==='system');
+ const fNew=fr.filter(x=>nw.has(x.id)).length,uNew=a.filter(x=>(x.ts||0)>vis).length+sy.filter(x=>nw.has(x.id)).length;
+ const bd=c=>c?`<b style="margin-left:6px;background:var(--ac);color:#111;border-radius:999px;padding:1px 7px;font-size:11px">${c}</b>`:'';
+ const items=(tab==='amigos'
+  ?fr.map(x=>({ts:x.ts||0,t:x.type==='rankup'?'Rango':'Voto',txt:x.text||'',k:'nt',id:x.id,nw:nw.has(x.id)}))
+  :[...a.map(x=>({ts:x.ts||0,t:'Actualización',txt:x.text||'',k:'av',id:x.id,nw:(x.ts||0)>vis})),...sy.map(x=>({ts:x.ts||0,t:'Rango',txt:x.text||'',k:'nt',id:x.id,nw:nw.has(x.id)}))]
+ ).sort((p,q)=>q.ts-p.ts);
+ const empty=tab==='amigos'?'Todavía no hay actividad de tus amigos. Cuando un amigo vote una batalla, aparecerá aquí.':'No tienes mensajes.';
+ return `<div class="ov" onclick="closeInbox()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Bandeja de entrada</b><div class="seg" style="margin:12px 0"><button class="${tab==='upd'?'on':''}" onclick="S.inbTab='upd';R()">Actualizaciones${bd(uNew)}</button><button class="${tab==='amigos'?'on':''}" onclick="S.inbTab='amigos';R()">Actividad de tus amigos${bd(fNew)}</button></div>${items.length?`<div style="margin-bottom:10px">${items.map(it=>`<div class="frow" style="align-items:flex-start"><div style="flex:1;min-width:0"><span class="pill ${it.k==='av'?'next':''}">${it.t}</span>${it.nw?'<span class="pill" style="margin-left:6px">Nuevo</span>':''}<div style="margin-top:6px;font-size:14px">${esc(it.txt)}</div><div class="mu" style="font-size:11px;margin-top:2px">${it.ts?new Date(it.ts).toLocaleString('es'):''}</div></div><button class="fbtn sent" onclick="event.stopPropagation();${it.k==='av'?'delAviso('+it.ts+')':'delNotifFromInbox(\''+esc(it.id)+'\')'}">Borrar</button></div>`).join('')}<button class="btn s" style="width:100%;margin:6px 0 0" onclick="event.stopPropagation();clearAllInbox()">Borrar toda la bandeja</button></div>`:`<div class="mu" style="margin:8px 0 4px">${empty}</div>`}</div></div>`}
 function openFriends(){S.friendsOpen=true;S.frTab=S.frTab||'amigos';R()}
 function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
  const tab=S.frTab||'amigos';
