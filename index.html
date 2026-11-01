@@ -635,6 +635,7 @@ function comunidadV(){
   return `<div class="sec" style="color:${a1}"><span>${esc(l.n)}</span><span>${commCount(votes)}</span></div>${votes.length?tablaHTML(standings(id,votes),l):'<div class="card mu">Todavía no hay votaciones en esta liga.</div>'}`}).join('');
 }
 function standingsCard(l){
+ if(l.i==='in')return '';
  if(!LINEUP[l.i]&&!(SEASON_OPTS[l.i]&&curSeason(l.i)!=='2026'))return '';
  const tv=curSeason(l.i);
  const head=`<div class="sec"><span>Mi tabla de la liga</span><span>${S.me?'solo tus votos':'inicia sesión'}</span></div>`;
@@ -1015,6 +1016,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T06:20:00-04:00'),text:'FMS Internacional ya no tiene tabla de posiciones: solo muestra las batallas para votar.'},
  {ts:Date.parse('2026-10-31T14:45:00-04:00'),text:'Bandeja de entrada: ahora es posible eliminar mensajes de forma individual o vaciar la bandeja completa.'},
  {ts:Date.parse('2026-10-31T14:20:00-04:00'),text:'Tablas de liga: el primer puesto se identifica como Campeón y las dos últimas posiciones como Descenso. Se añadió la batalla Marithea vs Mr. Ego en la Jornada 1 de FMS España.'},
  {ts:Date.parse('2026-10-31T01:47:00-04:00'),text:'Nuevo sistema de rangos por puntos. Cada batalla de liga votada otorga puntos según la liga: World Series 100, España 80, Internacional 60, Argentina 50, México 45, Chile 40, Colombia 35, Perú 30 y Caribe 25. Elite 3 requiere 6700 puntos. Al subir de rango se muestra una animación y se notifica a tus amigos.'},
