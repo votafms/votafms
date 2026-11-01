@@ -857,7 +857,7 @@ function roundV(){
  const rows=order.map(m=>{const ps=sum(S.sc[S.ri][m].slice(off,off+vals));
   return `<div class="pgrid" style="${grid};margin-top:6px"><span class="pname" style="color:${m?'var(--ac2)':'var(--ac)'}">${esc(m?S.bt.b:S.bt.a)}</span>${Array.from({length:vals},(_,j)=>{const idx=off+j,v=S.sc[S.ri][m][idx];return `<button class="cell ${j>=part.c?'crit ':''}${v==null?'empty':'set'}${m?' b':''}" onclick="pick(${m},${idx})">${v==null?'–':fmt(v)}</button>`}).join('')}<div class="tot">${S.hideTot?'·':fmt(ps)}</div></div>`}).join('');
  const bar=`<div class="stepbar">${st.map((x,k)=>`<button class="sbtn ${k===i?'on':k<i?'done':''}" onclick="goStep(${k})"><span class="sdot">${k+1}</span><span class="slab">${esc(x.lab)}</span></button>`).join('')}</div>`;
- const foot=S.hideTot?`<div class="pl-foot"><span class="pl-lab" style="grid-column:1/4">TOTALES OCULTOS</span></div>`:`<div class="pl-foot"><span class="pl-lab">TOTAL</span><div class="pl-tot" style="color:var(--ac)">${fmt(tot(0))}<small>${esc(S.bt.a)}</small></div><div class="pl-tot" style="color:var(--ac2)">${fmt(tot(1))}<small>${esc(S.bt.b)}</small></div></div>`;
+ const foot=S.hideTot?`<div class="pl-foot"><span class="pl-lab" style="grid-column:1/4">TOTALES OCULTOS</span></div>`:`<div class="pl-foot"><span class="pl-lab">${cur.rep?'RÉPLICA':'TOTAL'}</span><div class="pl-tot" style="color:var(--ac)">${fmt(cur.rep?repTotM(0):mainTot(0))}<small>${esc(S.bt.a)}</small></div><div class="pl-tot" style="color:var(--ac2)">${fmt(cur.rep?repTotM(1):mainTot(1))}<small>${esc(S.bt.b)}</small></div></div>`;
  return `${bar}
  <div class="pl-card">
   <div class="pl-head"><div><div class="pl-kicker">Paso ${i+1} de ${n}${cur.rep?' · Réplica':''}</div><div class="pl-title">${esc(cur.lab)}</div></div>
