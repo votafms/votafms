@@ -70,6 +70,11 @@ label.f{display:block;font-size:12px;color:var(--mu);margin:0 0 6px 2px;font-wei
 .cell{height:38px;min-width:34px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);font-weight:800;font-size:13px;cursor:pointer;color:var(--tx);padding:0}
 .cell.crit{background:var(--cd2)}
 .cell.empty{color:var(--mu);font-weight:600}
+.cell.sel{outline:2px solid var(--ac);outline-offset:2px;box-shadow:0 0 0 5px color-mix(in srgb,var(--ac) 22%,transparent)}
+.cell.sel.b{outline-color:var(--ac2);box-shadow:0 0 0 5px color-mix(in srgb,var(--ac2) 22%,transparent)}
+.kbhint{margin:10px 2px 0;font-size:12px;color:var(--mu);text-align:center;line-height:1.5}
+.kbhint span{display:block;font-size:11px;opacity:.85}
+.kbhint a{color:var(--ac);font-weight:700;text-decoration:none}
 .cell.set{border-color:rgba(234,179,8,.55);background:rgba(234,179,8,.14)}
 .cell.set.b{border-color:rgba(77,163,255,.55);background:rgba(77,163,255,.14)}
 .score{display:flex;justify-content:space-between;align-items:center;background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:12px 14px;margin-bottom:12px}
@@ -585,15 +590,48 @@ function hasScores(){return (S.sc||[]).some(rd=>rd.some(side=>side.some(v=>v!=nu
 function fmtSeg(){const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
  const btn=(k,t)=>`<button class="${cur===k?'on':''}${lock&&cur!==k?' dis':''}" ${lock&&cur!==k?'disabled aria-disabled="true"':''} onclick="setFmt('${k}')">${t}</button>`;
  return `<div id="fmtseg"><div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
-function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;R()}
-function pickA(ri,m,idx){S.sheet={m,idx,ri};S.kpe='';R()}
+function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;R()}
+const isPC=()=>!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);
+let KBUF='',KT=null;
+function pickA(ri,m,idx){KBUF='';clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
+const maxA=c=>c.ri===1?10:ACT[c.idx].max;
+function aOrder(){const o=[];ACT.forEach((x,i)=>{o.push({ri:0,m:0,idx:i},{ri:0,m:1,idx:i})});if(S.rep==='voted')o.push({ri:1,m:0,idx:0},{ri:1,m:1,idx:0});return o}
+function aCur(){if(S.sheet&&S.sheet.ri!=null)return {ri:S.sheet.ri,m:S.sheet.m,idx:S.sheet.idx};return S.selA||null}
+function aGo(c){KBUF='';clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.kpe=''}else{S.selA={ri:c.ri,m:c.m,idx:c.idx}}R()}
+function aStep(c,d){const o=aOrder(),i=o.findIndex(x=>x.ri===c.ri&&x.m===c.m&&x.idx===c.idx);if(i<0)return c;return o[Math.max(0,Math.min(o.length-1,i+d))]}
+function aVert(c,d){const o=aOrder(),n=o.find(x=>x.m===c.m&&((x.ri===c.ri&&x.idx===c.idx+d)||(d>0&&c.ri===0&&c.idx===ACT.length-1&&x.ri===1)||(d<0&&c.ri===1&&x.ri===0&&x.idx===ACT.length-1)));return n||c}
+function aOpenSheet(){const c=S.selA;if(!c)return;S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.selA=null;S.kpe='';R()}
+function aKey(e){
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
+ if(S.v!=='vote'||S.fmt!=='actual'||!S.sc||S.auth||S.fb||S.delAsk||S.friendsOpen||S.ranksOpen||S.inboxOpen||S.rankUp)return;
+ let c=aCur();const k=e.key;
+ if(c&&!(S.sc[c.ri]&&S.sc[c.ri][c.m]))c=null;
+ if(/^[0-9]$/.test(k)){
+  if(!c){const first=aOrder().find(x=>S.sc[x.ri]&&S.sc[x.ri][x.m][x.idx]==null);if(!first)return;c=first;S.selA=first}
+  e.preventDefault();const mx=maxA(c);let buf=KBUF+k,n=Number(buf);
+  if(n>mx){buf=k;n=Number(buf);if(n>mx)return}
+  KBUF=buf;S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);
+  if(n>=1&&n*10<=mx){R();const cc=c;KT=setTimeout(()=>{KBUF='';const cur=aCur();if(cur&&cur.ri===cc.ri&&cur.m===cc.m&&cur.idx===cc.idx)aGo(aStep(cc,1))},700)}
+  else{KBUF='';const nx=aStep(c,1);const same=nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx;if(same){R()}else{aGo(nx)}}
+  return}
+ if(!c)return;
+ if(k==='Backspace'||k==='Delete'){e.preventDefault();KBUF='';clearTimeout(KT);S.sc[c.ri][c.m][c.idx]=null;R();return}
+ if(k==='Escape'){e.preventDefault();KBUF='';clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet=null;S.kpe=''}else S.selA=null;R();return}
+ if(k==='Enter'||k==='ArrowRight'||(k==='Tab'&&!e.shiftKey)){e.preventDefault();aGo(aStep(c,1));return}
+ if(k==='ArrowLeft'||(k==='Tab'&&e.shiftKey)){e.preventDefault();aGo(aStep(c,-1));return}
+ if(k==='ArrowDown'){e.preventDefault();aGo(aVert(c,1));return}
+ if(k==='ArrowUp'){e.preventDefault();aGo(aVert(c,-1));return}
+}
+document.addEventListener('keydown',aKey);
+function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
 function votarReplicaA(){S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;R()}
 function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:v.sc[1].a[0],tb:v.sc[1].b[0]});return rows}
 function actualV(){
  const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
  const complete=c1.every(x=>x!=null)&&c2.every(x=>x!=null);
  const ma=sum(c1),mb=sum(c2),tie=complete&&ma===mb;
- const cell=(ri,m,idx)=>{const v=S.sc[ri][m][idx];return `<button class="cell ${v==null?'empty':'set'}${m?' b':''}" onclick="pickA(${ri},${m},${idx})">${v==null?'–':v}</button>`};
+ const cell=(ri,m,idx)=>{const v=S.sc[ri][m][idx];const sl=S.selA&&S.selA.ri===ri&&S.selA.m===m&&S.selA.idx===idx;return `<button class="cell ${v==null?'empty':'set'}${m?' b':''}${sl?' sel':''}" onclick="pickA(${ri},${m},${idx})">${v==null?'–':v}</button>`};
  const rows=ACT.map((x,i)=>`<div class="arow"><span class="alab">${x.k}</span>${cell(0,0,i)}${cell(0,1,i)}</div>`).join('');
  const totRow=`<div class="arow atot"><span class="alab">TOTAL</span><div class="tot">${S.hideTot?'·':ma}</div><div class="tot">${S.hideTot?'·':mb}</div></div>`;
  const rep=S.rep==='voted'?`<div class="pbt" style="margin:14px 0 6px">Réplica · 0 a 10</div><div class="arow"><span class="alab">RÉPLICA</span>${cell(1,0,0)}${cell(1,1,0)}</div>`:'';
@@ -604,7 +642,7 @@ function actualV(){
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
  <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
  <div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
- ${note}${prompt}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
+ ${kbHint()}${note}${prompt}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
 }
 let VKEY=null;
 function R(){
@@ -959,12 +997,43 @@ async function logout(){try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.m
 function openAuth(mode){S.auth={mode,step:'mail',email:'',un:'',pw:'',pw2:'',err:'',busy:false};R()}
 function closeAuth(){const googleStep=S.auth&&S.auth.mode==='google';S.auth=null;S.pend=null;if(googleStep&&FB&&FB.auth.currentUser){FB.am.signOut(FB.auth)}R()}
 function authTab(m){S.auth.mode=m;S.auth.err='';R()}
+function openReset(){const A=S.auth;S.auth={mode:'reset',email:A&&A.email?A.email:'',err:'',busy:false,sent:false,sentTo:''};R()}
+async function sendReset(){const A=S.auth;if(!A||A.busy)return;
+ const email=(A.email||'').trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return authErr('Escribe un correo válido.');
+ A.busy=true;A.err='';R();
+ try{
+  const ok=/^https?:$/.test(location.protocol);
+  try{await FB.am.sendPasswordResetEmail(FB.auth,email,ok?{url:location.origin+location.pathname}:undefined)}
+  catch(e){if(e&&/continue-uri/.test(e.code||''))await FB.am.sendPasswordResetEmail(FB.auth,email);else throw e}
+  A.busy=false;A.sent=true;A.sentTo=email;A.err='';R();
+ }catch(e){authErr(fbErr(e))}}
+async function submitNewPw(){const A=S.auth;if(!A||A.busy)return;
+ if((A.pw||'').length<6)return authErr('La contraseña debe tener al menos 6 caracteres.');
+ if(A.pw!==A.pw2)return authErr('Las contraseñas no coinciden.');
+ A.busy=true;A.err='';R();
+ try{await FB.am.confirmPasswordReset(FB.auth,A.oob,A.pw);A.busy=false;A.done=true;R()}catch(e){authErr(fbErr(e))}}
+async function handleResetLink(){const q=new URLSearchParams(location.search);const oob=q.get('oobCode');
+ if(q.get('mode')!=='resetPassword'||!oob||!FB)return;
+ try{history.replaceState(null,'',location.pathname)}catch(e){}
+ S.auth={mode:'newpw',oob,email:'',pw:'',pw2:'',err:'',busy:false,done:false,bad:false};
+ try{S.auth.email=await FB.am.verifyPasswordResetCode(FB.auth,oob)}catch(e){S.auth.bad=true;S.auth.err=fbErr(e)}
+ R()}
 function authErr(msg){if(S.auth){S.auth.err=msg;S.auth.busy=false}R()}
-function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana de Google antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de Google. Permite ventanas emergentes e intenta de nuevo.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.'};return m[(e&&e.code)||'']||'Algo salió mal. Intenta de nuevo.'}
+function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana de Google antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de Google. Permite ventanas emergentes e intenta de nuevo.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.'};return m[(e&&e.code)||'']||'Algo salió mal. Intenta de nuevo.'}
 function gBadge(){return '<span class="gbadge">G</span>'}
 function ovWrap(inner,close){return `<div class="ov" onclick="${close}"><div class="sh" onclick="event.stopPropagation()">${inner}</div></div>`}
 function authM(){const A=S.auth;
  if(A.mode==='google')return ovWrap(`<b style="font-size:19px">Elige tu nombre de usuario</b><div class="mu" style="margin:4px 0 14px">Así te verán los demás. Usa de 3 a 20 letras, números, punto o guion bajo.</div><label class="f">Nombre de usuario</label><input placeholder="tu_nombre" value="${esc(A.un)}" oninput="S.auth.un=this.value" onkeydown="if(event.key==='Enter')submitUsername()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="btn" onclick="submitUsername()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':'Guardar y entrar'}</button>`,'closeAuth()');
+  if(A.mode==='reset'){
+   if(A.sent)return ovWrap(`<div style="text-align:center;padding:6px 0 2px"><div style="font-size:40px;line-height:1">✉️</div><b style="font-size:19px;display:block;margin-top:8px">Revisa tu correo</b><div class="mu" style="margin:8px 0 14px">Enviamos un enlace a <b style="color:var(--tx)">${esc(A.sentTo)}</b> para crear una nueva contraseña. Si no lo ves en unos minutos, revisa la carpeta de spam.</div></div><button class="btn" onclick="openAuth('in');S.auth.email='${esc(A.sentTo)}';R()">Volver a iniciar sesión</button><button class="btn s" onclick="sendReset()" ${A.busy?'disabled':''}>${A.busy?'Enviando…':'Reenviar correo'}</button>${A.err?`<div class="err">${esc(A.err)}</div>`:''}`,'closeAuth()');
+   return ovWrap(`<b style="font-size:19px">Recupera tu contraseña</b><div class="mu" style="margin:4px 0 14px">Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva contraseña.</div><label class="f">Correo</label><input type="email" autocomplete="email" placeholder="tu@correo.com" value="${esc(A.email)}" oninput="S.auth.email=this.value" onkeydown="if(event.key==='Enter')sendReset()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="btn" onclick="sendReset()" ${A.busy?'disabled':''}>${A.busy?'Enviando…':'Enviar enlace'}</button><button class="btn s" onclick="openAuth('in')">Volver a iniciar sesión</button>`,'closeAuth()');
+  }
+  if(A.mode==='newpw'){
+   if(A.done)return ovWrap(`<div style="text-align:center;padding:6px 0 2px"><div style="font-size:40px;line-height:1">✅</div><b style="font-size:19px;display:block;margin-top:8px">Contraseña actualizada</b><div class="mu" style="margin:8px 0 14px">Ya puedes iniciar sesión con tu nueva contraseña.</div></div><button class="btn" onclick="openAuth('in');S.auth.email='${esc(A.email||'')}';R()">Iniciar sesión</button>`,'closeAuth()');
+   if(A.bad)return ovWrap(`<b style="font-size:19px">Enlace no válido</b><div class="mu" style="margin:6px 0 14px">${esc(A.err||'El enlace venció o ya fue usado.')}</div><button class="btn" onclick="openReset()">Pedir un enlace nuevo</button><button class="btn s" onclick="openAuth('in')">Iniciar sesión</button>`,'closeAuth()');
+   return ovWrap(`<b style="font-size:19px">Crea tu nueva contraseña</b><div class="mu" style="margin:4px 0 14px">${A.email?'Cuenta: '+esc(A.email)+'. ':''}Usa mínimo 6 caracteres.</div><label class="f">Nueva contraseña</label><input type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" value="${esc(A.pw)}" oninput="S.auth.pw=this.value"><label class="f">Repite la contraseña</label><input type="password" autocomplete="new-password" placeholder="Repite la contraseña" value="${esc(A.pw2)}" oninput="S.auth.pw2=this.value" onkeydown="if(event.key==='Enter')submitNewPw()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="btn" onclick="submitNewPw()" ${A.busy?'disabled':''}>${A.busy?'Guardando…':'Guardar contraseña'}</button>`,'closeAuth()');
+  }
  const c=A.mode==='create';
  return ovWrap(`<div class="seg"><button class="${c?'on':''}" onclick="authTab('create')">Crear cuenta</button><button class="${!c?'on':''}" onclick="authTab('in')">Iniciar sesión</button></div>
  <b style="font-size:19px">${c?'Crea tu cuenta':'Bienvenido de nuevo'}</b>
@@ -974,6 +1043,7 @@ function authM(){const A=S.auth;
  <label class="f">Correo</label><input type="email" autocomplete="email" placeholder="tu@correo.com" value="${esc(A.email)}" oninput="S.auth.email=this.value">
  ${c?`<label class="f">Nombre de usuario</label><input placeholder="tu_nombre" autocomplete="username" value="${esc(A.un)}" oninput="S.auth.un=this.value">`:''}
  <label class="f">Contraseña</label><input type="password" autocomplete="${c?'new-password':'current-password'}" placeholder="Mínimo 6 caracteres" value="${esc(A.pw)}" oninput="S.auth.pw=this.value" onkeydown="if(event.key==='Enter')authSubmit()">
+ ${!c?`<div style="text-align:right;margin:-4px 0 8px"><a href="#" onclick="event.preventDefault();openReset()" style="color:var(--ac);font-size:13px;font-weight:700;text-decoration:none">¿Olvidaste tu contraseña?</a></div>`:''}
  ${c?`<label class="f">Repite la contraseña</label><input type="password" autocomplete="new-password" placeholder="Repite la contraseña" value="${esc(A.pw2)}" oninput="S.auth.pw2=this.value" onkeydown="if(event.key==='Enter')authSubmit()">`:''}
  ${A.err?`<div class="err">${esc(A.err)}</div>`:''}
  <button class="btn" onclick="authSubmit()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':c?'Crear cuenta':'Entrar'}</button>`,'closeAuth()');
@@ -1091,6 +1161,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T09:56:00-04:00'),text:'Planilla actual en computadora: ahora puedes seleccionar una casilla y escribir los puntos con tu teclado. Usa las flechas, Tab o Enter para moverte y Retroceso para borrar.'},
+ {ts:Date.parse('2026-11-01T09:55:00-04:00'),text:'Inicio de sesión: si olvidaste tu contraseña, toca ¿Olvidaste tu contraseña? en Iniciar sesión. Recibirás un correo con un enlace para crear una nueva.'},
  {ts:Date.parse('2026-11-01T08:45:00-04:00'),text:'Votación: cuando ya empezaste a puntuar con una planilla (antigua o actual), la otra se bloquea para que no pierdas tu progreso por error. Además, al pasar de ronda con Siguiente o al elegir una ronda, la pantalla ya no salta al inicio.'},
  {ts:Date.parse('2026-11-01T08:30:00-04:00'),text:'Tablas de posiciones: el Campeón y los dos últimos puestos (Descenso) ahora se señalan con un diseño más claro en todas las tablas de la app, con una leyenda al final de cada una.'},
  {ts:Date.parse('2026-11-01T08:20:00-04:00'),text:'Nueva temporada 2021/22 en FMS México, Perú y Colombia, cada una con su tabla, y la FMS Internacional 2022 (Colombia, 12 de marzo) solo con sus batallas. Las exhibiciones no cuentan en las tablas. Además, al entrar a una liga ya no aparece el formulario de link y nombres de MC: eso queda solo en Batalla libre.'},
@@ -1207,7 +1279,7 @@ async function init(){
  if(q.get('panel')==='1'){document.body.classList.add('panel');S.lg=q.get('l')||'es';start({a:q.get('a')||'MC 1',b:q.get('b')||'MC 2',j:'Planilla',y:q.get('y')||null,libre:q.get('libre')==='1'})}
  const ok=await initFB();
  if(!ok){document.getElementById('app').innerHTML='<div class="card">No se pudo conectar con la base de datos. Revisa tu conexión y recarga la página.</div>';return}
- watchAuth();R();}
+ watchAuth();R();handleResetLink();}
 init();
 
 </script></body></html>
