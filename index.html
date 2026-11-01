@@ -99,6 +99,7 @@ label.f{display:block;font-size:12px;color:var(--mu);margin:0 0 6px 2px;font-wei
 .sh:before{content:"";display:block;width:44px;height:5px;border-radius:999px;background:var(--bd);margin:0 auto 14px}
 .seg{display:flex;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:4px;margin-bottom:16px}
 .seg button{flex:1;border:0;background:none;padding:10px;border-radius:11px;font-weight:800;color:var(--mu);cursor:pointer}
+.seg button.dis{opacity:.4;cursor:not-allowed}
 .seg button.on{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff}
 .pk{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .pk button{height:50px;border-radius:12px;border:1px solid var(--bd);background:var(--bg2);font-weight:900;cursor:pointer;color:var(--tx)}
@@ -579,10 +580,13 @@ const REPA={n:'Réplica',rep:1,act:1,p:[]};
 function fmtRounds(f,l){if(f==='actual')return [ACTR];if(S.libre)return RF.libre.slice();if(S.temp==='2017')return RF.t17.slice();if(S.temp==='2021')return RF.t21.slice();if(S.temp==='2020')return RF.t20.slice();if(S.temp==='2018'||S.temp==='2019')return RF.t18.slice();return RF[l.f].slice()}
 function szOf(rd){return rd.act?(rd.rep?1:ACT.length):sz(rd)}
 function bodyV(){if(S.fmt==='actual')return actualV();return S.ri>=S.rounds.length?summaryV():roundV()}
-function fmtSeg(){return `<div class="seg" style="margin-bottom:12px"><button class="${S.fmt!=='actual'?'on':''}" onclick="setFmt('antigua')">Planilla antigua</button><button class="${S.fmt==='actual'?'on':''}" onclick="setFmt('actual')">Planilla actual</button></div>`}
-function setFmt(f){if(S.fmt===f)return;VKEY=null;const l=curL();S.fmt=f;S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;R()}
+function hasScores(){return (S.sc||[]).some(rd=>rd.some(side=>side.some(v=>v!=null)))}
+function fmtSeg(){const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
+ const btn=(k,t)=>`<button class="${cur===k?'on':''}${lock&&cur!==k?' dis':''}" ${lock&&cur!==k?'disabled aria-disabled="true"':''} onclick="setFmt('${k}')">${t}</button>`;
+ return `<div id="fmtseg"><div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
+function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;R()}
 function pickA(ri,m,idx){S.sheet={m,idx,ri};S.kpe='';R()}
-function votarReplicaA(){S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;R();window.scrollTo(0,0)}
+function votarReplicaA(){S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;R()}
 function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:v.sc[1].a[0],tb:v.sc[1].b[0]});return rows}
 function actualV(){
  const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
@@ -607,6 +611,7 @@ function R(){
  const plan=document.getElementById('plan');
  if(vkey&&vkey===VKEY&&plan){
   plan.innerHTML=planHTML();
+  const sg=document.getElementById('fmtseg');if(sg&&!S.editId)sg.outerHTML=fmtSeg();
  }else{
   document.getElementById('app').innerHTML=(VIEW[S.v]||homeV)();
   VKEY=vkey;
@@ -827,12 +832,12 @@ function summaryV(){
 function repPrompt(ma,mb,md){
  return `<div class="card" style="text-align:center"><div class="mu">Diferencia de ${fmt(md)} punto${md===0?'':'s'}</div><div style="font-weight:900;font-size:19px;margin:6px 0 12px">Hay réplica</div><div class="score" style="margin-bottom:12px"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)} ${fmt(ma)}</span><span class="mu">vs</span><span style="color:var(--b2);font-weight:800">${fmt(mb)} ${esc(S.bt.b)}</span></div><div class="mu">Una diferencia menor a 1 punto necesita réplica. Puedes votarla o dejarla fuera.</div></div><button class="btn" onclick="votarReplica()">Votar réplica</button><button class="btn s" onclick="omitirReplica()">Omitir réplica</button>`;
 }
-function votarReplica(){S.rounds.push(REP);S.sc.push([Array(sz(REP)).fill(null),Array(sz(REP)).fill(null)]);S.rep='voted';S.ri=S.rounds.length-1;S.pi=0;R();window.scrollTo(0,0)}
-function omitirReplica(){S.rep='skipped';R();window.scrollTo(0,0)}
-function goR(k){S.ri=k;S.pi=S.rounds[k].p.length-1;R();window.scrollTo(0,0)}
+function votarReplica(){S.rounds.push(REP);S.sc.push([Array(sz(REP)).fill(null),Array(sz(REP)).fill(null)]);S.rep='voted';S.ri=S.rounds.length-1;S.pi=0;R()}
+function omitirReplica(){S.rep='skipped';R()}
+function goR(k){S.ri=k;S.pi=S.rounds[k].p.length-1;R()}
 function stepsList(){const out=[];S.rounds.forEach((rd,ri)=>rd.p.forEach((part,pi)=>{let lab=part.t||rd.n;lab=lab.replace(' Mode','').replace('Primera Temática','Temática 1').replace('Segunda Temática','Temática 2').replace(/^Minuto (\d)$/,'Minuto libre $1');out.push({ri,pi,lab,rep:!!rd.rep})}));return out}
 function curStep(){return stepsList().findIndex(x=>x.ri===S.ri&&x.pi===S.pi)}
-function goStep(i){const st=stepsList();if(i>=st.length){S.ri=S.rounds.length;S.pi=0}else{i=Math.max(0,i);S.ri=st[i].ri;S.pi=st[i].pi}R();window.scrollTo(0,0)}
+function goStep(i){const st=stepsList();if(i>=st.length){S.ri=S.rounds.length;S.pi=0}else{i=Math.max(0,i);S.ri=st[i].ri;S.pi=st[i].pi}R();if(S.ri>=S.rounds.length){const pl=document.getElementById('plan');if(pl){const t=pl.getBoundingClientRect().top;if(t<0)window.scrollBy(0,t-10)}}}
 function mv(d){goStep(curStep()+d)}
 function maxAt(idx){let off=0;for(const part of S.rounds[S.ri].p){const vals=part.c+3;if(idx<off+vals)return part.max||4;off+=vals}return 4}
 function pick(m,idx){const cur=S.sc[S.ri][m][idx];S.sheet={m,idx,max:maxAt(idx),str:cur==null?'':fmtKey(cur)};S.kpe='';R()}
@@ -1085,6 +1090,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T08:45:00-04:00'),text:'Votación: cuando ya empezaste a puntuar con una planilla (antigua o actual), la otra se bloquea para que no pierdas tu progreso por error. Además, al pasar de ronda con Siguiente o al elegir una ronda, la pantalla ya no salta al inicio.'},
  {ts:Date.parse('2026-11-01T08:30:00-04:00'),text:'Tablas de posiciones: el Campeón y los dos últimos puestos (Descenso) ahora se señalan con un diseño más claro en todas las tablas de la app, con una leyenda al final de cada una.'},
  {ts:Date.parse('2026-11-01T08:20:00-04:00'),text:'Nueva temporada 2021/22 en FMS México, Perú y Colombia, cada una con su tabla, y la FMS Internacional 2022 (Colombia, 12 de marzo) solo con sus batallas. Las exhibiciones no cuentan en las tablas. Además, al entrar a una liga ya no aparece el formulario de link y nombres de MC: eso queda solo en Batalla libre.'},
  {ts:Date.parse('2026-11-01T07:40:00-04:00'),text:'Nueva temporada 2021/22: ya puedes votar las batallas de FMS España, FMS Argentina y FMS Chile de esa temporada, cada una con su tabla de posiciones. Las exhibiciones no cuentan para la tabla. Como no tienen video, puedes añadir el link de YouTube de cada batalla. Estos votos aparecen en tu perfil con la temporada indicada y no cuentan en Comunidad.'},
