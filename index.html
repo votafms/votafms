@@ -614,10 +614,12 @@ function aKey(e){
  if(c&&!(S.sc[c.ri]&&S.sc[c.ri][c.m]))c=null;
  if(/^[0-9]$/.test(k)){
   if(!c){const first=aOrder().find(x=>S.sc[x.ri]&&S.sc[x.ri][x.m][x.idx]==null);if(!first)return;c=first;S.selA=first}
-  e.preventDefault();const mx=maxA(c);let buf=KBUF+k,n=Number(buf);
+  e.preventDefault();
+ if(KBUF&&k!=='0'){const nx=aStep(c,1);KBUF='';clearTimeout(KT);if(nx.ri!==c.ri||nx.m!==c.m||nx.idx!==c.idx){aGo(nx);c=nx}}
+ const mx=maxA(c);let buf=KBUF+k,n=Number(buf);
   if(n>mx){buf=k;n=Number(buf);if(n>mx)return}
   KBUF=buf;S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);
-  if(n>=1&&n*10<=mx){R();const cc=c;KT=setTimeout(()=>{KBUF='';const cur=aCur();if(cur&&cur.ri===cc.ri&&cur.m===cc.m&&cur.idx===cc.idx)aGo(aStep(cc,1))},700)}
+  if(n>=1&&n*10<=mx){R()}
   else{KBUF='';const nx=aStep(c,1);const same=nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx;if(same){R()}else{aGo(nx)}}
   return}
  if(!c)return;
@@ -629,7 +631,7 @@ function aKey(e){
  if(k==='ArrowUp'){e.preventDefault();aGo(aVert(c,-1));return}
 }
 document.addEventListener('keydown',aKey);
-function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
+function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c&&KBUF==='1'?'Escribe 0 para poner 10, o Enter para dejar 1.':c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
 function votarReplicaA(){if(S.rep==='voted')return;S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;S.selA=null;R()}
 function quitarReplicaA(){const k=S.rounds.findIndex(r=>r.rep);if(k>=0){S.rounds.splice(k,1);S.sc.splice(k,1)}S.rep=null;S.selA=null;S.sheet=null;S.ri=0;R()}
 function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
@@ -1191,6 +1193,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T12:40:00-04:00'),text:'Planilla actual en computadora: ahora el 10 se escribe con calma. Pulsa 1 y luego 0 sin prisa; la casilla espera tu 0. Si solo quieres un 1, pulsa Enter, Tab o una flecha, o escribe otro número para seguir.'},
  {ts:Date.parse('2026-11-01T12:15:00-04:00'),text:'Réplica: si agregas la réplica y no le pones puntos, ahora igual puedes guardar tu voto (la réplica sin puntos no se toma en cuenta). Además, el resultado de la réplica ya no aparece dentro de la tabla de rondas: ahora se ve en la tarjeta de Réplica.'},
  {ts:Date.parse('2026-11-01T09:56:00-04:00'),text:'Planilla actual en computadora: ahora puedes seleccionar una casilla y escribir los puntos con tu teclado. Usa las flechas, Tab o Enter para moverte y Retroceso para borrar.'},
  {ts:Date.parse('2026-11-01T09:55:00-04:00'),text:'Inicio de sesión: si olvidaste tu contraseña, toca ¿Olvidaste tu contraseña? en Iniciar sesión. Recibirás un correo con un enlace para crear una nueva.'},
