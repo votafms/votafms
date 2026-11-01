@@ -455,7 +455,7 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){S.me={uid,...prof};S.auth=null;R();refreshMine();
+function setMe(uid,prof){S.me={uid,...prof};S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
