@@ -457,7 +457,7 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){S.me={uid,...prof};S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();
+function setMe(uid,prof){S.me={uid,...prof};S.admin=false;B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
@@ -497,7 +497,10 @@ const B={
  async removeFriend(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'friends',id))},
  async votesOfUser(uid){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('uid','==',uid),fm.limit(500)));return s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)},
  async votesKey(key){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('key','==',key),fm.limit(1000)));return s.docs.map(d=>d.data())},
- async addComment(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'comments'),c)}
+ async addComment(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'comments'),c)},
+ async getAdmin(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'admins',uid));return d.exists()}catch(e){return false}},
+ async listComments(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'comments'),fm.limit(300)));return q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
+ async deleteComment(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'comments',id))}
 };
 
 const APP_ICON=`<svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="vg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAB308"/><stop offset="1" stop-color="#FDE047"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#vg)"/><rect x="24" y="10" width="16" height="28" rx="8" fill="#fff"/><path d="M16 30a16 16 0 0 0 32 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><line x1="32" y1="46" x2="32" y2="53" stroke="#fff" stroke-width="4" stroke-linecap="round"/><line x1="24" y1="53" x2="40" y2="53" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="49" cy="15" r="10" fill="#FFD23F"/><path d="M44.5 15l3 3 5.5-5.5" fill="none" stroke="#1a1200" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -506,28 +509,29 @@ function ico(n,s=20){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24"
 function logo(l,w){if(LOGO[l.i])return `<span style="display:inline-flex;flex:0 0 auto;background:#fff;border-radius:14px;padding:5px;box-shadow:0 6px 14px rgba(0,0,0,.28)"><img src="${LOGO[l.i]}" width="${w}" height="${Math.round(w*1.15)}" alt="${esc(l.n)}" style="display:block;object-fit:contain"></span>`;return `<div style="width:${w}px;height:${Math.round(w*1.15)}px;border-radius:12px;background:${l.c};display:flex;align-items:center;justify-content:center;color:${l.tx};font-weight:900">${l.t}</div>`}
 const av=(name,cls='')=>`<span class="av ${cls}">${esc(String(name||'?')[0].toUpperCase())}</span>`;
 function avU(u,cls=''){return u&&u.foto?`<img class="av ${cls}" src="${u.foto}" alt="">`:`<span class="av ${cls}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`}
-const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',comunidad:'comunidad'})[S.v]||'home';
+const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',admin:'perfil',comunidad:'comunidad'})[S.v]||'home';
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
 const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
 function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i);return {a:(p[0]||'').trim(),b:(p[1]||'').trim(),sa:null,sb:null,j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||null,j:e.n+' · '+e.d}}
 function crow(x){const sc=x.sa!=null,left=sc&&x.sa>x.sb,right=sc&&x.sb>x.sa;return `<div class="crow"><span class="cn ${left?'cw':sc?'cl':''}">${esc(x.a)}</span><span class="cs">${sc?fmt(x.sa)+' – '+fmt(x.sb):'VS'}</span><span class="cn r ${right?'cw':sc?'cl':''}">${esc(x.b)}</span></div>`}
 
-function go(v){S.v=v;if(v==='lg')S.lgVotes=null;if(v==='comunidad')S.comm5=null;window.scrollTo(0,0);if(v==='perfil')S.myVotes=S.me?null:[];if(v==='search')S.users=null;if(v==='user'){S.uProf=null;S.uVotes=null}R();loadFor(v)}
+function go(v){S.v=v;if(v==='lg')S.lgVotes=null;if(v==='comunidad')S.comm5=null;window.scrollTo(0,0);if(v==='perfil')S.myVotes=S.me?null:[];if(v==='search')S.users=null;if(v==='admin')S.adm=null;if(v==='user'){S.uProf=null;S.uVotes=null}R();loadFor(v)}
 async function loadFor(v){
  try{
   if(v==='perfil'&&S.me){S.myVotes=await cleanMine();await refreshFriends();R()}
+  else if(v==='admin'){S.adm=isAdmin()?await B.listComments():[];R()}
   else if(v==='comunidad'){const arr=await Promise.all(COMUN.map(id=>B.votesOfLeague(id)));S.comm5={};COMUN.forEach((id,i)=>S.comm5[id]=arr[i]);R()}
   else if(v==='lg'&&(LINEUP[S.lg]||SEASON_OPTS[S.lg])){const mine=S.me?await cleanMine():[];const tv=curSeason(S.lg);S.lgVotes=mine.filter(x=>x.l===S.lg&&(x.temp||'2026')===tv);if(tv!=='2026')S.links=await B.getLinks();R()}
   else if(v==='search'){S.users=await B.listUsers();await refreshFriends();R()}
   else if(v==='user'){await refreshFriends();const p=await B.getUser(S.uid);S.uProf=p?pub(p):{u:'?',p:'',m:'',a:'',joined:''};const canSee=(S.me&&S.me.uid===S.uid)||isFriend(S.uid)||isAdmin();S.uVotes=canSee?splitDups(await B.votesOfUser(S.uid)).keep:[];R()}
- }catch(e){if(v==='perfil')S.myVotes=[];if(v==='search')S.users=[];if(v==='user'){S.uVotes=[];S.uProf=S.uProf||{u:'?',p:'',m:'',a:'',joined:''}}R()}
+ }catch(e){if(v==='perfil')S.myVotes=[];if(v==='admin')S.adm=[];if(v==='search')S.users=[];if(v==='user'){S.uVotes=[];S.uProf=S.uProf||{u:'?',p:'',m:'',a:'',joined:''}}R()}
 }
 S.fr=[];
 function pendCount(){return S.me?(S.fr||[]).filter(f=>f.status==='pending'&&f.to===S.me.uid).length:0}
 function friendStats(){const acc=(S.fr||[]).filter(f=>f.status==='accepted').length;const inc=pendCount();const out=(S.fr||[]).filter(f=>f.status==='pending'&&f.from===S.me.uid).length;
  return `<div class="stats" style="margin-bottom:12px"><div class="stat"><big>${inc}</big><span>Solicitudes recibidas</span></div><div class="stat"><big>${acc}</big><span>Amigos</span></div></div><div class="mu" style="margin:-4px 2px 12px">Solicitudes enviadas: ${out}</div>`}
 function friendOf(uid){return (S.fr||[]).find(x=>x.from===uid||x.to===uid)||null}
-const isAdmin=()=>!!(S.me&&String(S.me.u||'').trim().toLowerCase()==='linexs17');
+const isAdmin=()=>!!(S.me&&S.admin);
 function isFriend(uid){const f=friendOf(uid);return !!(f&&f.status==='accepted')}
 async function refreshFriends(){if(!S.me)return;try{S.fr=await B.listFriendDocs(S.me.uid)}catch(e){}}
 async function friendAct(uid,name){
@@ -1033,6 +1037,7 @@ function perfilV(){
  <label class="f">Sobre mí</label><textarea id="pf-a" rows="3">${esc(m.a||'')}</textarea>
  <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
  ${statsCard(S.myVotes||[])}<div class="sec"><span>Mis votos</span><span>${S.myVotes?S.myVotes.length:'…'}</span></div>${voteList(S.myVotes,'perfil')}
+ ${isAdmin()?`<button class="btn" style="margin-top:8px" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
  <button class="btn s" style="color:#FF6B7A;margin-top:8px" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>`}
 async function saveProf(){const m=S.me;if(!m)return;const prof={p:document.getElementById('pf-p').value.trim(),m:document.getElementById('pf-m').value.trim(),a:document.getElementById('pf-a').value.trim()};
@@ -1349,7 +1354,15 @@ function ranksSheet(){const r=rankInfo(S.myVotes||[]);
 const bkey=v=>(v.free?'libre':v.l)+'|'+(v.temp||'2026')+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');
 function splitDups(list){const seen=new Set(),keep=[],dups=[];[...(list||[])].sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(v=>{if(v.free){keep.push(v);return}const k=bkey(v);if(seen.has(k)){dups.push(v)}else{seen.add(k);keep.push(v)}});keep.sort((a,b)=>(b.ts||0)-(a.ts||0));return {keep,dups}}
 async function cleanMine(){const all=await B.votesOfUser(S.me.uid);const r=splitDups(all);for(const d of r.dups){try{if(d.id)await B.deleteVote(d.id)}catch(e){}}return r.keep}
-const VIEW={comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV};
+function adminV(){
+ if(!isAdmin())return `<div class="card">No tienes acceso a este panel.</div><button class="btn s" onclick="go('perfil')">Volver</button>`;
+ const list=S.adm;
+ return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button><h1 class="pg">Panel de administrador</h1>
+ <div class="sec"><span>Comentarios de usuarios</span><span>${list?list.length:'…'}</span></div>
+ ${list===null?'<div class="mu" style="text-align:center;padding:20px">Cargando…</div>':list.length?list.map(c=>`<div class="card"><div class="row" style="margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(c.u||'anónimo')}</b><span class="mu">${esc(c.d||'')}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(c.t||'')}</div><button class="btn s sm" style="color:#FF6B7A;margin-top:12px" onclick="adminDel('${esc(c.id)}')">Eliminar</button></div>`).join(''):'<div class="card mu" style="text-align:center">Aún no hay comentarios.</div>'}
+ <button class="btn s" onclick="go('admin')">Actualizar</button>`}
+async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
+const VIEW={admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV};
 async function init(){
  const q=new URLSearchParams(location.search);
  if(q.get('panel')==='1'){document.body.classList.add('panel');S.lg=q.get('l')||'es';start({a:q.get('a')||'MC 1',b:q.get('b')||'MC 2',j:'Planilla',y:q.get('y')||null,libre:q.get('libre')==='1'})}
