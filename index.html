@@ -512,7 +512,7 @@ async function loadFor(v){
   else if(v==='comunidad'){const arr=await Promise.all(COMUN.map(id=>B.votesOfLeague(id)));S.comm5={};COMUN.forEach((id,i)=>S.comm5[id]=arr[i]);R()}
   else if(v==='lg'&&(LINEUP[S.lg]||SEASON_OPTS[S.lg])){const mine=S.me?await cleanMine():[];const tv=curSeason(S.lg);S.lgVotes=mine.filter(x=>x.l===S.lg&&(x.temp||'2026')===tv);if(tv!=='2026')S.links=await B.getLinks();R()}
   else if(v==='search'){S.users=await B.listUsers();await refreshFriends();R()}
-  else if(v==='user'){await refreshFriends();const p=await B.getUser(S.uid);S.uProf=p?pub(p):{u:'?',p:'',m:'',a:'',joined:''};const canSee=(S.me&&S.me.uid===S.uid)||isFriend(S.uid);S.uVotes=canSee?splitDups(await B.votesOfUser(S.uid)).keep:[];R()}
+  else if(v==='user'){await refreshFriends();const p=await B.getUser(S.uid);S.uProf=p?pub(p):{u:'?',p:'',m:'',a:'',joined:''};const canSee=(S.me&&S.me.uid===S.uid)||isFriend(S.uid)||isAdmin();S.uVotes=canSee?splitDups(await B.votesOfUser(S.uid)).keep:[];R()}
  }catch(e){if(v==='perfil')S.myVotes=[];if(v==='search')S.users=[];if(v==='user'){S.uVotes=[];S.uProf=S.uProf||{u:'?',p:'',m:'',a:'',joined:''}}R()}
 }
 S.fr=[];
@@ -520,6 +520,7 @@ function pendCount(){return S.me?(S.fr||[]).filter(f=>f.status==='pending'&&f.to
 function friendStats(){const acc=(S.fr||[]).filter(f=>f.status==='accepted').length;const inc=pendCount();const out=(S.fr||[]).filter(f=>f.status==='pending'&&f.from===S.me.uid).length;
  return `<div class="stats" style="margin-bottom:12px"><div class="stat"><big>${inc}</big><span>Solicitudes recibidas</span></div><div class="stat"><big>${acc}</big><span>Amigos</span></div></div><div class="mu" style="margin:-4px 2px 12px">Solicitudes enviadas: ${out}</div>`}
 function friendOf(uid){return (S.fr||[]).find(x=>x.from===uid||x.to===uid)||null}
+const isAdmin=()=>!!(S.me&&String(S.me.u||'').trim().toLowerCase()==='linex');
 function isFriend(uid){const f=friendOf(uid);return !!(f&&f.status==='accepted')}
 async function refreshFriends(){if(!S.me)return;try{S.fr=await B.listFriendDocs(S.me.uid)}catch(e){}}
 async function friendAct(uid,name){
@@ -930,7 +931,7 @@ function viewVote(i,from){S.viewList=from==='perfil'?(S.myVotes||[]):(S.uVotes||
 function userV(){if(!S.uProf)return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button><div class="card mu">Cargando perfil…</div>`;
  const mine=S.me&&S.me.uid===S.uid;const fr=friendOf(S.uid);
  const st=mine?'self':!S.me?'none':!fr?'none':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
- const canSee=mine||st==='friend';
+ const canSee=mine||st==='friend'||isAdmin();
  const nm=esc(S.uProf.u);
  const btn=(!S.me||mine)?'':st==='friend'?'<span class="pill next">Son amigos</span>':st==='sent'?`<button class="btn s" onclick="rejectFriend('${fr.id}')">Solicitud enviada · Cancelar</button>`:st==='incoming'?`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Aceptar solicitud de amistad</button>`:`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Enviar solicitud de amistad</button>`;
  const body=canSee?`${statsCard(S.uVotes||[])}<div class="sec"><span>Historial de batallas</span><span>${(S.uVotes||[]).length}</span></div>${voteList(S.uVotes,'user')}`:`<div class="card" style="text-align:center"><b>Historial privado</b><div class="mu" style="margin-top:6px">Solo los amigos pueden ver las batallas votadas de este usuario. Envíale una solicitud y, cuando la acepte, podrás verlo.</div></div>`;
