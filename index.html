@@ -1020,7 +1020,7 @@ async function handleResetLink(){const q=new URLSearchParams(location.search);co
  try{S.auth.email=await FB.am.verifyPasswordResetCode(FB.auth,oob)}catch(e){S.auth.bad=true;S.auth.err=fbErr(e)}
  R()}
 function authErr(msg){if(S.auth){S.auth.err=msg;S.auth.busy=false}R()}
-function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana de Google antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de Google. Permite ventanas emergentes e intenta de nuevo.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.'};return m[(e&&e.code)||'']||'Algo salió mal. Intenta de nuevo.'}
+function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana de Google antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de Google. Permite ventanas emergentes e intenta de nuevo.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.','auth/operation-not-allowed':'El registro con correo y contraseña no está activado en Firebase (Authentication > Método de acceso).','auth/admin-restricted-operation':'El registro de cuentas nuevas está restringido en Firebase.','auth/unauthorized-domain':'Este dominio no está autorizado en Firebase (Authentication > Configuración > Dominios autorizados).','auth/invalid-api-key':'La clave de Firebase no es válida.','permission-denied':'Firebase no permitió guardar tu perfil (reglas de Firestore).'};console.error('fbErr',e);const c=(e&&e.code)||'';return m[c]||('Algo salió mal. Intenta de nuevo.'+(c?' ('+c+')':''))}
 function gBadge(){return '<span class="gbadge">G</span>'}
 function ovWrap(inner,close){return `<div class="ov" onclick="${close}"><div class="sh" onclick="event.stopPropagation()">${inner}</div></div>`}
 function authM(){const A=S.auth;
@@ -1072,7 +1072,7 @@ async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
    if(await B.usernameTaken(un)){S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso.')}
    const cred=await FB.am.createUserWithEmailAndPassword(FB.auth,email,pw);
    const prof={p:'',m:'',a:'',joined:today()};
-   await B.createUser(cred.user.uid,un,prof);
+   try{await B.createUser(cred.user.uid,un,prof)}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
    S.authBusy=false;setMe(cred.user.uid,{u:un,...prof});
   }catch(e){S.authBusy=false;authErr(fbErr(e))}
  }else{
@@ -1080,7 +1080,7 @@ async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
   try{
    const cred=await FB.am.signInWithEmailAndPassword(FB.auth,email,pw);
    const prof=await B.getUser(cred.user.uid);S.authBusy=false;
-   if(!prof)return authErr('Tu cuenta no tiene perfil de usuario todavía.');
+   if(!prof){S.auth={mode:'google',step:'user',un:'',err:'',busy:false};return R()}
    setMe(cred.user.uid,prof);
   }catch(e){S.authBusy=false;authErr(fbErr(e))}
  }
