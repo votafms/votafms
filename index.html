@@ -1060,7 +1060,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
- {ts:Date.parse('2026-11-01T06:45:00-04:00'),text:'Rangos: se rediseñó el panel con un aspecto más sobrio y detallado. Ahora muestra tus puntos, las batallas votadas, el avance al siguiente nivel, los puntos por liga y la escalera completa de niveles.'},
+ {ts:Date.parse('2026-11-01T06:45:00-04:00'),text:'Rangos: se rediseñó el panel con un aspecto más sobrio y detallado. Ahora muestra tus puntos, las batallas votadas, el avance al siguiente nivel y la escalera completa de niveles.'},
  {ts:Date.parse('2026-11-01T06:20:00-04:00'),text:'FMS Internacional ya no tiene tabla de posiciones: solo muestra las batallas para votar.'},
  {ts:Date.parse('2026-10-31T14:45:00-04:00'),text:'Bandeja de entrada: ahora es posible eliminar mensajes de forma individual o vaciar la bandeja completa.'},
  {ts:Date.parse('2026-10-31T14:20:00-04:00'),text:'Tablas de liga: el primer puesto se identifica como Campeón y las dos últimas posiciones como Descenso. Se añadió la batalla Marithea vs Mr. Ego en la Jornada 1 de FMS España.'},
@@ -1148,9 +1148,8 @@ function rankCardH(votes){if(!votes)return '';const r=rankInfo(votes);
 function openRanks(){S.ranksOpen=true;if(!S.myVotes&&S.me){cleanMine().then(v=>{S.myVotes=v;R()}).catch(()=>{})}R()}
 function ranksSheet(){const r=rankInfo(S.myVotes||[]);
  const fm=n=>Number(n).toLocaleString('es');
- const seen=new Set(),byL={};(S.myVotes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');if(seen.has(k))return;seen.add(k);byL[v.l]=(byL[v.l]||0)+1});
+ const seen=new Set();(S.myVotes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');seen.add(k)});
  const nb=seen.size;
- const lgRows=Object.keys(LP).sort((a,b)=>LP[b]-LP[a]).map(id=>{const l=L.find(x=>x.i===id);const c=byL[id]||0;return `<tr class="${c?'has':''}"><td>${esc(l?l.n:id)}</td><td>${LP[id]}</td><td>${c}</td><td>${fm(c*LP[id])}</td></tr>`}).join('');
  const tiers=RANKS.map((nm,t)=>{const rows=[];for(let k=0;k<3;k++){const lvlNum=t*3+k+1;const need=lvlNum===1?0:RANK_TH[lvlNum-2];const ok=r.n>=need;const now=r.lvl===lvlNum-1;const nxt=!ok&&r.lvl===lvlNum-2;
    rows.push(`<div class="rk-row${now?' now':''}${nxt?' nxt':''}${ok&&!now?' got':''}"><span class="rk-lv">${nm} ${k+1}</span><span class="rk-pt">${fm(need)} pts</span><span class="rk-st">${now?'Nivel actual':ok?'Alcanzado':nxt?'Siguiente':'Bloqueado'}</span></div>`)}
   const first=t*3===0?0:RANK_TH[t*3-1],last=t===4?null:RANK_TH[t*3+2];
@@ -1161,9 +1160,6 @@ function ranksSheet(){const r=rankInfo(S.myVotes||[]);
  <div class="rk-head"><div class="rk-b">${rankBadge(r.t,64)}</div><div class="rk-hi"><div class="rk-eb">Rango actual</div><div class="rk-nm">${esc(r.name)}</div><div class="rk-sub">${fm(r.n)} puntos acumulados</div></div></div>
  <div class="rk-prog"><div class="rk-bar"><i style="width:${r.pct}%"></i></div><div class="rk-pl"><span>${r.next?`Siguiente nivel: <b>${esc(RANKS[Math.floor((r.lvl+1)/3)]+' '+((r.lvl+1)%3+1))}</b>`:'Rango máximo alcanzado'}</span><span>${r.next?`Faltan <b>${fm(r.next)}</b> pts`:'100%'}</span></div></div>
  <div class="rk-stats"><div><b>${fm(r.n)}</b><span>Puntos</span></div><div><b>${nb}</b><span>Batallas votadas</span></div><div><b>${lvl}/15</b><span>Nivel</span></div></div>
- <div class="rk-sec">Puntos por liga</div>
- <table class="rk-tb"><thead><tr><th>Liga</th><th>Pts. por batalla</th><th>Batallas</th><th>Total</th></tr></thead><tbody>${lgRows}</tbody></table>
- <div class="rk-note">Solo cuentan las batallas de liga votadas por primera vez. Las batallas libres y las ediciones no suman puntos.</div>
  <div class="rk-sec">Escalera de rangos</div>
  <div class="rk-list">${tiers}</div>
  </div></div>`}
