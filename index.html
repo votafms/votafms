@@ -520,7 +520,7 @@ function pendCount(){return S.me?(S.fr||[]).filter(f=>f.status==='pending'&&f.to
 function friendStats(){const acc=(S.fr||[]).filter(f=>f.status==='accepted').length;const inc=pendCount();const out=(S.fr||[]).filter(f=>f.status==='pending'&&f.from===S.me.uid).length;
  return `<div class="stats" style="margin-bottom:12px"><div class="stat"><big>${inc}</big><span>Solicitudes recibidas</span></div><div class="stat"><big>${acc}</big><span>Amigos</span></div></div><div class="mu" style="margin:-4px 2px 12px">Solicitudes enviadas: ${out}</div>`}
 function friendOf(uid){return (S.fr||[]).find(x=>x.from===uid||x.to===uid)||null}
-const isAdmin=()=>!!(S.me&&String(S.me.u||'').trim().toLowerCase()==='linex');
+const isAdmin=()=>!!(S.me&&String(S.me.u||'').trim().toLowerCase()==='linexs17');
 function isFriend(uid){const f=friendOf(uid);return !!(f&&f.status==='accepted')}
 async function refreshFriends(){if(!S.me)return;try{S.fr=await B.listFriendDocs(S.me.uid)}catch(e){}}
 async function friendAct(uid,name){
