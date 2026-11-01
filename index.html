@@ -882,8 +882,8 @@ function summaryV(){
  else w='Empate';
  const rows=S.rounds.map((r,k)=>`<span class="n">${esc(r.n)}</span><span class="c">${fmt(sumR(k,0))}</span><span class="c">${fmt(sumR(k,1))}</span>`).join('');
  return `<div class="win">${w}</div>
- <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ma)} – ${fmt(mb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>${voted?`<div class="mu" style="text-align:center;margin:-4px 0 12px">Réplica: ${fmt(ra)} – ${fmt(rb)}${md>0?' · no cambia el resultado':''}</div>`:''}
- <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>${voted?'Total (sin réplica)':'Total'}</b><span class="c">${fmt(ma)}</span><span class="c">${fmt(mb)}</span></div></div>
+ <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ma)} – ${fmt(mb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>
+ <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>Total</b><span class="c">${fmt(ma)}</span><span class="c">${fmt(mb)}</span></div></div>
  ${repOk?'':'<div class="mu" style="text-align:center;margin:10px 0">Pon los puntos de la réplica de cada MC, o quita la réplica.</div>'}${repToggleH('S')}<button class="btn" style="margin-top:12px" ${repOk?'':'disabled'} onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
 }
 function repPrompt(ma,mb,md){
@@ -894,7 +894,7 @@ function quitarReplica(){const onSum=S.ri>=S.rounds.length;const k=S.rounds.find
 function repFilled(){return S.rounds.every((rd,k)=>!rd.rep||(S.sc[k][0].some(x=>x!=null)&&S.sc[k][1].some(x=>x!=null)))}
 function repTotM(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?sumR(k,m):0),0)}
 function repToggleH(mode){const v=S.rep==='voted';const fn=v?(mode==='A'?'quitarReplicaA()':'quitarReplica()'):(mode==='A'?'votarReplicaA()':mode==='R'?'votarReplica(1)':'votarReplica()');
- return `<div class="card" style="margin-top:12px"><div style="font-weight:800">Réplica <span class="mu" style="font-weight:600">(opcional)</span></div><div class="mu" style="margin:4px 0 10px">${v?'Quítala si la batalla oficial no fue a réplica.':'La réplica va aparte y no se suma a los puntos. Solo decide el ganador cuando tu planilla queda empatada.'}</div><button class="btn s" style="margin:0" onclick="${fn}">${v?'Quitar réplica':'Agregar réplica'}</button></div>`}
+ return `<div class="card" style="margin-top:12px"><div style="font-weight:800;margin-bottom:${v?'10px':'0'}">Réplica <span class="mu" style="font-weight:600">(opcional)</span></div>${v?'':'<div class="mu" style="margin:4px 0 10px">Va aparte y solo decide si hay empate de puntos.</div>'}<button class="btn s" style="margin:0" onclick="${fn}">${v?'Quitar réplica':'Agregar réplica'}</button></div>`}
 function omitirReplica(){S.rep='skipped';R()}
 function goR(k){S.ri=k;S.pi=S.rounds[k].p.length-1;R()}
 function stepsList(){const out=[];S.rounds.forEach((rd,ri)=>rd.p.forEach((part,pi)=>{let lab=part.t||rd.n;lab=lab.replace(' Mode','').replace('Primera Temática','Temática 1').replace('Segunda Temática','Temática 2').replace(/^Minuto (\d)$/,'Minuto libre $1');out.push({ri,pi,lab,rep:!!rd.rep})}));return out}
