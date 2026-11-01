@@ -691,7 +691,7 @@ function voteRes(v){
   if(v.sc&&v.sc[1]){const ra=sum(v.sc[1].a),rb=sum(v.sc[1].b);if(ra!==rb)return {w:ra>rb?'a':'b',k:'r'}}
   return {w:null,k:null};
  }
- if(Math.abs(fa-fb)>=1)return {w:fa>fb?'a':'b',k:'d'};
+ if(fa!==fb&&(Math.abs(fa-fb)>=1||v.rep!=='voted'))return {w:fa>fb?'a':'b',k:'d'};
  if(fa!==fb)return {w:fa>fb?'a':'b',k:'r'};
  return {w:null,k:null};
 }
@@ -709,10 +709,10 @@ function standings(lg,votes,temp){
  uniq.forEach(v=>{
   const na=al(nrm(v.a)),nb=al(nrm(v.b));if(!na||!nb||na===nb)return;
   const pk=[na,nb].sort();const k=pk.join('|');if(exhSet(lg,temp).has(k))return;
-  const g=G[k]||(G[k]={p:pk[0],q:pk[1],n:0,sp:0,sq:0,nAct:0,nr:0,nro:0,rp:0,rq:0});
+  const g=G[k]||(G[k]={p:pk[0],q:pk[1],n:0,sp:0,sq:0,nAct:0,nr:0,nro:0,nrv:0,rp:0,rq:0});
   const flip=na!==g.p;
   const ta=flip?v.tb:v.ta, tb=flip?v.ta:v.tb;
-  g.n++;g.sp+=ta;g.sq+=tb;
+  g.n++;g.sp+=ta;g.sq+=tb;if(v.rep==='voted')g.nrv++;
   if(v.fmt==='actual')g.nAct++;
   const rt=repTot(v);if(rt){const ra=rt[0],rb=rt[1];g.nr++;if(v.ra!=null)g.nro++;g.rp+=flip?rb:ra;g.rq+=flip?ra:rb}
  });
@@ -724,9 +724,11 @@ function standings(lg,votes,temp){
   if(qIn)T[qIn].ptb+=aq;
   const thr=g.nAct*2>g.n?0:1;
   let w=null,kind=null;
-  if(g.nro>0&&g.nro*2>g.n){const rp=g.rp/g.nr,rq=g.rq/g.nr;if(rp!==rq){w=rp>rq?'p':'q';kind='r'}}
-  else if(d>0){w=ap>aq?'p':'q';kind=(thr===0||d>=1)?'d':'r'}
-  else if(g.nr>0){const rp=g.rp/g.nr,rq=g.rq/g.nr;if(rp!==rq){w=rp>rq?'p':'q';kind='r'}}
+  if(g.nrv*2>g.n){
+   if(g.nro>0){const rp=g.rp/g.nr,rq=g.rq/g.nr;if(rp!==rq){w=rp>rq?'p':'q';kind='r'}}
+   else if(d>0){w=ap>aq?'p':'q';kind='r'}
+   else if(g.nr>0){const rp=g.rp/g.nr,rq=g.rq/g.nr;if(rp!==rq){w=rp>rq?'p':'q';kind='r'}}
+  }else if(d>0){w=ap>aq?'p':'q';kind='d'}
   if(!w){if(pIn)T[pIn].pts+=1;if(qIn)T[qIn].pts+=1;return}
   const wIn=w==='p'?pIn:qIn, lIn=w==='p'?qIn:pIn;
   if(wIn){T[wIn].w++;T[wIn].pts+=kind==='d'?3:2}
@@ -871,18 +873,20 @@ function summaryV(){
  const ma=mainTot(0),mb=mainTot(1),md=Math.abs(ma-mb);
  if(!S.rep&&md<1)return repPrompt(ma,mb,md);
  const voted=S.rep==='voted',ra=repTotM(0),rb=repTotM(1),rd=Math.abs(ra-rb);
- const w=voted?(ra===rb?'Empate en la réplica':`Ganador tras réplica: ${ra>rb?S.bt.a:S.bt.b}, por ${fmt(rd)} punto${rd===1?'':'s'}`):(ma===mb?'Empate':`${S.rep==='skipped'?'Ganador sin réplica':'Ganador directo'}: ${ma>mb?S.bt.a:S.bt.b}, por ${fmt(md)} punto${md===1?'':'s'}`);
+ const repOk=!voted||repFilled();
+ const w=voted&&!repOk?'Falta puntuar la réplica':voted?(ra===rb?'Empate en la réplica':`Ganador tras réplica: ${ra>rb?S.bt.a:S.bt.b}, por ${fmt(rd)} punto${rd===1?'':'s'}`):(ma===mb?'Empate':`${S.rep==='skipped'?'Ganador sin réplica':'Ganador directo'}: ${ma>mb?S.bt.a:S.bt.b}, por ${fmt(md)} punto${md===1?'':'s'}`);
  const rows=S.rounds.map((r,k)=>`<span class="n">${esc(r.n)}</span><span class="c">${fmt(sumR(k,0))}</span><span class="c">${fmt(sumR(k,1))}</span>`).join('');
  return `<div class="win">${w}</div>
  <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ma)} – ${fmt(mb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>${voted?`<div class="mu" style="text-align:center;margin:-4px 0 12px">Réplica: ${fmt(ra)} – ${fmt(rb)}</div>`:''}
  <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>${voted?'Total (sin réplica)':'Total'}</b><span class="c">${fmt(ma)}</span><span class="c">${fmt(mb)}</span></div></div>
- ${repToggleH('S')}<button class="btn" style="margin-top:12px" onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
+ ${repOk?'':'<div class="mu" style="text-align:center;margin:10px 0">Pon los puntos de la réplica de cada MC, o quita la réplica.</div>'}${repToggleH('S')}<button class="btn" style="margin-top:12px" ${repOk?'':'disabled'} onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
 }
 function repPrompt(ma,mb,md){
  return `<div class="card" style="text-align:center"><div class="mu">Diferencia de ${fmt(md)} punto${md===0?'':'s'}</div><div style="font-weight:900;font-size:19px;margin:6px 0 12px">Hay réplica</div><div class="score" style="margin-bottom:12px"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)} ${fmt(ma)}</span><span class="mu">vs</span><span style="color:var(--b2);font-weight:800">${fmt(mb)} ${esc(S.bt.b)}</span></div><div class="mu">Una diferencia menor a 1 punto necesita réplica. Puedes votarla o dejarla fuera.</div></div><button class="btn" onclick="votarReplica()">Votar réplica</button><button class="btn s" onclick="omitirReplica()">Omitir réplica</button>`;
 }
 function votarReplica(stay){if(S.rep==='voted')return;S.rounds.push(REP);S.sc.push([Array(sz(REP)).fill(null),Array(sz(REP)).fill(null)]);S.rep='voted';if(!stay){S.ri=S.rounds.length-1;S.pi=0}R()}
 function quitarReplica(){const onSum=S.ri>=S.rounds.length;const k=S.rounds.findIndex(r=>r.rep);if(k<0)return;S.rounds.splice(k,1);S.sc.splice(k,1);S.rep=null;if(onSum){S.ri=S.rounds.length;S.pi=0}else if(S.ri>=S.rounds.length){S.ri=S.rounds.length-1;S.pi=S.rounds[S.ri].p.length-1}R()}
+function repFilled(){return S.rounds.every((rd,k)=>!rd.rep||(S.sc[k][0].some(x=>x!=null)&&S.sc[k][1].some(x=>x!=null)))}
 function repTotM(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?sumR(k,m):0),0)}
 function repToggleH(mode){const v=S.rep==='voted';const fn=v?(mode==='A'?'quitarReplicaA()':'quitarReplica()'):(mode==='A'?'votarReplicaA()':mode==='R'?'votarReplica(1)':'votarReplica()');
  return `<div class="card" style="margin-top:12px"><div style="font-weight:800">Réplica <span class="mu" style="font-weight:600">(opcional)</span></div><div class="mu" style="margin:4px 0 10px">${v?'Quítala si la batalla oficial no fue a réplica.':'Agrégala si la batalla oficial se fue a réplica, aunque tu planilla haya dado ganador directo. Con réplica, gana quien gane la réplica.'}</div><button class="btn s" style="margin:0" onclick="${fn}">${v?'Quitar réplica':'Agregar réplica'}</button></div>`}
