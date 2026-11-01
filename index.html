@@ -107,6 +107,15 @@ label.f{display:block;font-size:12px;color:var(--mu);margin:0 0 6px 2px;font-wei
 .seg button.dis{opacity:.4;cursor:not-allowed}
 .seg button.on{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff}
 .pk{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pk button.on{background:var(--ac);color:#111;border-color:var(--ac)}
+.difbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:9px 10px;border:1px solid var(--bd);border-radius:14px;background:var(--bg2)}
+.pl-card .difbar{margin:10px 12px 0}
+.difl{min-width:0}
+.difl b{font-size:13px;display:block}
+.difl span{font-size:11px;color:var(--mu);display:block;margin-top:2px;line-height:1.35}
+.difbar.kb{border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 22%,transparent)}
+.difbtn{flex:0 0 auto;min-width:66px;height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--bd);background:var(--cd2);color:var(--ac);font-weight:900;font-size:18px;cursor:pointer}
+.difbar.kb .difbtn{background:var(--ac);color:#111}
 .pk button{height:50px;border-radius:12px;border:1px solid var(--bd);background:var(--bg2);font-weight:900;cursor:pointer;color:var(--tx)}
 .pk button.clr{color:var(--mu);font-weight:700;font-size:13px}
 .kpd{font-size:34px;font-weight:900;text-align:center;background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;min-height:66px;display:flex;align-items:center;justify-content:center;letter-spacing:1px}
@@ -515,7 +524,7 @@ const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
 function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i);return {a:(p[0]||'').trim(),b:(p[1]||'').trim(),sa:null,sb:null,j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||null,j:e.n+' · '+e.d}}
 function crow(x){const sc=x.sa!=null,left=sc&&x.sa>x.sb,right=sc&&x.sb>x.sa;return `<div class="crow"><span class="cn ${left?'cw':sc?'cl':''}">${esc(x.a)}</span><span class="cs">${sc?fmt(x.sa)+' – '+fmt(x.sb):'VS'}</span><span class="cn r ${right?'cw':sc?'cl':''}">${esc(x.b)}</span></div>`}
 
-function go(v){S.v=v;if(v==='lg')S.lgVotes=null;if(v==='comunidad')S.comm5=null;window.scrollTo(0,0);if(v==='perfil')S.myVotes=S.me?null:[];if(v==='search')S.users=null;if(v==='admin')S.adm=null;if(v==='user'){S.uProf=null;S.uVotes=null}R();loadFor(v)}
+function go(v){S.difKb=false;S.difSheet=false;S.v=v;if(v==='lg')S.lgVotes=null;if(v==='comunidad')S.comm5=null;window.scrollTo(0,0);if(v==='perfil')S.myVotes=S.me?null:[];if(v==='search')S.users=null;if(v==='admin')S.adm=null;if(v==='user'){S.uProf=null;S.uVotes=null}R();loadFor(v)}
 async function loadFor(v){
  try{
   if(v==='perfil'&&S.me){S.myVotes=await cleanMine();await refreshFriends();R()}
@@ -596,15 +605,40 @@ function fmtRounds(f,l){if(f==='actual')return [ACTR];if(S.libre)return RF.libre
 function szOf(rd){return rd.act?(rd.rep?(rd.six?6:1):ACT.length):sz(rd)}
 function bodyV(){if(S.fmt==='actual')return actualV();return S.ri>=S.rounds.length?summaryV():roundV()}
 function hasScores(){return (S.sc||[]).some(rd=>rd.some(side=>side.some(v=>v!=null)))}
-function difSel(){const o=[['','Automática (por defecto)'],[1,'1 punto'],[2,'2 puntos'],[3,'3 puntos'],[4,'4 puntos'],[5,'5 puntos'],[6,'6 puntos'],[7,'7 puntos'],[8,'8 puntos'],[9,'9 puntos'],[10,'10 puntos']];return `<div class="card" style="margin:0 0 12px;padding:12px"><div style="font-weight:800">Diferencia para que sea directa</div><div class="mu" style="margin:3px 0 8px;font-size:12px">${S.dif?`Si la diferencia es menor a ${S.dif}, va a réplica.`:'Elige cuántos puntos de diferencia hacen falta para ganar directo.'}</div><select onchange="setDif(this.value)">${o.map(x=>`<option value="${x[0]}" ${(S.dif||'')==x[0]?'selected':''}>${x[1]}</option>`).join('')}</select></div>`}
-function setDif(x){S.dif=x?+x:null;S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif;if(S.rep==='skipped')S.rep=null;R()}
-function fmtSeg(){if(S.temp==='2024'&&!S.libre&&S.lg!=='in')return '<div id="fmtseg">'+difSel()+'</div>';const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
+function difVals(){const a=[];if(S.fmt==='actual'){for(let i=1;i<=6;i++)a.push(i)}else{for(let i=2;i<=12;i++)a.push(i/2)}return a}
+function difNorm(){if(S.dif&&S.fmt==='actual'&&S.dif%1){S.dif=Math.max(1,Math.floor(S.dif));S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif}}
+function difBar(){if(S.editId||!S.bt)return '';
+ const pc=isPC(),act=S.fmt==='actual';
+ const val=S.difKb&&!S.dif?'…':(S.dif?fmt(S.dif):'Auto');
+ let hint;
+ if(S.difKb)hint='Escribe un número del 1 al 6'+(act?'':' · Espacio suma ,5')+' · Retroceso = automática · Enter para terminar';
+ else if(S.dif)hint='Si la diferencia es menor a '+fmt(S.dif)+', va a réplica.';
+ else hint=pc?'Automática. Haz clic y escribe un número del 1 al 6.':'Automática. Toca para elegir de 1 a 6.';
+ return `<div class="difbar${S.difKb?' kb':''}"><div class="difl"><b>Diferencia para que sea directa</b><span>${hint}</span></div><button class="difbtn" onclick="difOpen()" aria-label="Elegir diferencia">${val}</button></div>`}
+function difOpen(){if(isPC()){S.difKb=!S.difKb;S.selA=null;S.sheet=null;KBUF='';clearTimeout(KT)}else{S.difSheet=true}R()}
+function difSheetH(){const act=S.fmt==='actual';
+ return `<div class="ov" onclick="S.difSheet=false;R()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;margin-bottom:6px"><b style="font-size:17px">Diferencia para que sea directa</b><span class="mu">${act?'1 a 6':'1 a 6 · con medio punto'}</span></div><div class="mu" style="font-size:13px;margin:0 0 14px">Si la diferencia entre los dos MCs es menor, va a réplica.</div><div class="pk">${difVals().map(v=>`<button class="${S.dif===v?'on':''}" onclick="setDif(${v})">${fmt(v)}</button>`).join('')}<button class="clr${S.dif?'':' on'}" style="grid-column:1/-1" onclick="setDif('')">Automática</button></div></div></div>`}
+function setDif(x){S.dif=x?+x:null;S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif;S.difSheet=false;if(S.rep==='skipped')S.rep=null;R()}
+function difKey(e){
+ if(!S.difKb)return;
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
+ if(S.v!=='vote'||S.auth||S.fb||S.delAsk||S.friendsOpen||S.ranksOpen||S.inboxOpen||S.rankUp)return;
+ const k=e.key,act=S.fmt==='actual';
+ if(/^[1-6]$/.test(k)){e.preventDefault();setDif(+k);return}
+ if(k===' '||k==='Spacebar'){e.preventDefault();if(act||!S.dif)return;
+  if(S.dif%1===0){if(S.dif<6)setDif(S.dif+0.5)}else setDif(S.dif-0.5);return}
+ if(k==='Backspace'||k==='Delete'||k==='0'){e.preventDefault();setDif('');return}
+ if(k==='Enter'||k==='Escape'||k==='Tab'){e.preventDefault();S.difKb=false;R();return}
+}
+document.addEventListener('keydown',difKey);
+function fmtSeg(){if(S.temp==='2024'&&!S.libre&&S.lg!=='in')return '<div id="fmtseg"></div>';const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
  const btn=(k,t)=>`<button class="${cur===k?'on':''}${lock&&cur!==k?' dis':''}" ${lock&&cur!==k?'disabled aria-disabled="true"':''} onclick="setFmt('${k}')">${t}</button>`;
- return `<div id="fmtseg">${difSel()}<div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
-function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;R()}
+ return `<div id="fmtseg"><div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
+function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;difNorm();S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;R()}
 const isPC=()=>!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);
 let KBUF='',KT=null;
-function pickA(ri,m,idx){KBUF='';clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
+function pickA(ri,m,idx){S.difKb=false;KBUF='';clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
 const maxA=c=>c.ri===1?repMaxA():ACT[c.idx].max;
 function aOrder(){const o=[];ACT.forEach((x,i)=>{o.push({ri:0,m:0,idx:i},{ri:0,m:1,idx:i})});if(S.rep==='voted'){for(let i=0;i<repN();i++)o.push({ri:1,m:0,idx:i},{ri:1,m:1,idx:i})}return o}
 function aCur(){if(S.sheet&&S.sheet.ri!=null)return {ri:S.sheet.ri,m:S.sheet.m,idx:S.sheet.idx};return S.selA||null}
@@ -613,6 +647,7 @@ function aStep(c,d){const o=aOrder(),i=o.findIndex(x=>x.ri===c.ri&&x.m===c.m&&x.
 function aVert(c,d){const o=aOrder(),n=o.find(x=>x.m===c.m&&((x.ri===c.ri&&x.idx===c.idx+d)||(d>0&&c.ri===0&&c.idx===ACT.length-1&&x.ri===1)||(d<0&&c.ri===1&&c.idx===0&&x.ri===0&&x.idx===ACT.length-1)));return n||c}
 function aOpenSheet(){const c=S.selA;if(!c)return;S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.selA=null;S.kpe='';R()}
 function aKey(e){
+ if(S.difKb)return;
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
  if(S.v!=='vote'||S.fmt!=='actual'||!S.sc||S.auth||S.fb||S.delAsk||S.friendsOpen||S.ranksOpen||S.inboxOpen||S.rankUp)return;
@@ -642,7 +677,7 @@ function votarReplicaA(){if(S.rep==='voted')return;S.rounds.push(REPA);S.sc.push
 function quitarReplicaA(){const k=S.rounds.findIndex(r=>r.rep);if(k>=0){S.rounds.splice(k,1);S.sc.splice(k,1)}S.rep=null;S.selA=null;S.sheet=null;S.ri=0;R()}
 function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
 function actualV(){
- const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
+ difNorm();const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
  const complete=c1.every(x=>x!=null)&&c2.every(x=>x!=null);
  const ma=sum(c1),mb=sum(c2),tie=complete&&(S.dif?Math.abs(ma-mb)<S.dif:ma===mb);
  const cell=(ri,m,idx)=>{const v=S.sc[ri][m][idx];const sl=S.selA&&S.selA.ri===ri&&S.selA.m===m&&S.selA.idx===idx;return `<button class="cell ${v==null?'empty':'set'}${m?' b':''}${sl?' sel':''}" onclick="pickA(${ri},${m},${idx})">${v==null?'–':v}</button>`};
@@ -658,7 +693,7 @@ function actualV(){
  const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">La réplica está incompleta: si guardas así, no se tomará en cuenta.</div>`:'');
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
  <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
- <div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
+ ${difBar()}<div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
  ${kbHint()}${note}${prompt}${(tie&&!S.rep)?'':repToggleH('A')}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
 }
 let VKEY=null;
@@ -674,7 +709,7 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${pendCount()?`<span class="nbadge2">${pendCount()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
@@ -910,7 +945,7 @@ function roundV(){
  <div class="pl-card">
   <div class="pl-head"><div><div class="pl-kicker">Paso ${i+1} de ${n}${cur.rep?' · Réplica':''}</div><div class="pl-title">${esc(cur.lab)}</div></div>
   <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
-  <div class="pl-scroll"><div class="pblock">${head}${rows}</div></div>
+  ${difBar()}<div class="pl-scroll"><div class="pblock">${head}${rows}</div></div>
   ${foot}
  </div>
  <div class="row" style="gap:8px;margin-top:12px"><button class="btn s" style="margin:0" onclick="mv(-1)" ${i?'':'disabled'}>Anterior</button><button class="btn" style="margin:0" onclick="mv(1)">${i===n-1?'Ver resultado':'Siguiente'}</button></div>
@@ -918,7 +953,7 @@ function roundV(){
 }
 function summaryV(){
  const ma=mainTot(0),mb=mainTot(1),md=Math.abs(ma-mb);
- if(!S.rep&&(S.dif?md<S.dif:md===0))return repPrompt(ma,mb,md);
+ if(!S.rep&&(S.dif?md<S.dif:md===0))return difBar()+repPrompt(ma,mb,md);
  const voted=S.rep==='voted',ra=repTotM(0),rb=repTotM(1);
  const repOk=!voted||repFilled();
  const nm=ma>mb?S.bt.a:S.bt.b;
@@ -931,7 +966,7 @@ function summaryV(){
  else w='Empate';
  const rows=S.rounds.map((r,k)=>r.rep?'':`<span class="n">${esc(r.n)}</span><span class="c">${fmt(sumR(k,0))}</span><span class="c">${fmt(sumR(k,1))}</span>`).join('');
  const repExtra=voted?(repOk?`<div class="repres"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ra)} – ${fmt(rb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>`:'<div class="mu" style="margin:0 0 10px;font-size:13px">La réplica aún no tiene puntos, así que no se tomará en cuenta al guardar.</div>'):'';
- return `<div class="win">${w}</div>
+ return `${difBar()}<div class="win">${w}</div>
  <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ma)} – ${fmt(mb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>
  <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>Total</b><span class="c">${fmt(ma)}</span><span class="c">${fmt(mb)}</span></div></div>
  ${repToggleH('S',repExtra)}<button class="btn" style="margin-top:12px" onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
@@ -955,7 +990,7 @@ function curStep(){return stepsList().findIndex(x=>x.ri===S.ri&&x.pi===S.pi)}
 function goStep(i){const st=stepsList();if(i>=st.length){S.ri=S.rounds.length;S.pi=0}else{i=Math.max(0,i);S.ri=st[i].ri;S.pi=st[i].pi}R();if(S.ri>=S.rounds.length){const pl=document.getElementById('plan');if(pl){const t=pl.getBoundingClientRect().top;if(t<0)window.scrollBy(0,t-10)}}}
 function mv(d){goStep(curStep()+d)}
 function maxAt(idx){let off=0;for(const part of S.rounds[S.ri].p){const vals=part.c+3;if(idx<off+vals)return part.max||4;off+=vals}return 4}
-function pick(m,idx){const cur=S.sc[S.ri][m][idx];S.sheet={m,idx,max:maxAt(idx),str:cur==null?'':fmtKey(cur)};S.kpe='';R()}
+function pick(m,idx){S.difKb=false;const cur=S.sc[S.ri][m][idx];S.sheet={m,idx,max:maxAt(idx),str:cur==null?'':fmtKey(cur)};S.kpe='';R()}
 function setV(v){const h=S.sheet;S.sc[h.ri!=null?h.ri:S.ri][h.m][h.idx]=v;S.sheet=null;S.kpe='';R()}
 function closeSheet(){S.sheet=null;S.kpe='';R()}
 function kpAdd(d){const h=S.sheet;let c=h.str||'';
@@ -1239,6 +1274,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T21:30:00-04:00'),text:'Diferencia para que sea directa: ahora está junto a la planilla, dentro de la votación. Se elige del 1 al 6, y en la planilla antigua también con medios puntos (1,5; 2,5; etc.). En el celular se abre un selector; en computadora basta con hacer clic en el botón y escribir el número con el teclado. En la planilla antigua, la barra espaciadora agrega el medio punto.'},
  {ts:Date.parse('2026-11-01T21:00:00-04:00'),text:'Novedades: vuelve FMS World Series con su temporada 2024/2025 (5 jornadas con su tabla, solo planilla actual). Nuevo botón «Diferencia para que sea directa» junto a la planilla, en todas las ligas: elige cuántos puntos de diferencia hacen falta para ganar directo; si el MC no llega, va a réplica y la tabla lo tiene en cuenta. FMS Internacional ahora usa en todas sus temporadas la planilla Easy · Hard (6), Temáticas (4), Random Mode (8), Minutos libres (6) y Deluxe (12), y también puedes votar con la planilla actual.'},
  {ts:Date.parse('2026-11-01T20:00:00-04:00'),text:'Nueva temporada 2024/2025 en FMS España, Argentina, Chile, Perú, México, Colombia y Caribe: ya puedes votar todas sus jornadas con su tabla de posiciones (los extra players no suman puntos en la tabla, pero los oficiales que les ganan sí). FMS Internacional incluye su cuadro de octavos, cuartos, semifinales y final, sin tabla. En estas temporadas se usa solo la planilla actual: Random Mode, Ida, Vuelta, Acapella 1-4, Deluxe y réplica opcional, todo de 1 a 10. Tus votos aparecen en tu perfil como Temporada 2024/2025 y no cuentan en Comunidad.'},
  {ts:Date.parse('2026-11-01T18:30:00-04:00'),text:'Nuevas temporadas 2023/2024: FMS Perú con sus dos grupos, A y B, cada uno con su tabla, más los Play-Offs y la Gran Final en Lima; y FMS Internacional con sus Play-Offs y la Gran Final (octavos, cuartos, semifinales y final), sin tabla. Además, en todas las ligas la temporada 2023 ahora se llama Temporada 2023/2024. Las exhibiciones y las fases finales no cuentan en las tablas.'},
