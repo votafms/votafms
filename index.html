@@ -390,6 +390,8 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .stleg i.g{background:#EAB308}
 .stleg i.r{background:#EF4444}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .std.fc.ch{color:#A16207}:root:not([data-theme="dark"]) .std.fc.dn{color:#B91C1C}:root:not([data-theme="dark"]) .stag.champ{color:#A16207}:root:not([data-theme="dark"]) .stag.desc{color:#B91C1C}}
+.repres{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;margin-bottom:10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg2);font-size:14px}
+.repres b{font-size:17px}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -451,7 +453,7 @@ async function initFB(){
   const base='https://www.gstatic.com/firebasejs/11.0.2/';
   const [a,au,fs]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-auth.js'),import(base+'firebase-firestore.js')]);
   const app=a.initializeApp(FIREBASE_CONFIG);
-  FB={am:au,fm:fs,auth:au.getAuth(app),db:fs.getFirestore(app)};
+  FB={am:au,fm:fs,auth:au.getAuth(app),db:fs.getFirestore(app)};try{FB.auth.languageCode='es'}catch(e){}
   return true;
  }catch(e){console.error(e);return false}
 }
@@ -643,9 +645,9 @@ function actualV(){
  const repRows=nR===1?`<div class="arow"><span class="alab">RÉPLICA</span>${cell(1,0,0)}${cell(1,1,0)}</div>`:Array.from({length:nR},(_,i)=>`<div class="arow"><span class="alab">PATRÓN ${i+1}</span>${cell(1,0,i)}${cell(1,1,i)}</div>`).join('')+`<div class="arow atot"><span class="alab">TOT. RÉPLICA</span><div class="tot">${S.hideTot?'·':rA}</div><div class="tot">${S.hideTot?'·':rB}</div></div>`;
  const rep=nR?`<div class="pbt" style="margin:14px 0 6px">Réplica · ${nR===1?'0 a 10':nR+' patrones, 0 a '+repMaxA()+' cada uno'}</div>${repRows}`:'';
  const repOk=S.rep!=='voted'||(S.sc[1]&&S.sc[1][0].every(x=>x!=null)&&S.sc[1][1].every(x=>x!=null));
- const canSave=complete&&(S.rep==='voted'?repOk:(!tie||S.rep==='skipped'));
+ const canSave=complete&&(S.rep==='voted'||!tie||S.rep==='skipped');
  const prompt=tie&&!S.rep?`<div class="card" style="text-align:center;margin-top:12px"><b>Empate ${ma} – ${mb}</b><div class="mu" style="margin:6px 0 12px">Como los dos sacaron el mismo puntaje, la réplica decide el ganador. Si no la juegas, queda empate.</div><button class="btn" onclick="votarReplicaA()">Jugar réplica</button><button class="btn s" onclick="omitirReplica()">No jugar réplica</button></div>`:'';
- const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">Completa los ${repN()} patrones de la réplica de cada MC, o quita la réplica.</div>`:'');
+ const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">La réplica está incompleta: si guardas así, no se tomará en cuenta.</div>`:'');
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
  <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
  <div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
@@ -877,24 +879,28 @@ function summaryV(){
  let w;
  if(md>=1)w=`Ganador directo: ${nm}, por ${fmt(md)} punto${md===1?'':'s'}`;
  else if(md>0)w=`Ganador en réplica: ${nm} (diferencia de ${fmt(md)})`;
- else if(voted&&!repOk)w='Falta puntuar la réplica';
+ else if(voted&&!repOk)w='Empate';
  else if(voted&&ra!==rb)w=`Empate de puntos · gana la réplica: ${ra>rb?S.bt.a:S.bt.b}`;
  else w='Empate';
- const rows=S.rounds.map((r,k)=>`<span class="n">${esc(r.n)}</span><span class="c">${fmt(sumR(k,0))}</span><span class="c">${fmt(sumR(k,1))}</span>`).join('');
+ const rows=S.rounds.map((r,k)=>r.rep?'':`<span class="n">${esc(r.n)}</span><span class="c">${fmt(sumR(k,0))}</span><span class="c">${fmt(sumR(k,1))}</span>`).join('');
+ const repExtra=voted?(repOk?`<div class="repres"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ra)} – ${fmt(rb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>`:'<div class="mu" style="margin:0 0 10px;font-size:13px">La réplica aún no tiene puntos, así que no se tomará en cuenta al guardar.</div>'):'';
  return `<div class="win">${w}</div>
  <div class="score"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)}</span><b>${fmt(ma)} – ${fmt(mb)}</b><span style="color:var(--b2);font-weight:800">${esc(S.bt.b)}</span></div>
  <div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="h" style="color:var(--b2)">${esc(S.bt.b)}</span>${rows}<b>Total</b><span class="c">${fmt(ma)}</span><span class="c">${fmt(mb)}</span></div></div>
- ${repOk?'':'<div class="mu" style="text-align:center;margin:10px 0">Pon los puntos de la réplica de cada MC, o quita la réplica.</div>'}${repToggleH('S')}<button class="btn" style="margin-top:12px" ${repOk?'':'disabled'} onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
+ ${repToggleH('S',repExtra)}<button class="btn" style="margin-top:12px" onclick="saveVote()">Guardar mi voto</button><button class="btn s" onclick="goR(${S.rounds.length-1})">Volver a las rondas</button>`;
 }
 function repPrompt(ma,mb,md){
  return `<div class="card" style="text-align:center"><div class="mu">Diferencia de ${fmt(md)} punto${md===0?'':'s'}</div><div style="font-weight:900;font-size:19px;margin:6px 0 12px">Empate de puntos</div><div class="score" style="margin-bottom:12px"><span style="color:var(--ac);font-weight:800">${esc(S.bt.a)} ${fmt(ma)}</span><span class="mu">vs</span><span style="color:var(--b2);font-weight:800">${fmt(mb)} ${esc(S.bt.b)}</span></div><div class="mu">Si la batalla oficial se fue a réplica, vótala para decidir quién gana. Si no, queda empate.</div></div><button class="btn" onclick="votarReplica()">Votar réplica</button><button class="btn s" onclick="omitirReplica()">Omitir réplica</button>`;
 }
 function votarReplica(stay){if(S.rep==='voted')return;S.rounds.push(REP);S.sc.push([Array(sz(REP)).fill(null),Array(sz(REP)).fill(null)]);S.rep='voted';if(!stay){S.ri=S.rounds.length-1;S.pi=0}R()}
 function quitarReplica(){const onSum=S.ri>=S.rounds.length;const k=S.rounds.findIndex(r=>r.rep);if(k<0)return;S.rounds.splice(k,1);S.sc.splice(k,1);S.rep=null;if(onSum){S.ri=S.rounds.length;S.pi=0}else if(S.ri>=S.rounds.length){S.ri=S.rounds.length-1;S.pi=S.rounds[S.ri].p.length-1}R()}
+function repDone(){if(S.rep!=='voted')return false;const k=S.rounds.findIndex(r=>r.rep);if(k<0||!S.sc[k])return false;
+ if(S.fmt==='actual')return S.sc[k][0].every(x=>x!=null)&&S.sc[k][1].every(x=>x!=null);
+ return S.sc[k][0].some(x=>x!=null)&&S.sc[k][1].some(x=>x!=null)}
 function repFilled(){return S.rounds.every((rd,k)=>!rd.rep||(S.sc[k][0].some(x=>x!=null)&&S.sc[k][1].some(x=>x!=null)))}
 function repTotM(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?sumR(k,m):0),0)}
-function repToggleH(mode){const v=S.rep==='voted';const fn=v?(mode==='A'?'quitarReplicaA()':'quitarReplica()'):(mode==='A'?'votarReplicaA()':mode==='R'?'votarReplica(1)':'votarReplica()');
- return `<div class="card" style="margin-top:12px"><div style="font-weight:800;margin-bottom:${v?'10px':'0'}">Réplica <span class="mu" style="font-weight:600">(opcional)</span></div>${v?'':'<div class="mu" style="margin:4px 0 10px">Va aparte y solo decide si hay empate de puntos.</div>'}<button class="btn s" style="margin:0" onclick="${fn}">${v?'Quitar réplica':'Agregar réplica'}</button></div>`}
+function repToggleH(mode,extra){const v=S.rep==='voted';const fn=v?(mode==='A'?'quitarReplicaA()':'quitarReplica()'):(mode==='A'?'votarReplicaA()':mode==='R'?'votarReplica(1)':'votarReplica()');
+ return `<div class="card" style="margin-top:12px"><div style="font-weight:800;margin-bottom:${v?'10px':'0'}">Réplica <span class="mu" style="font-weight:600">(opcional)</span></div>${v?'':'<div class="mu" style="margin:4px 0 10px">Va aparte y solo decide si hay empate de puntos.</div>'}${extra||''}<button class="btn s" style="margin:0" onclick="${fn}">${v?'Quitar réplica':'Agregar réplica'}</button></div>`}
 function omitirReplica(){S.rep='skipped';R()}
 function goR(k){S.ri=k;S.pi=S.rounds[k].p.length-1;R()}
 function stepsList(){const out=[];S.rounds.forEach((rd,ri)=>rd.p.forEach((part,pi)=>{let lab=part.t||rd.n;lab=lab.replace(' Mode','').replace('Primera Temática','Temática 1').replace('Segunda Temática','Temática 2').replace(/^Minuto (\d)$/,'Minuto libre $1');out.push({ri,pi,lab,rep:!!rd.rep})}));return out}
@@ -927,8 +933,9 @@ function sheetH(){const h=S.sheet;
  const range=h.ri!=null?`0 a ${h.ri===1?repMaxA():ACT[h.idx].max}`:`De 0 a ${h.max||4}, con medio punto`;
  return `<div class="ov" onclick="closeSheet()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;margin-bottom:14px"><b style="font-size:17px">${esc(title)}${lab?' · '+lab:''}</b><span class="mu">${range}</span></div><div class="pk">${vals.map(v=>`<button onclick="setV(${v})">${fmt(v)}</button>`).join('')}<button class="clr" onclick="setV(null)">Borrar</button></div></div></div>`}
 function buildVote(){const act=S.fmt==='actual';const a=mainTot(0),b=mainTot(1);
- const rows=S.rounds.map((r,k)=>({r:r.n,ta:sumR(k,0),tb:sumR(k,1),rep:!!r.rep})).filter(r=>S.rep==='voted'||!r.rep);
- const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:S.rep||'none',fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,sc:S.sc.map(p=>({a:p[0],b:p[1]}))};if(S.rep==='voted'){bv.ra=repTotM(0);bv.rb=repTotM(1)}return bv}
+ const useRep=repDone();
+ const rows=S.rounds.map((r,k)=>({r:r.n,ta:sumR(k,0),tb:sumR(k,1),rep:!!r.rep})).filter(r=>useRep||!r.rep);
+ const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:useRep?'voted':(S.rep==='voted'?'none':(S.rep||'none')),fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,sc:S.sc.filter((_,k)=>useRep||!(S.rounds[k]&&S.rounds[k].rep)).map(p=>({a:p[0],b:p[1]}))};if(useRep){bv.ra=repTotM(0);bv.rb=repTotM(1)}return bv}
 function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{const nv=voteNorm(r),o=outcomeOf(r);sa+=nv.ta;sb+=nv.tb;if(o.w==='a')wa++;else if(o.w==='b')wb++});return {n:rows.length,wa,wb,sa,sb}}
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
@@ -1184,6 +1191,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T12:15:00-04:00'),text:'Réplica: si agregas la réplica y no le pones puntos, ahora igual puedes guardar tu voto (la réplica sin puntos no se toma en cuenta). Además, el resultado de la réplica ya no aparece dentro de la tabla de rondas: ahora se ve en la tarjeta de Réplica.'},
  {ts:Date.parse('2026-11-01T09:56:00-04:00'),text:'Planilla actual en computadora: ahora puedes seleccionar una casilla y escribir los puntos con tu teclado. Usa las flechas, Tab o Enter para moverte y Retroceso para borrar.'},
  {ts:Date.parse('2026-11-01T09:55:00-04:00'),text:'Inicio de sesión: si olvidaste tu contraseña, toca ¿Olvidaste tu contraseña? en Iniciar sesión. Recibirás un correo con un enlace para crear una nueva.'},
  {ts:Date.parse('2026-11-01T08:45:00-04:00'),text:'Votación: cuando ya empezaste a puntuar con una planilla (antigua o actual), la otra se bloquea para que no pierdas tu progreso por error. Además, al pasar de ronda con Siguiente o al elegir una ronda, la pantalla ya no salta al inicio.'},
