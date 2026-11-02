@@ -1844,9 +1844,18 @@ async function loadGlobalTop(force){if(!S.me)return;
  if(!force&&S.gtop&&S.gtop.rows&&Date.now()-S.gtop.at<60000)return;
  S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null,at:0};R();
  try{
-  const us=await B.topUsers(50);
-  const rows=us.filter(u=>u.rp>0).map(u=>({uid:u.uid,u:u.u||u.uid,r:rankFromTotal(u.rp)}));
+  const us=await B.listUsers();
+  S.gcache=S.gcache||{};
+  /* Los usuarios que aún no tienen el campo rp guardado (no han abierto la app desde esa actualización) se calculan con sus votos */
+  const all=await Promise.all(us.map(async u=>{
+   let n=u.rp||0;
+   if(!(n>0)){const c=S.gcache[u.uid];
+    if(c&&Date.now()-c.at<300000)n=c.n;
+    else{try{const v=splitDups(await B.votesOfUser(u.uid)).keep;n=rankInfo(v).n;S.gcache[u.uid]={n,at:Date.now()}}catch(e){n=0}}}
+   return {uid:u.uid,u:u.u||u.uid,r:rankFromTotal(n)}}));
+  const rows=all;
   rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
+  rows.splice(50);
   const me=S.me.uid;
   if(!rows.some(o=>o.uid===me)){let n=S.me.rp;if(typeof n!=='number'&&S.myVotes)n=rankInfo(S.myVotes).n;if(n>0)rows.push({uid:me,u:S.me.u,r:rankFromTotal(n),out:true})}
   S.gtop={loading:false,rows,at:Date.now()};if(S.v==='comunidad')R()
@@ -1865,7 +1874,7 @@ function globalTopH(){const T=S.gtop;
   const mk=o.out?'···':pos<=3?medal[pos-1]:pos;
   const isMe=o.uid===me;
   return `<div class="toprow${isMe?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${isMe?withDot(o.uid,av(o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${isMe?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
- return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: los 50 usuarios con más rango, del más alto al más bajo.</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
+ return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: todos los usuarios de la app ordenados por rango, del más alto al más bajo (máximo 50).</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
