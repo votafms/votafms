@@ -467,6 +467,29 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .thm.on i{box-shadow:0 0 0 3px var(--ac)}
 .thm.lk i{filter:grayscale(.55) brightness(.7)}
 .thm.lk{opacity:.8}
+
+.selbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:0 0 4px;padding:13px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font:inherit;font-size:15px;text-align:left;cursor:pointer}
+.selbtn .sv{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.selbtn .sv.ph{color:var(--mu);font-weight:500}
+.selbtn .sc{color:var(--mu);flex:0 0 auto}
+.pk-sh{padding-top:12px}
+.pk-l{max-height:52vh;overflow:auto;border:1px solid var(--bd);border-radius:14px;background:var(--bg2);-webkit-overflow-scrolling:touch}
+.pk-i{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:12px 14px;border:0;border-bottom:1px solid var(--bd);background:transparent;color:var(--tx);font:inherit;font-size:15px;text-align:left;cursor:pointer}
+.pk-i:last-child{border-bottom:0}
+.pk-i:active{background:var(--cd2)}
+.pk-i.on{background:color-mix(in srgb,var(--ac) 14%,transparent);font-weight:800}
+.pk-i b{color:var(--ac)}
+.pbn{padding:16px 18px}
+.pbn .kicker{margin-bottom:0}
+.pbn h1{margin:4px 0 8px;font-size:22px;overflow:hidden;text-overflow:ellipsis}
+.pidb{border:0;border-radius:999px;background:rgba(0,0,0,.26);color:#fff;font:inherit;font-size:11.5px;font-weight:800;letter-spacing:.2px;padding:5px 11px;cursor:pointer}
+.pidb:active{transform:scale(.97)}
+.pinfo{margin:-2px 0 12px}
+.pchips{display:flex;flex-wrap:wrap;gap:7px}
+.pchip{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;background:var(--cd2);border:1px solid var(--bd);font-size:12.5px;font-weight:700}
+.pinfo .pst{margin-top:9px}
+.pab{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);line-height:1.5;word-break:break-word}
+.pab .mu{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -807,7 +830,7 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${pendCount()?`<span class="nbadge2">${pendCount()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
@@ -1193,7 +1216,12 @@ function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.
   const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
   return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">ID ${fmtPid(pid(x.uid))} · Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
 function openU(uid){S.uid=uid;go('user');loadLikes(uid)}
-function profileHead(u,isMe,uid){return `<div class="banner" style="${themeStyle(u)}">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${(uid||u.uid)?`<div class="pid"><span>ID ${fmtPid(pid(uid||u.uid))}</span><button class="pcopy" onclick="copyId('${pid(uid||u.uid)}',this)">Copiar</button></div>`:''}<p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
+function profileHead(u,isMe,uid){
+ const id=uid||u.uid;
+ const fl=u.p?flagOf(u.p):'';
+ const chips=[u.p?`<span class="pchip">${fl||'🌎'} ${esc(u.p)}</span>`:'',u.m?`<span class="pchip">🎤 ${esc(u.m)}</span>`:'',`<span class="pchip">📅 Desde ${esc(u.joined||'—')}</span>`].join('');
+ return `<div class="banner pbn" style="${themeStyle(u)}">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div></div>
+ <div class="card pinfo"><div class="pchips">${chips}</div>${uid?presLine(uid):''}${u.a?`<div class="pab"><div class="mu">Sobre mí</div>${esc(u.a)}</div>`:''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
  return `<div class="card"><div class="stats" style="margin-bottom:14px"><div class="stat"><big>${n}</big><span>Batallas votadas</span></div><div class="stat"><big>${by.length}</big><span>Ligas votadas</span></div></div>${n?`<div class="row"><svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Votos por liga"><circle r="44" cx="60" cy="60" fill="none" stroke="var(--bd)" stroke-width="14"/>${ring}<text x="60" y="67" text-anchor="middle" font-size="22" font-weight="900" fill="var(--tx)">${n}</text></svg><div style="flex:1;min-width:0">${by.map(o=>`<div style="font-size:13px;margin:5px 0"><span style="color:${colr(o.l)};font-size:16px">●</span> ${esc(o.l.n)} <span class="mu">· ${o.c}</span></div>`).join('')}</div></div>`:'<div class="mu">Sin votos todavía.</div>'}</div>`}
@@ -1217,16 +1245,16 @@ function perfilV(){
  const m=S.me;
  return `${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${profileHead(m,true)}${likeBarH(m.uid)}${rankCardH(S.myVotes)}<label class="btn s fotobtn">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
  ${themeCardH()}${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
- <label class="f">País</label><input id="pf-p" value="${esc(m.p||'')}">
- <label class="f">MC favorito</label><input id="pf-m" value="${esc(m.m||'')}">
- <label class="f">Sobre mí</label><textarea id="pf-a" rows="3">${esc(m.a||'')}</textarea>
+ <label class="f">País</label><button class="selbtn" onclick="openPick('p')"><span class="sv${m.p?'':' ph'}">${m.p?`${flagOf(m.p)||'🌎'} ${esc(m.p)}`:'Elige tu país'}</span><span class="sc">▾</span></button>
+ <label class="f">MC favorito</label><button class="selbtn" onclick="openPick('m')"><span class="sv${m.m?'':' ph'}">${m.m?`🎤 ${esc(m.m)}`:'Elige tu MC favorito'}</span><span class="sc">▾</span></button>
+ <label class="f">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
  <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
  ${statsCard(S.myVotes||[])}<div class="sec"><span>Mis votos</span><span>${S.myVotes?S.myVotes.length:'…'}</span></div>${voteList(S.myVotes,'perfil')}
  ${isAdmin()?`<button class="btn" style="margin-top:8px" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
  <button class="btn s" style="color:#FF6B7A;margin-top:8px" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>`}
-async function saveProf(){const m=S.me;if(!m)return;const prof={p:document.getElementById('pf-p').value.trim(),m:document.getElementById('pf-m').value.trim(),a:document.getElementById('pf-a').value.trim()};
- try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
+async function saveProf(){const m=S.me;if(!m)return;const prof={a:document.getElementById('pf-a').value.trim()};
+ try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.draftA=null;S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
 async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};S.msgP='';watchInbox();go('home')}
 
 function openAuth(mode){S.auth={mode,step:'mail',email:'',un:'',pw:'',pw2:'',err:'',busy:false};R()}
@@ -1738,6 +1766,48 @@ async function setTema(id){const t=THEMES.find(x=>x.id===id);if(!t||!S.me)return
  document.addEventListener('touchend',end,{passive:true});
  document.addEventListener('touchcancel',end,{passive:true});
 })();
+
+/* ===== Países y MCs (selector con buscador) ===== */
+const ISO='AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CD CF CG CH CI CK CL CM CN CO CR CU CV CW CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW'.split(' ');
+const _flag=c=>String.fromCodePoint(...[...c].map(ch=>127397+ch.charCodeAt(0)));
+let _CTRY=null;
+function countries(){if(_CTRY)return _CTRY;let dn=null;try{dn=new Intl.DisplayNames(['es'],{type:'region'})}catch(e){}
+ const x={XK:'Kosovo'};_CTRY=ISO.map(c=>({c,n:x[c]||(dn?dn.of(c):c),f:_flag(c)})).filter(o=>o.n&&o.n!==o.c||!dn).sort((a,b)=>a.n.localeCompare(b.n,'es'));return _CTRY}
+let _CMAP=null;
+function flagOf(name){if(!name)return '';if(!_CMAP){_CMAP={};countries().forEach(o=>{_CMAP[nrm(o.n)]=o.f});_CMAP[nrm('Republica dominicana')]=_flag('DO')}return _CMAP[nrm(name)]||''}
+let _MCS=null;
+function allMcs(){if(_MCS)return _MCS;
+ const cnt=new Map(),key=x=>String(x).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9ñ]/g,'');
+ const add=n0=>{if(typeof n0!=='string')return;if(/\s\/\s/.test(n0)){n0.split(/\s+\/\s+/).forEach(add);return}let n=n0;n=n.replace(/\s*\(.*\)\s*$/,'').replace(/\s+/g,' ').trim();if(n.length<2||n.length>40)return;const k=key(n);if(!k)return;
+  let e=cnt.get(k);if(!e){e=new Map();cnt.set(k,e)}e.set(n,(e.get(n)||0)+1)};
+ const arr=a=>{if(Array.isArray(a))a.forEach(add)};
+ const obj=o=>{if(o&&typeof o==='object')Object.keys(o).forEach(k=>{const v=o[k];if(Array.isArray(v))arr(v);else if(v&&typeof v==='object')obj(v)})};
+ try{obj(LINEUP)}catch(e){}try{arr(LINEUP17)}catch(e){}try{arr(LINEUP18es);arr(LINEUP18ar)}catch(e){}
+ [typeof LINEUP19!=='undefined'&&LINEUP19,typeof LINEUP20!=='undefined'&&LINEUP20,typeof LINEUP21!=='undefined'&&LINEUP21,typeof LINEUP24!=='undefined'&&LINEUP24,typeof LINEUP25!=='undefined'&&LINEUP25,typeof GRP23!=='undefined'&&GRP23].forEach(o=>{if(o)obj(o)});
+ try{Object.keys(SEASON_JOR).forEach(k=>(SEASON_JOR[k]||[]).forEach(j=>(j.b||[]).forEach(b=>{add(b[0]);add(b[1])})))}catch(e){}
+ try{CAL.forEach(e=>{arr(e.lu);(e.b||[]).forEach(b=>{try{const x=batOf(e,b);add(x.a);add(x.b)}catch(_){}})})}catch(e){}
+ const out=[];cnt.forEach(m=>{let best='',bc=-1;m.forEach((c,n)=>{if(c>bc||(c===bc&&/[A-ZÁÉÍÓÚÑ]/.test(n)&&!/[A-ZÁÉÍÓÚÑ]/.test(best))){best=n;bc=c}});out.push(best)});
+ _MCS=out.sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));return _MCS}
+let _pkRes=[];
+function openPick(k){S.pick={k,q:''};R()}
+function closePick(){S.pick=null;R()}
+function pkItems(k,q){const t=nrm(q);
+ if(k==='p'){return countries().filter(o=>!t||nrm(o.n).includes(t)).map(o=>({v:o.n,l:`${o.f} ${o.n}`}))}
+ const list=allMcs().filter(n=>!t||nrm(n).includes(t)).map(n=>({v:n,l:`🎤 ${n}`}));
+ if(q.trim()&&!allMcs().some(n=>nrm(n)===t))list.push({v:q.trim(),l:`➕ Usar “${q.trim()}”`});return list}
+function pkListH(){const P=S.pick;if(!P)return '';const all=pkItems(P.k,P.q||''),cur=nrm(S.me?(P.k==='p'?S.me.p:S.me.m):''),LIM=250;
+ _pkRes=all.slice(0,LIM);
+ if(!all.length)return `<div class="mu" style="text-align:center;padding:22px 8px">No encontramos “${esc(P.q)}”.</div>`;
+ return _pkRes.map((o,i)=>`<button class="pk-i${cur&&nrm(o.v)===cur?' on':''}" onclick="pkSet(${i})"><span>${esc(o.l)}</span>${cur&&nrm(o.v)===cur?'<b>✓</b>':''}</button>`).join('')+(all.length>LIM?`<div class="mu" style="text-align:center;font-size:12px;padding:10px 0">Mostrando ${LIM} de ${all.length}. Sigue escribiendo para filtrar.</div>`:'')}
+function pkFilter(v){if(!S.pick)return;S.pick.q=v;const el=document.getElementById('pk-l');if(el)el.innerHTML=pkListH()}
+function pickSheet(){const P=S.pick,isP=P.k==='p',n=isP?countries().length:allMcs().length;
+ return `<div class="ov" onclick="closePick()"><div class="sh pk-sh" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><b style="font-size:18px">${isP?'Elige tu país':'Elige tu MC favorito'}</b><span class="mu" style="font-size:12px">${n} opciones</span></div>
+ <input id="pk-q" type="search" autocomplete="off" placeholder="${isP?'Buscar país…':'Buscar MC…'}" value="${esc(P.q||'')}" oninput="pkFilter(this.value)" style="margin-bottom:8px">
+ <div id="pk-l" class="pk-l">${pkListH()}</div>
+ ${(isP?S.me&&S.me.p:S.me&&S.me.m)?`<button class="btn s" style="margin:10px 0 0" onclick="pkSet(-1)">Quitar selección</button>`:''}</div></div>`}
+async function pkSet(i){const P=S.pick;if(!P||!S.me)return;const val=i<0?'':(_pkRes[i]?_pkRes[i].v:null);if(val===null)return;
+ const f=P.k==='p'?'p':'m';const prev=S.me[f];S.me={...S.me,[f]:val};S.pick=null;S.msgP='';R();
+ try{await B.updateUser(S.me.uid,{[f]:val})}catch(e){S.me={...S.me,[f]:prev};S.msgP='No se pudo guardar.';R()}}
 /* ===== Likes de perfil ===== */
 async function loadLikes(uid,quiet){
  S.likeCache=S.likeCache||{};
