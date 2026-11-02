@@ -403,6 +403,58 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .repres b{font-size:17px}
 .pid{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;font-weight:700;margin:2px 0 4px}.pcopy{border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer}
 .avw{position:relative;display:inline-flex;flex:0 0 auto}.pdot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:#22C55E;border:2px solid var(--bg);box-sizing:border-box}.pst{display:block;font-size:12px;margin-top:2px;color:var(--mu)}.pst.on{color:#22C55E;font-weight:700}
+
+/* ===== Logros + likes ===== */
+.achc{flex:0 0 auto;position:relative;width:62px;height:62px;border-radius:50%;border:0;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:conic-gradient(#FDE047 calc(var(--p,0)*1%),rgba(255,255,255,.28) 0);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.achc:before{content:"";position:absolute;inset:4px;border-radius:50%;background:rgba(13,11,5,.82)}
+.achc span{position:relative;font-size:23px;line-height:1;margin-top:-6px}
+.achc i{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-style:normal;font-size:10px;font-weight:900;color:#FDE047;letter-spacing:.3px}
+.achc:active{transform:scale(.95)}
+.hero .achc{position:absolute;top:18px;right:18px;z-index:2;width:64px;height:64px}
+.hero p{padding-right:76px}
+.ach-sh{padding-top:16px}
+.ach-top{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid var(--bd);border-radius:18px;background:var(--bg2)}
+.ach-ring{position:relative;width:84px;height:84px;flex:0 0 auto}
+.ach-ring svg{display:block}
+.ach-ring b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;font-weight:900;line-height:1}
+.ach-ring b small{font-size:10px;font-weight:700;color:var(--mu);margin-top:3px}
+.ach-ti h2{margin:0 0 4px;font-size:21px;letter-spacing:-.2px}
+.ach-ti p{margin:0;font-size:12.5px;color:var(--mu);line-height:1.4}
+.ach-seg{display:flex;gap:6px;margin:14px 0 10px}
+.ach-seg button{flex:1;border:1px solid var(--bd);background:var(--cd2);color:var(--mu);border-radius:999px;padding:8px 6px;font-size:12.5px;font-weight:800;cursor:pointer}
+.ach-seg button.on{background:var(--ac);border-color:var(--ac);color:#1A1300}
+.ach-list{display:grid;gap:10px}
+.ach-c{display:flex;gap:13px;align-items:flex-start;padding:13px;border:1px solid var(--bd);border-radius:18px;background:var(--bg2);position:relative;overflow:hidden}
+.ach-c.got{border-color:color-mix(in srgb,var(--ax) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--ax) 15%,var(--bg2)),var(--bg2) 70%)}
+.ach-m{position:relative;flex:0 0 auto;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:27px;background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--ax) 75%,#fff),var(--ax) 55%,color-mix(in srgb,var(--ax) 55%,#000));box-shadow:0 0 0 3px color-mix(in srgb,var(--ax) 35%,transparent),0 8px 18px color-mix(in srgb,var(--ax) 35%,transparent)}
+.ach-c:not(.got) .ach-m{background:var(--cd2);box-shadow:0 0 0 3px var(--bd);filter:grayscale(1);opacity:.55}
+.ach-m u{position:absolute;right:-3px;bottom:-3px;width:21px;height:21px;border-radius:50%;background:var(--cd);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:11px;text-decoration:none;filter:none}
+.ach-b{flex:1;min-width:0}
+.ach-n{font-size:15.5px;font-weight:900;letter-spacing:-.1px;line-height:1.2}
+.ach-d{font-size:12.5px;color:var(--mu);margin-top:3px;line-height:1.4}
+.ach-bar{height:6px;border-radius:3px;background:var(--cd2);overflow:hidden;margin-top:9px}
+.ach-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ax),color-mix(in srgb,var(--ax) 60%,#fff))}
+.ach-pl{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--mu);margin-top:5px}
+.ach-st{display:inline-block;margin-top:8px;font-size:11px;font-weight:800;letter-spacing:.3px;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--ax) 20%,transparent);color:var(--ax);border:1px solid color-mix(in srgb,var(--ax) 45%,transparent)}
+.ach-note{font-size:12px;color:var(--mu);text-align:center;margin:14px 6px 2px;line-height:1.45}
+.ach-toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:12px;max-width:min(92vw,400px);padding:11px 16px 11px 12px;border-radius:18px;background:var(--cd);border:1px solid var(--ac);box-shadow:0 14px 40px rgba(0,0,0,.55),0 0 30px rgba(234,179,8,.25);animation:achin .45s cubic-bezier(.34,1.56,.64,1) both;cursor:pointer}
+.ach-toast.out{animation:achout .3s ease forwards}
+.ach-toast .tm{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;background:linear-gradient(135deg,var(--ac),var(--ac2));flex:0 0 auto}
+.ach-toast small{display:block;font-size:10px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:var(--ac)}
+.ach-toast b{display:block;font-size:14.5px}
+@keyframes achin{from{opacity:0;transform:translate(-50%,-30px) scale(.9)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes achout{to{opacity:0;transform:translate(-50%,-24px)}}
+.likebar{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:11px 14px;border-radius:16px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+.likebar.self{cursor:default}
+.likebar .lk-i{font-size:22px;line-height:1;filter:grayscale(1);opacity:.7;transition:.2s}
+.likebar b{font-size:18px;font-weight:900;font-variant-numeric:tabular-nums}
+.likebar span:last-child{color:var(--mu);font-size:13px;font-weight:600}
+.likebar.on,.likebar.self{border-color:color-mix(in srgb,var(--ac) 55%,transparent);background:color-mix(in srgb,var(--ac) 12%,var(--cd))}
+.likebar.on .lk-i,.likebar.self .lk-i{filter:none;opacity:1}
+.likebar.on span:last-child{color:var(--ac)}
+.likebar:active:not(.self){transform:scale(.98)}
+.likebar.pop .lk-i{animation:lkpop .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes lkpop{0%{transform:scale(1)}40%{transform:scale(1.6) rotate(-12deg)}100%{transform:scale(1)}}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -474,7 +526,7 @@ function setMe(uid,prof){S.me={uid,...prof};S.admin=false;B.getAdmin(uid).then(a
 function watchAuth(){
  FB.am.onAuthStateChanged(FB.auth,async(user)=>{
   if(S.authBusy)return;
-  if(!user){stopPresence(true);S.me=null;S.myVotes=null;watchInbox();R();return}
+  if(!user){stopPresence(true);S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};watchInbox();R();return}
   try{
    const prof=await B.getUser(user.uid);
    if(!prof){S.me=null;S.auth={mode:'google',step:'user',un:'',err:'',busy:false};return R()}
@@ -514,7 +566,11 @@ const B={
  async addComment(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'comments'),c)},
  async getAdmin(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'admins',uid));return d.exists()}catch(e){return false}},
  async listComments(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'comments'),fm.limit(300)));return q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
- async deleteComment(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'comments',id))}
+ async deleteComment(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'comments',id))},
+ async likesTo(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'likes'),fm.where('to','==',uid),fm.limit(1000)));return q.docs.map(d=>d.data())},
+ async likeGivenAny(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'likes'),fm.where('from','==',uid),fm.limit(1)));return !q.empty},
+ async setLike(from,to){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'likes',from+'_'+to),{from,to,ts:Date.now()})},
+ async delLike(from,to){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'likes',from+'_'+to))}
 };
 
 const APP_ICON=`<svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="vg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EAB308"/><stop offset="1" stop-color="#FDE047"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#vg)"/><rect x="24" y="10" width="16" height="28" rx="8" fill="#fff"/><path d="M16 30a16 16 0 0 0 32 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><line x1="32" y1="46" x2="32" y2="53" stroke="#fff" stroke-width="4" stroke-linecap="round"/><line x1="24" y1="53" x2="40" y2="53" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="49" cy="15" r="10" fill="#FFD23F"/><path d="M44.5 15l3 3 5.5-5.5" fill="none" stroke="#1a1200" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -738,7 +794,7 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${pendCount()?`<span class="nbadge2">${pendCount()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
@@ -746,7 +802,7 @@ function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],
 
 function homeV(){
  const nx=CAL.filter(e=>e.k==='next').sort((a,b)=>(a.dt||'9999').localeCompare(b.dt||'9999'));
- return `<section class="hero"><span class="kicker">Temporada 2026/27</span><h1>Vota cada batalla</h1><p>Elige tu FMS, mira la batalla y puntúa ronda por ronda.</p></section>
+ return `<section class="hero">${achBtn()}<span class="kicker">Temporada 2026/27</span><h1>Vota cada batalla</h1><p>Elige tu FMS, mira la batalla y puntúa ronda por ronda.</p></section>
  <button class="card libre" onclick="go('libre')"><div class="row"><div class="lbi">${ico('play',22)}</div><div style="flex:1;min-width:0"><b style="font-size:16px">Batalla libre</b><div class="mu">Vota cualquier batalla, aunque no sea de una liga.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>
  <div class="sec"><span>Ligas</span><span>${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).length}</span></div>
  <div class="lgrid">${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).map(l=>`<button class="ltile" style="--c:${l.c};--c2:${l.c2};--tx2:${l.tx}" onclick="openLg('${l.i}')">${logo(l,56)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>
@@ -1113,7 +1169,7 @@ const fmtPid=id=>id.replace(/(\d{3})(?=\d)/g,'$1 ');
 function uidMatch(x,q){const t=(q||'').trim();if(!t)return false;const d=t.replace(/[\s\-#]/g,'');
  if(/^\d{5,}$/.test(d))return pid(x.uid).includes(d);
  return t.length>=20&&String(x.uid).toLowerCase().includes(t.toLowerCase())}
-function copyId(id,btn){const done=()=>{if(btn){const o=btn.textContent;btn.textContent='¡Copiado!';setTimeout(()=>{btn.textContent=o},1500)}};
+function copyId(id,btn){try{if(S.me&&String(id)===pid(S.me.uid))achMark('copyid')}catch(e){}const done=()=>{if(btn){const o=btn.textContent;btn.textContent='¡Copiado!';setTimeout(()=>{btn.textContent=o},1500)}};
  const fb=()=>{const t=document.createElement('textarea');t.value=id;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(t);done()};
  try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(id).then(done).catch(fb)}else fb()}catch(e){fb()}}
 function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre de usuario o por ID" value="${esc(S.q)}" oninput="S.q=this.value;document.getElementById('ul').innerHTML=ulist()"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
@@ -1123,7 +1179,7 @@ function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.
   const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
   const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
   return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">ID ${fmtPid(pid(x.uid))} · Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
-function openU(uid){S.uid=uid;go('user')}
+function openU(uid){S.uid=uid;go('user');loadLikes(uid)}
 function profileHead(u,isMe,uid){return `<div class="banner" style="--c:#EAB308;--c2:#FDE047">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${(uid||u.uid)?`<div class="pid"><span>ID ${fmtPid(pid(uid||u.uid))}</span><button class="pcopy" onclick="copyId('${pid(uid||u.uid)}',this)">Copiar</button></div>`:''}<p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
@@ -1139,14 +1195,14 @@ function userV(){if(!S.uProf)return `<button class="back" onclick="go('search')"
  const nm=esc(S.uProf.u);
  const btn=(!S.me||mine)?'':st==='friend'?'<span class="pill next">Son amigos</span>':st==='sent'?`<button class="btn s" onclick="rejectFriend('${fr.id}')">Solicitud enviada · Cancelar</button>`:st==='incoming'?`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Aceptar solicitud de amistad</button>`:`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Enviar solicitud de amistad</button>`;
  const body=canSee?`${statsCard(S.uVotes||[])}<div class="sec"><span>Historial de batallas</span><span>${(S.uVotes||[]).length}</span></div>${voteList(S.uVotes,'user')}`:`<div class="card" style="text-align:center"><b>Historial privado</b><div class="mu" style="margin-top:6px">Solo los amigos pueden ver las batallas votadas de este usuario. Envíale una solicitud y, cuando la acepte, podrás verlo.</div></div>`;
- return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
+ return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${likeBarH(S.uid)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
 function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const nv=voteNorm(v),o=outcomeOf(v),a=nv.ta,b=nv.tb,w=outcomeText(v,o),l=L.find(x=>x.i===v.l);
  return `<button class="back" onclick="go('${S.vb==='perfil'?'perfil':'user'}')">${ico('back',18)} Volver</button><div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,56)}<div style="flex:1;min-width:0"><span class="kicker">Voto de ${esc(v.u||'')}</span><h1 style="font-size:19px">${esc(v.a)} vs ${esc(v.b)}</h1><p>${esc(l.n)} · ${esc(v.date||'')}</p></div></div><div class="win">${w}</div><div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(v.a)}</span><span class="h" style="color:var(--b2)">${esc(v.b)}</span>${(v.fmt==='actual'&&v.sc?actRowsV(v):v.rows).map(r=>`<span class="n">${esc(r.r)}</span><span class="c">${fmt(r.ta)}</span><span class="c">${fmt(r.tb)}</span>`).join('')}<b>Total</b><span class="c">${fmt(a)}</span><span class="c">${fmt(b)}</span></div></div>${S.vb==='perfil'?`<div class="row" style="gap:8px;margin-top:6px"><button class="btn" style="margin:0" onclick="editMine()">Editar voto</button><button class="btn s" style="margin:0" onclick="deleteMine()">Borrar voto</button></div>`:'<div class="mu" style="text-align:center">Solo lectura: este voto no se puede modificar.</div>'}`}
 
 function perfilV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tu cuenta</span><h1>Guarda tus votos</h1><p>Crea una cuenta para votar, ver tus estadísticas y aparecer en la comunidad.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const m=S.me;const correo=FB&&FB.auth.currentUser?FB.auth.currentUser.email||'':'';
- return `${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${profileHead(m,true)}${rankCardH(S.myVotes)}<label class="btn s fotobtn">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
+ return `${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${profileHead(m,true)}${likeBarH(m.uid)}${rankCardH(S.myVotes)}<label class="btn s fotobtn">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
  ${correo?`<div class="mu" style="margin:-8px 2px 14px">Correo: ${esc(correo)}</div>`:''}
  ${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
  <label class="f">País</label><input id="pf-p" value="${esc(m.p||'')}">
@@ -1159,7 +1215,7 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>`}
 async function saveProf(){const m=S.me;if(!m)return;const prof={p:document.getElementById('pf-p').value.trim(),m:document.getElementById('pf-m').value.trim(),a:document.getElementById('pf-a').value.trim()};
  try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
-async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.msgP='';watchInbox();go('home')}
+async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};S.msgP='';watchInbox();go('home')}
 
 function openAuth(mode){S.auth={mode,step:'mail',email:'',un:'',pw:'',pw2:'',err:'',busy:false};R()}
 function closeAuth(){const googleStep=S.auth&&S.auth.mode==='google';S.auth=null;S.pend=null;if(googleStep&&FB&&FB.auth.currentUser){FB.am.signOut(FB.auth)}R()}
@@ -1263,7 +1319,7 @@ async function sendFb(){const t=(S.fbt||'').trim();if(!t){S.fbe='Escribe un come
 
 async function cambiarFoto(file){if(!file||!S.me)return;
  S.msgP='Guardando foto…';R();
- try{const url=await imagenCuadrada(file,256);await B.updateUser(S.me.uid,{foto:url});S.me={...S.me,foto:url};S.msgP='Foto de perfil actualizada'}
+ try{const url=await imagenCuadrada(file,256);await B.updateUser(S.me.uid,{foto:url});S.me={...S.me,foto:url};S.msgP='Foto de perfil actualizada';setTimeout(syncAch,50)}
  catch(e){S.msgP='No se pudo cambiar la foto. Prueba con otra imagen.'}
  R();}
 function imagenCuadrada(file,size){return new Promise((res,rej)=>{const img=new Image();const u=URL.createObjectURL(file);
@@ -1291,7 +1347,7 @@ function lbStart(){const B2=S.lb;const a=B2.a.trim(),b=B2.b.trim();
  B2.err='';S.lg=B2.lg;start({a,b,j:'Batalla libre',y,libre:true})}
 
 function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&v.key===key)||null}
-async function refreshMine(){if(!S.me)return;watchInbox();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R()}catch(e){}}
+async function refreshMine(){if(!S.me)return;watchInbox();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R();await loadAch()}catch(e){}}
 function startEdit(v){
  if(!v.sc){S.msgP='Esta votación es antigua y no se puede editar. Bórrala y vótala otra vez.';S.v='perfil';return R()}
  const l=L.find(x=>x.i===v.l)||L[0];
@@ -1490,6 +1546,123 @@ function adminV(){
  ${list===null?'<div class="mu" style="text-align:center;padding:20px">Cargando…</div>':list.length?list.map(c=>`<div class="card"><div class="row" style="margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(c.u||'anónimo')}</b><span class="mu">${esc(c.d||'')}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(c.t||'')}</div><button class="btn s sm" style="color:#FF6B7A;margin-top:12px" onclick="adminDel('${esc(c.id)}')">Eliminar</button></div>`).join(''):'<div class="card mu" style="text-align:center">Aún no hay comentarios.</div>'}
  <button class="btn s" onclick="go('admin')">Actualizar</button>`}
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
+
+/* ===== Logros ===== */
+const ACH_N=10;
+const ACH=[
+ {id:'cuenta',ic:'🎤',x:'#F59E0B',n:'Pisa el Escenario',d:'Crea tu cuenta y entra a la rueda.'},
+ {id:'voto1',ic:'⚖️',x:'#EF4444',n:'Primer Veredicto',d:'Vota tu primera batalla de liga.'},
+ {id:'foto',ic:'📸',x:'#06B6D4',n:'Cara de Cartel',d:'Sube tu foto de perfil.'},
+ {id:'copyid',ic:'🏷️',x:'#8B5CF6',n:'Tag Registrado',d:'Copia tu ID por primera vez.'},
+ {id:'regional3',ic:'🛡️',x:'#B45309',n:'Capitán del Barrio',d:'Llega al rango Regional 3.'},
+ {id:'jornada',ic:'📜',x:'#22C55E',n:'Jornada a Sangre',d:'Vota todas las batallas de una misma jornada (de al menos 3 batallas, sin contar exhibiciones).'},
+ {id:'es2017',ic:'🕰️',x:'#E11D48',n:'Old School del 17',d:'Vota una batalla de FMS España 2017.'},
+ {id:'amigos5',ic:'🤝',x:'#3B82F6',n:'Cypher de Cinco',d:'Haz 5 amigos.'},
+ {id:'like',ic:'👍🏻',x:'#EAB308',n:'Respeto de Calle',d:'Dale like al perfil de otro usuario.'},
+ {id:'ws',ic:'🌎',x:'#14B8A6',n:'Rimas Sin Fronteras',d:'Vota una batalla de FMS World Series.'}
+];
+S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
+const isLgVote=v=>!v.free;
+function jornadaBest(){
+ const votes=(S.myVotes||[]).filter(isLgVote);
+ const pk=(lg,t,a,b)=>lg+'|'+t+'|'+[nrm(a),nrm(b)].sort().join('|');
+ const set=new Set(votes.map(v=>pk(v.l,v.temp||'2026',v.a,v.b)));
+ const seen=new Set(votes.map(v=>v.l+'|'+(v.temp||'2026')));
+ let best={c:0,t:0,r:0,done:false};
+ const test=(lg,t,pairs)=>{if(pairs.length<3)return;let c=0;pairs.forEach(p=>{if(set.has(pk(lg,t,p[0],p[1])))c++});
+  const r=c/pairs.length;if(c===pairs.length)best.done=true;if(r>best.r||(r===best.r&&pairs.length>best.t))best={c,t:pairs.length,r,done:best.done}};
+ try{Object.keys(SEASON_JOR).forEach(k=>{if(!seen.has(k))return;const [lg,t]=k.split('|');
+  (SEASON_JOR[k]||[]).forEach(j=>test(lg,t,(j.b||[]).filter(b=>b[2]!==true&&b[2]!=='apl'&&b[2]!=='po').map(b=>[b[0],b[1]])))});
+ }catch(e){}
+ try{CAL.forEach(e=>{if(!seen.has(e.i+'|2026'))return;const bs=(e.b||[]).map(b=>batOf(e,b));test(e.i,'2026',bs.map(x=>[x.a,x.b]))})}catch(e){}
+ return best}
+function achCalc(){
+ const me=S.me,votes=(S.myVotes||[]).filter(isLgVote),sv=S.ach||{};
+ const R_=rankInfo(S.myVotes||[]),th=RANK_TH[4];
+ const nF=(S.fr||[]).filter(f=>f.status==='accepted').length;
+ const jb=jornadaBest();
+ const o={};
+ const set=(id,cond,cur,max,txt)=>{o[id]={done:!!cond||!!sv[id],ts:sv[id]||0,cur:Math.min(cur,max),max,txt}};
+ set('cuenta',!!me,me?1:0,1,'');
+ set('voto1',votes.length>=1,votes.length,1,'');
+ set('foto',!!(me&&me.foto),me&&me.foto?1:0,1,'');
+ set('copyid',false,0,1,'');
+ set('regional3',R_.lvl>=5,R_.n,th,R_.n.toLocaleString('es')+' / '+th.toLocaleString('es')+' pts');
+ set('jornada',jb.done,jb.done?1:jb.c,jb.done?1:Math.max(jb.t,1),jb.done?'':(jb.t?'Tu mejor jornada: '+jb.c+' de '+jb.t+' batallas':'Aún no has votado ninguna jornada'));
+ set('es2017',votes.some(v=>v.l==='es'&&(v.temp||'2026')==='2017'),0,1,'');
+ set('amigos5',nF>=5,nF,5,nF+' / 5 amigos');
+ set('like',S.likeGiven,S.likeGiven?1:0,1,'');
+ set('ws',votes.some(v=>v.l==='ws'),0,1,'');
+ return o}
+function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
+function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
+function openAch(){S.achOpen=true;if(S.me&&!S.myVotes){cleanMine().then(v=>{S.myVotes=v;R()}).catch(()=>{})}R()}
+function closeAch(){S.achOpen=false;R()}
+function achSheet(){
+ const o=achCalc(),n=ACH.filter(a=>o[a.id].done).length,C=2*Math.PI*36,tab=S.achTab||'all';
+ const list=ACH.filter(a=>tab==='all'||(tab==='got'?o[a.id].done:!o[a.id].done));
+ const fd=ts=>ts?new Date(ts).toLocaleDateString('es',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+ const card=a=>{const s=o[a.id];const pct=s.max?Math.round(s.cur/s.max*100):0;
+  const showBar=!s.done&&(a.id==='regional3'||a.id==='jornada'||a.id==='amigos5');
+  return `<div class="ach-c${s.done?' got':''}" style="--ax:${a.x}"><div class="ach-m">${a.ic}${s.done?'':'<u>🔒</u>'}</div><div class="ach-b"><div class="ach-n">${esc(a.n)}</div><div class="ach-d">${esc(a.d)}</div>
+  ${showBar?`<div class="ach-bar"><i style="width:${pct}%"></i></div><div class="ach-pl"><span>${esc(s.txt)}</span><span>${pct}%</span></div>`:''}
+  ${s.done?`<span class="ach-st">✓ Desbloqueado${s.ts?' · '+fd(s.ts):''}</span>`:(showBar?'':`<span class="ach-st" style="--ax:var(--mu)">Bloqueado</span>`)}</div></div>`};
+ return `<div class="ov" onclick="closeAch()"><div class="sh ach-sh" onclick="event.stopPropagation()">
+ <div class="ach-top"><div class="ach-ring"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--cd2)" stroke-width="8"/><circle cx="42" cy="42" r="36" fill="none" stroke="var(--ac)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*n/ACH_N} ${C}" transform="rotate(-90 42 42)"/></svg><b>${n}<small>de ${ACH_N}</small></b></div>
+ <div class="ach-ti"><h2>Tus logros</h2><p>Desbloquea medallas votando, haciendo crew y subiendo de rango. Solo cuentan las batallas de liga.</p></div></div>
+ ${S.me?'':`<div class="card" style="margin:12px 0 0;text-align:center"><b>Crea tu cuenta</b><div class="mu" style="margin:4px 0 10px">Inicia sesión para ir guardando tus logros.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.achOpen=false;openAuth('create')">Crear cuenta</button></div>`}
+ <div class="ach-seg"><button class="${tab==='all'?'on':''}" onclick="S.achTab='all';R()">Todos ${ACH_N}</button><button class="${tab==='got'?'on':''}" onclick="S.achTab='got';R()">Logrados ${n}</button><button class="${tab==='lock'?'on':''}" onclick="S.achTab='lock';R()">Pendientes ${ACH_N-n}</button></div>
+ <div class="ach-list">${list.length?list.map(card).join(''):`<div class="card mu" style="text-align:center;margin:0">${tab==='got'?'Todavía no has desbloqueado ninguno. ¡A votar!':'¡Los tienes todos! Pronto habrá más.'}</div>`}</div>
+ <div class="ach-note">Pronto añadiremos más logros 🎙️</div>
+ <button class="btn s" style="margin:14px 0 0" onclick="closeAch()">Cerrar</button></div></div>`}
+function achToast(items){
+ if(!items.length)return;
+ const old=document.getElementById('achtoast');if(old)old.remove();
+ const one=items.length===1?items[0]:null;
+ const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';
+ el.innerHTML=`<div class="tm">${one?one.ic:'🏆'}</div><div><small>${one?'Logro desbloqueado':'Logros desbloqueados'}</small><b>${one?esc(one.n):'¡Has desbloqueado '+items.length+' logros!'}</b></div>`;
+ el.onclick=()=>{el.remove();openAch()};
+ document.body.appendChild(el);
+ setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4800)}
+async function achSave(ids){
+ if(!S.me||!ids.length)return;const ts=Date.now(),patch={};S.ach=S.ach||{};
+ ids.forEach(id=>{S.ach[id]=ts;patch['logros.'+id]=ts});
+ try{await B.updateUser(S.me.uid,patch)}catch(e){}}
+let _achBusy=false;
+async function syncAch(){
+ if(!S.me||S.ach===null||_achBusy)return;_achBusy=true;
+ try{const o=achCalc();const fresh=ACH.filter(a=>o[a.id].done&&!(S.ach&&S.ach[a.id]));
+  if(fresh.length){await achSave(fresh.map(a=>a.id));achToast(fresh)}}
+ finally{_achBusy=false}
+ if(S.achOpen||S.v==='lg')R()}
+function achMark(id){if(!S.me||S.ach===null)return;if(S.ach&&S.ach[id])return;const a=ACH.find(x=>x.id===id);if(!a)return;achSave([id]).then(()=>{achToast([a]);if(S.achOpen||S.v==='lg')R()})}
+async function loadAch(){
+ if(!S.me)return;const uid=S.me.uid;
+ try{const d=await B.getUser(uid);S.ach=Object.assign({},(d&&d.logros)||{})}catch(e){S.ach=S.ach||null;return}
+ try{S.likeGiven=await B.likeGivenAny(uid)}catch(e){}
+ try{await loadLikes(uid,true)}catch(e){}
+ await syncAch()}
+/* ===== Likes de perfil ===== */
+async function loadLikes(uid,quiet){
+ S.likeCache=S.likeCache||{};
+ try{const rows=await B.likesTo(uid);S.likeCache[uid]={n:rows.length,mine:!!(S.me&&rows.some(r=>r.from===S.me.uid))}}
+ catch(e){S.likeCache[uid]={n:0,mine:false,err:true}}
+ if(!quiet&&((S.v==='user'&&S.uid===uid)||S.v==='perfil'))R()}
+function likeBarH(uid){if(!uid)return '';const c=(S.likeCache||{})[uid];const n=c?c.n:null;
+ if(S.me&&S.me.uid===uid)return `<div class="likebar self"><span class="lk-i">👍🏻</span><b>${n==null?'…':n}</b><span>${n===1?'like en tu perfil':'likes en tu perfil'}</span></div>`;
+ const on=!!(c&&c.mine);
+ return `<button class="likebar${on?' on':''}${S.likePop===uid?' pop':''}" onclick="toggleLike('${esc(uid)}')"><span class="lk-i">👍🏻</span><b>${n==null?'…':n}</b><span>${on?'Te gusta este perfil · toca para quitar':'Me gusta este perfil'}</span></button>`}
+async function toggleLike(uid){
+ if(!S.me)return openAuth('create');
+ if(S.me.uid===uid||S.likeBusy)return;S.likeBusy=true;
+ const c=S.likeCache[uid]||{n:0,mine:false};const was=c.mine;
+ S.likeCache[uid]={n:Math.max(0,c.n+(was?-1:1)),mine:!was};S.likePop=was?null:uid;R();
+ try{
+  if(was)await B.delLike(S.me.uid,uid);else{await B.setLike(S.me.uid,uid);S.likeGiven=true;syncAch()}
+ }catch(e){S.likeCache[uid]=c;S.likePop=null;R();achFail('No se pudo guardar el like. Revisa las reglas de Firestore (colección likes).')}
+ finally{S.likeBusy=false;setTimeout(()=>{S.likePop=null},600)}}
+function achFail(msg){const el=document.createElement('div');el.className='ach-toast';el.style.borderColor='#EF4444';el.innerHTML=`<div class="tm" style="background:#EF4444">⚠️</div><div><b style="font-size:13px;font-weight:700">${esc(msg)}</b></div>`;document.body.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4200)}
+
 const VIEW={admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV};
 async function init(){
  const q=new URLSearchParams(location.search);
