@@ -401,6 +401,7 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .std.fc.ch{color:#A16207}:root:not([data-theme="dark"]) .std.fc.dn{color:#B91C1C}:root:not([data-theme="dark"]) .stag.champ{color:#A16207}:root:not([data-theme="dark"]) .stag.desc{color:#B91C1C}}
 .repres{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;margin-bottom:10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg2);font-size:14px}
 .repres b{font-size:17px}
+.avw{position:relative;display:inline-flex;flex:0 0 auto}.pdot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:#22C55E;border:2px solid var(--bg);box-sizing:border-box}.pst{display:block;font-size:12px;margin-top:2px;color:var(--mu)}.pst.on{color:#22C55E;font-weight:700}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -466,13 +467,13 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){S.me={uid,...prof};S.admin=false;B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();
+function setMe(uid,prof){S.me={uid,...prof};S.admin=false;B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
  FB.am.onAuthStateChanged(FB.auth,async(user)=>{
   if(S.authBusy)return;
-  if(!user){S.me=null;S.myVotes=null;watchInbox();R();return}
+  if(!user){stopPresence(true);S.me=null;S.myVotes=null;watchInbox();R();return}
   try{
    const prof=await B.getUser(user.uid);
    if(!prof){S.me=null;S.auth={mode:'google',step:'user',un:'',err:'',busy:false};return R()}
@@ -499,7 +500,10 @@ const B={
  async readNotif(id){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'notifs',id),{read:true})},
  async addNotif(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'notifs'),c)},
  async getAvisos(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'avisos'),fm.limit(50)));return q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)},
- async deleteUserDoc(uid,u){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'users',uid));await fm.deleteDoc(fm.doc(FB.db,'usernames',u))},
+ async deleteUserDoc(uid,u){const fm=FB.fm;try{await fm.deleteDoc(fm.doc(FB.db,'presence',uid))}catch(e){}await fm.deleteDoc(fm.doc(FB.db,'users',uid));await fm.deleteDoc(fm.doc(FB.db,'usernames',u))},
+ async beat(uid,on){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'presence',uid),{t:Date.now(),on:!!on})},
+ async getPres(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'presence',uid));return d.exists()?d.data():null}catch(e){return null}},
+ async listPres(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'presence'));const m={};q.docs.forEach(d=>{m[d.id]=d.data()});return m},
  async listFriendDocs(uid){const fm=FB.fm;const [a,b]=await Promise.all([fm.getDocs(fm.query(fm.collection(FB.db,'friends'),fm.where('from','==',uid))),fm.getDocs(fm.query(fm.collection(FB.db,'friends'),fm.where('to','==',uid)))]);const out=[];a.docs.concat(b.docs).forEach(d=>{if(!out.find(x=>x.id===d.id))out.push({id:d.id,...d.data()})});return out},
  async sendFriend(me,meName,to,toName){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'friends',me+'_'+to),{from:me,to,status:'pending',fromName:meName,toName,ts:Date.now()})},
  async acceptFriend(id){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'friends',id),{status:'accepted'})},
@@ -531,8 +535,8 @@ async function loadFor(v){
   else if(v==='admin'){S.adm=isAdmin()?await B.listComments():[];R()}
   else if(v==='comunidad'){const arr=await Promise.all(COMUN.map(id=>B.votesOfLeague(id)));S.comm5={};COMUN.forEach((id,i)=>S.comm5[id]=arr[i]);R()}
   else if(v==='lg'&&(LINEUP[S.lg]||SEASON_OPTS[S.lg])){const mine=S.me?await cleanMine():[];const tv=curSeason(S.lg);S.lgVotes=mine.filter(x=>x.l===S.lg&&(x.temp||'2026')===tv);if(tv!=='2026')S.links=await B.getLinks();R()}
-  else if(v==='search'){S.users=await B.listUsers();await refreshFriends();R()}
-  else if(v==='user'){await refreshFriends();const p=await B.getUser(S.uid);S.uProf=p?pub(p):{u:'?',p:'',m:'',a:'',joined:''};const canSee=(S.me&&S.me.uid===S.uid)||isFriend(S.uid)||isAdmin();S.uVotes=canSee?splitDups(await B.votesOfUser(S.uid)).keep:[];R()}
+  else if(v==='search'){S.users=await B.listUsers();await refreshFriends();R();refreshPres()}
+  else if(v==='user'){await refreshFriends();const p=await B.getUser(S.uid);S.uProf=p?pub(p):{u:'?',p:'',m:'',a:'',joined:''};const canSee=(S.me&&S.me.uid===S.uid)||isFriend(S.uid)||isAdmin();S.uVotes=canSee?splitDups(await B.votesOfUser(S.uid)).keep:[];R();refreshPres()}
  }catch(e){if(v==='perfil')S.myVotes=[];if(v==='admin')S.adm=[];if(v==='search')S.users=[];if(v==='user'){S.uVotes=[];S.uProf=S.uProf||{u:'?',p:'',m:'',a:'',joined:''}}R()}
 }
 S.fr=[];
@@ -542,6 +546,30 @@ function friendStats(){const acc=(S.fr||[]).filter(f=>f.status==='accepted').len
 function friendOf(uid){return (S.fr||[]).find(x=>x.from===uid||x.to===uid)||null}
 const isAdmin=()=>!!(S.me&&S.admin);
 function isFriend(uid){const f=friendOf(uid);return !!(f&&f.status==='accepted')}
+/* ===== Presencia: activo ahora / última conexión ===== */
+const PRES_EVERY=60000,PRES_TTL=150000;let PRES_T=null,PRES_R=null,PRES_UID=null;
+function presBeat(on){if(!S.me||!FB)return;B.beat(S.me.uid,on).catch(()=>{})}
+function startPresence(){if(!S.me||PRES_UID===S.me.uid)return;stopPresence(true);PRES_UID=S.me.uid;
+ if(document.visibilityState!=='hidden')presBeat(true);
+ PRES_T=setInterval(()=>{if(document.visibilityState==='visible')presBeat(true)},PRES_EVERY);
+ PRES_R=setInterval(()=>{if(S.me&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()},30000)}
+function stopPresence(quiet){if(PRES_T){clearInterval(PRES_T);PRES_T=null}if(PRES_R){clearInterval(PRES_R);PRES_R=null}if(!quiet&&PRES_UID&&FB&&S.me)presBeat(false);PRES_UID=null;S.pres=undefined}
+document.addEventListener('visibilitychange',()=>{if(!S.me)return;presBeat(document.visibilityState==='visible');if(document.visibilityState==='visible'&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()});
+window.addEventListener('pagehide',()=>presBeat(false));
+async function loadPres(){if(!S.me)return;
+ if(isAdmin()){S.pres=await B.listPres();return}
+ const ids=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===S.me.uid?f.to:f.from);
+ const out={};await Promise.all(ids.map(async id=>{const d=await B.getPres(id);if(d)out[id]=d}));S.pres=out}
+function refreshPres(){loadPres().then(()=>{if(S.v==='search'){const u=document.getElementById('ul');if(u)u.innerHTML=ulist()}else R()}).catch(()=>{})}
+function lastSeenTxt(t){const d=new Date(t),n=new Date();const hm=d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+ if(d.toDateString()===n.toDateString())return 'Última vez conectado a las '+hm;
+ if(new Date(n-864e5).toDateString()===d.toDateString())return 'Última vez conectado ayer a las '+hm;
+ return 'Última vez conectado el '+d.toLocaleDateString('es',{day:'2-digit',month:'2-digit'})+' a las '+hm}
+function presInfo(uid){if(!S.me||S.me.uid===uid||!(isAdmin()||isFriend(uid))||S.pres===undefined||S.pres===null)return null;
+ const p=S.pres[uid];if(!p)return {on:false,txt:'Sin conexión registrada todavía'};
+ const on=!!p.on&&Date.now()-p.t<PRES_TTL;return {on,txt:on?'Activo ahora':lastSeenTxt(p.t)}}
+function presLine(uid){const i=presInfo(uid);return i?`<span class="pst${i.on?' on':''}">${esc(i.txt)}</span>`:''}
+function withDot(uid,html){const i=presInfo(uid);return i&&i.on?`<span class="avw">${html}<span class="pdot"></span></span>`:html}
 async function refreshFriends(){if(!S.me)return;try{S.fr=await B.listFriendDocs(S.me.uid)}catch(e){}}
 async function friendAct(uid,name){
  if(!S.me)return openAuth('in');
@@ -1082,9 +1110,9 @@ function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.
  return f.map(x=>{const fr=friendOf(x.uid);const mine=S.me&&S.me.uid===x.uid;
   const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
   const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
-  return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${avU(x,'')}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">Se unió: ${esc(x.joined||'—')}</div></div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
+  return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
 function openU(uid){S.uid=uid;go('user')}
-function profileHead(u,isMe){return `<div class="banner" style="--c:#EAB308;--c2:#FDE047">${avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1><p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}</div>`}
+function profileHead(u,isMe,uid){return `<div class="banner" style="--c:#EAB308;--c2:#FDE047">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1><p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
  return `<div class="card"><div class="stats" style="margin-bottom:14px"><div class="stat"><big>${n}</big><span>Batallas votadas</span></div><div class="stat"><big>${by.length}</big><span>Ligas votadas</span></div></div>${n?`<div class="row"><svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Votos por liga"><circle r="44" cx="60" cy="60" fill="none" stroke="var(--bd)" stroke-width="14"/>${ring}<text x="60" y="67" text-anchor="middle" font-size="22" font-weight="900" fill="var(--tx)">${n}</text></svg><div style="flex:1;min-width:0">${by.map(o=>`<div style="font-size:13px;margin:5px 0"><span style="color:${colr(o.l)};font-size:16px">●</span> ${esc(o.l.n)} <span class="mu">· ${o.c}</span></div>`).join('')}</div></div>`:'<div class="mu">Sin votos todavía.</div>'}</div>`}
@@ -1099,7 +1127,7 @@ function userV(){if(!S.uProf)return `<button class="back" onclick="go('search')"
  const nm=esc(S.uProf.u);
  const btn=(!S.me||mine)?'':st==='friend'?'<span class="pill next">Son amigos</span>':st==='sent'?`<button class="btn s" onclick="rejectFriend('${fr.id}')">Solicitud enviada · Cancelar</button>`:st==='incoming'?`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Aceptar solicitud de amistad</button>`:`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Enviar solicitud de amistad</button>`;
  const body=canSee?`${statsCard(S.uVotes||[])}<div class="sec"><span>Historial de batallas</span><span>${(S.uVotes||[]).length}</span></div>${voteList(S.uVotes,'user')}`:`<div class="card" style="text-align:center"><b>Historial privado</b><div class="mu" style="margin-top:6px">Solo los amigos pueden ver las batallas votadas de este usuario. Envíale una solicitud y, cuando la acepte, podrás verlo.</div></div>`;
- return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
+ return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
 function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const nv=voteNorm(v),o=outcomeOf(v),a=nv.ta,b=nv.tb,w=outcomeText(v,o),l=L.find(x=>x.i===v.l);
  return `<button class="back" onclick="go('${S.vb==='perfil'?'perfil':'user'}')">${ico('back',18)} Volver</button><div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,56)}<div style="flex:1;min-width:0"><span class="kicker">Voto de ${esc(v.u||'')}</span><h1 style="font-size:19px">${esc(v.a)} vs ${esc(v.b)}</h1><p>${esc(l.n)} · ${esc(v.date||'')}</p></div></div><div class="win">${w}</div><div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(v.a)}</span><span class="h" style="color:var(--b2)">${esc(v.b)}</span>${(v.fmt==='actual'&&v.sc?actRowsV(v):v.rows).map(r=>`<span class="n">${esc(r.r)}</span><span class="c">${fmt(r.ta)}</span><span class="c">${fmt(r.tb)}</span>`).join('')}<b>Total</b><span class="c">${fmt(a)}</span><span class="c">${fmt(b)}</span></div></div>${S.vb==='perfil'?`<div class="row" style="gap:8px;margin-top:6px"><button class="btn" style="margin:0" onclick="editMine()">Editar voto</button><button class="btn s" style="margin:0" onclick="deleteMine()">Borrar voto</button></div>`:'<div class="mu" style="text-align:center">Solo lectura: este voto no se puede modificar.</div>'}`}
 
@@ -1119,7 +1147,7 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>`}
 async function saveProf(){const m=S.me;if(!m)return;const prof={p:document.getElementById('pf-p').value.trim(),m:document.getElementById('pf-m').value.trim(),a:document.getElementById('pf-a').value.trim()};
  try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
-async function logout(){try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.msgP='';watchInbox();go('home')}
+async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.msgP='';watchInbox();go('home')}
 
 function openAuth(mode){S.auth={mode,step:'mail',email:'',un:'',pw:'',pw2:'',err:'',busy:false};R()}
 function closeAuth(){const googleStep=S.auth&&S.auth.mode==='google';S.auth=null;S.pend=null;if(googleStep&&FB&&FB.auth.currentUser){FB.am.signOut(FB.auth)}R()}
@@ -1288,6 +1316,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-01T23:00:00-04:00'),text:'Nuevo: estado de conexión. Ahora verás un círculo verde sobre la foto de tus amigos cuando están activos en la página y, si no lo están, la hora de su última conexión. Solo los amigos entre sí pueden ver este estado, y se muestra en el perfil, en la lista de amigos y en la búsqueda de usuarios.'},
  {ts:Date.parse('2026-11-01T21:30:00-04:00'),text:'Diferencia para que sea directa: ahora está junto a la planilla, dentro de la votación. Se elige del 1 al 6, y en la planilla antigua también con medios puntos (1,5; 2,5; etc.). En el celular se abre un selector; en computadora basta con hacer clic en el botón y escribir el número con el teclado. En la planilla antigua, la barra espaciadora agrega el medio punto.'},
  {ts:Date.parse('2026-11-01T21:00:00-04:00'),text:'Novedades: vuelve FMS World Series con su temporada 2024/2025 (5 jornadas con su tabla, solo planilla actual). Nuevo botón «Diferencia para que sea directa» junto a la planilla, en todas las ligas: elige cuántos puntos de diferencia hacen falta para ganar directo; si el MC no llega, va a réplica y la tabla lo tiene en cuenta. FMS Internacional ahora usa en todas sus temporadas la planilla Easy · Hard (6), Temáticas (4), Random Mode (8), Minutos libres (6) y Deluxe (12), y también puedes votar con la planilla actual.'},
  {ts:Date.parse('2026-11-01T20:00:00-04:00'),text:'Nueva temporada 2024/2025 en FMS España, Argentina, Chile, Perú, México, Colombia y Caribe: ya puedes votar todas sus jornadas con su tabla de posiciones (los extra players no suman puntos en la tabla, pero los oficiales que les ganan sí). FMS Internacional incluye su cuadro de octavos, cuartos, semifinales y final, sin tabla. En estas temporadas se usa solo la planilla actual: Random Mode, Ida, Vuelta, Acapella 1-4, Deluxe y réplica opcional, todo de 1 a 10. Tus votos aparecen en tu perfil como Temporada 2024/2025 y no cuentan en Comunidad.'},
@@ -1370,7 +1399,7 @@ function inboxSheet(){const n=S.inbox.notifs||[],a=S.inbox.avisos||[];
  ).sort((p,q)=>q.ts-p.ts);
  const empty=tab==='amigos'?'Todavía no hay actividad de tus amigos. Cuando un amigo vote una batalla, aparecerá aquí.':'No tienes mensajes.';
  return `<div class="ov" onclick="closeInbox()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Bandeja de entrada</b><div class="seg" style="margin:12px 0"><button class="${tab==='upd'?'on':''}" onclick="S.inbTab='upd';R()">Actualizaciones${bd(uNew)}</button><button class="${tab==='amigos'?'on':''}" onclick="S.inbTab='amigos';R()">Actividad de tus amigos${bd(fNew)}</button></div>${items.length?`<div style="margin-bottom:10px"><button class="btn s" style="width:100%;margin:0 0 10px" onclick="event.stopPropagation();clearAllInbox()">Borrar toda la bandeja</button>${items.map(it=>`<div class="frow" style="align-items:flex-start"><div style="flex:1;min-width:0"><span class="pill ${it.k==='av'?'next':''}">${it.t}</span>${it.nw?'<span class="pill" style="margin-left:6px">Nuevo</span>':''}<div style="margin-top:6px;font-size:14px">${esc(it.txt)}</div><div class="mu" style="font-size:11px;margin-top:2px">${it.ts?new Date(it.ts).toLocaleString('es'):''}</div></div><button class="fbtn sent" onclick="event.stopPropagation();${it.k==='av'?'delAviso('+it.ts+')':'delNotifFromInbox(\''+esc(it.id)+'\')'}">Borrar</button></div>`).join('')}</div>`:`<div class="mu" style="margin:8px 0 4px">${empty}</div>`}</div></div>`}
-function openFriends(){S.friendsOpen=true;S.frTab=S.frTab||'amigos';R()}
+function openFriends(){S.friendsOpen=true;S.frTab=S.frTab||'amigos';R();refreshPres()}
 function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
  const tab=S.frTab||'amigos';
  const inc=(S.fr||[]).filter(f=>f.status==='pending'&&f.to===me);
@@ -1378,7 +1407,7 @@ function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
  const acc=(S.fr||[]).filter(f=>f.status==='accepted');
  const oth=f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName};
  let body='';
- if(tab==='amigos'){body=acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${av(o.u)} ${esc(o.u)}</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></div>`}).join(''):'<div class="mu">Todavía no tienes amigos.</div>';}
+ if(tab==='amigos'){body=acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))} <span style="text-align:left">${esc(o.u)}${presLine(o.uid)}</span></button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></div>`}).join(''):'<div class="mu">Todavía no tienes amigos.</div>';}
  else if(tab==='recibidas'){body=inc.length?inc.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><span style="display:flex;gap:6px"><button class="fbtn" onclick="friendAct('${esc(o.uid)}','${esc(o.u)}')">Aceptar</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Rechazar</button></span></div>`}).join(''):'<div class="mu">No tienes solicitudes recibidas.</div>';}
  else{body=out.length?out.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Cancelar</button></div>`}).join(''):'<div class="mu">No has enviado solicitudes.</div>';}
  const tabs=[['amigos','Amigos '+acc.length],['recibidas','Recibidas '+inc.length],['enviadas','Enviadas '+out.length]];
