@@ -478,6 +478,27 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .toprow .tn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .toprow .tn small{color:var(--tc);font-weight:800;font-size:12px}
 .toprow .tp{font-size:12px;font-weight:800;color:var(--mu);white-space:nowrap}
+@keyframes stkbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+@keyframes stkfl{0%,100%{transform:scale(1,1)}33%{transform:scale(.93,1.14)}66%{transform:scale(1.06,.92)}}
+@keyframes stkbl{0%,92%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.stk{text-align:center;padding:18px 14px;background:radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--f1) 22%,transparent),transparent 62%),var(--cd);border-color:color-mix(in srgb,var(--f1) 40%,transparent)}
+.stk.off{background:var(--cd);border-color:var(--bd)}
+.stk-m{height:176px;display:flex;align-items:flex-end;justify-content:center;padding-top:26px}
+.stk-m svg{width:118px;height:auto;animation:stkbob 2.6s ease-in-out infinite;filter:drop-shadow(0 10px 14px rgba(0,0,0,.35))}
+.stk.off .stk-m svg{animation-duration:4.5s;filter:grayscale(.55) drop-shadow(0 8px 10px rgba(0,0,0,.3))}
+.stk-f{transform-box:fill-box;transform-origin:50% 100%;animation:stkfl .9s ease-in-out infinite}
+.stk-f.b{animation-duration:.7s;animation-delay:-.3s}
+.stk-e{transform-box:fill-box;transform-origin:center;animation:stkbl 4s infinite}
+.stk-n{margin-top:10px;display:flex;align-items:baseline;justify-content:center;gap:8px}
+.stk-n b{font-size:44px;line-height:1;font-weight:900;color:var(--f1)}
+.stk-n span{font-size:15px;font-weight:800}
+.stk-d{display:flex;justify-content:center;gap:5px;margin:12px 0 4px}
+.stk-d i{width:16px;height:6px;border-radius:99px;background:var(--cd2)}
+.stk-d i.on{background:var(--f1)}
+.stk-t{margin:8px 0 0;font-size:13px}
+.stk-ch{margin-top:12px;padding:9px 12px;border-radius:14px;border:1px dashed var(--bd);font-size:12.5px;font-weight:700;color:var(--mu)}
+.stk-ch.on{border-style:solid;border-color:color-mix(in srgb,var(--f1) 55%,transparent);color:var(--tx);background:color-mix(in srgb,var(--f1) 14%,transparent)}
+@media (prefers-reduced-motion:reduce){.stk-m svg,.stk-f,.stk-e{animation:none}}
 .thm-tz{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--bd);border-radius:14px;font-size:12.5px;color:var(--mu);line-height:1.4}
 .thm-tz b{color:var(--tx)}
 .thm-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -867,7 +888,8 @@ function homeV(){
  <div class="lgrid">${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).map(l=>`<button class="ltile" style="--c:${l.c};--c2:${l.c2};--tx2:${l.tx}" onclick="openLg('${l.i}')">${logo(l,56)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>
  <div class="sec"><span>Próximas</span></div>
  ${nx.map(e=>{const l=L.find(x=>x.i===e.i);return `<div class="card row">${l?logo(l,44):''}<div style="flex:1;min-width:0"><b>${esc(e.n)}</b><div class="mu">${esc(e.d)}</div></div><span class="pill next">Próxima</span></div>`}).join('')}
- ${S.me?'':`<button class="btn" onclick="openAuth('create')">Crear cuenta para guardar tus votos</button>`}`;
+ ${S.me?'':`<button class="btn" onclick="openAuth('create')">Crear cuenta para guardar tus votos</button>`}
+  ${streakH()}`;
 }
 function openLg(i){S.lg=i;S.err='';go('lg')}
 const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
@@ -1415,7 +1437,7 @@ function lbStart(){const B2=S.lb;const a=B2.a.trim(),b=B2.b.trim();
  B2.err='';S.lg=B2.lg;start({a,b,j:'Batalla libre',y,libre:true})}
 
 function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&v.key===key)||null}
-async function refreshMine(){if(!S.me)return;watchInbox();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R();await loadAch()}catch(e){}}
+async function refreshMine(){if(!S.me)return;watchInbox();streakTick();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R();await loadAch()}catch(e){}}
 function startEdit(v){
  if(!v.sc){S.msgP='Esta votación es antigua y no se puede editar. Bórrala y vótala otra vez.';S.v='perfil';return R()}
  const l=L.find(x=>x.i===v.l)||L[0];
@@ -1452,6 +1474,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-02T17:20:00-04:00'),text:'Nueva Racha diaria: entra cada día y mantén encendido el micrófono en llamas que verás abajo en la página principal de ligas. Cada 10 días de racha ganas 1 oportunidad: si faltas un día, tu racha no se pierde (la oportunidad se reinicia al llegar a los 20 días, a los 30 y así cada 10). También corregimos el ranking de Comunidad para que aparezcan todos los usuarios.'},
  {ts:Date.parse('2026-11-02T12:30:00-04:00'),text:'Nuevo: 10 logros más (ya son 30): Salto a Profesional, Sabor Caribeño, Corona para Jair, Jurado Veterano, Ojo de Crew, Leyenda de la Calle, Viaje al 2018, Planilla Nueva Era, Profesional Consagrado y Élite Absoluta. Si ya cumplías alguno, se desbloquea solo al abrir la app. También llegan 8 diseños de rap para tu tarjeta de perfil (micrófono, vinilo, graffiti, boombox, beats, cypher, fuego y corona), que se desbloquean con logros y solo cambian tu tarjeta, no los colores de la app. Y nuevo Top Crew: en Amigos > Top verás el ranking de rangos entre tú y tus amigos, del más alto al más bajo, incluyéndote.'},
  {ts:Date.parse('2026-11-02T12:00:00-04:00'),text:'Nuevo: ID de usuario. Cada usuario ya tiene su ID de 9 números, que verás debajo de tu nombre en tu perfil con un botón para copiarlo. Ahora, en Buscar, puedes encontrar a otros usuarios por su nombre de usuario o por su ID, y compartir tu ID con tus amigos para que te agreguen más fácil.'},
  {ts:Date.parse('2026-11-01T23:00:00-04:00'),text:'Nuevo: estado de conexión. Ahora verás un círculo verde sobre la foto de tus amigos cuando están activos en la página y, si no lo están, la hora de su última conexión. Solo los amigos entre sí pueden ver este estado, y se muestra en el perfil, en la lista de amigos y en la búsqueda de usuarios.'},
@@ -1875,6 +1898,44 @@ function globalTopH(){const T=S.gtop;
   const isMe=o.uid===me;
   return `<div class="toprow${isMe?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${isMe?withDot(o.uid,av(o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${isMe?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
  return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: todos los usuarios de la app ordenados por rango, del más alto al más bajo (máximo 50).</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
+
+/* ===== Racha diaria: Mic en llamas (1 oportunidad cada 10 días de racha) ===== */
+const dkey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const dgap=(a,b)=>{const p=s=>{const [y,m,d]=s.split('-').map(Number);return Date.UTC(y,m-1,d)};return Math.round((p(b)-p(a))/864e5)};
+S.stkSaved=false;S.stkLost=0;
+function streakTick(){
+ if(!S.me)return;const today=dkey(),st=S.me.st||{n:0,last:'',ch:0,best:0};
+ if(st.last===today)return;
+ const gap=st.last?dgap(st.last,today):null;
+ if(gap!==null&&gap<0)return;
+ let n=1,ch=st.ch||0;S.stkSaved=false;S.stkLost=0;
+ if(gap===null){n=1;ch=0}
+ else if(gap===1){n=st.n+1}
+ else if(gap===2&&ch>0){n=st.n+1;ch=0;S.stkSaved=true}
+ else{S.stkLost=st.n>1?st.n:0;n=1;ch=0}
+ if(n%10===0)ch=1;
+ const nst={n,last:today,ch,best:Math.max(st.best||0,n)};
+ S.me={...S.me,st:nst};R();
+ try{B.updateUser(S.me.uid,{st:nst}).catch(()=>{})}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')streakTick()});
+function stkSvg(n,on){
+ const s=n>=30?1.2:n>=10?1.08:.92;
+ const eyes=on?`<g class="stk-e"><ellipse cx="58" cy="84" rx="5" ry="6.5" fill="#111827"/><circle cx="59.6" cy="81.6" r="1.8" fill="#fff"/></g><g class="stk-e"><ellipse cx="82" cy="84" rx="5" ry="6.5" fill="#111827"/><circle cx="83.6" cy="81.6" r="1.8" fill="#fff"/></g><path d="M58 98Q70 111 82 98" fill="none" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>`
+  :`<path d="M52 86q6 5 12 0M76 86q6 5 12 0" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/><path d="M63 101h14" stroke="#111827" stroke-width="3" stroke-linecap="round"/><text x="100" y="62" font-size="16" font-weight="900" fill="#94A3B8" font-family="Arial,sans-serif">z</text><text x="110" y="50" font-size="12" font-weight="900" fill="#94A3B8" font-family="Arial,sans-serif">z</text>`;
+ const fire=on?`<g transform="translate(70 56) scale(${s}) translate(-70 -56)"><path class="stk-f" d="M44 30C50 38 52 44 48 52 44 56 38 52 38 44 38 38 42 36 44 30Z" fill="var(--f1)" opacity=".85"/><path class="stk-f b" d="M96 30C90 38 88 44 92 52 96 56 102 52 102 44 102 38 98 36 96 30Z" fill="var(--f1)" opacity=".85"/><path class="stk-f" d="M70-2C84 18 102 26 98 44 96 54 84 58 70 58 56 58 44 54 42 44 38 26 56 18 70-2Z" fill="var(--f1)"/><path class="stk-f b" d="M70 18C78 30 88 34 86 46 85 53 78 56 70 56 62 56 55 53 54 46 52 34 62 30 70 18Z" fill="var(--f2)"/></g>`:'';
+ return `<svg viewBox="0 -24 140 194" aria-hidden="true" style="overflow:visible"><defs><radialGradient id="stkg" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#F3F4F6"/><stop offset="1" stop-color="#6B7280"/></radialGradient></defs>${fire}<circle cx="70" cy="88" r="34" fill="url(#stkg)" stroke="#374151" stroke-width="2.5"/><path d="M40 76h60M37 88h66M40 100h60" stroke="#fff" stroke-opacity=".2" stroke-width="1.5"/>${eyes}<circle cx="48" cy="96" r="4.5" fill="#F87171" opacity=".5"/><circle cx="92" cy="96" r="4.5" fill="#F87171" opacity=".5"/><rect x="42" y="118" width="56" height="11" rx="4" fill="#F59E0B" stroke="#B45309" stroke-width="2"/><path d="M50 129h40l-6 37q-1 4-5 4H61q-4 0-5-4z" fill="#1F2937"/><path d="M58 134l-3 26" stroke="#fff" stroke-opacity=".15" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="142" r="4.5" fill="#EF4444"/></svg>`}
+function streakH(){
+ if(!S.me)return `<div class="sec"><span>Racha diaria</span></div><div class="card stk off" style="--f1:#FB923C;--f2:#FDE047"><div class="stk-m">${stkSvg(0,false)}</div><div class="stk-n"><b>0</b><span>días de racha</span></div><div class="mu stk-t">Crea tu cuenta y entra cada día para encender el micrófono. Cada 10 días de racha ganas una oportunidad por si faltas un día.</div><button class="btn sm" style="width:100%;justify-content:center;margin:12px 0 0" onclick="openAuth('create')">Crear cuenta</button></div>`;
+ const st=S.me.st||{n:0,ch:0,best:0},n=st.n||0,on=n>0;
+ const f=n>=30?['#38BDF8','#E0F2FE']:n>=10?['#F97316','#FDE047']:['#FB923C','#FDE047'];
+ const d=n>0&&n%10===0?10:n%10,nxt=n+(10-n%10);
+ const dots=Array.from({length:10},(_,i)=>`<i class="${i<d?'on':''}"></i>`).join('');
+ let msg='Entra todos los días para mantener el micrófono encendido.';
+ if(S.stkSaved)msg='¡Usaste tu oportunidad! Tu racha sigue viva.';
+ else if(S.stkLost)msg='Perdiste tu racha de '+S.stkLost+' días. ¡Hoy empieza una nueva!';
+ else if(n===1)msg='¡Hoy empezó tu racha! Vuelve mañana.';
+ const chip=st.ch?`<div class="stk-ch on">🛡️ Oportunidad lista: si faltas un día, tu racha sigue</div>`:`<div class="stk-ch">🛡️ Próxima oportunidad al llegar a ${nxt} días (faltan ${nxt-n})</div>`;
+ return `<div class="sec"><span>Racha diaria</span><span>Mejor: ${st.best||n}</span></div><div class="card stk${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}"><div class="stk-m">${stkSvg(n,on)}</div><div class="stk-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d">${dots}</div><div class="mu stk-t">${msg}</div>${chip}<div class="mu" style="font-size:11px;text-align:center;margin-top:8px">Ganas 1 oportunidad cada 10 días de racha. Solo puedes tener una a la vez.</div></div>`}
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
