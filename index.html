@@ -456,6 +456,27 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .likebar.pop .lk-i{animation:lkpop .45s cubic-bezier(.34,1.56,.64,1)}
 @keyframes lkpop{0%{transform:scale(1)}40%{transform:scale(1.6) rotate(-12deg)}100%{transform:scale(1)}}
 
+.banner.dz>*{position:relative;z-index:1}
+.banner.dz>.dzart{position:absolute;inset:0;z-index:0;pointer-events:none}
+.dzart svg{width:100%;height:100%;display:block}
+.dzart:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.32),transparent 62%)}
+.dz-g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.dzt{display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid var(--bd);border-radius:16px;background:var(--bg2);cursor:pointer;font:inherit;color:var(--tx);text-align:left}
+.dzt .dzp{position:relative;height:72px;border-radius:11px;overflow:hidden;background:linear-gradient(135deg,var(--c),var(--c2))}
+.dzt .dzp svg{position:absolute;inset:0;width:100%;height:100%}
+.dzt .dzp u{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;text-decoration:none;background:rgba(0,0,0,.42)}
+.dzt span{font-size:12.5px;font-weight:800}
+.dzt em{font-style:normal;font-size:10.5px;color:var(--mu)}
+.dzt.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,var(--bg2))}
+.seg.s4 button{padding:10px 3px;font-size:12.5px}
+.toplist{display:flex;flex-direction:column;gap:6px}
+.toprow{display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:16px;border:1px solid var(--bd);background:var(--bg2)}
+.toprow.me{background:color-mix(in srgb,var(--ac) 14%,var(--cd));border-color:color-mix(in srgb,var(--ac) 50%,transparent)}
+.toprow .pos{width:28px;text-align:center;font-weight:900;font-size:17px;flex:0 0 auto}
+.toprow .tn{flex:1;min-width:0}
+.toprow .tn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toprow .tn small{color:var(--tc);font-weight:800;font-size:12px}
+.toprow .tp{font-size:12px;font-weight:800;color:var(--mu);white-space:nowrap}
 .thm-tz{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--bd);border-radius:14px;font-size:12.5px;color:var(--mu);line-height:1.4}
 .thm-tz b{color:var(--tx)}
 .thm-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -543,7 +564,7 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||''});
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||''});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -1215,12 +1236,14 @@ function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.
   const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
   const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
   return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">ID ${fmtPid(pid(x.uid))} · Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
-function openU(uid){S.uid=uid;go('user');loadLikes(uid)}
+function openU(uid){S.uid=uid;go('user');loadLikes(uid);countFriendView(uid)}
+function countFriendView(uid){if(!S.me||S.me.uid===uid||!isFriend(uid))return;const n=((S.me.vf)||0)+1;S.me={...S.me,vf:n};try{B.updateUser(S.me.uid,{vf:n}).catch(()=>{})}catch(e){}syncAch()}
 function profileHead(u,isMe,uid){
  const id=uid||u.uid;
  const fl=u.p?flagOf(u.p):'';
  const chips=[u.p?`<span class="pchip">${fl||'🌎'} ${esc(u.p)}</span>`:'',u.m?`<span class="pchip">🎤 ${esc(u.m)}</span>`:'',`<span class="pchip">📅 Desde ${esc(u.joined||'—')}</span>`].join('');
- return `<div class="banner pbn" style="${themeStyle(u)}">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div></div>
+ const dz=dzOf(u);
+ return `<div class="banner pbn${dz?' dz':''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div></div>
  <div class="card pinfo"><div class="pchips">${chips}</div>${uid?presLine(uid):''}${u.a?`<div class="pab"><div class="mu">Sobre mí</div>${esc(u.a)}</div>`:''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
@@ -1244,7 +1267,7 @@ function perfilV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tu cuenta</span><h1>Guarda tus votos</h1><p>Crea una cuenta para votar, ver tus estadísticas y aparecer en la comunidad.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const m=S.me;
  return `${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${profileHead(m,true)}${likeBarH(m.uid)}${rankCardH(S.myVotes)}<label class="btn s fotobtn">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
- ${themeCardH()}${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
+ ${themeCardH()}${designCardH()}${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
  <label class="f">País</label><button class="selbtn" onclick="openPick('p')"><span class="sv${m.p?'':' ph'}">${m.p?`${flagOf(m.p)||'🌎'} ${esc(m.p)}`:'Elige tu país'}</span><span class="sc">▾</span></button>
  <label class="f">MC favorito</label><button class="selbtn" onclick="openPick('m')"><span class="sv${m.m?'':' ph'}">${m.m?`🎤 ${esc(m.m)}`:'Elige tu MC favorito'}</span><span class="sc">▾</span></button>
  <label class="f">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
@@ -1424,6 +1447,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-02T12:30:00-04:00'),text:'Nuevo: 10 logros más (ya son 30): Salto a Profesional, Sabor Caribeño, Corona para Jair, Jurado Veterano, Ojo de Crew, Leyenda de la Calle, Viaje al 2018, Planilla Nueva Era, Profesional Consagrado y Élite Absoluta. Si ya cumplías alguno, se desbloquea solo al abrir la app. También llegan 8 diseños de rap para tu tarjeta de perfil (micrófono, vinilo, graffiti, boombox, beats, cypher, fuego y corona), que se desbloquean con logros y solo cambian tu tarjeta, no los colores de la app. Y nuevo Top Crew: en Amigos > Top verás el ranking de rangos entre tú y tus amigos, del más alto al más bajo, incluyéndote.'},
  {ts:Date.parse('2026-11-02T12:00:00-04:00'),text:'Nuevo: ID de usuario. Cada usuario ya tiene su ID de 9 números, que verás debajo de tu nombre en tu perfil con un botón para copiarlo. Ahora, en Buscar, puedes encontrar a otros usuarios por su nombre de usuario o por su ID, y compartir tu ID con tus amigos para que te agreguen más fácil.'},
  {ts:Date.parse('2026-11-01T23:00:00-04:00'),text:'Nuevo: estado de conexión. Ahora verás un círculo verde sobre la foto de tus amigos cuando están activos en la página y, si no lo están, la hora de su última conexión. Solo los amigos entre sí pueden ver este estado, y se muestra en el perfil, en la lista de amigos y en la búsqueda de usuarios.'},
  {ts:Date.parse('2026-11-01T21:30:00-04:00'),text:'Diferencia para que sea directa: ahora está junto a la planilla, dentro de la votación. Se elige del 1 al 6, y en la planilla antigua también con medios puntos (1,5; 2,5; etc.). En el celular se abre un selector; en computadora basta con hacer clic en el botón y escribir el número con el teclado. En la planilla antigua, la barra espaciadora agrega el medio punto.'},
@@ -1517,10 +1541,11 @@ function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
  const oth=f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName};
  let body='';
  if(tab==='amigos'){body=acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))} <span style="text-align:left">${esc(o.u)}${presLine(o.uid)}</span></button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></div>`}).join(''):'<div class="mu">Todavía no tienes amigos.</div>';}
+ else if(tab==='top'){body=topH()}
  else if(tab==='recibidas'){body=inc.length?inc.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><span style="display:flex;gap:6px"><button class="fbtn" onclick="friendAct('${esc(o.uid)}','${esc(o.u)}')">Aceptar</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Rechazar</button></span></div>`}).join(''):'<div class="mu">No tienes solicitudes recibidas.</div>';}
  else{body=out.length?out.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Cancelar</button></div>`}).join(''):'<div class="mu">No has enviado solicitudes.</div>';}
- const tabs=[['amigos','Amigos '+acc.length],['recibidas','Recibidas '+inc.length],['enviadas','Enviadas '+out.length]];
- return `<div class="ov" onclick="S.friendsOpen=false;R()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Amigos</b><div class="seg" style="margin:12px 0">${tabs.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.frTab='${k}';R()">${t}</button>`).join('')}</div>${body}</div></div>`;
+ const tabs=[['amigos','Amigos '+acc.length],['top','🏆 Top'],['recibidas','Recibidas '+inc.length],['enviadas','Enviadas '+out.length]];
+ return `<div class="ov" onclick="S.friendsOpen=false;R()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Amigos</b><div class="seg s4" style="margin:12px 0">${tabs.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.frTab='${k}';R();${k==='top'?'loadTop()':''}">${t}</button>`).join('')}</div>${body}</div></div>`;
 }
 const DAYS20=20*864e5;
 function nameCardH(){const m=S.me;const last=m.unAt||0;const left=last?Math.ceil((last+DAYS20-Date.now())/864e5):0;const lock=left>0;
@@ -1588,7 +1613,7 @@ function adminV(){
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
 
 /* ===== Logros ===== */
-const ACH_N=20;
+const ACH_N=30;
 const ACH=[
  {id:'cuenta',ic:'🎤',x:'#F59E0B',n:'Pisa el Escenario',d:'Crea tu cuenta y entra a la rueda.'},
  {id:'voto1',ic:'⚖️',x:'#EF4444',n:'Primer Veredicto',d:'Vota tu primera batalla de liga.'},
@@ -1609,7 +1634,17 @@ const ACH=[
  {id:'libre',ic:'🎶',x:'#A855F7',n:'Barra Libre',d:'Vota una batalla en modo libre.'},
  {id:'voto10',ic:'📋',x:'#EF4444',n:'Jurado de Diez',d:'Vota 10 batallas de liga.'},
  {id:'likes5',ic:'👏',x:'#EAB308',n:'Aplauso de la Rueda',d:'Consigue 5 likes en tu perfil.'},
- {id:'bio',ic:'📝',x:'#10B981',n:'Intro de MC',d:'Escribe algo sobre ti en tu perfil.'}
+ {id:'bio',ic:'📝',x:'#10B981',n:'Intro de MC',d:'Escribe algo sobre ti en tu perfil.'},
+ {id:'pro1',ic:'🎖️',x:'#FDE047',n:'Salto a Profesional',d:'Llega al rango Profesional 1.'},
+ {id:'tema_ca',ic:'🌴',x:'#14B8A6',n:'Sabor Caribeño',d:'Cambia el color de tu perfil a FMS Caribe.'},
+ {id:'jair',ic:'👑',x:'#F59E0B',n:'Corona para Jair',d:'Pon a Jair Wong como tu MC favorito en tu perfil.'},
+ {id:'voto30',ic:'📚',x:'#EF4444',n:'Jurado Veterano',d:'Vota 30 batallas de liga.'},
+ {id:'visitas5',ic:'🔍',x:'#3B82F6',n:'Ojo de Crew',d:'Revisa el perfil de un amigo 5 veces.'},
+ {id:'likes10',ic:'🌟',x:'#EAB308',n:'Leyenda de la Calle',d:'Consigue 10 likes en tu perfil.'},
+ {id:'ar2018',ic:'🏟️',x:'#38BDF8',n:'Viaje al 2018',d:'Vota una batalla de FMS Argentina 2018.'},
+ {id:'actual',ic:'🆕',x:'#22C55E',n:'Planilla Nueva Era',d:'Vota una batalla con el formato actual.'},
+ {id:'pro3',ic:'🥇',x:'#FACC15',n:'Profesional Consagrado',d:'Llega al rango Profesional 3.'},
+ {id:'elite3',ic:'💎',x:'#C084FC',n:'Élite Absoluta',d:'Llega al rango Elite 3.'}
 ];
 S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
 const isLgVote=v=>!v.free;
@@ -1656,6 +1691,18 @@ function achCalc(){
  const nL=me&&S.likeCache&&S.likeCache[me.uid]?S.likeCache[me.uid].n:0;
  set('likes5',nL>=5,nL,5,nL+' / 5 likes');
  set('bio',!!(me&&String(me.a||'').trim()),me&&String(me.a||'').trim()?1:0,1,'');
+ const _rt=i=>RANK_TH[i],_rtx=i=>R_.n.toLocaleString('es')+' / '+_rt(i).toLocaleString('es')+' pts';
+ set('pro1',R_.lvl>=9,R_.n,_rt(8),_rtx(8));
+ set('tema_ca',!!(me&&me.tema==='ca'),0,1,'');
+ set('jair',!!(me&&nrm(me.m)==='jairwong'),0,1,'');
+ set('voto30',votes.length>=30,votes.length,30,votes.length+' / 30 batallas');
+ const nVf=(me&&me.vf)||0;
+ set('visitas5',nVf>=5,nVf,5,nVf+' / 5 visitas');
+ set('likes10',nL>=10,nL,10,nL+' / 10 likes');
+ set('ar2018',votes.some(v=>v.l==='ar'&&(v.temp||'2026')==='2018'),0,1,'');
+ set('actual',(S.myVotes||[]).some(v=>v.fmt==='actual'),0,1,'');
+ set('pro3',R_.lvl>=11,R_.n,_rt(10),_rtx(10));
+ set('elite3',R_.lvl>=14,R_.n,_rt(13),_rtx(13));
  return o}
 function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
 function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
@@ -1672,7 +1719,7 @@ function achSheet(){
   ${s.done?`<span class="ach-st">✓ Desbloqueado${s.ts?' · '+fd(s.ts):''}</span>`:(showBar?'':`<span class="ach-st" style="--ax:var(--mu)">Bloqueado</span>`)}</div></div>`};
  return `<div class="ov" onclick="closeAch()"><div class="sh ach-sh" onclick="event.stopPropagation()">
  <div class="ach-top"><div class="ach-ring"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--cd2)" stroke-width="8"/><circle cx="42" cy="42" r="36" fill="none" stroke="var(--ac)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*n/ACH_N} ${C}" transform="rotate(-90 42 42)"/></svg><b>${n}<small>de ${ACH_N}</small></b></div>
- <div class="ach-ti"><h2>Tus logros</h2><p>Desbloquea medallas votando, haciendo crew y subiendo de rango. Cada logro te acerca a nuevos colores para toda la app.</p></div></div>
+ <div class="ach-ti"><h2>Tus logros</h2><p>Desbloquea medallas votando, haciendo crew y subiendo de rango. Cada logro te acerca a nuevos colores y diseños de tarjeta.</p></div></div>
  ${S.me?'':`<div class="card" style="margin:12px 0 0;text-align:center"><b>Crea tu cuenta</b><div class="mu" style="margin:4px 0 10px">Inicia sesión para ir guardando tus logros.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.achOpen=false;openAuth('create')">Crear cuenta</button></div>`}
  ${colorTeaser(n)}<div class="ach-seg"><button class="${tab==='all'?'on':''}" onclick="S.achTab='all';R()">Todos ${ACH_N}</button><button class="${tab==='got'?'on':''}" onclick="S.achTab='got';R()">Logrados ${n}</button><button class="${tab==='lock'?'on':''}" onclick="S.achTab='lock';R()">Pendientes ${ACH_N-n}</button></div>
  <div class="ach-list">${list.length?list.map(card).join(''):`<div class="card mu" style="text-align:center;margin:0">${tab==='got'?'Todavía no has desbloqueado ninguno. ¡A votar!':'¡Los tienes todos! Pronto habrá más.'}</div>`}</div>
@@ -1738,7 +1785,48 @@ function themeCardH(){if(!S.me)return '';const n=achCount(),cur=themeOf(S.me).id
 async function setTema(id){const t=THEMES.find(x=>x.id===id);if(!t||!S.me)return;
  const n=achCount();if(n<t.need){achFail('Te faltan '+(t.need-n)+' logros para desbloquear '+t.n+'.');return}
  const prev=S.me.tema;S.me={...S.me,tema:id};R();
- try{await B.updateUser(S.me.uid,{tema:id})}catch(e){S.me={...S.me,tema:prev};R();achFail('No se pudo guardar el color.')}}
+ try{await B.updateUser(S.me.uid,{tema:id});syncAch()}catch(e){S.me={...S.me,tema:prev};R();achFail('No se pudo guardar el color.')}}
+
+/* ===== Diseños de tarjeta de rap (solo cambian la tarjeta de perfil, no la app) ===== */
+const _sv=b=>`<svg viewBox="0 0 300 130" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${b}</svg>`;
+const DESIGNS=[
+ {id:'mic',n:'Micrófono de Oro',c:'#F59E0B',c2:'#7C2D12',need:3,art:_sv(`<g fill="none" stroke="#FDE68A" stroke-linecap="round" stroke-width="3" opacity=".5"><path d="M196 34q-14 28 0 56"/><path d="M182 24q-24 38 0 76"/><path d="M168 14q-34 48 0 96" opacity=".6"/></g><g transform="rotate(24 242 64)"><rect x="224" y="12" width="36" height="56" rx="18" fill="#FDE68A"/><path d="M224 30h36M224 41h36M224 52h36" stroke="#B45309" stroke-width="2.4" opacity=".55"/><rect x="233" y="66" width="18" height="46" rx="6" fill="#92400E"/><rect x="236" y="70" width="4" height="38" rx="2" fill="#FBBF24" opacity=".6"/></g><circle cx="150" cy="104" r="4" fill="#FDE68A" opacity=".7"/><circle cx="164" cy="116" r="3" fill="#FDE68A" opacity=".5"/>`)},
+ {id:'vinyl',n:'Vinilo Nocturno',c:'#1E1B4B',c2:'#6D28D9',need:6,art:_sv(`<circle cx="250" cy="66" r="86" fill="#0B0B14"/><g fill="none" stroke="#fff" opacity=".13"><circle cx="250" cy="66" r="74"/><circle cx="250" cy="66" r="62"/><circle cx="250" cy="66" r="50"/><circle cx="250" cy="66" r="38"/></g><path d="M186 40a70 70 0 0 1 44-28" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="4" stroke-linecap="round"/><circle cx="250" cy="66" r="24" fill="#EC4899"/><circle cx="250" cy="66" r="24" fill="none" stroke="#FDE047" stroke-width="3" stroke-dasharray="6 5"/><circle cx="250" cy="66" r="4.5" fill="#1E1B4B"/><path d="M140 6l46 22" stroke="#E5E7EB" stroke-width="5" stroke-linecap="round" opacity=".8"/><rect x="178" y="22" width="16" height="10" rx="3" transform="rotate(25 186 27)" fill="#E5E7EB" opacity=".9"/>`)},
+ {id:'spray',n:'Graffiti MC',c:'#A855F7',c2:'#DB2777',need:9,art:_sv(`<g fill="#fff" opacity=".3"><circle cx="178" cy="38" r="12"/><circle cx="160" cy="52" r="8"/><circle cx="192" cy="58" r="9"/><circle cx="170" cy="30" r="5"/></g><text x="136" y="112" font-size="52" font-weight="900" font-style="italic" fill="#FDE047" stroke="#1F2937" stroke-width="2.5" font-family="Impact,'Arial Black',sans-serif" paint-order="stroke">MC</text><path d="M148 116v10M170 118v8" stroke="#FDE047" stroke-width="3.5" stroke-linecap="round"/><rect x="236" y="44" width="38" height="70" rx="7" fill="#E5E7EB"/><rect x="236" y="62" width="38" height="22" fill="#EC4899"/><path d="M236 72h38" stroke="#fff" stroke-width="3" opacity=".7"/><rect x="242" y="28" width="26" height="18" rx="5" fill="#1F2937"/><rect x="251" y="20" width="8" height="9" rx="2" fill="#6B7280"/>`)},
+ {id:'boombox',n:'Boombox 90s',c:'#06B6D4',c2:'#1E3A8A',need:12,art:_sv(`<path d="M196 30q-16 10 0 20M184 22q-26 18 0 38" fill="none" stroke="#A5F3FC" stroke-width="3" stroke-linecap="round" opacity=".5"/><path d="M204 34v-12a6 6 0 0 1 6-6h62a6 6 0 0 1 6 6v12" fill="none" stroke="#67E8F9" stroke-width="5" stroke-linecap="round"/><rect x="196" y="34" width="96" height="72" rx="11" fill="#0F172A" stroke="#22D3EE" stroke-width="2.5"/><circle cx="222" cy="72" r="19" fill="#1E293B" stroke="#22D3EE" stroke-width="2.5"/><circle cx="222" cy="72" r="7" fill="#22D3EE"/><circle cx="266" cy="72" r="19" fill="#1E293B" stroke="#22D3EE" stroke-width="2.5"/><circle cx="266" cy="72" r="7" fill="#22D3EE"/><rect x="236" y="44" width="16" height="11" rx="3" fill="#67E8F9" opacity=".85"/><circle cx="244" cy="92" r="3" fill="#FDE047"/>`)},
+ {id:'beats',n:'Cabina de Beats',c:'#10B981',c2:'#064E3B',need:16,art:_sv(`<g fill="#A7F3D0" opacity=".5"><rect x="132" y="86" width="9" height="44" rx="3"/><rect x="146" y="64" width="9" height="66" rx="3"/><rect x="160" y="96" width="9" height="34" rx="3"/><rect x="174" y="52" width="9" height="78" rx="3"/><rect x="188" y="76" width="9" height="54" rx="3"/></g><path d="M214 84C214 20 296 20 296 84" fill="none" stroke="#ECFDF5" stroke-width="11" stroke-linecap="round"/><rect x="204" y="74" width="24" height="42" rx="11" fill="#34D399"/><rect x="282" y="74" width="24" height="42" rx="11" fill="#34D399"/><rect x="208" y="82" width="8" height="26" rx="4" fill="#064E3B" opacity=".55"/><rect x="296" y="82" width="8" height="26" rx="4" fill="#064E3B" opacity=".55"/>`)},
+ {id:'cypher',n:'Cypher Nocturno',c:'#0F172A',c2:'#2563EB',need:20,art:_sv(`<path d="M250 0L208 130h84z" fill="#fff" opacity=".08"/><circle cx="250" cy="66" r="50" fill="none" stroke="#93C5FD" stroke-width="2" stroke-dasharray="4 6" opacity=".7"/><circle cx="250" cy="66" r="17" fill="#FACC15"/><path d="M243 60a7 7 0 0 1 14 0v6a7 7 0 0 1-14 0zM250 76v6" fill="none" stroke="#78350F" stroke-width="2.6" stroke-linecap="round"/><g fill="#93C5FD"><circle cx="300" cy="66" r="7"/><circle cx="285" cy="101" r="7"/><circle cx="250" cy="116" r="7"/><circle cx="215" cy="101" r="7"/><circle cx="200" cy="66" r="7"/><circle cx="215" cy="31" r="7"/><circle cx="250" cy="16" r="7"/><circle cx="285" cy="31" r="7"/></g>`)},
+ {id:'fire',n:'Fuego del Freestyle',c:'#F97316',c2:'#7F1D1D',need:25,art:_sv(`<path d="M246 6c8 26 38 38 36 74-1 26-18 46-40 46-24 0-42-16-40-40 1-22 18-30 22-48 6 10 10 4 22-32z" fill="#FDBA74" opacity=".9"/><path d="M248 46c6 18 24 26 22 50-1 16-12 26-24 26-14 0-24-10-22-26 1-14 12-20 14-34 6 8 8 2 10-16z" fill="#FDE047"/><path d="M200 70c5 12 16 16 14 34-1 10-8 16-16 16-9 0-15-7-14-17 1-10 8-14 9-24 4 5 6 1 7-9z" fill="#FB923C" opacity=".85"/><path d="M290 80c4 8 10 12 8 24-1 8-6 12-12 12" fill="none" stroke="#FDBA74" stroke-width="4" stroke-linecap="round" opacity=".6"/>`)},
+ {id:'crown',n:'Rey del Freestyle',c:'#FACC15',c2:'#92400E',need:30,art:_sv(`<g fill="#FEF3C7" opacity=".8"><path d="M170 30l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><path d="M176 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M138 62l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g><path d="M196 100l-6-56 32 24 24-40 24 40 32-24-6 56z" fill="#FEF08A" stroke="#FDE047" stroke-width="3" stroke-linejoin="round"/><rect x="196" y="100" width="100" height="14" rx="5" fill="#FDE047" stroke="#CA8A04" stroke-width="2"/><circle cx="190" cy="44" r="7" fill="#EF4444"/><circle cx="246" cy="26" r="7" fill="#3B82F6"/><circle cx="302" cy="44" r="7" fill="#22C55E"/><circle cx="246" cy="86" r="6" fill="#EF4444"/>`)}
+];
+const dzOf=u=>{const id=u&&u.dz;return id?DESIGNS.find(d=>d.id===id)||null:null};
+function designCardH(){if(!S.me)return '';const n=achCount(),cur=S.me.dz||'';
+ const tile=d=>{const ok=n>=d.need,on=cur===d.id;return `<button class="dzt${on?' on':''}" onclick="setDiseno('${d.id}')" aria-label="${esc(d.n)}"><div class="dzp" style="--c:${d.c};--c2:${d.c2}">${d.art}${ok?(on?'<u>✓</u>':''):'<u>🔒</u>'}</div><span>${esc(d.n)}</span><em>${ok?(on?'En uso':'Desbloqueado'):d.need+' logros'}</em></button>`};
+ const none=`<button class="dzt${cur?'':' on'}" onclick="setDiseno('')"><div class="dzp" style="--c:var(--ac);--c2:var(--ac2)">${cur?'':'<u>✓</u>'}</div><span>Sin diseño</span><em>Color de tu app</em></button>`;
+ return `<div class="card"><b>Diseño de tarjeta</b><div class="mu" style="margin:4px 0 12px">Diseños de rap solo para tu tarjeta de perfil: no cambian los colores de la app. Se desbloquean con logros (tienes ${n}).</div><div class="dz-g">${none}${DESIGNS.map(tile).join('')}</div></div>`}
+async function setDiseno(id){if(!S.me)return;const d=id?DESIGNS.find(x=>x.id===id):null;if(id&&!d)return;
+ const n=achCount();if(d&&n<d.need){achFail('Te faltan '+(d.need-n)+' logros para desbloquear '+d.n+'.');return}
+ const prev=S.me.dz||'';S.me={...S.me,dz:id};R();
+ try{await B.updateUser(S.me.uid,{dz:id})}catch(e){S.me={...S.me,dz:prev};R();achFail('No se pudo guardar el diseño.')}}
+
+/* ===== Top Crew: ranking de rangos entre tú y tus amigos ===== */
+S.top=S.top||null;
+async function loadTop(){if(!S.me)return;const me=S.me.uid;
+ S.top={loading:true,rows:(S.top&&S.top.rows)||null};R();
+ const acc=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName});
+ const rows=[];
+ try{const mine=S.myVotes||await cleanMine();S.myVotes=mine;rows.push({uid:me,u:S.me.u,self:true,r:rankInfo(mine)})}catch(e){rows.push({uid:me,u:S.me.u,self:true,r:rankInfo(S.myVotes||[])})}
+ await Promise.all(acc.map(async o=>{try{const v=splitDups(await B.votesOfUser(o.uid)).keep;rows.push({uid:o.uid,u:o.u,r:rankInfo(v)})}catch(e){rows.push({uid:o.uid,u:o.u,r:rankInfo([]),err:true})}}));
+ rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
+ S.top={loading:false,rows};if(S.friendsOpen&&S.frTab==='top')R()}
+function topH(){const T=S.top;
+ if(!T||(T.loading&&!T.rows))return '<div class="mu" style="text-align:center;padding:18px 0">Calculando el top…</div>';
+ const rows=T.rows||[];let pos=0,last=null;
+ const medal=['🥇','🥈','🥉'];
+ const list=rows.map((o,i)=>{if(last===null||o.r.n!==last)pos=i+1;last=o.r.n;
+  const mk=pos<=3?medal[pos-1]:pos;
+  return `<div class="toprow${o.self?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${o.self?withDot(o.uid,av(o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${o.self?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
+ return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🏆 <b style="color:var(--tx)">Top Crew</b>: el ranking de rangos entre tú y tus amigos, del más alto al más bajo.</div>${rows.length>1?'':'<div class="mu" style="margin-bottom:8px">Aún no tienes amigos en el top. Agrega amigos para competir por el primer lugar.</div>'}<div class="toplist">${list}</div>`}
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
@@ -1807,7 +1895,7 @@ function pickSheet(){const P=S.pick,isP=P.k==='p',n=isP?countries().length:allMc
  ${(isP?S.me&&S.me.p:S.me&&S.me.m)?`<button class="btn s" style="margin:10px 0 0" onclick="pkSet(-1)">Quitar selección</button>`:''}</div></div>`}
 async function pkSet(i){const P=S.pick;if(!P||!S.me)return;const val=i<0?'':(_pkRes[i]?_pkRes[i].v:null);if(val===null)return;
  const f=P.k==='p'?'p':'m';const prev=S.me[f];S.me={...S.me,[f]:val};S.pick=null;S.msgP='';R();
- try{await B.updateUser(S.me.uid,{[f]:val})}catch(e){S.me={...S.me,[f]:prev};S.msgP='No se pudo guardar.';R()}}
+ try{await B.updateUser(S.me.uid,{[f]:val});syncAch()}catch(e){S.me={...S.me,[f]:prev};S.msgP='No se pudo guardar.';R()}}
 /* ===== Likes de perfil ===== */
 async function loadLikes(uid,quiet){
  S.likeCache=S.likeCache||{};
