@@ -497,6 +497,17 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .stk-d i.on{background:var(--f1)}
 .stk-t{margin:8px 0 0;font-size:13px}
 .stk-ch{margin-top:12px;padding:9px 12px;border-radius:14px;border:1px dashed var(--bd);font-size:12.5px;font-weight:700;color:var(--mu)}
+.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;padding:8px 14px 8px 8px;margin:0 0 14px;font:inherit;color:var(--tx);background:radial-gradient(circle at 12% 40%,color-mix(in srgb,var(--f1) 26%,transparent),transparent 60%),var(--cd);border:1px solid color-mix(in srgb,var(--f1) 45%,transparent);border-radius:20px;box-shadow:0 8px 22px color-mix(in srgb,var(--f1) 14%,transparent)}
+.stkc.off{background:var(--cd);border-color:var(--bd);box-shadow:none}
+.stkc .mm{flex:0 0 70px;height:84px;display:flex;align-items:flex-end;justify-content:center;padding-top:12px}
+.stkc .mm svg{width:54px;height:auto;animation:stkbob 2.6s ease-in-out infinite}
+.stkc.off .mm svg{filter:grayscale(.55);animation-duration:4.5s}
+.stkc-n{display:flex;align-items:baseline;gap:7px}
+.stkc-n b{font-size:34px;line-height:1;font-weight:900;color:var(--f1)}
+.stkc-n span{font-size:14px;font-weight:800}
+.stkc-s{font-size:12px;color:var(--mu);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stkc .stk-d i{width:12px}
+@media (prefers-reduced-motion:reduce){.stkc .mm svg{animation:none}}
 .stk-ch.on{border-style:solid;border-color:color-mix(in srgb,var(--f1) 55%,transparent);color:var(--tx);background:color-mix(in srgb,var(--f1) 14%,transparent)}
 @media (prefers-reduced-motion:reduce){.stk-m svg,.stk-f,.stk-e{animation:none}}
 .thm-tz{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--bd);border-radius:14px;font-size:12.5px;color:var(--mu);line-height:1.4}
@@ -874,7 +885,7 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.stkOpen?stkSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${pendCount()?`<span class="nbadge2">${pendCount()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
@@ -883,13 +894,13 @@ function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],
 function homeV(){
  const nx=CAL.filter(e=>e.k==='next').sort((a,b)=>(a.dt||'9999').localeCompare(b.dt||'9999'));
  return `<section class="hero">${achBtn()}<span class="kicker">Temporada 2026/27</span><h1>Vota cada batalla</h1><p>Elige tu FMS, mira la batalla y puntúa ronda por ronda.</p></section>
+  ${streakMini()}
  <button class="card libre" onclick="go('libre')"><div class="row"><div class="lbi">${ico('play',22)}</div><div style="flex:1;min-width:0"><b style="font-size:16px">Batalla libre</b><div class="mu">Vota cualquier batalla, aunque no sea de una liga.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>
  <div class="sec"><span>Ligas</span><span>${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).length}</span></div>
  <div class="lgrid">${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).map(l=>`<button class="ltile" style="--c:${l.c};--c2:${l.c2};--tx2:${l.tx}" onclick="openLg('${l.i}')">${logo(l,56)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>
  <div class="sec"><span>Próximas</span></div>
  ${nx.map(e=>{const l=L.find(x=>x.i===e.i);return `<div class="card row">${l?logo(l,44):''}<div style="flex:1;min-width:0"><b>${esc(e.n)}</b><div class="mu">${esc(e.d)}</div></div><span class="pill next">Próxima</span></div>`}).join('')}
- ${S.me?'':`<button class="btn" onclick="openAuth('create')">Crear cuenta para guardar tus votos</button>`}
-  ${streakH()}`;
+ ${S.me?'':`<button class="btn" onclick="openAuth('create')">Crear cuenta para guardar tus votos</button>`}`;
 }
 function openLg(i){S.lg=i;S.err='';go('lg')}
 const nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
@@ -1924,6 +1935,15 @@ function stkSvg(n,on){
   :`<path d="M52 86q6 5 12 0M76 86q6 5 12 0" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/><path d="M63 101h14" stroke="#111827" stroke-width="3" stroke-linecap="round"/><text x="100" y="62" font-size="16" font-weight="900" fill="#94A3B8" font-family="Arial,sans-serif">z</text><text x="110" y="50" font-size="12" font-weight="900" fill="#94A3B8" font-family="Arial,sans-serif">z</text>`;
  const fire=on?`<g transform="translate(70 56) scale(${s}) translate(-70 -56)"><path class="stk-f" d="M44 30C50 38 52 44 48 52 44 56 38 52 38 44 38 38 42 36 44 30Z" fill="var(--f1)" opacity=".85"/><path class="stk-f b" d="M96 30C90 38 88 44 92 52 96 56 102 52 102 44 102 38 98 36 96 30Z" fill="var(--f1)" opacity=".85"/><path class="stk-f" d="M70-2C84 18 102 26 98 44 96 54 84 58 70 58 56 58 44 54 42 44 38 26 56 18 70-2Z" fill="var(--f1)"/><path class="stk-f b" d="M70 18C78 30 88 34 86 46 85 53 78 56 70 56 62 56 55 53 54 46 52 34 62 30 70 18Z" fill="var(--f2)"/></g>`:'';
  return `<svg viewBox="0 -24 140 194" aria-hidden="true" style="overflow:visible"><defs><radialGradient id="stkg" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#F3F4F6"/><stop offset="1" stop-color="#6B7280"/></radialGradient></defs>${fire}<circle cx="70" cy="88" r="34" fill="url(#stkg)" stroke="#374151" stroke-width="2.5"/><path d="M40 76h60M37 88h66M40 100h60" stroke="#fff" stroke-opacity=".2" stroke-width="1.5"/>${eyes}<circle cx="48" cy="96" r="4.5" fill="#F87171" opacity=".5"/><circle cx="92" cy="96" r="4.5" fill="#F87171" opacity=".5"/><rect x="42" y="118" width="56" height="11" rx="4" fill="#F59E0B" stroke="#B45309" stroke-width="2"/><path d="M50 129h40l-6 37q-1 4-5 4H61q-4 0-5-4z" fill="#1F2937"/><path d="M58 134l-3 26" stroke="#fff" stroke-opacity=".15" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="142" r="4.5" fill="#EF4444"/></svg>`}
+function stkMini(){
+ const st=(S.me&&S.me.st)||{n:0,ch:0},n=S.me?(st.n||0):0,on=n>0;
+ const f=n>=30?['#38BDF8','#E0F2FE']:n>=10?['#F97316','#FDE047']:['#FB923C','#FDE047'];
+ const d=n>0&&n%10===0?10:n%10,nxt=n+(10-n%10);
+ const dots=Array.from({length:10},(_,i)=>`<i class="${i<d?'on':''}"></i>`).join('');
+ const sub=!S.me?'Crea tu cuenta y enciende tu racha':S.stkSaved?'¡Usaste tu oportunidad! Tu racha sigue viva':S.stkLost?'Perdiste tu racha de '+S.stkLost+' días. ¡Empieza otra!':st.ch?'🛡️ Oportunidad lista por si faltas un día':'🛡️ Próxima oportunidad a los '+nxt+' días';
+ return `<button class="card stkc${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}" onclick="S.stkOpen=true;R()" aria-label="Racha diaria: ${n} días"><div class="mm">${stkSvg(n,on)}</div><div style="flex:1;min-width:0"><div class="stkc-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d" style="justify-content:flex-start;margin:6px 0 5px">${dots}</div><div class="stkc-s">${sub}</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu);flex:0 0 auto"')}</button>`}
+function stkSheet(){return `<div class="ov" onclick="S.stkOpen=false;R()"><div class="sh" onclick="event.stopPropagation()">${streakH()}<button class="btn s" style="margin:14px 0 0" onclick="S.stkOpen=false;R()">Cerrar</button></div></div>`}
+
 function streakH(){
  if(!S.me)return `<div class="sec"><span>Racha diaria</span></div><div class="card stk off" style="--f1:#FB923C;--f2:#FDE047"><div class="stk-m">${stkSvg(0,false)}</div><div class="stk-n"><b>0</b><span>días de racha</span></div><div class="mu stk-t">Crea tu cuenta y entra cada día para encender el micrófono. Cada 10 días de racha ganas una oportunidad por si faltas un día.</div><button class="btn sm" style="width:100%;justify-content:center;margin:12px 0 0" onclick="openAuth('create')">Crear cuenta</button></div>`;
  const st=S.me.st||{n:0,ch:0,best:0},n=st.n||0,on=n>0;
