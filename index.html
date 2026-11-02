@@ -455,6 +455,18 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .likebar:active:not(.self){transform:scale(.98)}
 .likebar.pop .lk-i{animation:lkpop .45s cubic-bezier(.34,1.56,.64,1)}
 @keyframes lkpop{0%{transform:scale(1)}40%{transform:scale(1.6) rotate(-12deg)}100%{transform:scale(1)}}
+
+.thm-tz{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--bd);border-radius:14px;font-size:12.5px;color:var(--mu);line-height:1.4}
+.thm-tz b{color:var(--tx)}
+.thm-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.thm{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;border:1px solid var(--bd);border-radius:16px;background:var(--bg2);cursor:pointer;font:inherit;color:var(--tx)}
+.thm i{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:17px;font-weight:900;color:#fff;box-shadow:0 0 0 3px var(--bd)}
+.thm span{font-size:12px;font-weight:800}
+.thm em{font-style:normal;font-size:10.5px;color:var(--mu)}
+.thm.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,var(--bg2))}
+.thm.on i{box-shadow:0 0 0 3px var(--ac)}
+.thm.lk i{filter:grayscale(.55) brightness(.7)}
+.thm.lk{opacity:.8}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -508,7 +520,7 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||''});
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||''});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -1141,8 +1153,8 @@ function resV(){const v=S.last;if(!v)return homeV();const c=S.comm;const tw=c?c.
 const MES_C=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const MES_L=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 S.calTab='prox';S.calOpen={};
-function toggleCal(ci){S.calOpen[ci]=!S.calOpen[ci];R()}
-function setCalTab(t){S.calTab=t;R()}
+function toggleCal(ci){S.calOpen[ci]=!S.calOpen[ci];achMark('cal');R()}
+function setCalTab(t){S.calTab=t;achMark('cal');R()}
 function calCard(e,ci){
  const l=L.find(x=>x.i===e.i);const open=!!S.calOpen[ci];
  const dp=e.dt?e.dt.split('-'):null;
@@ -1180,7 +1192,7 @@ function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.
   const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
   return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">ID ${fmtPid(pid(x.uid))} · Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
 function openU(uid){S.uid=uid;go('user');loadLikes(uid)}
-function profileHead(u,isMe,uid){return `<div class="banner" style="--c:#EAB308;--c2:#FDE047">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${(uid||u.uid)?`<div class="pid"><span>ID ${fmtPid(pid(uid||u.uid))}</span><button class="pcopy" onclick="copyId('${pid(uid||u.uid)}',this)">Copiar</button></div>`:''}<p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
+function profileHead(u,isMe,uid){return `<div class="banner" style="${themeStyle(u)}">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${(uid||u.uid)?`<div class="pid"><span>ID ${fmtPid(pid(uid||u.uid))}</span><button class="pcopy" onclick="copyId('${pid(uid||u.uid)}',this)">Copiar</button></div>`:''}<p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
  return `<div class="card"><div class="stats" style="margin-bottom:14px"><div class="stat"><big>${n}</big><span>Batallas votadas</span></div><div class="stat"><big>${by.length}</big><span>Ligas votadas</span></div></div>${n?`<div class="row"><svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Votos por liga"><circle r="44" cx="60" cy="60" fill="none" stroke="var(--bd)" stroke-width="14"/>${ring}<text x="60" y="67" text-anchor="middle" font-size="22" font-weight="900" fill="var(--tx)">${n}</text></svg><div style="flex:1;min-width:0">${by.map(o=>`<div style="font-size:13px;margin:5px 0"><span style="color:${colr(o.l)};font-size:16px">●</span> ${esc(o.l.n)} <span class="mu">· ${o.c}</span></div>`).join('')}</div></div>`:'<div class="mu">Sin votos todavía.</div>'}</div>`}
@@ -1204,7 +1216,7 @@ function perfilV(){
  const m=S.me;const correo=FB&&FB.auth.currentUser?FB.auth.currentUser.email||'':'';
  return `${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${profileHead(m,true)}${likeBarH(m.uid)}${rankCardH(S.myVotes)}<label class="btn s fotobtn">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
  ${correo?`<div class="mu" style="margin:-8px 2px 14px">Correo: ${esc(correo)}</div>`:''}
- ${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
+ ${themeCardH()}${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
  <label class="f">País</label><input id="pf-p" value="${esc(m.p||'')}">
  <label class="f">MC favorito</label><input id="pf-m" value="${esc(m.m||'')}">
  <label class="f">Sobre mí</label><textarea id="pf-a" rows="3">${esc(m.a||'')}</textarea>
@@ -1315,7 +1327,7 @@ function fbM(){
 function openFb(){S.fb=true;S.fbs=false;S.fbe='';R()}
 function closeFb(){S.fb=false;S.fbs=false;S.fbe='';R()}
 async function sendFb(){const t=(S.fbt||'').trim();if(!t){S.fbe='Escribe un comentario antes de enviarlo.';return R()}
- try{await B.addComment({t,d:today(),u:S.me?S.me.u:'anónimo',ts:Date.now()});S.fbt='';S.fbe='';S.fbs=true}catch(e){S.fbe='No se pudo enviar. Intenta de nuevo.'}R()}
+ try{await B.addComment({t,d:today(),u:S.me?S.me.u:'anónimo',ts:Date.now()});S.fbt='';S.fbe='';S.fbs=true;achMark('coment')}catch(e){S.fbe='No se pudo enviar. Intenta de nuevo.'}R()}
 
 async function cambiarFoto(file){if(!file||!S.me)return;
  S.msgP='Guardando foto…';R();
@@ -1548,7 +1560,7 @@ function adminV(){
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
 
 /* ===== Logros ===== */
-const ACH_N=10;
+const ACH_N=20;
 const ACH=[
  {id:'cuenta',ic:'🎤',x:'#F59E0B',n:'Pisa el Escenario',d:'Crea tu cuenta y entra a la rueda.'},
  {id:'voto1',ic:'⚖️',x:'#EF4444',n:'Primer Veredicto',d:'Vota tu primera batalla de liga.'},
@@ -1559,7 +1571,17 @@ const ACH=[
  {id:'es2017',ic:'🕰️',x:'#E11D48',n:'Old School del 17',d:'Vota una batalla de FMS España 2017.'},
  {id:'amigos5',ic:'🤝',x:'#3B82F6',n:'Cypher de Cinco',d:'Haz 5 amigos.'},
  {id:'like',ic:'👍🏻',x:'#EAB308',n:'Respeto de Calle',d:'Dale like al perfil de otro usuario.'},
- {id:'ws',ic:'🌎',x:'#14B8A6',n:'Rimas Sin Fronteras',d:'Vota una batalla de FMS World Series.'}
+ {id:'ws',ic:'🌎',x:'#14B8A6',n:'Rimas Sin Fronteras',d:'Vota una batalla de FMS World Series.'},
+ {id:'semi3',ic:'⚡',x:'#94A3B8',n:'Capitán del Barrio II',d:'Llega al rango Semiprofesional 3.'},
+ {id:'coment',ic:'💌',x:'#EC4899',n:'Línea Directa al Beat',d:'Envía un comentario al desarrollador.'},
+ {id:'p40',ic:'🔥',x:'#F97316',n:'Fuera de Escala',d:'Vota una batalla de liga donde un MC pase de 40 puntos.'},
+ {id:'cal',ic:'🗓️',x:'#6366F1',n:'Fecha Marcada',d:'Interactúa con el calendario.'},
+ {id:'amigos15',ic:'🎧',x:'#2563EB',n:'Cypher de Quince',d:'Haz 15 amigos.'},
+ {id:'rep3',ic:'🗡️',x:'#DC2626',n:'Réplica Letal',d:'Vota 3 batallas de liga que hayan llegado a réplica.'},
+ {id:'libre',ic:'🎶',x:'#A855F7',n:'Barra Libre',d:'Vota una batalla en modo libre.'},
+ {id:'voto10',ic:'📋',x:'#EF4444',n:'Jurado de Diez',d:'Vota 10 batallas de liga.'},
+ {id:'likes5',ic:'👏',x:'#EAB308',n:'Aplauso de la Rueda',d:'Consigue 5 likes en tu perfil.'},
+ {id:'bio',ic:'📝',x:'#10B981',n:'Intro de MC',d:'Escribe algo sobre ti en tu perfil.'}
 ];
 S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
 const isLgVote=v=>!v.free;
@@ -1593,6 +1615,19 @@ function achCalc(){
  set('amigos5',nF>=5,nF,5,nF+' / 5 amigos');
  set('like',S.likeGiven,S.likeGiven?1:0,1,'');
  set('ws',votes.some(v=>v.l==='ws'),0,1,'');
+ const lt=RANK_TH[7];
+ set('semi3',R_.lvl>=8,R_.n,lt,R_.n.toLocaleString('es')+' / '+lt.toLocaleString('es')+' pts');
+ set('coment',false,0,1,'');
+ set('p40',votes.some(v=>{try{const nv=voteNorm(v);return Math.max(+nv.ta||0,+nv.tb||0)>40}catch(e){return Math.max(+v.ta||0,+v.tb||0)>40}}),0,1,'');
+ set('cal',false,0,1,'');
+ set('amigos15',nF>=15,nF,15,nF+' / 15 amigos');
+ const nRep=votes.filter(v=>v.rep==='voted').length;
+ set('rep3',nRep>=3,nRep,3,nRep+' / 3 réplicas');
+ set('libre',(S.myVotes||[]).some(v=>v.free),0,1,'');
+ set('voto10',votes.length>=10,votes.length,10,votes.length+' / 10 batallas');
+ const nL=me&&S.likeCache&&S.likeCache[me.uid]?S.likeCache[me.uid].n:0;
+ set('likes5',nL>=5,nL,5,nL+' / 5 likes');
+ set('bio',!!(me&&String(me.a||'').trim()),me&&String(me.a||'').trim()?1:0,1,'');
  return o}
 function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
 function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
@@ -1603,15 +1638,15 @@ function achSheet(){
  const list=ACH.filter(a=>tab==='all'||(tab==='got'?o[a.id].done:!o[a.id].done));
  const fd=ts=>ts?new Date(ts).toLocaleDateString('es',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
  const card=a=>{const s=o[a.id];const pct=s.max?Math.round(s.cur/s.max*100):0;
-  const showBar=!s.done&&(a.id==='regional3'||a.id==='jornada'||a.id==='amigos5');
+  const showBar=!s.done&&s.max>1&&s.txt!=='';
   return `<div class="ach-c${s.done?' got':''}" style="--ax:${a.x}"><div class="ach-m">${a.ic}${s.done?'':'<u>🔒</u>'}</div><div class="ach-b"><div class="ach-n">${esc(a.n)}</div><div class="ach-d">${esc(a.d)}</div>
   ${showBar?`<div class="ach-bar"><i style="width:${pct}%"></i></div><div class="ach-pl"><span>${esc(s.txt)}</span><span>${pct}%</span></div>`:''}
   ${s.done?`<span class="ach-st">✓ Desbloqueado${s.ts?' · '+fd(s.ts):''}</span>`:(showBar?'':`<span class="ach-st" style="--ax:var(--mu)">Bloqueado</span>`)}</div></div>`};
  return `<div class="ov" onclick="closeAch()"><div class="sh ach-sh" onclick="event.stopPropagation()">
  <div class="ach-top"><div class="ach-ring"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="var(--cd2)" stroke-width="8"/><circle cx="42" cy="42" r="36" fill="none" stroke="var(--ac)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*n/ACH_N} ${C}" transform="rotate(-90 42 42)"/></svg><b>${n}<small>de ${ACH_N}</small></b></div>
- <div class="ach-ti"><h2>Tus logros</h2><p>Desbloquea medallas votando, haciendo crew y subiendo de rango. Solo cuentan las batallas de liga.</p></div></div>
+ <div class="ach-ti"><h2>Tus logros</h2><p>Desbloquea medallas votando, haciendo crew y subiendo de rango. Cada logro te acerca a nuevos colores para tu tarjeta de perfil.</p></div></div>
  ${S.me?'':`<div class="card" style="margin:12px 0 0;text-align:center"><b>Crea tu cuenta</b><div class="mu" style="margin:4px 0 10px">Inicia sesión para ir guardando tus logros.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.achOpen=false;openAuth('create')">Crear cuenta</button></div>`}
- <div class="ach-seg"><button class="${tab==='all'?'on':''}" onclick="S.achTab='all';R()">Todos ${ACH_N}</button><button class="${tab==='got'?'on':''}" onclick="S.achTab='got';R()">Logrados ${n}</button><button class="${tab==='lock'?'on':''}" onclick="S.achTab='lock';R()">Pendientes ${ACH_N-n}</button></div>
+ ${colorTeaser(n)}<div class="ach-seg"><button class="${tab==='all'?'on':''}" onclick="S.achTab='all';R()">Todos ${ACH_N}</button><button class="${tab==='got'?'on':''}" onclick="S.achTab='got';R()">Logrados ${n}</button><button class="${tab==='lock'?'on':''}" onclick="S.achTab='lock';R()">Pendientes ${ACH_N-n}</button></div>
  <div class="ach-list">${list.length?list.map(card).join(''):`<div class="card mu" style="text-align:center;margin:0">${tab==='got'?'Todavía no has desbloqueado ninguno. ¡A votar!':'¡Los tienes todos! Pronto habrá más.'}</div>`}</div>
  <div class="ach-note">Pronto añadiremos más logros 🎙️</div>
  <button class="btn s" style="margin:14px 0 0" onclick="closeAch()">Cerrar</button></div></div>`}
@@ -1642,6 +1677,29 @@ async function loadAch(){
  try{S.likeGiven=await B.likeGivenAny(uid)}catch(e){}
  try{await loadLikes(uid,true)}catch(e){}
  await syncAch()}
+
+/* ===== Colores de tarjeta de perfil (se desbloquean con logros) ===== */
+const THEMES=[
+ {id:'co',n:'FMS Colombia',c:'#EAB308',c2:'#FDE047',need:0},
+ {id:'pe',n:'FMS Perú',c:'#B91C1C',c2:'#7F1D1D',need:2},
+ {id:'cl',n:'FMS Chile',c:'#1D4ED8',c2:'#1E3A8A',need:4},
+ {id:'ar',n:'FMS Argentina',c:'#38BDF8',c2:'#2563EB',need:6},
+ {id:'mx',n:'FMS México',c:'#22C55E',c2:'#15803D',need:9},
+ {id:'ca',n:'FMS Caribe',c:'#14B8A6',c2:'#0EA5E9',need:12},
+ {id:'es',n:'FMS España',c:'#E8334A',c2:'#FDE047',need:15},
+ {id:'in',n:'FMS Internacional',c:'#111113',c2:'#52525B',need:19},
+ {id:'ws',n:'FMS World Series',c:'#7C3AED',c2:'#C084FC',need:24}
+];
+const themeOf=u=>THEMES.find(t=>t.id===(u&&u.tema))||THEMES[0];
+const themeStyle=u=>{const t=themeOf(u);return `--c:${t.c};--c2:${t.c2}`};
+function colorTeaser(n){const nx=THEMES.find(t=>t.need>n);
+ return `<div class="thm-tz">🎨 ${nx?`Próximo color de tarjeta: <b>${esc(nx.n)}</b> · te faltan <b>${nx.need-n}</b> logro${nx.need-n===1?'':'s'}`:'Tienes todos los colores de tarjeta disponibles'}</div>`}
+function themeCardH(){if(!S.me)return '';const n=achCount(),cur=themeOf(S.me).id;
+ return `<div class="card"><b>Color de tarjeta</b><div class="mu" style="margin:4px 0 12px">Se desbloquean con logros (tienes ${n}). Así te verán los demás en tu perfil.</div><div class="thm-g">${THEMES.map(t=>{const ok=n>=t.need;return `<button class="thm${cur===t.id?' on':''}${ok?'':' lk'}" onclick="setTema('${t.id}')" aria-label="${esc(t.n)}"><i style="background:linear-gradient(135deg,${t.c},${t.c2})">${ok?(cur===t.id?'✓':''):'🔒'}</i><span>${esc(t.n.replace('FMS ',''))}</span><em>${ok?(t.need?'Desbloqueado':'Base'):t.need+' logros'}</em></button>`}).join('')}</div></div>`}
+async function setTema(id){const t=THEMES.find(x=>x.id===id);if(!t||!S.me)return;
+ const n=achCount();if(n<t.need){achFail('Te faltan '+(t.need-n)+' logros para desbloquear '+t.n+'.');return}
+ const prev=S.me.tema;S.me={...S.me,tema:id};R();
+ try{await B.updateUser(S.me.uid,{tema:id})}catch(e){S.me={...S.me,tema:prev};R();achFail('No se pudo guardar el color.')}}
 /* ===== Likes de perfil ===== */
 async function loadLikes(uid,quiet){
  S.likeCache=S.likeCache||{};
