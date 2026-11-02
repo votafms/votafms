@@ -565,7 +565,7 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||''});
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -597,6 +597,7 @@ const B={
  async usernameTaken(u){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'usernames',u));return s.exists()},
  async createUser(uid,u,prof){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
  async updateUser(uid,prof){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),prof)},
+ async topUsers(n){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.orderBy('rp','desc'),fm.limit(n)));return q.docs.map(d=>({uid:d.id,...pub(d.data())}))},
  async listUsers(){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(200)));return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},
  async addVote(v){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'votes'),v)},
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v)},
@@ -943,7 +944,10 @@ function tablaHTML(rows,l,o){
  </div>${live?'<div class="stleg"><span><i class="g"></i>Campeón</span>'+(rows.length>=5?'<span><i class="r"></i>Descenso · 2 últimos puestos</span>':'')+'</div>':''}</div>`;
 }
 function comunidadV(){
- const head=`<h1 class="pg">Comunidad</h1><div class="mu" style="margin:-8px 2px 14px">Promedio de todos los usuarios. Las batallas libres no cuentan.</div>`;
+ const ct=S.commTab||'tablas';
+ const seg=`<div class="seg" style="margin:0 0 14px"><button class="${ct==='tablas'?'on':''}" onclick="S.commTab='tablas';R()">📊 Tablas</button><button class="${ct==='rank'?'on':''}" onclick="S.commTab='rank';R();loadGlobalTop()">🏆 Ranking</button></div>`;
+ if(ct==='rank')return `<h1 class="pg">Comunidad</h1>${seg}${globalTopH()}`;
+ const head=`<h1 class="pg">Comunidad</h1>${seg}<div class="mu" style="margin:-4px 2px 14px">Promedio de todos los usuarios. Las batallas libres no cuentan.</div>`;
  if(!S.comm5)return head+'<div class="card mu">Cargando tablas…</div>';
  return head+COMUN.map(id=>{const l=L.find(x=>x.i===id);const votes=(S.comm5[id]||[]).filter(v=>!v.free&&(v.temp||'2026')==='2026');const [a1]=accentOf(l);
   return `<div class="sec" style="color:${a1}"><span>${esc(l.n)}</span><span>${commCount(votes)}</span></div>${votes.length?tablaHTML(standings(id,votes),l):'<div class="card mu">Todavía no hay votaciones en esta liga.</div>'}`}).join('');
@@ -1425,7 +1429,7 @@ function startEdit(v){
 function editMine(){const v=S.viewList[S.vi];if(v)startEdit(v)}
 async function deleteMine(){const v=S.viewList[S.vi];if(!v||!v.id)return;
  if(!confirm('¿Borrar esta votación? No se puede deshacer.'))return;
- try{await B.deleteVote(v.id);S.myVotes=(S.myVotes||[]).filter(x=>x.id!==v.id);S.msgP='Votación borrada';S.v='perfil';R();window.scrollTo(0,0)}
+ try{await B.deleteVote(v.id);S.myVotes=(S.myVotes||[]).filter(x=>x.id!==v.id);syncMyRank(S.myVotes);S.msgP='Votación borrada';S.v='perfil';R();window.scrollTo(0,0)}
  catch(e){S.msgP='No se pudo borrar. Revisa las reglas de Firestore.';S.v='perfil';R()}}
 
 function delM(){return `<div class="ov" onclick="${S.delBusy?'':'S.delAsk=false;R()'}"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">¿Estás seguro que quieres eliminar tu cuenta?</b><div class="mu" style="margin:8px 0 16px">Se borrarán tu perfil, tus votaciones, tus amigos y tu nombre de usuario. Esta acción no se puede deshacer.</div><button class="btn" style="background:#DC2626;box-shadow:none" onclick="deleteAccount()" ${S.delBusy?'disabled':''}>${S.delBusy?'Borrando…':'Sí, eliminar mi cuenta'}</button><button class="btn s" onclick="S.delAsk=false;R()" ${S.delBusy?'disabled':''}>Cancelar</button></div></div>`}
@@ -1542,12 +1546,11 @@ function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
  const oth=f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName};
  let body='';
  if(tab==='amigos'){body=acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))} <span style="text-align:left">${esc(o.u)}${presLine(o.uid)}</span></button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></div>`}).join(''):'<div class="mu">Todavía no tienes amigos.</div>';}
- else if(tab==='top'){body=topH()}
- else if(tab==='global'){body=globalTopH()}
+ else if(tab==='top'){body=crewTopH()}
  else if(tab==='recibidas'){body=inc.length?inc.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><span style="display:flex;gap:6px"><button class="fbtn" onclick="friendAct('${esc(o.uid)}','${esc(o.u)}')">Aceptar</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Rechazar</button></span></div>`}).join(''):'<div class="mu">No tienes solicitudes recibidas.</div>';}
  else{body=out.length?out.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Cancelar</button></div>`}).join(''):'<div class="mu">No has enviado solicitudes.</div>';}
- const tabs=[['amigos','Amigos '+acc.length],['top','🏆 Crew'],['global','🌍 Global'],['recibidas','Recibidas '+inc.length],['enviadas','Enviadas '+out.length]];
- return `<div class="ov" onclick="S.friendsOpen=false;R()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Amigos</b><div class="seg s5" style="margin:12px 0">${tabs.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.frTab='${k}';R();${k==='top'?'loadTop()':k==='global'?'loadGlobalTop()':''}">${t}</button>`).join('')}</div>${body}</div></div>`;
+ const tabs=[['amigos','Amigos '+acc.length],['top','🏆 Crew'],['recibidas','Recibidas '+inc.length],['enviadas','Enviadas '+out.length]];
+ return `<div class="ov" onclick="S.friendsOpen=false;R()"><div class="sh" onclick="event.stopPropagation()"><b style="font-size:19px">Amigos</b><div class="seg s4" style="margin:12px 0">${tabs.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.frTab='${k}';R();${k==='top'?'loadTop()':''}">${t}</button>`).join('')}</div>${body}</div></div>`;
 }
 const DAYS20=20*864e5;
 function nameCardH(){const m=S.me;const last=m.unAt||0;const left=last?Math.ceil((last+DAYS20-Date.now())/864e5):0;const lock=left>0;
@@ -1563,12 +1566,14 @@ const RANKS=['Underground','Regional','Semiprofesional','Profesional','Elite'];
 const LP={ws:100,es:80,in:60,ar:50,mx:45,cl:40,co:35,pe:30,ca:25};
 const RANK_TH=[100,250,450,700,1000,1350,1750,2200,2700,3300,4000,4800,5700,6700];
 function leaguePts(l){return LP[l]||0;}
-function rankInfo(votes){const seen=new Set();let total=0;(votes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');if(seen.has(k))return;seen.add(k);total+=leaguePts(v.l);});
+function rankFromTotal(total){
  let idx=0;for(let i=0;i<RANK_TH.length;i++){if(total>=RANK_TH[i])idx=i+1;else break}
  const t=Math.floor(idx/3),sub=idx%3+1,isMax=idx>=14;
  const curThr=idx===0?0:RANK_TH[idx-1],nxtThr=isMax?null:RANK_TH[idx];
  const pct=isMax?100:Math.round((total-curThr)/(nxtThr-curThr)*100);const next=isMax?0:nxtThr-total;
  return {n:total,t,sub,name:RANKS[t]+' '+sub,pct,next,lvl:idx}}
+function rankInfo(votes){const seen=new Set();let total=0;(votes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');if(seen.has(k))return;seen.add(k);total+=leaguePts(v.l);});
+ return rankFromTotal(total)}
 const RANK_COL=['#94A3B8','#F59E0B','#E2E8F0','#FDE047','#C084FC'];
 const rcol=t=>RANK_COL[t]||'#EAB308';
 const rpips=(sub,n=3)=>`<div class="rpips">${[1,2,3].map(i=>`<span class="rpip${i<=sub?' on':''}"></span>`).join('')}</div>`;
@@ -1604,7 +1609,9 @@ function ranksSheet(){const r=rankInfo(S.myVotes||[]);
  </div></div>`}
 const bkey=v=>(v.free?'libre':v.l)+'|'+(v.temp||'2026')+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');
 function splitDups(list){const seen=new Set(),keep=[],dups=[];[...(list||[])].sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(v=>{if(v.free){keep.push(v);return}const k=bkey(v);if(seen.has(k)){dups.push(v)}else{seen.add(k);keep.push(v)}});keep.sort((a,b)=>(b.ts||0)-(a.ts||0));return {keep,dups}}
-async function cleanMine(){const all=await B.votesOfUser(S.me.uid);const r=splitDups(all);for(const d of r.dups){try{if(d.id)await B.deleteVote(d.id)}catch(e){}}return r.keep}
+async function cleanMine(){const all=await B.votesOfUser(S.me.uid);const r=splitDups(all);for(const d of r.dups){try{if(d.id)await B.deleteVote(d.id)}catch(e){}}syncMyRank(r.keep);return r.keep}
+/* Guarda mis puntos de rango en mi perfil (campo rp) para que el top se calcule con 1 sola consulta */
+async function syncMyRank(votes){if(!S.me)return;try{const n=rankInfo(votes).n;if(S.me.rp===n)return;await B.updateUser(S.me.uid,{rp:n});S.me={...S.me,rp:n};S.gtop=null}catch(e){}}
 function adminV(){
  if(!isAdmin())return `<div class="card">No tienes acceso a este panel.</div><button class="btn s" onclick="go('perfil')">Volver</button>`;
  const list=S.adm;
@@ -1818,10 +1825,10 @@ async function loadTop(){if(!S.me)return;const me=S.me.uid;
  const acc=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName});
  const rows=[];
  try{const mine=S.myVotes||await cleanMine();S.myVotes=mine;rows.push({uid:me,u:S.me.u,self:true,r:rankInfo(mine)})}catch(e){rows.push({uid:me,u:S.me.u,self:true,r:rankInfo(S.myVotes||[])})}
- await Promise.all(acc.map(async o=>{try{const v=splitDups(await B.votesOfUser(o.uid)).keep;rows.push({uid:o.uid,u:o.u,r:rankInfo(v)})}catch(e){rows.push({uid:o.uid,u:o.u,r:rankInfo([]),err:true})}}));
+ await Promise.all(acc.map(async o=>{try{const d=await B.getUser(o.uid);if(d&&typeof d.rp==='number'){rows.push({uid:o.uid,u:o.u,r:rankFromTotal(d.rp)})}else{const v=splitDups(await B.votesOfUser(o.uid)).keep;rows.push({uid:o.uid,u:o.u,r:rankInfo(v)})}}catch(e){rows.push({uid:o.uid,u:o.u,r:rankInfo([]),err:true})}}));
  rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
  S.top={loading:false,rows};if(S.friendsOpen&&S.frTab==='top')R()}
-function topH(){const T=S.top;
+function crewTopH(){const T=S.top;
  if(!T||(T.loading&&!T.rows))return '<div class="mu" style="text-align:center;padding:18px 0">Calculando el top…</div>';
  const rows=T.rows||[];let pos=0,last=null;
  const medal=['🥇','🥈','🥉'];
@@ -1832,21 +1839,21 @@ function topH(){const T=S.top;
 
 /* ===== Top Global: ranking de todos los usuarios por rango ===== */
 S.gtop=S.gtop||null;
-async function loadGlobalTop(){if(!S.me)return;
+async function loadGlobalTop(force){if(!S.me)return;
  if(S.gtop&&S.gtop.loading)return;
- S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null};R();
+ if(!force&&S.gtop&&S.gtop.rows&&Date.now()-S.gtop.at<60000)return;
+ S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null,at:0};R();
  try{
-  const users=await B.listUsers();
-  const rows=[];
-  await Promise.all(users.map(async u=>{
-   try{const v=splitDups(await B.votesOfUser(u.uid)).keep;rows.push({uid:u.uid,u:u.u||u.uid,r:rankInfo(v)})}
-   catch(e){rows.push({uid:u.uid,u:u.u||u.uid,r:rankInfo([])})}
-  }));
+  const us=await B.topUsers(50);
+  const rows=us.filter(u=>u.rp>0).map(u=>({uid:u.uid,u:u.u||u.uid,r:rankFromTotal(u.rp)}));
   rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
-  S.gtop={loading:false,rows};if(S.friendsOpen&&S.frTab==='global')R()
- }catch(e){S.gtop={loading:false,rows:[],err:true};R()}}
+  const me=S.me.uid;
+  if(!rows.some(o=>o.uid===me)){let n=S.me.rp;if(typeof n!=='number'&&S.myVotes)n=rankInfo(S.myVotes).n;if(n>0)rows.push({uid:me,u:S.me.u,r:rankFromTotal(n),out:true})}
+  S.gtop={loading:false,rows,at:Date.now()};if(S.v==='comunidad')R()
+ }catch(e){S.gtop={loading:false,rows:[],err:true,at:0};R()}}
 function globalTopH(){const T=S.gtop;
- if(!T){return '<div class="mu" style="text-align:center;padding:18px 0">Toca "🌍 Global" para cargar el top.</div>'}
+ if(!S.me)return '<div class="card mu" style="text-align:center">Inicia sesión para ver el ranking.</div>';
+ if(!T){return '<div class="mu" style="text-align:center;padding:18px 0">Cargando ranking…</div>'}
  if(T.loading&&!T.rows)return '<div class="mu" style="text-align:center;padding:18px 0">Calculando top global…</div>';
  if(T.err)return '<div class="mu" style="text-align:center;padding:18px 0">No se pudo cargar. Revisa tu conexión.</div>';
  const rows=T.rows||[];
@@ -1855,10 +1862,10 @@ function globalTopH(){const T=S.gtop;
  let pos=0,last=null;
  const medal=['🥇','🥈','🥉'];
  const list=rows.map((o,i)=>{if(last===null||o.r.n!==last)pos=i+1;last=o.r.n;
-  const mk=pos<=3?medal[pos-1]:pos;
+  const mk=o.out?'···':pos<=3?medal[pos-1]:pos;
   const isMe=o.uid===me;
   return `<div class="toprow${isMe?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${isMe?withDot(o.uid,av(o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${isMe?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
- return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: todos los usuarios ordenados por rango, del más alto al más bajo.</div><div class="toplist">${list}</div>`}
+ return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: los 50 usuarios con más rango, del más alto al más bajo.</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
