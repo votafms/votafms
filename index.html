@@ -401,6 +401,7 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .std.fc.ch{color:#A16207}:root:not([data-theme="dark"]) .std.fc.dn{color:#B91C1C}:root:not([data-theme="dark"]) .stag.champ{color:#A16207}:root:not([data-theme="dark"]) .stag.desc{color:#B91C1C}}
 .repres{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;margin-bottom:10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg2);font-size:14px}
 .repres b{font-size:17px}
+.pid{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px;font-weight:700;margin:2px 0 4px}.pcopy{border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer}
 .avw{position:relative;display:inline-flex;flex:0 0 auto}.pdot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:#22C55E;border:2px solid var(--bg);box-sizing:border-box}.pst{display:block;font-size:12px;margin-top:2px;color:var(--mu)}.pst.on{color:#22C55E;font-weight:700}
 </style></head>
 <body>
@@ -1104,15 +1105,26 @@ function calV(){
  if(und.length)out+=`<div class="cmonth">Sin fecha confirmada</div>`+und.map(({e,ci})=>calCard(e,ci)).join('');
  const nPro=CAL.filter(e=>e.k!=='done').length,nFin=CAL.filter(e=>e.k==='done').length;
  return `<h1 class="pg">Calendario</h1><div class="seg" style="margin-bottom:6px"><button class="${tab==='prox'?'on':''}" onclick="setCalTab('prox')">Próximas ${nPro}</button><button class="${tab==='fin'?'on':''}" onclick="setCalTab('fin')">Finalizadas ${nFin}</button></div>${out||'<div class="card mu">No hay eventos en esta sección.</div>'}`}
-function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre de usuario" value="${esc(S.q)}" oninput="S.q=this.value;document.getElementById('ul').innerHTML=ulist()"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
-function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.filter(x=>!q||x.u.toLowerCase().includes(q));
+const _PID={};
+function pid(uid){if(!uid)return '';if(_PID[uid])return _PID[uid];
+ let h1=0x811c9dc5,h2=5381;for(let i=0;i<uid.length;i++){const c=uid.charCodeAt(i);h1^=c;h1=Math.imul(h1,16777619)>>>0;h2=(Math.imul(h2,33)+c)>>>0}
+ const n=((BigInt(h1)<<32n)|BigInt(h2))%900000000n+100000000n;return _PID[uid]=String(n)}
+const fmtPid=id=>id.replace(/(\d{3})(?=\d)/g,'$1 ');
+function uidMatch(x,q){const t=(q||'').trim();if(!t)return false;const d=t.replace(/[\s\-#]/g,'');
+ if(/^\d{5,}$/.test(d))return pid(x.uid).includes(d);
+ return t.length>=20&&String(x.uid).toLowerCase().includes(t.toLowerCase())}
+function copyId(id,btn){const done=()=>{if(btn){const o=btn.textContent;btn.textContent='¡Copiado!';setTimeout(()=>{btn.textContent=o},1500)}};
+ const fb=()=>{const t=document.createElement('textarea');t.value=id;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(t);done()};
+ try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(id).then(done).catch(fb)}else fb()}catch(e){fb()}}
+function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre de usuario o por ID" value="${esc(S.q)}" oninput="S.q=this.value;document.getElementById('ul').innerHTML=ulist()"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
+function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.filter(x=>!q||x.u.toLowerCase().includes(q)||uidMatch(x,q));
  if(!f.length)return `<div class="card mu">${list.length?'No encontramos ese usuario.':'Todavía no hay usuarios registrados. ¡Sé el primero!'}</div>`;
  return f.map(x=>{const fr=friendOf(x.uid);const mine=S.me&&S.me.uid===x.uid;
   const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
   const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
-  return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
+  return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">ID ${fmtPid(pid(x.uid))} · Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
 function openU(uid){S.uid=uid;go('user')}
-function profileHead(u,isMe,uid){return `<div class="banner" style="--c:#EAB308;--c2:#FDE047">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1><p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
+function profileHead(u,isMe,uid){return `<div class="banner" style="--c:#EAB308;--c2:#FDE047">${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${(uid||u.uid)?`<div class="pid"><span>ID ${fmtPid(pid(uid||u.uid))}</span><button class="pcopy" onclick="copyId('${pid(uid||u.uid)}',this)">Copiar</button></div>`:''}<p>${esc(u.p||'Sin país')} · ${u.m?'MC favorito: '+esc(u.m):'Sin MC favorito'}</p></div></div>${u.a?`<div class="card"><div class="mu" style="margin-bottom:4px">Sobre mí</div>${esc(u.a)}</div>`:''}<div class="mu" style="margin:-4px 2px 14px">Se unió: ${esc(u.joined||'—')}${uid?presLine(uid):''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
  return `<div class="card"><div class="stats" style="margin-bottom:14px"><div class="stat"><big>${n}</big><span>Batallas votadas</span></div><div class="stat"><big>${by.length}</big><span>Ligas votadas</span></div></div>${n?`<div class="row"><svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Votos por liga"><circle r="44" cx="60" cy="60" fill="none" stroke="var(--bd)" stroke-width="14"/>${ring}<text x="60" y="67" text-anchor="middle" font-size="22" font-weight="900" fill="var(--tx)">${n}</text></svg><div style="flex:1;min-width:0">${by.map(o=>`<div style="font-size:13px;margin:5px 0"><span style="color:${colr(o.l)};font-size:16px">●</span> ${esc(o.l.n)} <span class="mu">· ${o.c}</span></div>`).join('')}</div></div>`:'<div class="mu">Sin votos todavía.</div>'}</div>`}
@@ -1316,6 +1328,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-02T12:00:00-04:00'),text:'Nuevo: ID de usuario. Cada usuario ya tiene su ID de 9 números, que verás debajo de tu nombre en tu perfil con un botón para copiarlo. Ahora, en Buscar, puedes encontrar a otros usuarios por su nombre de usuario o por su ID, y compartir tu ID con tus amigos para que te agreguen más fácil.'},
  {ts:Date.parse('2026-11-01T23:00:00-04:00'),text:'Nuevo: estado de conexión. Ahora verás un círculo verde sobre la foto de tus amigos cuando están activos en la página y, si no lo están, la hora de su última conexión. Solo los amigos entre sí pueden ver este estado, y se muestra en el perfil, en la lista de amigos y en la búsqueda de usuarios.'},
  {ts:Date.parse('2026-11-01T21:30:00-04:00'),text:'Diferencia para que sea directa: ahora está junto a la planilla, dentro de la votación. Se elige del 1 al 6, y en la planilla antigua también con medios puntos (1,5; 2,5; etc.). En el celular se abre un selector; en computadora basta con hacer clic en el botón y escribir el número con el teclado. En la planilla antigua, la barra espaciadora agrega el medio punto.'},
  {ts:Date.parse('2026-11-01T21:00:00-04:00'),text:'Novedades: vuelve FMS World Series con su temporada 2024/2025 (5 jornadas con su tabla, solo planilla actual). Nuevo botón «Diferencia para que sea directa» junto a la planilla, en todas las ligas: elige cuántos puntos de diferencia hacen falta para ganar directo; si el MC no llega, va a réplica y la tabla lo tiene en cuenta. FMS Internacional ahora usa en todas sus temporadas la planilla Easy · Hard (6), Temáticas (4), Random Mode (8), Minutos libres (6) y Deluxe (12), y también puedes votar con la planilla actual.'},
