@@ -497,7 +497,7 @@ img.av.lg{width:76px;height:76px;border:3px solid rgba(255,255,255,.25)}
 .stk-d i.on{background:var(--f1)}
 .stk-t{margin:8px 0 0;font-size:13px}
 .stk-ch{margin-top:12px;padding:9px 12px;border-radius:14px;border:1px dashed var(--bd);font-size:12.5px;font-weight:700;color:var(--mu)}
-.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;padding:8px 14px 8px 8px;margin:0 0 14px;font:inherit;color:var(--tx);background:radial-gradient(circle at 12% 40%,color-mix(in srgb,var(--f1) 26%,transparent),transparent 60%),var(--cd);border:1px solid color-mix(in srgb,var(--f1) 45%,transparent);border-radius:20px;box-shadow:0 8px 22px color-mix(in srgb,var(--f1) 14%,transparent)}
+button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;padding:8px 14px 8px 8px;margin:0 0 14px;font:inherit;color:var(--tx);background:radial-gradient(circle at 12% 40%,color-mix(in srgb,var(--f1) 26%,transparent),transparent 60%),var(--cd);border:1px solid color-mix(in srgb,var(--f1) 45%,transparent);border-radius:20px;box-shadow:0 8px 22px color-mix(in srgb,var(--f1) 14%,transparent)}
 .stkc.off{background:var(--cd);border-color:var(--bd);box-shadow:none}
 .stkc .mm{flex:0 0 70px;height:84px;display:flex;align-items:flex-end;justify-content:center;padding-top:12px}
 .stkc .mm svg{width:54px;height:auto;animation:stkbob 2.6s ease-in-out infinite}
@@ -894,7 +894,7 @@ function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],
 function homeV(){
  const nx=CAL.filter(e=>e.k==='next').sort((a,b)=>(a.dt||'9999').localeCompare(b.dt||'9999'));
  return `<section class="hero">${achBtn()}<span class="kicker">Temporada 2026/27</span><h1>Vota cada batalla</h1><p>Elige tu FMS, mira la batalla y puntúa ronda por ronda.</p></section>
-  ${streakMini()}
+  ${stkMini()}
  <button class="card libre" onclick="go('libre')"><div class="row"><div class="lbi">${ico('play',22)}</div><div style="flex:1;min-width:0"><b style="font-size:16px">Batalla libre</b><div class="mu">Vota cualquier batalla, aunque no sea de una liga.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>
  <div class="sec"><span>Ligas</span><span>${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).length}</span></div>
  <div class="lgrid">${L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).map(l=>`<button class="ltile" style="--c:${l.c};--c2:${l.c2};--tx2:${l.tx}" onclick="openLg('${l.i}')">${logo(l,56)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>
@@ -1940,7 +1940,7 @@ function stkMini(){
  const f=n>=30?['#38BDF8','#E0F2FE']:n>=10?['#F97316','#FDE047']:['#FB923C','#FDE047'];
  const d=n>0&&n%10===0?10:n%10,nxt=n+(10-n%10);
  const dots=Array.from({length:10},(_,i)=>`<i class="${i<d?'on':''}"></i>`).join('');
- const sub=!S.me?'Crea tu cuenta y enciende tu racha':S.stkSaved?'¡Usaste tu oportunidad! Tu racha sigue viva':S.stkLost?'Perdiste tu racha de '+S.stkLost+' días. ¡Empieza otra!':st.ch?'🛡️ Oportunidad lista por si faltas un día':'🛡️ Próxima oportunidad a los '+nxt+' días';
+ const sub=!S.me?'Crea tu cuenta y enciende tu racha':S.stkSaved?'¡Usaste tu oportunidad! Tu racha sigue viva':S.stkLost?'Perdiste tu racha de '+S.stkLost+' días. ¡Empieza otra!':st.ch?'🛡️ Oportunidad lista':'🛡️ Oportunidad a los '+nxt+' días';
  return `<button class="card stkc${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}" onclick="S.stkOpen=true;R()" aria-label="Racha diaria: ${n} días"><div class="mm">${stkSvg(n,on)}</div><div style="flex:1;min-width:0"><div class="stkc-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d" style="justify-content:flex-start;margin:6px 0 5px">${dots}</div><div class="stkc-s">${sub}</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu);flex:0 0 auto"')}</button>`}
 function stkSheet(){return `<div class="ov" onclick="S.stkOpen=false;R()"><div class="sh" onclick="event.stopPropagation()">${streakH()}<button class="btn s" style="margin:14px 0 0" onclick="S.stkOpen=false;R()">Cerrar</button></div></div>`}
 
