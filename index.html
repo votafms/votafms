@@ -651,6 +651,40 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .pmas{flex:0 0 auto;position:relative;width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:1}
 .pmas svg{width:54px;height:auto;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
 .pmn{font-size:11.5px;font-weight:900;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.28);color:#fff;white-space:nowrap}
+/* ===== Diseños de planilla ===== */
+.pld .pl-card{background:var(--plp,linear-gradient(transparent,transparent)),linear-gradient(160deg,color-mix(in srgb,var(--ac) var(--plm,24%),var(--cd)),var(--cd) 55%,color-mix(in srgb,var(--ac2) 14%,var(--cd)));border-color:color-mix(in srgb,var(--ac) 50%,transparent)}
+.pld .pl-head{position:relative;overflow:hidden;background:var(--plh);color:var(--plx)}
+.pld .pl-head>*{position:relative;z-index:1}
+.pld .pl-card .cell,.pld .arow .cell,.pld .pl-card .tot,.pld .arow .tot{border-radius:var(--plr,12px)}
+.pld .pl-card .tot{color:var(--plx)}
+.pld .sbtn.on .sdot{color:var(--plx)}
+.pld.lh .tbtn{color:#1A1300;border-color:rgba(0,0,0,.32);background:rgba(255,255,255,.4)}
+.pld.lh .pl-kicker,.pld.lh .pl-title{text-shadow:none}
+.pld .pl-foot{background:color-mix(in srgb,var(--ac) 12%,rgba(0,0,0,.28))}
+.fx-glow .pl-card{box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 60%,transparent),0 0 22px color-mix(in srgb,var(--ac) 38%,transparent)}
+.fx-gold .pl-card{box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 55%,transparent),0 10px 28px color-mix(in srgb,var(--ac) 28%,transparent)}
+.fx-aur .pl-head{background-size:300% 100%;animation:plaur 9s ease-in-out infinite}
+.fx-shine .pl-head:before{content:"";position:absolute;top:0;bottom:0;width:38%;left:-45%;z-index:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-18deg);animation:plsh 4.2s ease-in-out infinite}
+.fx-crown .pl-head:after{content:"👑";position:absolute;right:10px;top:-6px;font-size:46px;opacity:.22;transform:rotate(14deg);pointer-events:none}
+.fx-crown .pl-card{box-shadow:0 0 0 1px color-mix(in srgb,var(--ac) 70%,transparent),0 12px 34px color-mix(in srgb,var(--ac2) 32%,transparent)}
+@keyframes plaur{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+@keyframes plsh{0%,55%{left:-45%}100%{left:130%}}
+.plbtn{justify-content:space-between;margin:0 0 12px}
+.plbtn span{flex:1;text-align:left}
+.plbtn em{font-style:normal;font-size:12px;font-weight:800;color:var(--mu);padding:3px 10px;border-radius:999px;background:var(--bg2);border:1px solid var(--bd)}
+.pl-g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.plt{display:flex;flex-direction:column;gap:3px;padding:8px;border:1px solid var(--bd);border-radius:16px;background:var(--bg2);cursor:pointer;font:inherit;color:var(--tx);text-align:left}
+.plt b{font-size:13px;margin-top:3px}.plt em{font-style:normal;font-size:11px;color:var(--mu);font-weight:700}
+.plt.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,var(--bg2))}
+.plt.lk{opacity:.7}
+.plp{position:relative;border-radius:12px;overflow:hidden;background:var(--cd);border:1px solid var(--bd)}
+.plp .plph{height:22px;background:var(--plh,var(--ph,linear-gradient(90deg,var(--ac),var(--ac2))))}
+.plp .plpc{display:flex;gap:5px;padding:8px}
+.plp .plpc i{flex:1;height:18px;border-radius:min(var(--plr,10px),9px);background:color-mix(in srgb,var(--ac) 30%,var(--bg2));border:1px solid var(--ac)}
+.plp .plpc i:nth-child(2){background:color-mix(in srgb,var(--ac2) 30%,var(--bg2));border-color:var(--ac2)}
+.plp u{position:absolute;right:6px;top:3px;text-decoration:none;font-size:13px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.plp.fx-shine .plph:before,.plp.fx-crown .plph:after{display:none}
+.tbg{display:flex;align-items:center;gap:6px;flex:0 0 auto}.plq{padding:5px 9px;font-size:14px;line-height:1}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -864,7 +898,7 @@ function renderFloat(){
  fb.innerHTML=`<div class="fp${S.floatMin?' min':''}" style="${st}--ac:${a1};--ac2:${a2}">
   <div class="fp-h" id="fp-drag"><span class="fp-t">Planilla · ${esc(S.bt.a)} vs ${esc(S.bt.b)}</span>
   <span class="fp-b"><button onclick="S.floatMin=!S.floatMin;R()" aria-label="Minimizar">${S.floatMin?'□':'–'}</button><button onclick="closeFloat()" aria-label="Regresar a la página">✕</button></span></div>
-  ${S.floatMin?'':`<div class="fp-c">${bodyV()}</div>`}
+  ${S.floatMin?'':`<div class="fp-c ${plSpec().cls}" style="${plSpec().style}">${bodyV()}</div>`}
  </div>`;
  const h=document.getElementById('fp-drag');
  if(h)h.addEventListener('pointerdown',ev=>{
@@ -974,7 +1008,7 @@ function actualV(){
  const prompt=tie&&!S.rep?`<div class="card" style="text-align:center;margin-top:12px"><b>${ma===mb?'Empate':'Diferencia de '+fmt(Math.abs(ma-mb))} ${ma} – ${mb}</b><div class="mu" style="margin:6px 0 12px">${ma===mb?'Como los dos sacaron el mismo puntaje, la réplica decide el ganador. Si no la juegas, queda empate.':'La diferencia es menor a '+S.dif+', así que la réplica decide el ganador. Si no la juegas, se cuenta por los puntos.'}</div><button class="btn" onclick="votarReplicaA()">Jugar réplica</button><button class="btn s" onclick="omitirReplica()">No jugar réplica</button></div>`:'';
  const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">La réplica está incompleta: si guardas así, no se tomará en cuenta.</div>`:'');
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
- <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
+ <span class="tbg">${plQuickH()}<button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></span></div>
  ${difBar()}<div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
  ${kbHint()}${note}${prompt}${(tie&&!S.rep)?'':repToggleH('A')}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
 }
@@ -984,7 +1018,7 @@ function R(){
  const vkey=(S.v==='vote'&&S.bt)?(S.bt.a+'|'+S.bt.b+'|'+(S.bt.y||'')+'|'+S.lg):null;
  const plan=document.getElementById('plan');
  if(vkey&&vkey===VKEY&&plan){
-  plan.innerHTML=planHTML();
+  plan.innerHTML=planHTML();{const sp=plSpec();plan.className=sp.cls;plan.style.cssText=sp.style}
   const sg=document.getElementById('fmtseg');if(sg&&!S.editId)sg.outerHTML=fmtSeg();
  }else{
   document.getElementById('app').innerHTML=(VIEW[S.v]||homeV)();
@@ -992,7 +1026,7 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.stkOpen?stkSheet():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.stkOpen?stkSheet():'')+(S.plSheet?plSheetH():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
@@ -1230,8 +1264,47 @@ function voteV(){
  const media=b.y?`<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${b.y}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a href="https://www.youtube.com/watch?v=${b.y}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
  <div class="card"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu" style="text-align:center;margin-top:10px">${esc(b.j||'')}</div></div>
- ${!b.y&&(S.temp==='2017'||S.temp==='2018'||S.temp==='2019'||S.temp==='2020'||S.temp==='2021'||S.temp==='2023'||S.temp==='2024'||S.temp==='2025')?link17Form():''}${S.editId?'':fmtSeg()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan">${planHTML()}</div></div>`;
+ ${!b.y&&(S.temp==='2017'||S.temp==='2018'||S.temp==='2019'||S.temp==='2020'||S.temp==='2021'||S.temp==='2023'||S.temp==='2024'||S.temp==='2025')?link17Form():''}${S.editId?'':fmtSeg()}${plBtnH()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan"${plAttr()}>${planHTML()}</div></div>`;
 }
+/* ===== Diseños de planilla por rango (15): solo cambian cómo se ve la planilla, no los puntos =====
+   El diseño número i se desbloquea al llegar al nivel de rango i (0 = Underground 1 ... 14 = Elite 3).
+   Para cambiar colores o añadir efectos edita esta lista. */
+const PL_D=[
+ {id:'asfalto',n:'Asfalto',c:['#64748B','#94A3B8'],r:6,m:14,h:'linear-gradient(90deg,#334155,#64748B)'},
+ {id:'cemento',n:'Cemento',c:['#A8A29E','#FACC15'],r:4,m:14,h:'linear-gradient(rgba(0,0,0,.58),rgba(0,0,0,.58)),repeating-linear-gradient(-45deg,#FACC15 0 12px,#1C1917 12px 24px)'},
+ {id:'neon',n:'Neón Callejero',c:['#22D3EE','#E879F9'],r:10,m:18,h:'linear-gradient(90deg,#0F172A,#1E1B4B)',p:'linear-gradient(color-mix(in srgb,var(--ac) 9%,transparent) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,color-mix(in srgb,var(--ac2) 9%,transparent) 1px,transparent 1px) 0 0/24px 24px',fx:'fx-glow'},
+ {id:'barrio',n:'Barrio',c:['#B45309','#F59E0B'],r:10,m:22,h:'linear-gradient(90deg,#7C2D12,#B45309)',p:'repeating-linear-gradient(0deg,transparent 0 17px,color-mix(in srgb,var(--ac) 14%,transparent) 17px 18px)'},
+ {id:'graffiti',n:'Graffiti',c:['#A855F7','#EC4899'],r:14,m:24,h:'radial-gradient(circle at 18% 30%,rgba(255,255,255,.28) 0 6px,transparent 7px),radial-gradient(circle at 72% 72%,rgba(255,255,255,.2) 0 10px,transparent 11px),radial-gradient(circle at 90% 20%,rgba(255,255,255,.18) 0 5px,transparent 6px),linear-gradient(90deg,#7E22CE,#DB2777)',p:'radial-gradient(circle,color-mix(in srgb,var(--ac2) 16%,transparent) 1.5px,transparent 2px) 0 0/16px 16px'},
+ {id:'vinilo',n:'Vinilo',c:['#6366F1','#A78BFA'],r:18,m:24,h:'repeating-radial-gradient(circle at 88% 50%,rgba(255,255,255,.12) 0 2px,transparent 2px 7px),linear-gradient(90deg,#1E1B4B,#4338CA)'},
+ {id:'plata',n:'Plata Fría',c:['#94A3B8','#7DD3FC'],r:12,m:20,hx:'#0F172A',lh:1,h:'linear-gradient(135deg,#E2E8F0,#94A3B8 45%,#F1F5F9 60%,#94A3B8)'},
+ {id:'cypher',n:'Cypher',c:['#14B8A6','#4ADE80'],r:8,m:20,h:'linear-gradient(90deg,#0F766E,#16A34A)',p:'linear-gradient(color-mix(in srgb,var(--ac) 12%,transparent) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,color-mix(in srgb,var(--ac) 12%,transparent) 1px,transparent 1px) 0 0/22px 22px'},
+ {id:'sunset',n:'Sunset Flow',c:['#F97316','#EC4899'],r:16,m:26,h:'linear-gradient(90deg,#F97316,#EC4899,#8B5CF6)'},
+ {id:'oro',n:'Oro Sólido',c:['#EAB308','#FDE047'],r:12,m:26,hx:'#1A1300',lh:1,h:'linear-gradient(135deg,#CA8A04,#FDE047 42%,#EAB308 58%,#A16207)',fx:'fx-gold'},
+ {id:'escenario',n:'Rojo Escenario',c:['#DC2626','#F87171'],r:12,m:24,h:'radial-gradient(ellipse at 50% -45%,rgba(255,255,255,.4),transparent 62%),linear-gradient(90deg,#7F1D1D,#DC2626)',p:'radial-gradient(ellipse 75% 38% at 50% 0,rgba(255,255,255,.09),transparent)'},
+ {id:'ambar',n:'Ámbar Premium',c:['#F59E0B','#FCD34D'],r:6,m:22,hx:'#FDE68A',h:'repeating-linear-gradient(135deg,rgba(255,255,255,.06) 0 2px,transparent 2px 8px),linear-gradient(90deg,#1C1917,#44403C)',fx:'fx-gold'},
+ {id:'cristal',n:'Cristal',c:['#22D3EE','#A5F3FC'],r:14,m:24,h:'linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.04)),linear-gradient(90deg,#0E7490,#06B6D4)',fx:'fx-shine'},
+ {id:'aurora',n:'Aurora',c:['#34D399','#A78BFA'],r:16,m:26,h:'linear-gradient(110deg,#059669,#6366F1,#DB2777,#059669)',fx:'fx-aur'},
+ {id:'rey',n:'Rey del Freestyle',c:['#FACC15','#C084FC'],r:14,m:28,h:'linear-gradient(110deg,#6D28D9,#FACC15,#6D28D9)',fx:'fx-aur fx-shine fx-crown'}];
+const plLvl=()=>{let a=0,b=0;try{if(S.myVotes)a=rankInfo(S.myVotes).lvl}catch(e){}try{if(S.me&&S.me.rp>0)b=rankFromTotal(S.me.rp).lvl}catch(e){}return Math.max(a,b)};
+const plRankName=i=>RANKS[Math.floor(i/3)]+' '+(i%3+1);
+const plVars=d=>`--ac:${d.c[0]};--ac2:${d.c[1]};--plh:${d.h};--plr:${d.r}px;--plm:${d.m}%;--plx:${d.hx||'#fff'};${d.p?`--plp:${d.p};`:''}`;
+const plCls=d=>`pld pld-${d.id}${d.lh?' lh':''}${d.fx?' '+d.fx:''}`;
+function plSpec(){const id=S.me&&S.me.pl;if(!id)return {cls:'',style:''};
+ const i=PL_D.findIndex(x=>x.id===id);if(i<0||plLvl()<i)return {cls:'',style:''};
+ return {cls:plCls(PL_D[i]),style:plVars(PL_D[i])}}
+function plAttr(){const sp=plSpec();return sp.cls?` class="${sp.cls}" style="${sp.style}"`:''}
+function plBtnH(){if(!S.me)return '';const id=S.me.pl,i=PL_D.findIndex(x=>x.id===id),ok=i>=0&&plLvl()>=i;
+ return `<button class="btn s plbtn" onclick="S.plSheet=true;R()">🎨 <span>Diseño de planilla</span><em>${ok?esc(PL_D[i].n):'Base'}</em></button>`}
+function plSheetH(){const l=curL(),[a1,a2]=accentOf(l),lvl=plLvl(),cur=(S.me&&S.me.pl)||'';
+ const tile=(d,i)=>{const ok=lvl>=i,on=cur===d.id;
+  return `<button class="plt${on?' on':''}${ok?'':' lk'}" onclick="setPl('${d.id}')" aria-label="${esc(d.n)}"><div class="plp ${plCls(d)}" style="${plVars(d)}"><div class="plph"></div><div class="plpc"><i></i><i></i><i></i></div>${ok?(on?'<u>✓</u>':''):'<u>🔒</u>'}</div><b>${esc(d.n)}</b><em>${ok?(on?'En uso':'Desbloqueado'):plRankName(i)}</em></button>`};
+ const base=`<button class="plt${cur?'':' on'}" onclick="setPl('')"><div class="plp" style="--ph:linear-gradient(90deg,${a1},${a2});--ac:${a1};--ac2:${a2}"><div class="plph"></div><div class="plpc"><i></i><i></i><i></i></div>${cur?'':'<u>✓</u>'}</div><b>Base</b><em>Color de la liga</em></button>`;
+ return `<div class="ov" onclick="S.plSheet=false;R()"><div class="sh" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><b style="font-size:18px">Diseño de planilla</b><button class="fbtn sent" onclick="S.plSheet=false;R()">Cerrar</button></div><div class="mu" style="margin:0 0 12px;font-size:13px">Solo cambia cómo se ve la planilla, no tus puntos. Cada rango desbloquea un diseño nuevo. Tu rango: <b style="color:var(--tx)">${plRankName(Math.min(lvl,14))}</b></div><div class="pl-g">${base}${PL_D.map(tile).join('')}</div></div></div>`}
+function plQuickH(){return S.me?`<button class="tbtn plq" onclick="S.plSheet=true;R()" aria-label="Diseño de planilla">🎨</button>`:''}
+async function setPl(id){if(!S.me)return;
+ if(id){const i=PL_D.findIndex(x=>x.id===id);if(i<0)return;if(plLvl()<i){try{achFail('Se desbloquea al llegar a '+plRankName(i)+'.')}catch(e){}return}}
+ const prev=S.me.pl||'';S.me={...S.me,pl:id};S.plSheet=false;R();
+ try{await B.updateUser(S.me.uid,{pl:id})}catch(e){S.me={...S.me,pl:prev};R();try{achFail('No se pudo guardar el diseño.')}catch(_){}}}
 function roundV(){
  const st=stepsList(),i=curStep(),cur=st[i]||st[0],rd=S.rounds[S.ri],part=rd.p[S.pi],n=st.length;
  const vals=part.c+3;let off=0;for(let k=0;k<S.pi;k++)off+=rd.p[k].c+3;
@@ -1245,7 +1318,7 @@ function roundV(){
  return `${bar}
  <div class="pl-card">
   <div class="pl-head"><div><div class="pl-kicker">Paso ${i+1} de ${n}${cur.rep?' · Réplica':''}</div><div class="pl-title">${esc(cur.lab)}</div></div>
-  <button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></div>
+  <span class="tbg">${plQuickH()}<button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></span></div>
   ${difBar()}<div class="pl-scroll"><div class="pblock">${head}${rows}</div></div>
   ${foot}
  </div>
@@ -1674,6 +1747,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-03T08:10:00-04:00'),text:'Nuevo: 15 diseños de planilla que se desbloquean con tu rango. En la pantalla de votación, toca 🎨 Diseño de planilla y elige: la planilla Base (con el color de la liga) o un diseño nuevo. Cada nivel de rango desbloquea uno: desde Asfalto en Underground 1 hasta el animado Rey del Freestyle en Elite 3. Son los mismos en todas las ligas y solo cambian cómo se ve la planilla; no afectan tus puntos ni tus votos.'},
  {ts:Date.parse('2026-11-03T06:45:00-04:00'),text:'Mejoras en la mascota de racha: ahora puedes activar «Mostrar en mi perfil» para que tus amigos y visitantes vean tu mascota (con tus atuendos y el color de tu llama) en tu tarjeta de perfil; viene desactivado y lo cambias cuando quieras. Además, la hoja de la racha quedó más limpia: los colores de la llama ahora se ven como círculos de colores, con candado los que aún no desbloqueas; toca uno y te dice a cuántos días se desbloquea.'},
  {ts:Date.parse('2026-11-03T01:40:00-04:00'),text:'Nuevo diseño en la barra de abajo: ahora es una barra flotante de cristal con bordes redondeados. La pestaña en la que estás se ilumina y muestra su nombre (Ligas, Calendario, Buscar, Perfil, Comunidad o IA), y las demás quedan solo con su icono para que se vea más limpio.'},
  {ts:Date.parse('2026-11-03T01:15:00-04:00'),text:'Nuevo diseño en Buscar: ahora los usuarios salen por orden alfabético (A–Z) con letras para ubicarte rápido, y puedes ordenar por Rango o por Nuevos. Filtra por Todos, Amigos, En línea y Solicitudes, mira a tus amigos conectados arriba, y busca también por país o MC favorito. Cada usuario muestra su rango, país y MC. Además, si eliges un nombre de usuario que ya existe, te sugerimos nombres parecidos que están libres.'},
