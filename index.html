@@ -2025,14 +2025,14 @@ function iaReset(){S.ia.msgs=[];iaSave();R()}
 function iaPush(r,t){S.ia.msgs.push({r,t});iaSave()}
 function iaLimit(){const now=Date.now();if(now-S.ia.last<3000)return 'Dame unos segundos entre mensajes 😅';try{const k='vfms_iaq_'+(S.me?S.me.uid:'x')+'_'+dkey();const n=+(localStorage.getItem(k)||0);if(n>=40)return 'Llegaste al límite de 40 mensajes de hoy. Vuelve mañana 🎤';localStorage.setItem(k,String(n+1))}catch(e){}return ''}
 /* IA vía Firebase AI Logic (Gemini): sin claves en la página. Se carga solo al usar la IA. */
-const IA_APPCHECK='';/* opcional: clave reCAPTCHA v3 de App Check */
+const IA_APPCHECK='6LdbxQ0uAAAAAI-AGIMDmX28ZlKilWriZym1yc8U';/* clave del sitio (pública) de reCAPTCHA para App Check */
 const FBV='https://www.gstatic.com/firebasejs/11.10.0/';
 let _iaAI=null;
 async function iaGetAI(){
  if(_iaAI)return _iaAI;
  const [am,aim]=await Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-ai.js')]);
  const app=am.initializeApp(FIREBASE_CONFIG,'vfms-ai');
- if(IA_APPCHECK){const ac=await import(FBV+'firebase-app-check.js');ac.initializeAppCheck(app,{provider:new ac.ReCaptchaV3Provider(IA_APPCHECK),isTokenAutoRefreshEnabled:true})}
+ if(IA_APPCHECK){const ac=await import(FBV+'firebase-app-check.js');ac.initializeAppCheck(app,{provider:new ac.ReCaptchaEnterpriseProvider(IA_APPCHECK),isTokenAutoRefreshEnabled:true})}
  _iaAI={ai:aim.getAI(app,{backend:new aim.GoogleAIBackend()}),aim};return _iaAI}
 async function iaAsk(){
  const {ai,aim}=await iaGetAI();
