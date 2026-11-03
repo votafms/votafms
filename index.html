@@ -608,6 +608,22 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
  .stk-hd{animation:stkhd 3.4s ease-in-out infinite!important}
  .stk-ey{animation:stklk 6.5s ease-in-out infinite!important}
  .stk-nt{animation:stknt 4.2s ease-out infinite!important}}
+.ulf{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.ulf::-webkit-scrollbar{display:none}
+.ulc{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:999px;padding:8px 13px;font-weight:800;font-size:13px;cursor:pointer}
+.ulc i{font-style:normal;font-size:11.5px;min-width:20px;text-align:center;padding:1px 6px;border-radius:999px;background:var(--cd2);color:var(--mu)}
+.ulc.on{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#1A1300;border-color:transparent}.ulc.on i{background:rgba(0,0,0,.14);color:#1A1300}
+.uls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 2px 10px;font-size:12.5px;color:var(--mu);font-weight:700}
+.ulsg{display:flex;background:var(--bg2);border:1px solid var(--bd);border-radius:999px;padding:3px}
+.ulsg button{border:0;background:none;color:var(--mu);font-weight:800;font-size:12px;padding:6px 11px;border-radius:999px;cursor:pointer}
+.ulsg button.on{background:var(--cd2);color:var(--tx)}
+.ulet{display:flex;align-items:center;gap:10px;margin:14px 2px 8px}.ulet b{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cd2);border:1px solid var(--bd);font-size:13px;color:var(--ac)}.ulet i{flex:1;height:1px;background:var(--bd)}
+.uon{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}.uon::-webkit-scrollbar{display:none}
+.uon button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;color:var(--tx);cursor:pointer;max-width:64px}.uon button span:last-child{font-size:11.5px;font-weight:700;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ulrk{font-size:12px;font-weight:800;color:color-mix(in srgb,var(--tc,var(--ac)) 55%,var(--tx));margin-top:1px}.ulm{font-size:12px;margin-top:1px}
+.ult{font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:999px;background:var(--cd2);color:var(--mu);vertical-align:middle}
+.ulr2{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.sugs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.sugc{border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1331,13 +1347,46 @@ function uidMatch(x,q){const t=(q||'').trim();if(!t)return false;const d=t.repla
 function copyId(id,btn){try{if(S.me&&String(id)===pid(S.me.uid))achMark('copyid')}catch(e){}const done=()=>{if(btn){const o=btn.textContent;btn.textContent='¡Copiado!';setTimeout(()=>{btn.textContent=o},1500)}};
  const fb=()=>{const t=document.createElement('textarea');t.value=id;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(e){}document.body.removeChild(t);done()};
  try{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(id).then(done).catch(fb)}else fb()}catch(e){fb()}}
-function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre de usuario o por ID" value="${esc(S.q)}" oninput="S.q=this.value;document.getElementById('ul').innerHTML=ulist()"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
-function ulist(){const list=S.users||[],q=(S.q||'').trim().toLowerCase(),f=list.filter(x=>!q||x.u.toLowerCase().includes(q)||uidMatch(x,q));
- if(!f.length)return `<div class="card mu">${list.length?'No encontramos ese usuario.':'Todavía no hay usuarios registrados. ¡Sé el primero!'}</div>`;
- return f.map(x=>{const fr=friendOf(x.uid);const mine=S.me&&S.me.uid===x.uid;
-  const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
-  const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
-  return `<div class="vrow" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}</b><div class="mu" style="font-size:12px">ID ${fmtPid(pid(x.uid))} · Se unió: ${esc(x.joined||'—')}</div>${presLine(x.uid)}</div>${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div>`}).join('')}
+/* ===== Buscar usuarios: filtros, orden A–Z con letras, rango, país y MC ===== */
+S.sf='all';S.ss='az';
+const ulNorm=x=>String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+function ulJoined(u){const m=String(u.joined||'').match(/(\d+)\D+(\d+)\D+(\d+)/);return m?new Date(+m[3],+m[2]-1,+m[1]).getTime():0}
+function ulRefresh(){const el=document.getElementById('ul');if(el)el.innerHTML=ulist()}
+function ulOnline(uid){const i=presInfo(uid);return !!(i&&i.on)}
+function ulRow(x){const fr=friendOf(x.uid),mine=S.me&&S.me.uid===x.uid;
+ const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
+ const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
+ const r=rankFromTotal(x.rp||0);
+ const meta=[x.p?`${flagOf(x.p)||'🌎'} ${esc(x.p)}`:'',x.m?`🎤 ${esc(x.m)}`:''].filter(Boolean).join(' · ');
+ return `<div class="vrow ulr" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}${mine?' <span class="ult">Tú</span>':''}</b><div class="ulrk" style="--tc:${rcol(r.t)}">${esc(r.name)}${(x.rp||0)>0?' · '+x.rp+' pts':''}</div>${meta?`<div class="mu ulm">${meta}</div>`:''}<div class="mu ulm">ID ${fmtPid(pid(x.uid))}</div>${presLine(x.uid)}</div><div class="ulr2">${rankBadge(r.t,30)}${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div></div>`}
+function ulist(){const list=S.users||[];
+ if(!list.length)return `<div class="card mu">Todavía no hay usuarios registrados. ¡Sé el primero!</div>`;
+ const raw=(S.q||'').trim(),q=ulNorm(raw);
+ const base=list.filter(x=>!q||ulNorm(x.u).includes(q)||ulNorm(x.p).includes(q)||ulNorm(x.m).includes(q)||uidMatch(x,raw));
+ const me=S.me;
+ const isInc=x=>{const f=friendOf(x.uid);return !!(me&&f&&f.status==='pending'&&f.to===me.uid)};
+ const cnt={all:base.length,friends:base.filter(x=>isFriend(x.uid)).length,online:base.filter(x=>ulOnline(x.uid)).length,inc:base.filter(isInc).length};
+ let sf=S.sf;if(!me&&sf!=='all')sf='all';
+ let f=base.filter(x=>sf==='friends'?isFriend(x.uid):sf==='online'?ulOnline(x.uid):sf==='inc'?isInc(x):true);
+ const ss=S.ss;
+ if(ss==='rank')f=[...f].sort((a,b)=>(b.rp||0)-(a.rp||0)||ulNorm(a.u).localeCompare(ulNorm(b.u),'es'));
+ else if(ss==='new')f=[...f].sort((a,b)=>ulJoined(b)-ulJoined(a)||ulNorm(a.u).localeCompare(ulNorm(b.u),'es'));
+ else f=[...f].sort((a,b)=>ulNorm(a.u).localeCompare(ulNorm(b.u),'es',{numeric:true}));
+ const chip=(k,t,n)=>`<button class="ulc${sf===k?' on':''}" onclick="S.sf='${k}';ulRefresh()">${t}<i>${n}</i></button>`;
+ const chips=`<div class="ulf">${chip('all','Todos',cnt.all)}${me?chip('friends','Amigos',cnt.friends)+chip('online','En línea',cnt.online):''}${me&&(cnt.inc||sf==='inc')?chip('inc','Solicitudes',cnt.inc):''}</div>`;
+ const so=(k,t)=>`<button class="${ss===k?'on':''}" onclick="S.ss='${k}';ulRefresh()">${t}</button>`;
+ const sortbar=`<div class="uls"><span>${f.length} ${f.length===1?'usuario':'usuarios'}</span><div class="ulsg">${so('az','A–Z')}${so('rank','Rango')}${so('new','Nuevos')}</div></div>`;
+ let strip='';
+ if(me&&sf==='all'&&!q){const on=list.filter(x=>x.uid!==me.uid&&ulOnline(x.uid));
+  if(on.length)strip=`<div class="sec" style="margin:4px 2px 8px"><span>En línea ahora</span><span>${on.length}</span></div><div class="uon">${on.map(x=>`<button onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<span>${esc(x.u)}</span></button>`).join('')}</div>`}
+ let body;
+ if(!f.length){const msg=q?'No encontramos ese usuario.':sf==='friends'?'Aún no tienes amigos. Busca a alguien y envíale una solicitud.':sf==='online'?'Ninguno de tus amigos está en línea ahora.':sf==='inc'?'No tienes solicitudes pendientes.':'No hay usuarios.';
+  body=`<div class="card mu" style="text-align:center">${msg}</div>`}
+ else if(ss==='az'){let cur='',h='';
+  f.forEach(x=>{let l=ulNorm(x.u).charAt(0).toUpperCase();if(!/[A-Z]/.test(l))l='#';if(l!==cur){cur=l;h+=`<div class="ulet"><b>${l}</b><i></i></div>`}h+=ulRow(x)});body=h}
+ else body=f.map(ulRow).join('');
+ return chips+strip+sortbar+body}
+function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre, ID, país o MC favorito" value="${esc(S.q)}" oninput="S.q=this.value;ulRefresh()" style="margin-bottom:10px"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
 function openU(uid){S.uid=uid;go('user');loadLikes(uid);countFriendView(uid)}
 function countFriendView(uid){if(!S.me||S.me.uid===uid||!isFriend(uid))return;const n=((S.me.vf)||0)+1;S.me={...S.me,vf:n};try{B.updateUser(S.me.uid,{vf:n}).catch(()=>{})}catch(e){}syncAch()}
 function profileHead(u,isMe,uid){
@@ -1450,15 +1499,15 @@ function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incor
 function gBadge(){return '<span class="gbadge">G</span>'}
 function ovWrap(inner,close){return `<div class="ov" onclick="${close}"><div class="sh" onclick="event.stopPropagation()">${inner}</div></div>`}
 function authM(){const A=S.auth;
- if(A.mode==='google')return ovWrap(`<b style="font-size:19px">Elige tu nombre de usuario</b><div class="mu" style="margin:4px 0 14px">Así te verán los demás. Usa de 3 a 20 letras, números, punto o guion bajo.</div><label class="f">Nombre de usuario</label><input placeholder="tu_nombre" value="${esc(A.un)}" oninput="S.auth.un=this.value" onkeydown="if(event.key==='Enter')submitUsername()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="btn" onclick="submitUsername()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':'Guardar y entrar'}</button>`,'closeAuth()');
+ if(A.mode==='google')return ovWrap(`<b style="font-size:19px">Elige tu nombre de usuario</b><div class="mu" style="margin:4px 0 14px">Así te verán los demás. Usa de 3 a 20 letras, números, punto o guion bajo.</div><label class="f">Nombre de usuario</label><input placeholder="tu_nombre" value="${esc(A.un)}" oninput="S.auth.un=this.value" onkeydown="if(event.key==='Enter')submitUsername()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}<button class="btn" onclick="submitUsername()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':'Guardar y entrar'}</button>`,'closeAuth()');
   if(A.mode==='reset'){
-   if(A.sent)return ovWrap(`<div style="text-align:center;padding:6px 0 2px"><div style="font-size:40px;line-height:1">✉️</div><b style="font-size:19px;display:block;margin-top:8px">Revisa tu correo</b><div class="mu" style="margin:8px 0 14px">Enviamos un enlace a <b style="color:var(--tx)">${esc(A.sentTo)}</b> para crear una nueva contraseña. Si no lo ves en unos minutos, revisa la carpeta de spam.</div></div><button class="btn" onclick="openAuth('in');S.auth.email='${esc(A.sentTo)}';R()">Volver a iniciar sesión</button><button class="btn s" onclick="sendReset()" ${A.busy?'disabled':''}>${A.busy?'Enviando…':'Reenviar correo'}</button>${A.err?`<div class="err">${esc(A.err)}</div>`:''}`,'closeAuth()');
-   return ovWrap(`<b style="font-size:19px">Recupera tu contraseña</b><div class="mu" style="margin:4px 0 14px">Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva contraseña.</div><label class="f">Correo</label><input type="email" autocomplete="email" placeholder="tu@correo.com" value="${esc(A.email)}" oninput="S.auth.email=this.value" onkeydown="if(event.key==='Enter')sendReset()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="btn" onclick="sendReset()" ${A.busy?'disabled':''}>${A.busy?'Enviando…':'Enviar enlace'}</button><button class="btn s" onclick="openAuth('in')">Volver a iniciar sesión</button>`,'closeAuth()');
+   if(A.sent)return ovWrap(`<div style="text-align:center;padding:6px 0 2px"><div style="font-size:40px;line-height:1">✉️</div><b style="font-size:19px;display:block;margin-top:8px">Revisa tu correo</b><div class="mu" style="margin:8px 0 14px">Enviamos un enlace a <b style="color:var(--tx)">${esc(A.sentTo)}</b> para crear una nueva contraseña. Si no lo ves en unos minutos, revisa la carpeta de spam.</div></div><button class="btn" onclick="openAuth('in');S.auth.email='${esc(A.sentTo)}';R()">Volver a iniciar sesión</button><button class="btn s" onclick="sendReset()" ${A.busy?'disabled':''}>${A.busy?'Enviando…':'Reenviar correo'}</button>${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}`,'closeAuth()');
+   return ovWrap(`<b style="font-size:19px">Recupera tu contraseña</b><div class="mu" style="margin:4px 0 14px">Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva contraseña.</div><label class="f">Correo</label><input type="email" autocomplete="email" placeholder="tu@correo.com" value="${esc(A.email)}" oninput="S.auth.email=this.value" onkeydown="if(event.key==='Enter')sendReset()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}<button class="btn" onclick="sendReset()" ${A.busy?'disabled':''}>${A.busy?'Enviando…':'Enviar enlace'}</button><button class="btn s" onclick="openAuth('in')">Volver a iniciar sesión</button>`,'closeAuth()');
   }
   if(A.mode==='newpw'){
    if(A.done)return ovWrap(`<div style="text-align:center;padding:6px 0 2px"><div style="font-size:40px;line-height:1">✅</div><b style="font-size:19px;display:block;margin-top:8px">Contraseña actualizada</b><div class="mu" style="margin:8px 0 14px">Ya puedes iniciar sesión con tu nueva contraseña.</div></div><button class="btn" onclick="openAuth('in');S.auth.email='${esc(A.email||'')}';R()">Iniciar sesión</button>`,'closeAuth()');
    if(A.bad)return ovWrap(`<b style="font-size:19px">Enlace no válido</b><div class="mu" style="margin:6px 0 14px">${esc(A.err||'El enlace venció o ya fue usado.')}</div><button class="btn" onclick="openReset()">Pedir un enlace nuevo</button><button class="btn s" onclick="openAuth('in')">Iniciar sesión</button>`,'closeAuth()');
-   return ovWrap(`<b style="font-size:19px">Crea tu nueva contraseña</b><div class="mu" style="margin:4px 0 14px">${A.email?'Cuenta: '+esc(A.email)+'. ':''}Usa mínimo 6 caracteres.</div><label class="f">Nueva contraseña</label><input type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" value="${esc(A.pw)}" oninput="S.auth.pw=this.value"><label class="f">Repite la contraseña</label><input type="password" autocomplete="new-password" placeholder="Repite la contraseña" value="${esc(A.pw2)}" oninput="S.auth.pw2=this.value" onkeydown="if(event.key==='Enter')submitNewPw()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}<button class="btn" onclick="submitNewPw()" ${A.busy?'disabled':''}>${A.busy?'Guardando…':'Guardar contraseña'}</button>`,'closeAuth()');
+   return ovWrap(`<b style="font-size:19px">Crea tu nueva contraseña</b><div class="mu" style="margin:4px 0 14px">${A.email?'Cuenta: '+esc(A.email)+'. ':''}Usa mínimo 6 caracteres.</div><label class="f">Nueva contraseña</label><input type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" value="${esc(A.pw)}" oninput="S.auth.pw=this.value"><label class="f">Repite la contraseña</label><input type="password" autocomplete="new-password" placeholder="Repite la contraseña" value="${esc(A.pw2)}" oninput="S.auth.pw2=this.value" onkeydown="if(event.key==='Enter')submitNewPw()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}<button class="btn" onclick="submitNewPw()" ${A.busy?'disabled':''}>${A.busy?'Guardando…':'Guardar contraseña'}</button>`,'closeAuth()');
   }
  const c=A.mode==='create';
  return ovWrap(`<div class="seg"><button class="${c?'on':''}" onclick="authTab('create')">Crear cuenta</button><button class="${!c?'on':''}" onclick="authTab('in')">Iniciar sesión</button></div>
@@ -1471,18 +1520,29 @@ function authM(){const A=S.auth;
  <label class="f">Contraseña</label><input type="password" autocomplete="${c?'new-password':'current-password'}" placeholder="Mínimo 6 caracteres" value="${esc(A.pw)}" oninput="S.auth.pw=this.value" onkeydown="if(event.key==='Enter')authSubmit()">
  ${!c?`<div style="text-align:right;margin:-4px 0 8px"><a href="#" onclick="event.preventDefault();openReset()" style="color:var(--ac);font-size:13px;font-weight:700;text-decoration:none">¿Olvidaste tu contraseña?</a></div>`:''}
  ${c?`<label class="f">Repite la contraseña</label><input type="password" autocomplete="new-password" placeholder="Repite la contraseña" value="${esc(A.pw2)}" oninput="S.auth.pw2=this.value" onkeydown="if(event.key==='Enter')authSubmit()">`:''}
- ${A.err?`<div class="err">${esc(A.err)}</div>`:''}
+ ${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}
  <button class="btn" onclick="authSubmit()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':c?'Crear cuenta':'Entrar'}</button>`,'closeAuth()');
 }
 async function googleLogin(){if(S.auth){S.auth.busy=true}S.authBusy=true;R();
  try{const cred=await FB.am.signInWithPopup(FB.auth,new FB.am.GoogleAuthProvider());const prof=await B.getUser(cred.user.uid);S.authBusy=false;
   if(prof){setMe(cred.user.uid,prof)}else{S.auth={mode:'google',step:'user',un:'',err:'',busy:false};R()}
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
+/* ===== Sugerencias cuando el nombre de usuario ya está en uso ===== */
+async function nameSuggest(base){
+ try{
+  let b=String(base||'').toLowerCase().replace(/[^a-z0-9._]/g,'').slice(0,12);if(b.length<3)b=('mc_'+b).slice(0,12);
+  const y=String(new Date().getFullYear()).slice(2),r2=()=>String(10+Math.floor(Math.random()*90)),r3=()=>String(100+Math.floor(Math.random()*900));
+  const cand=[...new Set([b+'_mc','mc_'+b,b+'.fms',b+r2(),b+'_'+r2(),b+r3(),b+'_fms','el_'+b,b+'_'+y,b+r2()+'_mc'])].filter(x=>/^[a-z0-9._]{3,20}$/.test(x)&&x!==ulNorm(base));
+  const free=await Promise.all(cand.map(x=>B.usernameTaken(x).then(t=>!t).catch(()=>false)));
+  return cand.filter((_,i)=>free[i]).slice(0,4)}catch(e){return []}}
+function sugH(A){return A&&A.sug&&A.sug.length?`<div class="mu" style="margin:-2px 0 6px;font-size:12.5px">Estos nombres están libres, toca uno:</div><div class="sugs">${A.sug.map(x=>`<button type="button" class="sugc" onclick="useSug('${esc(x)}')">${esc(x)}</button>`).join('')}</div>`:''}
+function useSug(x){if(S.auth){S.auth.un=x;S.auth.sug=null;S.auth.err='';R()}}
+function useNameSug(x){S.nameDraft=x;S.nameSug=null;R()}
 async function submitUsername(){const A=S.auth;const un=(A.un||'').trim().toLowerCase();
  if(!/^[a-z0-9._]{3,20}$/.test(un))return authErr('Usa de 3 a 20 letras, números, punto o guion bajo.');
- A.busy=true;R();S.authBusy=true;
+ A.sug=null;A.busy=true;R();S.authBusy=true;
  try{const uid=FB.auth.currentUser.uid;
-  if(await B.usernameTaken(un)){S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso.')}
+  if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
   const prof={p:'',m:'',a:'',joined:today()};await B.createUser(uid,un,prof);S.authBusy=false;setMe(uid,{u:un,...prof});
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
 async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
@@ -1493,9 +1553,9 @@ async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
   if(!/^[a-z0-9._]{3,20}$/.test(un))return authErr('El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.');
   if(pw.length<6)return authErr('La contraseña debe tener al menos 6 caracteres.');
   if(pw!==A.pw2)return authErr('Las contraseñas no coinciden.');
-  A.busy=true;S.authBusy=true;R();
+  A.sug=null;A.busy=true;S.authBusy=true;R();
   try{
-   if(await B.usernameTaken(un)){S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso.')}
+   if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
    const cred=await FB.am.createUserWithEmailAndPassword(FB.auth,email,pw);
    const prof={p:'',m:'',a:'',joined:today()};
    try{await B.createUser(cred.user.uid,un,prof)}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
@@ -1587,6 +1647,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-03T01:15:00-04:00'),text:'Nuevo diseño en Buscar: ahora los usuarios salen por orden alfabético (A–Z) con letras para ubicarte rápido, y puedes ordenar por Rango o por Nuevos. Filtra por Todos, Amigos, En línea y Solicitudes, mira a tus amigos conectados arriba, y busca también por país o MC favorito. Cada usuario muestra su rango, país y MC. Además, si eliges un nombre de usuario que ya existe, te sugerimos nombres parecidos que están libres.'},
  {ts:Date.parse('2026-11-03T00:30:00-04:00'),text:'Nuevo en la Racha: tu mascota del micrófono ahora está animada (se mueve, parpadea, mira a los lados, salta y suelta notas musicales; tócala para que brinque). Además tiene atuendos que se desbloquean con logros: Gorra Roja, Gafas de Sol, Audífonos y Corona de Oro. Los eliges en la hoja de la Racha y se ven al instante. Y la llama cambia de color según tus días de racha: naranja, roja (7 días), azul (14), morada (30), verde (60) y dorada (100).'},
  {ts:Date.parse('2026-11-03T00:05:00-04:00'),text:'Nuevo diseño del perfil: ahora está más ordenado y menos cargado. Debajo de tu tarjeta de perfil tienes 4 pestañas: Resumen (tu rango y estadísticas), Editar (foto, info, nombre de usuario, color de la app y diseño de tarjeta), Votos (todas tus batallas votadas) y Cuenta (cambiar de cuenta, cerrar sesión y eliminar cuenta). Tienes lo mismo de antes, solo mejor organizado.'},
  {ts:Date.parse('2026-11-02T23:55:00-04:00'),text:'Nuevo: Cambiar de cuenta. En tu perfil, debajo de Cerrar sesión, tienes el botón 🔄 Cambiar de cuenta: te abre tus cuentas de Google, eliges la que quieras y entras directo con ella, sin tener que cerrar sesión primero.'},
@@ -1697,12 +1758,13 @@ function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
 const DAYS20=20*864e5;
 function nameCardH(){const m=S.me;const last=m.unAt||0;const left=last?Math.ceil((last+DAYS20-Date.now())/864e5):0;const lock=left>0;
  return `<div class="card"><b>Nombre de usuario</b><div class="mu" style="margin:4px 0 12px">${lock?`Podrás cambiarlo en ${left} ${left===1?'día':'días'}.`:'Puedes cambiarlo ahora. Después de cambiarlo, podrás hacerlo otra vez cada 20 días.'}</div>
- <input id="nu-new" placeholder="Nuevo nombre de usuario" ${lock?'disabled':''}><button class="btn sm" style="width:100%;justify-content:center" ${lock?'disabled':''} onclick="saveUsername()">Cambiar nombre de usuario</button></div>`}
+ <input id="nu-new" placeholder="Nuevo nombre de usuario" value="${esc(S.nameDraft||'')}" oninput="S.nameDraft=this.value" ${lock?'disabled':''}>${S.nameSug&&S.nameSug.length?`<div class="mu" style="margin:6px 0;font-size:12.5px">Estos nombres están libres, toca uno:</div><div class="sugs">${S.nameSug.map(x=>`<button type="button" class="sugc" onclick="useNameSug('${esc(x)}')">${esc(x)}</button>`).join('')}</div>`:''}<button class="btn sm" style="width:100%;justify-content:center" ${lock?'disabled':''} onclick="saveUsername()">Cambiar nombre de usuario</button></div>`}
 async function saveUsername(){const m=S.me;if(!m)return;const nu=(document.getElementById('nu-new').value||'').trim().toLowerCase();
  if(!/^[a-z0-9._]{3,20}$/.test(nu)){S.msgP='Usa de 3 a 20 letras, números, punto o guion bajo.';return R()}
  if(nu===m.u){S.msgP='Ese ya es tu nombre de usuario.';return R()}
- try{await B.changeUsername(m.uid,m.u,nu);S.me={...S.me,u:nu,unAt:Date.now()};S.msgP='Tu nombre de usuario ahora es '+nu}
- catch(e){S.msgP=(e&&e.message==='taken')?'Ese nombre de usuario ya está en uso.':'No se pudo cambiar el nombre. Intenta de nuevo.'}
+ S.nameSug=null;
+ try{await B.changeUsername(m.uid,m.u,nu);S.me={...S.me,u:nu,unAt:Date.now()};S.nameDraft='';S.msgP='Tu nombre de usuario ahora es '+nu}
+ catch(e){const tk=e&&e.message==='taken';if(tk)S.nameSug=await nameSuggest(nu);S.msgP=tk?'Ese nombre de usuario ya está en uso. Prueba con otro.':'No se pudo cambiar el nombre. Intenta de nuevo.'}
  R();}
 const RANKS=['Underground','Regional','Semiprofesional','Profesional','Elite'];
 const LP={ws:100,es:80,in:60,ar:50,mx:45,cl:40,co:35,pe:30,ca:25};
