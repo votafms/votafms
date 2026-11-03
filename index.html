@@ -568,6 +568,12 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .pinfo .pst{margin-top:9px}
 .pab{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);line-height:1.5;word-break:break-word}
 .pab .mu{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px}
+.cb{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cb.sel{outline:2px solid rgba(var(--acr),.55)}
+.cmenu{display:flex;gap:6px;flex-wrap:wrap;max-width:92%}
+.cmenu.u{align-self:flex-end;justify-content:flex-end}.cmenu.m{align-self:flex-start}
+.cmenu button{border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:12.5px;cursor:pointer}
+.cmenu button.dg{color:#F87171;border-color:rgba(248,113,113,.4)}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1509,6 +1515,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-02T23:30:00-04:00'),text:'Actualización: ahora puedes borrar mensajes en el chat con tus amigos. Toca un mensaje y elige «Borrar para mí» (solo desaparece de tu chat) o, en los tuyos, «Borrar para todos» (se elimina de forma permanente para los dos y no queda ningún aviso ni rastro). Además, MC IA ahora conoce mucho más: sabe cuántos logros tienes y cuáles te faltan (con lo que debes hacer en cada uno), tu rango, racha, amigos y datos de tu perfil, y también puede decirte cómo está compuesto el perfil de otro usuario (rango, país, MC favorito, color y más) con solo mencionar su nombre de usuario o su ID.'},
  {ts:Date.parse('2026-11-02T19:30:00-04:00'),text:'Nuevo: chat con IA y chat con amigos. En la pestaña IA (abajo) puedes preguntarle a MC IA sobre freestyle y sobre cómo funciona VotaFMS. Y en el perfil de tus amigos tienes el botón Enviar mensaje para chatear con ellos; también aparece 💬 en tu lista de amigos y verás un aviso rojo cuando te escriban.'},
  {ts:Date.parse('2026-11-02T18:10:00-04:00'),text:'Nueva batalla confirmada en FMS Argentina Jornada 2 (21 de noviembre, Montevideo): Replik vs Abel. Ya puedes verla en el calendario, en Próximas, y votarla en la jornada 2 de la liga.'},
  {ts:Date.parse('2026-11-02T17:20:00-04:00'),text:'Nueva Racha diaria: entra cada día y mantén encendido el micrófono en llamas que verás abajo en la página principal de ligas. Cada 10 días de racha ganas 1 oportunidad: si faltas un día, tu racha no se pierde (la oportunidad se reinicia al llegar a los 20 días, a los 30 y así cada 10). También corregimos el ranking de Comunidad para que aparezcan todos los usuarios.'},
@@ -2080,26 +2087,46 @@ function watchChats(){
   if(S.friendsOpen&&!S.auth&&!S.sheet)R()
  },e=>console.error('chats',e))}catch(e){console.error(e)}}
 const _wi0=watchInbox;watchInbox=function(){_wi0();watchChats()};
+function chatHidSet(id){const h=S.me&&S.me.chatHid&&S.me.chatHid[id];return new Set(Array.isArray(h)?h:[])}
 function chatMsgsH(){const c=S.chat;if(!c)return '';
  if(c.loading)return '<div class="mu" style="text-align:center;padding:20px 0">Cargando…</div>';
  if(c.err)return '<div class="mu" style="text-align:center;padding:20px 0">No se pudo cargar el chat. Revisa tu conexión.</div>';
- if(!c.msgs.length)return `<div class="mu" style="text-align:center;padding:20px 0">Aún no hay mensajes. ¡Escríbele a ${esc(c.name)}!</div>`;
- return c.msgs.map(m=>{const mine=m.from===S.me.uid;const d=new Date(m.ts||Date.now());return `<div class="cb ${mine?'u':'m'}">${esc(m.text).replace(/\n/g,'<br>')}<span>${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span></div>`}).join('')}
-function chatPaint(){const el=document.getElementById('cmsgs');if(!el)return;el.innerHTML=chatMsgsH();el.scrollTop=el.scrollHeight}
+ const hid=chatHidSet(c.id),vis=c.msgs.filter(m=>!hid.has(m.id));
+ if(!vis.length)return `<div class="mu" style="text-align:center;padding:20px 0">Aún no hay mensajes. ¡Escríbele a ${esc(c.name)}!</div>`;
+ return vis.map(m=>{const mine=m.from===S.me.uid;const d=new Date(m.ts||Date.now());const sel=S.chatSel===m.id;
+  const bub=`<div class="cb ${mine?'u':'m'}${sel?' sel':''}" onclick="chatSelMsg('${m.id}')">${esc(m.text).replace(/\n/g,'<br>')}<span>${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</span></div>`;
+  const menu=sel?`<div class="cmenu ${mine?'u':'m'}"><button onclick="chatDelMe('${m.id}')">Borrar para mí</button>${mine?`<button class="dg" onclick="chatDelAll('${m.id}')">Borrar para todos</button>`:''}<button onclick="chatSelMsg(null)">Cancelar</button></div>`:'';
+  return bub+menu}).join('')}
+function chatSelMsg(id){S.chatSel=(S.chatSel===id)?null:id;chatPaint(true)}
+async function chatDelMe(id){
+ const c=S.chat;if(!c||!S.me)return;S.chatSel=null;
+ const cur=S.me.chatHid||{},arr=Array.from(new Set([...(Array.isArray(cur[c.id])?cur[c.id]:[]),id]));
+ S.me={...S.me,chatHid:{...cur,[c.id]:arr}};chatPaint(true);
+ try{await FB.fm.updateDoc(FB.fm.doc(FB.db,'users',S.me.uid),{['chatHid.'+c.id]:FB.fm.arrayUnion(id)})}catch(e){console.error('chatDelMe',e)}}
+async function chatDelAll(id){
+ const c=S.chat;if(!c||!S.me)return;
+ if(!confirm('¿Borrar este mensaje para todos? Se eliminará de forma permanente para ti y para '+c.name+', y no quedará ningún rastro.'))return;
+ S.chatSel=null;const fm=FB.fm;
+ try{
+  await fm.deleteDoc(fm.doc(FB.db,'chats',c.id,'msgs',id));
+  const rest=c.msgs.filter(m=>m.id!==id),l=rest[rest.length-1];
+  await fm.setDoc(fm.doc(FB.db,'chats',c.id),{last:l?{from:l.from,text:String(l.text||'').slice(0,80),ts:l.ts||0}:fm.deleteField()},{merge:true});
+ }catch(e){console.error('chatDelAll',e);achFail('No se pudo borrar el mensaje.');chatPaint(true)}}
+function chatPaint(keep){const el=document.getElementById('cmsgs');if(!el)return;const st=el.scrollTop;el.innerHTML=chatMsgsH();el.scrollTop=keep?st:el.scrollHeight}
 function chatSheet(){const c=S.chat;if(!c)return '';
  return `<div class="ov" onclick="closeChat()"><div class="sh chs" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">${av(c.name)}<div style="flex:1;min-width:0"><b style="font-size:17px">${esc(c.name)}</b><div class="mu" style="font-size:12px">Chat de amigos</div></div><button class="fbtn sent" onclick="closeChat()">Cerrar</button></div><div id="cmsgs" class="cmsgs">${chatMsgsH()}</div><div class="iabar" style="position:static;margin-top:10px"><textarea id="cin" rows="1" maxlength="500" placeholder="Escribe un mensaje…" oninput="S.chatDraft=this.value;iaGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">${esc(S.chatDraft)}</textarea><button class="iasend" onclick="chatSend()" aria-label="Enviar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></div></div></div>`}
 function openChat(uid,name){
  if(!S.me){openAuth('in');return}
  if(!isFriend(uid)){achFail('Solo puedes escribirle a tus amigos.');return}
  if(_chatUnsub){try{_chatUnsub()}catch(e){}}
- const id=chatIdOf(S.me.uid,uid);S.chat={uid,name:name||'Amigo',id,msgs:[],loading:true};S.chatDraft='';S.friendsOpen=false;R();
+ const id=chatIdOf(S.me.uid,uid);S.chat={uid,name:name||'Amigo',id,msgs:[],loading:true};S.chatDraft='';S.chatSel=null;S.friendsOpen=false;R();
  try{const fm=FB.fm;_chatUnsub=fm.onSnapshot(fm.query(fm.collection(FB.db,'chats',id,'msgs'),fm.orderBy('ts','desc'),fm.limit(100)),snap=>{
   if(!S.chat||S.chat.id!==id)return;
   S.chat.msgs=snap.docs.map(d=>({id:d.id,...d.data()})).reverse();S.chat.loading=false;S.chat.err=false;
   const last=S.chat.msgs[S.chat.msgs.length-1];if(last)chatMarkRead(id,last.ts||0);
-  chatPaint();const t=document.getElementById('top');if(t)t.innerHTML=topH()
+  chatPaint(!!S.chatSel);const t=document.getElementById('top');if(t)t.innerHTML=topH()
  },e=>{console.error('chat',e);if(S.chat&&S.chat.id===id){S.chat.loading=false;S.chat.err=true;chatPaint()}})}catch(e){S.chat.loading=false;S.chat.err=true;chatPaint()}}
-function closeChat(){if(_chatUnsub){try{_chatUnsub()}catch(e){}}_chatUnsub=null;S.chat=null;S.chatDraft='';R()}
+function closeChat(){if(_chatUnsub){try{_chatUnsub()}catch(e){}}_chatUnsub=null;S.chat=null;S.chatDraft='';S.chatSel=null;R()}
 async function chatSend(){
  const c=S.chat;if(!c||!S.me)return;const inp=document.getElementById('cin');
  const text=String((inp?inp.value:S.chatDraft)||'').trim().slice(0,500);if(!text)return;
@@ -2110,6 +2137,82 @@ async function chatSend(){
   await fm.setDoc(fm.doc(FB.db,'chats',c.id),{users:[me,c.uid].sort(),last:{from:me,text:text.slice(0,80),ts}},{merge:true});
   await fm.addDoc(fm.collection(FB.db,'chats',c.id,'msgs'),{from:me,to:c.uid,text,ts});
  }catch(e){console.error('chatSend',e);achFail('No se pudo enviar el mensaje.')}}
+
+/* ===== MC IA: contexto ampliado (tu perfil, logros, rango y otros usuarios) =====
+   Va por fuera de iaSystem/iaAsk: solo les añade datos. Si algo falla, la IA responde como antes. */
+let _iaCtxTxt='';
+const _iaUs={list:null,at:0};
+async function iaUsers(){if(_iaUs.list&&Date.now()-_iaUs.at<300000)return _iaUs.list;const l=await B.listUsers();_iaUs.list=l;_iaUs.at=Date.now();return l}
+const iaRk=r=>r.name+' ('+r.n+' pts'+(r.lvl>=14?', rango máximo':', faltan '+r.next+' pts para el siguiente')+')';
+const iaN2=x=>String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+function iaMyCtx(names){
+ const me=S.me;
+ if(!me)return 'USUARIO ACTUAL: no ha iniciado sesión, así que no ves su perfil. Si pregunta por sus logros, rango o amigos, dile que inicie sesión.';
+ const o=achCalc(),done=ACH.filter(a=>o[a.id].done),miss=ACH.filter(a=>!o[a.id].done);
+ const all=S.myVotes||[],votes=all.filter(isLgVote),libres=all.length-votes.length;
+ const r=rankInfo(all);
+ const by=L.map(l=>[l.n,votes.filter(v=>v.l===l.i).length]).filter(x=>x[1]).map(x=>x[0]+': '+x[1]).join(', ')||'ninguna aún';
+ const fr=(S.fr||[]).filter(f=>f.status==='accepted'),pend=(S.fr||[]).filter(f=>f.status==='pending'&&f.to===me.uid).length;
+ const fnames=fr.map(f=>names[f.from===me.uid?f.to:f.from]).filter(Boolean).slice(0,40);
+ const st=me.st||{},lk=S.likeCache&&S.likeCache[me.uid]?S.likeCache[me.uid].n:0;
+ const th=themeOf(me),dz=dzOf(me);
+ const ths=THEMES.filter(t=>done.length>=t.need).map(t=>t.n),ds=DESIGNS.filter(d=>done.length>=d.need).map(d=>d.n);
+ return `DATOS EN VIVO DEL USUARIO QUE TE ESCRIBE (son reales y actuales; úsalos para responder con precisión y no inventes nada fuera de ellos):
+- Usuario: ${me.u} · ID ${fmtPid(pid(me.uid))} · País: ${me.p||'sin indicar'} · MC favorito: ${me.m||'sin indicar'} · Miembro desde: ${me.joined||'—'}
+- Biografía: ${String(me.a||'').trim()||'(vacía)'}
+- Color de perfil: ${th.n} · Diseño de tarjeta: ${dz?dz.n:'ninguno'}
+- Rango: ${iaRk(r)}, progreso ${r.pct}% hacia el siguiente
+- Batallas de liga votadas: ${votes.length} (${by}) · Votaciones libres: ${libres}
+- Amigos: ${fr.length}${fnames.length?' ('+fnames.join(', ')+')':''} · Solicitudes recibidas pendientes: ${pend}
+- Likes recibidos en su perfil: ${lk} · Racha diaria: ${st.n||0} día(s), mejor racha ${st.best||0}, oportunidad ${st.ch?'lista':'no disponible'}
+- Colores de la app desbloqueados (${ths.length}/${THEMES.length}): ${ths.join(', ')||'ninguno'} · Diseños de tarjeta desbloqueados (${ds.length}/${DESIGNS.length}): ${ds.join(', ')||'ninguno'}
+LOGROS: en total hay ${ACH.length}. Tiene ${done.length} desbloqueados y le faltan ${miss.length}.
+Desbloqueados: ${done.map(a=>a.n).join(', ')||'ninguno'}.
+Le faltan (nombre — qué hacer — progreso):
+${miss.map(a=>'- '+a.n+' — '+a.d+(o[a.id].txt?' — '+o[a.id].txt:'')).join('\n')||'- (ninguno, los tiene todos)'}
+Si te pide ayuda con los logros que le faltan, ayúdale con ESTA lista exacta (puedes extenderte y ordenarlos de más fácil a más difícil). Estos números mandan sobre cualquier otra cifra anterior.`}
+async function iaOthersCtx(text,us){
+ const out=[],t=iaN2(text),me=S.me;
+ const hits=[];
+ us.forEach(u=>{const n=iaN2(u.u);if(n.length<3||(me&&u.uid===me.uid))return;
+  const re=new RegExp('(^|[^a-z0-9])'+n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'($|[^a-z0-9])');if(re.test(t))hits.push(u)});
+ const ids=String(text).replace(/(\d)[\s-]+(?=\d)/g,'$1').match(/\d{9}/g)||[];
+ if(ids.length)us.forEach(u=>{try{if(ids.includes(pid(u.uid))&&!hits.includes(u)&&!(me&&u.uid===me.uid))hits.push(u)}catch(e){}});
+ hits.sort((a,b)=>String(b.u).length-String(a.u).length);
+ for(const h of hits.slice(0,3)){
+  try{
+   const d=pub(await B.getUser(h.uid)||h),vv=await B.votesOfUser(h.uid).catch(()=>[]);
+   const keep=splitDups(vv).keep;let n=d.rp||0;if(!(n>0))n=rankInfo(keep).n;
+   const r=rankFromTotal(n),pos=us.filter(x=>(x.rp||0)>n).length+1;
+   const th=themeOf(d),dz=dzOf(d),fr=isFriend(h.uid)||isAdmin();
+   let likes='?';try{likes=(await B.likesTo(h.uid)).length}catch(e){}
+   let l=`- Perfil de ${d.u} (ID ${fmtPid(pid(h.uid))}): país ${d.p||'sin indicar'}, MC favorito ${d.m||'sin indicar'}, miembro desde ${d.joined||'—'}, color ${th.n}, diseño de tarjeta ${dz?dz.n:'ninguno'}, biografía: ${String(d.a||'').trim()||'(vacía)'}. Rango ${iaRk(r)}. Puesto aproximado ${pos} de ${us.length} en el Top Global. Likes recibidos: ${likes}.`;
+   if(fr){const ls=keep.filter(isLgVote);
+    const by=L.map(x=>[x.n,ls.filter(v=>v.l===x.i).length]).filter(x=>x[1]).map(x=>x[0]+': '+x[1]).join(', ');
+    l+=` Batallas de liga votadas: ${ls.length}${by?' ('+by+')':''}. Últimas: ${ls.slice(0,5).map(v=>v.a+' vs '+v.b).join('; ')||'ninguna'}.`}
+   else l+=' Su historial de batallas es privado: solo lo ven sus amigos, así que no puedes dar detalles de sus votos.';
+   out.push(l)}catch(e){}}
+ return out.length?'PERFILES DE OTROS USUARIOS QUE MENCIONÓ (datos reales de la app):\n'+out.join('\n')+'\nSi pregunta por otro usuario que no aparece aquí, dile que no lo encuentras y que te dé el nombre de usuario exacto o su ID de 9 números.':''}
+async function iaBuildCtx(text){
+ if(S.me){
+  if(!S.myVotes)S.myVotes=await cleanMine();
+  if(S.ach===null)await loadAch();
+  if(!(S.fr&&S.fr.length))await refreshFriends();
+  if(!(S.likeCache&&S.likeCache[S.me.uid]))await loadLikes(S.me.uid,true)}
+ let us=[];try{us=await iaUsers()}catch(e){}
+ const names={};us.forEach(u=>{names[u.uid]=u.u});
+ const parts=[iaMyCtx(names)];
+ try{const top=us.map(u=>({u:u.u,n:u.rp||0})).sort((a,b)=>b.n-a.n).slice(0,10).filter(x=>x.n>0);
+  if(top.length)parts.push('TOP GLOBAL ACTUAL (por rango, del más alto al más bajo):\n'+top.map((x,i)=>(i+1)+'. '+x.u+' — '+rankFromTotal(x.n).name+' ('+x.n+' pts)').join('\n'))}catch(e){}
+ try{const o=await iaOthersCtx(text,us);if(o)parts.push(o)}catch(e){}
+ return parts.join('\n\n')}
+const _iaSys0=iaSystem;
+iaSystem=function(){let b=_iaSys0();try{if(_iaCtxTxt)b+='\n\n'+_iaCtxTxt}catch(e){}return b};
+const _iaAsk0=iaAsk;
+iaAsk=async function(){
+ try{const lu=[...S.ia.msgs].reverse().find(m=>m.r==='user');
+  _iaCtxTxt=await Promise.race([iaBuildCtx(lu?lu.t:''),new Promise(res=>setTimeout(()=>res(''),8000))])||''}catch(e){_iaCtxTxt=''}
+ return _iaAsk0()};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
