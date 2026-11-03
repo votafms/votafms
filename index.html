@@ -519,7 +519,7 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .iab.u{align-self:flex-end;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-bottom-right-radius:6px}
 .iachips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 6px}
 .iachip{border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;padding:8px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
-.iabar{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom,0px));display:flex;align-items:flex-end;gap:8px;padding:8px;background:var(--cd);border:1px solid var(--bd);border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.iabar{position:sticky;bottom:calc(86px + env(safe-area-inset-bottom,0px));display:flex;align-items:flex-end;gap:8px;padding:8px;background:var(--cd);border:1px solid var(--bd);border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .iabar textarea{flex:1;resize:none;border:0;outline:0;background:transparent;color:var(--tx);font:inherit;font-size:15px;line-height:1.4;max-height:110px;padding:8px 6px}
 .iasend{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;cursor:pointer}
 .iadots{display:inline-flex;gap:4px;padding:3px 0}
@@ -624,6 +624,18 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .ulr2{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .sugs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 .sugc{border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit}
+/* ===== Barra inferior flotante: isla de cristal, la pestaña activa se expande con su nombre ===== */
+.nav{left:50%;right:auto;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(calc(100% - 24px),460px);padding:6px;gap:2px;justify-content:space-between;align-items:center;border-radius:28px;border:1px solid color-mix(in srgb,var(--ac) 24%,var(--bd));background:color-mix(in srgb,var(--navbg) 74%,transparent);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);box-shadow:0 16px 38px rgba(0,0,0,.42),0 2px 0 rgba(255,255,255,.05) inset}
+.nav button{flex:0 0 42px;max-width:none;height:46px;padding:0;flex-direction:row;justify-content:center;gap:2px;border-radius:22px;font-size:12.5px;letter-spacing:.1px;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,background .2s ease}
+.nav button:active{transform:scale(.92)}
+.nav button{color:#B4BDD6}.nav button.on{color:#1A1300}
+.nav button .ni{width:42px;height:46px;border-radius:22px;background:none;box-shadow:none}
+.nav button .nl{display:none;white-space:nowrap}
+.nav button.on{flex:1 1 auto;color:#1A1300;padding:0 14px 0 0;background:linear-gradient(135deg,var(--ac),var(--ac2));box-shadow:0 8px 22px rgba(var(--acr),.45),0 1px 0 rgba(255,255,255,.35) inset}
+.nav button.on .ni{width:36px;background:none;box-shadow:none;color:#1A1300}
+.nav button.on .nl{display:inline;animation:navnl .22s ease-out both}
+@keyframes navnl{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@media (max-width:380px){.nav button{flex-basis:38px}.nav button .ni{width:38px}.nav button.on{padding-right:11px}.nav button.on .ni{width:32px}.nav button{font-size:12px}}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -969,7 +981,7 @@ function R(){
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
-function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],['search','Buscar','search'],['perfil','Perfil','user'],['comunidad','Comunidad','users'],['ia','IA','']];return items.map(([k,t,ic])=>`<button class="${nk()===k?'on':''}" onclick="go('${k}')"><span class="ni">${ic?ico(ic,20):'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>'}</span>${t}</button>`).join('')}
+function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],['search','Buscar','search'],['perfil','Perfil','user'],['comunidad','Comunidad','users'],['ia','IA','']];return items.map(([k,t,ic])=>`<button class="${nk()===k?'on':''}" onclick="go('${k}')" aria-label="${t}"${nk()===k?' aria-current="page"':''}><span class="ni">${ic?ico(ic,20):'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>'}</span><span class="nl">${t}</span></button>`).join('')}
 
 function homeV(){
  const nx=CAL.filter(e=>e.k==='next').sort((a,b)=>(a.dt||'9999').localeCompare(b.dt||'9999'));
@@ -1647,6 +1659,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-03T01:40:00-04:00'),text:'Nuevo diseño en la barra de abajo: ahora es una barra flotante de cristal con bordes redondeados. La pestaña en la que estás se ilumina y muestra su nombre (Ligas, Calendario, Buscar, Perfil, Comunidad o IA), y las demás quedan solo con su icono para que se vea más limpio.'},
  {ts:Date.parse('2026-11-03T01:15:00-04:00'),text:'Nuevo diseño en Buscar: ahora los usuarios salen por orden alfabético (A–Z) con letras para ubicarte rápido, y puedes ordenar por Rango o por Nuevos. Filtra por Todos, Amigos, En línea y Solicitudes, mira a tus amigos conectados arriba, y busca también por país o MC favorito. Cada usuario muestra su rango, país y MC. Además, si eliges un nombre de usuario que ya existe, te sugerimos nombres parecidos que están libres.'},
  {ts:Date.parse('2026-11-03T00:30:00-04:00'),text:'Nuevo en la Racha: tu mascota del micrófono ahora está animada (se mueve, parpadea, mira a los lados, salta y suelta notas musicales; tócala para que brinque). Además tiene atuendos que se desbloquean con logros: Gorra Roja, Gafas de Sol, Audífonos y Corona de Oro. Los eliges en la hoja de la Racha y se ven al instante. Y la llama cambia de color según tus días de racha: naranja, roja (7 días), azul (14), morada (30), verde (60) y dorada (100).'},
  {ts:Date.parse('2026-11-03T00:05:00-04:00'),text:'Nuevo diseño del perfil: ahora está más ordenado y menos cargado. Debajo de tu tarjeta de perfil tienes 4 pestañas: Resumen (tu rango y estadísticas), Editar (foto, info, nombre de usuario, color de la app y diseño de tarjeta), Votos (todas tus batallas votadas) y Cuenta (cambiar de cuenta, cerrar sesión y eliminar cuenta). Tienes lo mismo de antes, solo mejor organizado.'},
