@@ -1343,10 +1343,31 @@ function perfilV(){
  ${statsCard(S.myVotes||[])}<div class="sec"><span>Mis votos</span><span>${S.myVotes?S.myVotes.length:'…'}</span></div>${voteList(S.myVotes,'perfil')}
  ${isAdmin()?`<button class="btn" style="margin-top:8px" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
  <button class="btn s" style="color:#FF6B7A;margin-top:8px" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>
- <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>`}
+ <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
+ <button class="btn s" onclick="switchAccount()">🔄 Cambiar de cuenta</button>`}
 async function saveProf(){const m=S.me;if(!m)return;const prof={a:document.getElementById('pf-a').value.trim()};
  try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.draftA=null;S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
 async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};S.msgP='';watchInbox();go('home')}
+/* --- Cambiar de cuenta sin cerrar sesión: abre el selector de cuentas de Google --- */
+async function switchAccount(){
+ if(!FB||S.authBusy)return;
+ const old=S.me?S.me.uid:null;S.authBusy=true;
+ try{
+  presBeat(false);
+  const pr=new FB.am.GoogleAuthProvider();pr.setCustomParameters({prompt:'select_account'});
+  const cred=await FB.am.signInWithPopup(FB.auth,pr);const uid=cred.user.uid;
+  if(uid===old){S.authBusy=false;presBeat(true);R();return}
+  try{
+   const prof=await B.getUser(uid);S.authBusy=false;
+   stopPresence(true);
+   if(_chatUnsub){try{_chatUnsub()}catch(e){}}_chatUnsub=null;S.chat=null;S.chatDraft='';S.chatSel=null;
+   S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};S.fr=[];S.top=null;S.gtop=null;S.draftA=null;S.pres=undefined;
+   S.friendsOpen=false;S.achOpen=false;S.inboxOpen=false;S.inbox={notifs:[],avisos:[]};S.unread=0;S.msgP='';
+   watchInbox();
+   if(prof)setMe(uid,prof);else{S.auth={mode:'google',step:'user',un:'',err:'',busy:false};R()}
+  }catch(e){S.authBusy=false;location.reload()}
+ }catch(e){S.authBusy=false;presBeat(true);const c=e&&e.code;
+  if(c!=='auth/popup-closed-by-user'&&c!=='auth/cancelled-popup-request'){try{achFail(fbErr(e))}catch(_){}}}}
 
 function openAuth(mode){S.auth={mode,step:'mail',email:'',un:'',pw:'',pw2:'',err:'',busy:false};R()}
 function closeAuth(){const googleStep=S.auth&&S.auth.mode==='google';S.auth=null;S.pend=null;if(googleStep&&FB&&FB.auth.currentUser){FB.am.signOut(FB.auth)}R()}
@@ -1515,6 +1536,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-02T23:55:00-04:00'),text:'Nuevo: Cambiar de cuenta. En tu perfil, debajo de Cerrar sesión, tienes el botón 🔄 Cambiar de cuenta: te abre tus cuentas de Google, eliges la que quieras y entras directo con ella, sin tener que cerrar sesión primero.'},
  {ts:Date.parse('2026-11-02T23:30:00-04:00'),text:'Actualización: ahora puedes borrar mensajes en el chat con tus amigos. Toca un mensaje y elige «Borrar para mí» (solo desaparece de tu chat) o, en los tuyos, «Borrar para todos» (se elimina de forma permanente para los dos y no queda ningún aviso ni rastro). Además, MC IA ahora conoce mucho más: sabe cuántos logros tienes y cuáles te faltan (con lo que debes hacer en cada uno), tu rango, racha, amigos y datos de tu perfil, y también puede decirte cómo está compuesto el perfil de otro usuario (rango, país, MC favorito, color y más) con solo mencionar su nombre de usuario o su ID.'},
  {ts:Date.parse('2026-11-02T19:30:00-04:00'),text:'Nuevo: chat con IA y chat con amigos. En la pestaña IA (abajo) puedes preguntarle a MC IA sobre freestyle y sobre cómo funciona VotaFMS. Y en el perfil de tus amigos tienes el botón Enviar mensaje para chatear con ellos; también aparece 💬 en tu lista de amigos y verás un aviso rojo cuando te escriban.'},
  {ts:Date.parse('2026-11-02T18:10:00-04:00'),text:'Nueva batalla confirmada en FMS Argentina Jornada 2 (21 de noviembre, Montevideo): Replik vs Abel. Ya puedes verla en el calendario, en Próximas, y votarla en la jornada 2 de la liga.'},
