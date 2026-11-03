@@ -534,6 +534,10 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .cb.u{align-self:flex-end;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-bottom-right-radius:5px}
 .cdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#EF4444;margin-left:5px;vertical-align:middle}
 @media (prefers-reduced-motion:reduce){.iadots i{animation:none}}
+.iamic{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cd2);color:var(--tx);cursor:pointer}
+.iamic.on{background:#EF4444;color:#fff;animation:iamp 1.2s infinite}
+@keyframes iamp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+@media (prefers-reduced-motion:reduce){.iamic.on{animation:none}}
 .thm-tz{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--bd);border-radius:14px;font-size:12.5px;color:var(--mu);line-height:1.4}
 .thm-tz b{color:var(--tx)}
 .thm-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -733,9 +737,9 @@ const L=[
 {i:'in',n:'FMS Internacional',t:'IN',c:'#18181B',c2:'#3F3F46',tx:'#FACC15',f:'std'},
 {i:'ws',n:'FMS World Series',t:'WS',c:'#7C3AED',c2:'#C084FC',tx:'#fff',f:'ws'}];
 const RF={
- es:[{n:'Easy · Hard',p:[{t:'Easy Mode',c:6},{t:'Hard Mode',c:6,rv:1}]},{n:'Temáticas',p:[{t:'Primera Temática',c:4},{t:'Segunda Temática',c:4}]},{n:'Random',p:[{c:6}]},{n:'Minutos a sangre',p:[{t:'Minuto 1',c:6},{t:'Minuto 2',c:6}]},{n:'Deluxe',p:[{c:9}]}],
- std:[{n:'Easy',p:[{c:6}]},{n:'Hard',p:[{c:6,rv:1}]},{n:'Random',p:[{c:6}]},{n:'Minutos a sangre',p:[{t:'Minuto 1',c:6},{t:'Minuto 2',c:6}]},{n:'Deluxe',p:[{c:9}]}],
- ws:[{n:'Easy',p:[{c:6}]},{n:'Hard',p:[{c:6,rv:1}]},{n:'Random',p:[{c:6}]},{n:'Deluxe',p:[{c:9}]}]};
+ es:[{n:'Random',p:[{c:6}]},{n:'Minutos a sangre',p:[{t:'Minuto 1',c:6},{t:'Minuto 2',c:6}]},{n:'Deluxe',p:[{c:9}]}],
+ std:[{n:'Random',p:[{c:6}]},{n:'Minutos a sangre',p:[{t:'Minuto 1',c:6},{t:'Minuto 2',c:6}]},{n:'Deluxe',p:[{c:9}]}],
+ ws:[{n:'Random',p:[{c:6}]},{n:'Deluxe',p:[{c:9}]}]};
 const LINEUP={"es": ["Ibán", "Gazir", "Arkano", "Sweet Pain", "Babi", "Bélico", "Navas", "Sara Socas", "Marithea", "El Menor"], "ar": ["Mecha", "Larrix", "Replik", "Exe", "Sophia", "Facu HDR", "Dybbuk", "Abel", "Rife", "Tobi"], "mx": ["Jony Beltrán", "Azuky", "Lobo Estepario", "Rapder", "Nota Roja", "Xhavez", "Chuty", "Kodigo", "Dalia Castella", "Skone"], "cl": ["Kaiser", "Nitro", "Teorema", "Stuart", "Fusok", "Drose", "Destello", "BTI", "Animus", "Metalingüística"], "co": ["Aczino", "Valles-T", "Éxodo Lirical", "Fat N", "Filósofo", "Pandora", "Reverse", "Dima", "Puppy", "Visionario"]};
 const HIDDEN_LIGAS=[];
 RF.libre=[{n:'Easy · Hard',p:[{t:'Easy Mode',c:6},{t:'Hard Mode',c:6,rv:1}]},{n:'Temáticas',p:[{t:'Primera Temática',c:4},{t:'Segunda Temática',c:4}]},{n:'Random',p:[{c:9}]},{n:'Minutos a sangre',p:[{t:'Minuto 1',c:6},{t:'Minuto 2',c:6}]},{n:'Acapela',p:[{t:'Acapela',c:1,max:4}]},{n:'Deluxe',p:[{c:12}]}];
@@ -1807,6 +1811,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-03T17:45:00-04:00'),text:'Nuevo: 2 logros más (ya son 32): Cypher con la IA, por escribirle a MC IA, y Sparring de Rimas, por entrenar con ella. En la pestaña IA hay un botón 🥊 Entrenar y un micrófono para dictar con tu voz. Además, en la temporada 2026 la planilla antigua empieza ahora en Random: se quitaron Easy, Hard y las Temáticas, y tus votaciones anteriores se pueden seguir editando.'},
  {ts:Date.parse('2026-11-03T08:10:00-04:00'),text:'Nuevo: 15 diseños de planilla que se desbloquean con tu rango. En la pantalla de votación, toca 🎨 Diseño de planilla y elige: la planilla Base (con el color de la liga) o un diseño nuevo. Cada nivel de rango desbloquea uno: desde Asfalto en Underground 1 hasta el animado Rey del Freestyle en Elite 3. Son los mismos en todas las ligas y solo cambian cómo se ve la planilla; no afectan tus puntos ni tus votos.'},
  {ts:Date.parse('2026-11-03T06:45:00-04:00'),text:'Mejoras en la mascota de racha: ahora puedes activar «Mostrar en mi perfil» para que tus amigos y visitantes vean tu mascota (con tus atuendos y el color de tu llama) en tu tarjeta de perfil; viene desactivado y lo cambias cuando quieras. Además, la hoja de la racha quedó más limpia: los colores de la llama ahora se ven como círculos de colores, con candado los que aún no desbloqueas; toca uno y te dice a cuántos días se desbloquea.'},
  {ts:Date.parse('2026-11-03T01:40:00-04:00'),text:'Nuevo diseño en la barra de abajo: ahora es una barra flotante de cristal con bordes redondeados. La pestaña en la que estás se ilumina y muestra su nombre (Ligas, Calendario, Buscar, Perfil, Comunidad o IA), y las demás quedan solo con su icono para que se vea más limpio.'},
@@ -1989,7 +1994,7 @@ function adminV(){
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
 
 /* ===== Logros ===== */
-const ACH_N=30;
+const ACH_N=32;
 const ACH=[
  {id:'cuenta',ic:'🎤',x:'#F59E0B',n:'Pisa el Escenario',d:'Crea tu cuenta y entra a la rueda.'},
  {id:'voto1',ic:'⚖️',x:'#EF4444',n:'Primer Veredicto',d:'Vota tu primera batalla de liga.'},
@@ -2020,7 +2025,9 @@ const ACH=[
  {id:'ar2018',ic:'🏟️',x:'#38BDF8',n:'Viaje al 2018',d:'Vota una batalla de FMS Argentina 2018.'},
  {id:'actual',ic:'🆕',x:'#22C55E',n:'Planilla Nueva Era',d:'Vota una batalla con el formato actual.'},
  {id:'pro3',ic:'🥇',x:'#FACC15',n:'Profesional Consagrado',d:'Llega al rango Profesional 3.'},
- {id:'elite3',ic:'💎',x:'#C084FC',n:'Élite Absoluta',d:'Llega al rango Elite 3.'}
+ {id:'elite3',ic:'💎',x:'#C084FC',n:'Élite Absoluta',d:'Llega al rango Elite 3.'},
+ {id:'ia_use',ic:'🤖',x:'#38BDF8',n:'Cypher con la IA',d:'Escríbele cualquier mensaje a MC IA.'},
+ {id:'ia_train',ic:'🥊',x:'#F97316',n:'Sparring de Rimas',d:'Entrena rimas con MC IA usando el botón Entrenar.'}
 ];
 S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
 const isLgVote=v=>!v.free;
@@ -2079,6 +2086,8 @@ function achCalc(){
  set('actual',(S.myVotes||[]).some(v=>v.fmt==='actual'),0,1,'');
  set('pro3',R_.lvl>=11,R_.n,_rt(10),_rtx(10));
  set('elite3',R_.lvl>=14,R_.n,_rt(13),_rtx(13));
+ set('ia_use',!!(me&&me.iaU),0,1,'');
+ set('ia_train',!!(me&&me.iaT),0,1,'');
  return o}
 function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
 function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
@@ -2359,10 +2368,10 @@ Sobre la app VotaFMS:
 - Votar: eliges una liga y una batalla y puntúas ronda por ronda con casillas de 0 a 10 en pasos de medio punto. Hay réplica de 6 casillas por MC y la opción "Diferencia para que sea directa". También hay votación libre pegando el link de YouTube de cualquier batalla. Puedes guardar y editar tus votos.
 - Cada liga muestra una tabla con solo tus votos. En Comunidad está el ranking global de rangos.
 - Rangos: subes ganando puntos al votar. Hay 5 niveles (Underground, Regional, Semi, Profesional y Elite), cada uno con 3 subniveles.
-- Logros: hay 30. Desbloquean colores para la app y diseños de rap para la tarjeta de tu perfil (solo cambian la tarjeta).
+- Logros: hay 32. Desbloquean colores para la app y diseños de rap para la tarjeta de tu perfil (solo cambian la tarjeta).
 - Perfil: foto, MC favorito, biografía, color, ID de usuario de 9 números. Puedes buscar usuarios, agregar amigos, dar likes y ver quién está en línea. Entre amigos hay chat con el botón "Enviar mensaje" en su perfil.
 - Racha diaria: un micrófono en llamas cuenta los días seguidos que entras. Cada 10 días de racha ganas 1 oportunidad por si faltas un día.
-- Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones.
+- Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones. MC IA (tú) tiene un botón Entrenar para practicar rimas y un micrófono para dictar por voz.
 Próximas jornadas registradas en la app:
 ${prox||'- (sin datos)'}
 
@@ -2379,7 +2388,7 @@ function iaRefresh(){const el=document.getElementById('iamsgs');if(el){el.innerH
 function iaGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px'}
 function iaV(){iaLoad();
  setTimeout(()=>{if(S.v==='ia'&&S.ia.msgs.length)window.scrollTo(0,document.body.scrollHeight)},0);
- return `<div class="card iah"><div class="iaav">🎤</div><div style="flex:1;min-width:0"><b>MC IA</b><div class="mu" style="font-size:12px">Freestyle y dudas de la app</div></div>${S.me&&S.ia.msgs.length?'<button class="fbtn sent" onclick="iaReset()">Nueva</button>':''}</div><div id="iamsgs" class="iamsgs">${iaMsgsH()}</div>${S.me?`<div class="iabar"><textarea id="iain" rows="1" maxlength="500" placeholder="Escribe tu pregunta…" oninput="S.iaDraft=this.value;iaGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();iaSend()}">${esc(S.iaDraft)}</textarea><button class="iasend" onclick="iaSend()" aria-label="Enviar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></div><div class="mu" style="font-size:11px;text-align:center;margin-top:6px">La IA puede equivocarse. Verifica datos importantes.</div>`:''}`}
+ return `<div class="card iah"><div class="iaav">🎤</div><div style="flex:1;min-width:0"><b>MC IA</b><div class="mu" style="font-size:12px">Freestyle y dudas de la app</div></div>${S.me?'<button class="fbtn" onclick="iaTrain()">🥊 Entrenar</button>':''}${S.me&&S.ia.msgs.length?'<button class="fbtn sent" onclick="iaReset()">Nueva</button>':''}</div><div id="iamsgs" class="iamsgs">${iaMsgsH()}</div>${S.me?`<div class="iabar"><textarea id="iain" rows="1" maxlength="500" placeholder="Escribe tu pregunta…" oninput="S.iaDraft=this.value;iaGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();iaSend()}">${esc(S.iaDraft)}</textarea><button class="iamic${S.iaMic?' on':''}" id="iamic" type="button" onclick="iaMic()" aria-label="Hablar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg></button><button class="iasend" onclick="iaSend()" aria-label="Enviar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></div><div class="mu" style="font-size:11px;text-align:center;margin-top:6px">La IA puede equivocarse. Verifica datos importantes.</div>`:''}`}
 function iaReset(){S.ia.msgs=[];iaSave();R()}
 function iaPush(r,t){S.ia.msgs.push({r,t});iaSave()}
 function iaLimit(){const now=Date.now();if(now-S.ia.last<3000)return 'Dame unos segundos entre mensajes 😅';try{const k='vfms_iaq_'+(S.me?S.me.uid:'x')+'_'+dkey();const n=+(localStorage.getItem(k)||0);if(n>=40)return 'Llegaste al límite de 40 mensajes de hoy. Vuelve mañana 🎤';localStorage.setItem(k,String(n+1))}catch(e){}return ''}
@@ -2408,12 +2417,35 @@ async function iaAsk(){
   }catch(e){last=e;if(!/404|no longer available|not found|not supported/i.test(String(e&&e.message||e)))throw e}
  }
  throw last}
-async function iaSend(t){
+/* ===== Extras de la IA: entrenador de rimas y dictado por voz (no cambian cómo responde) ===== */
+const IA_TRAIN_PROMPT='Quiero entrenar rimas: dame una palabra o temática al azar, espera mi rima y luego evalúa mi rima, métrica e ingenio con consejos cortos. Después dame otra.';
+function iaTrain(){iaSend(IA_TRAIN_PROMPT,true)}
+function iaMark(f){if(!S.me||S.me[f])return;S.me={...S.me,[f]:1};try{B.updateUser(S.me.uid,{[f]:1}).catch(()=>{})}catch(e){}syncAch()}
+const IA_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let _iaSR=null;S.iaMic=false;
+function iaMicPaint(){const b=document.getElementById('iamic');if(b){b.classList.toggle('on',!!S.iaMic);b.setAttribute('aria-label',S.iaMic?'Detener':'Hablar')}}
+function iaMicStop(){if(_iaSR){try{_iaSR.stop()}catch(e){}}}
+function iaMic(){
+ if(!IA_SR){achFail('Tu navegador no permite dictado por voz. Prueba con Chrome.');return}
+ if(_iaSR){iaMicStop();return}
+ const first=document.getElementById('iain');if(!first)return;
+ const base=first.value?first.value.trimEnd()+' ':'';
+ const r=new IA_SR();r.lang=/^es/i.test(navigator.language||'')?navigator.language:'es-ES';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
+ let fin='';
+ r.onresult=e=>{let tmp='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else tmp+=t}
+  const v=(base+fin+tmp).slice(0,500),el=document.getElementById('iain');S.iaDraft=v;if(el){el.value=v;iaGrow(el)}};
+ r.onerror=e=>{if(e&&(e.error==='not-allowed'||e.error==='service-not-allowed'))achFail('Permite el micrófono en tu navegador para dictar.');else if(e&&e.error==='no-speech')achFail('No te escuché. Intenta otra vez.')};
+ r.onend=()=>{_iaSR=null;S.iaMic=false;iaMicPaint()};
+ _iaSR=r;S.iaMic=true;iaMicPaint();
+ try{r.start()}catch(e){_iaSR=null;S.iaMic=false;iaMicPaint()}}
+
+async function iaSend(t,train){
  if(!S.me){openAuth('in');return}
  const inp=document.getElementById('iain');
  const text=String(t||(inp?inp.value:S.iaDraft)||'').trim().slice(0,500);
  if(!text||S.ia.busy)return;
  const lim=iaLimit();if(lim){achFail(lim);return}
+ iaMicStop();iaMark('iaU');if(train)iaMark('iaT');
  S.ia.last=Date.now();S.iaDraft='';if(inp){inp.value='';iaGrow(inp)}
  iaPush('user',text);S.ia.busy=true;iaRefresh();
  try{iaPush('model',await iaAsk())}
