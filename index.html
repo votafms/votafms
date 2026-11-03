@@ -576,6 +576,38 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .cmenu button.dg{color:#F87171;border-color:rgba(248,113,113,.4)}
 .pftabs{margin:4px 0 14px}
 .pftabs button{white-space:nowrap}
+@keyframes stkhd{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes stkhop{0%,6%,100%{transform:translateY(0) scale(1,1)}10%{transform:translateY(0) scale(1.08,.9)}22%{transform:translateY(-16px) scale(.95,1.08)}34%{transform:translateY(0) scale(1.08,.92)}42%{transform:translateY(-4px) scale(.98,1.03)}50%{transform:translateY(0) scale(1,1)}}
+@keyframes stktap{0%{transform:translateY(0) scale(1)}15%{transform:translateY(0) scale(1.12,.86)}45%{transform:translateY(-28px) scale(.92,1.12) rotate(-8deg)}75%{transform:translateY(0) scale(1.1,.9) rotate(5deg)}100%{transform:none}}
+@keyframes stklk{0%,38%,100%{transform:translateX(0)}44%,56%{transform:translateX(3px)}62%,74%{transform:translateX(-3px)}80%{transform:translateX(0)}}
+@keyframes stknt{0%{transform:translate(0,4px) scale(.7);opacity:0}20%{opacity:.95}100%{transform:translate(7px,-34px) scale(1.1);opacity:0}}
+.stk-body{transform-box:fill-box;transform-origin:50% 100%;animation:stkhop 6s ease-in-out infinite}
+.stk-body.hop{animation:stktap .8s ease-out 1}
+.stk-hd{transform-box:fill-box;transform-origin:50% 100%;animation:stkhd 3.4s ease-in-out infinite}
+.stk-ey{animation:stklk 6.5s ease-in-out infinite}
+.stk-nt{transform-box:fill-box;transform-origin:center;opacity:0;animation:stknt 4.2s ease-out infinite}
+.stk-m{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stk.off .stk-body{animation-duration:9s}
+.stk.off .stk-hd,.stkc.off .stk-hd{animation-duration:6s}
+.stk-tier{margin-top:8px;font-size:12.5px;font-weight:800;color:var(--f1)}
+.fit-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fitt{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);cursor:pointer;text-align:left}
+.fitt i{font-style:normal;font-size:22px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cd2);flex:0 0 40px}
+.fitt span{display:flex;flex-direction:column;min-width:0}
+.fitt b{font-size:13px}
+.fitt em{font-style:normal;font-size:11px;color:var(--mu);font-weight:700}
+.fitt.on{border-color:var(--f1);background:color-mix(in srgb,var(--f1) 14%,transparent)}
+.fitt.on i{background:var(--f1)}
+.fitt.lk{opacity:.55}
+/* La mascota se anima siempre, aunque el teléfono tenga "reducir animaciones" (la regla global las apaga) */
+@media (prefers-reduced-motion:reduce){
+ .stk-m svg,.stkc .mm svg{animation:stkbob 2.6s ease-in-out infinite!important}
+ .stk-f{animation:stkfl .9s ease-in-out infinite!important}.stk-f.b{animation-duration:.7s!important}
+ .stk-e{animation:stkbl 4s infinite!important}
+ .stk-body{animation:stkhop 6s ease-in-out infinite!important}.stk-body.hop{animation:stktap .8s ease-out 1!important}
+ .stk-hd{animation:stkhd 3.4s ease-in-out infinite!important}
+ .stk-ey{animation:stklk 6.5s ease-in-out infinite!important}
+ .stk-nt{animation:stknt 4.2s ease-out infinite!important}}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1555,6 +1587,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-03T00:30:00-04:00'),text:'Nuevo en la Racha: tu mascota del micrófono ahora está animada (se mueve, parpadea, mira a los lados, salta y suelta notas musicales; tócala para que brinque). Además tiene atuendos que se desbloquean con logros: Gorra Roja, Gafas de Sol, Audífonos y Corona de Oro. Los eliges en la hoja de la Racha y se ven al instante. Y la llama cambia de color según tus días de racha: naranja, roja (7 días), azul (14), morada (30), verde (60) y dorada (100).'},
  {ts:Date.parse('2026-11-03T00:05:00-04:00'),text:'Nuevo diseño del perfil: ahora está más ordenado y menos cargado. Debajo de tu tarjeta de perfil tienes 4 pestañas: Resumen (tu rango y estadísticas), Editar (foto, info, nombre de usuario, color de la app y diseño de tarjeta), Votos (todas tus batallas votadas) y Cuenta (cambiar de cuenta, cerrar sesión y eliminar cuenta). Tienes lo mismo de antes, solo mejor organizado.'},
  {ts:Date.parse('2026-11-02T23:55:00-04:00'),text:'Nuevo: Cambiar de cuenta. En tu perfil, debajo de Cerrar sesión, tienes el botón 🔄 Cambiar de cuenta: te abre tus cuentas de Google, eliges la que quieras y entras directo con ella, sin tener que cerrar sesión primero.'},
  {ts:Date.parse('2026-11-02T23:30:00-04:00'),text:'Actualización: ahora puedes borrar mensajes en el chat con tus amigos. Toca un mensaje y elige «Borrar para mí» (solo desaparece de tu chat) o, en los tuyos, «Borrar para todos» (se elimina de forma permanente para los dos y no queda ningún aviso ni rastro). Además, MC IA ahora conoce mucho más: sabe cuántos logros tienes y cuáles te faltan (con lo que debes hacer en cada uno), tu rango, racha, amigos y datos de tu perfil, y también puede decirte cómo está compuesto el perfil de otro usuario (rango, país, MC favorito, color y más) con solo mencionar su nombre de usuario o su ID.'},
@@ -2004,33 +2037,68 @@ function streakTick(){
  S.me={...S.me,st:nst};R();
  try{B.updateUser(S.me.uid,{st:nst}).catch(()=>{})}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')streakTick()});
-function stkSvg(n,on){
- const s=n>=30?1.2:n>=10?1.08:.92;
- const eyes=on?`<g class="stk-e"><ellipse cx="58" cy="84" rx="5" ry="6.5" fill="#111827"/><circle cx="59.6" cy="81.6" r="1.8" fill="#fff"/></g><g class="stk-e"><ellipse cx="82" cy="84" rx="5" ry="6.5" fill="#111827"/><circle cx="83.6" cy="81.6" r="1.8" fill="#fff"/></g><path d="M58 98Q70 111 82 98" fill="none" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>`
+/* ===== Colores de la llama según los días de racha (cambia aquí los días y colores) ===== */
+const STK_T=[
+ {min:0,n:'Llama naranja',f:['#FB923C','#FDE047'],s:.92},
+ {min:7,n:'Llama roja',f:['#EF4444','#FDBA74'],s:1},
+ {min:14,n:'Llama azul',f:['#38BDF8','#E0F2FE'],s:1.08},
+ {min:30,n:'Llama morada',f:['#A855F7','#F5D0FE'],s:1.16},
+ {min:60,n:'Llama verde',f:['#22C55E','#BBF7D0'],s:1.24},
+ {min:100,n:'Llama dorada',f:['#FACC15','#FFFFFF'],s:1.32}];
+function stkTier(n){let i=0;STK_T.forEach((t,k)=>{if(n>=t.min)i=k});return {...STK_T[i],i,next:STK_T[i+1]||null}}
+/* ===== Atuendos de la mascota (se desbloquean con logros: cambia "need" para pedir más o menos) =====
+   slot: solo puede haber un atuendo por zona (head = cabeza, eyes = ojos, ears = orejas).
+   Para añadir uno nuevo: agrégalo aquí y dibújalo en STK_ART con el mismo id. */
+const OUTFITS=[
+ {id:'gorra',n:'Gorra Roja',ic:'🧢',slot:'head',need:2},
+ {id:'gafas',n:'Gafas de Sol',ic:'🕶️',slot:'eyes',need:4},
+ {id:'audi',n:'Audífonos',ic:'🎧',slot:'ears',need:7},
+ {id:'corona',n:'Corona de Oro',ic:'👑',slot:'head',need:10}];
+const STK_ART={
+ gorra:`<path d="M36 76C36 50 52 44 70 44S104 50 104 76Z" fill="#EF4444" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><path d="M70 44C62 56 62 66 64 76" fill="none" stroke="#7F1D1D" stroke-opacity=".35" stroke-width="2"/><path d="M90 74Q114 69 120 80Q104 85 86 78Z" fill="#B91C1C" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><circle cx="70" cy="44" r="3.5" fill="#FCA5A5" stroke="#7F1D1D" stroke-width="2"/><path d="M48 58Q56 50 66 49" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>`,
+ gafas:`<path d="M45 82L36 79M95 82L104 79" stroke="#111827" stroke-width="3" stroke-linecap="round"/><rect x="44" y="75" width="23" height="17" rx="7" fill="#111827"/><rect x="73" y="75" width="23" height="17" rx="7" fill="#111827"/><path d="M67 82h6" stroke="#111827" stroke-width="3.2"/><path d="M48 79l7-1M77 79l7-1" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/>`,
+ audi:`<path d="M35 86C33 40 107 40 105 86" fill="none" stroke="#1F2937" stroke-width="6" stroke-linecap="round"/><rect x="27" y="77" width="14" height="28" rx="7" fill="var(--f1)" stroke="#1F2937" stroke-width="2.5"/><rect x="99" y="77" width="14" height="28" rx="7" fill="var(--f1)" stroke="#1F2937" stroke-width="2.5"/>`,
+ corona:`<path d="M43 68L43 46L56 57L70 40L84 57L97 46L97 68Z" fill="#FACC15" stroke="#A16207" stroke-width="2.5" stroke-linejoin="round"/><rect x="43" y="63" width="54" height="8" rx="2.5" fill="#EAB308" stroke="#A16207" stroke-width="2"/><circle cx="70" cy="56" r="3.2" fill="#EF4444"/><circle cx="53" cy="67" r="2.2" fill="#38BDF8"/><circle cx="87" cy="67" r="2.2" fill="#38BDF8"/>`};
+function stkWear(fit){const f=Array.isArray(fit)?fit:[];const has=id=>f.includes(id)&&STK_ART[id];
+ return {ears:has('audi')?STK_ART.audi:'',head:['gorra','corona'].filter(has).map(id=>STK_ART[id]).join(''),eyes:has('gafas')?STK_ART.gafas:''}}
+function stkHop(el){const g=el&&el.querySelector('.stk-body');if(!g)return;g.classList.remove('hop');void g.getBoundingClientRect();g.classList.add('hop');setTimeout(()=>g.classList.remove('hop'),850)}
+function stkSvg(n,on,fit){
+ const s=stkTier(n).s,w=stkWear(fit);
+ const eyes=on?`<g class="stk-ey"><g class="stk-e"><ellipse cx="58" cy="84" rx="5" ry="6.5" fill="#111827"/><circle cx="59.6" cy="81.6" r="1.8" fill="#fff"/></g><g class="stk-e"><ellipse cx="82" cy="84" rx="5" ry="6.5" fill="#111827"/><circle cx="83.6" cy="81.6" r="1.8" fill="#fff"/></g></g><path d="M58 98Q70 111 82 98" fill="none" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>`
   :`<path d="M52 86q6 5 12 0M76 86q6 5 12 0" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/><path d="M63 101h14" stroke="#111827" stroke-width="3" stroke-linecap="round"/><text x="100" y="62" font-size="16" font-weight="900" fill="#94A3B8" font-family="Arial,sans-serif">z</text><text x="110" y="50" font-size="12" font-weight="900" fill="#94A3B8" font-family="Arial,sans-serif">z</text>`;
  const fire=on?`<g transform="translate(70 56) scale(${s}) translate(-70 -56)"><path class="stk-f" d="M44 30C50 38 52 44 48 52 44 56 38 52 38 44 38 38 42 36 44 30Z" fill="var(--f1)" opacity=".85"/><path class="stk-f b" d="M96 30C90 38 88 44 92 52 96 56 102 52 102 44 102 38 98 36 96 30Z" fill="var(--f1)" opacity=".85"/><path class="stk-f" d="M70-2C84 18 102 26 98 44 96 54 84 58 70 58 56 58 44 54 42 44 38 26 56 18 70-2Z" fill="var(--f1)"/><path class="stk-f b" d="M70 18C78 30 88 34 86 46 85 53 78 56 70 56 62 56 55 53 54 46 52 34 62 30 70 18Z" fill="var(--f2)"/></g>`:'';
- return `<svg viewBox="0 -24 140 194" aria-hidden="true" style="overflow:visible"><defs><radialGradient id="stkg" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#F3F4F6"/><stop offset="1" stop-color="#6B7280"/></radialGradient></defs>${fire}<circle cx="70" cy="88" r="34" fill="url(#stkg)" stroke="#374151" stroke-width="2.5"/><path d="M40 76h60M37 88h66M40 100h60" stroke="#fff" stroke-opacity=".2" stroke-width="1.5"/>${eyes}<circle cx="48" cy="96" r="4.5" fill="#F87171" opacity=".5"/><circle cx="92" cy="96" r="4.5" fill="#F87171" opacity=".5"/><rect x="42" y="118" width="56" height="11" rx="4" fill="#F59E0B" stroke="#B45309" stroke-width="2"/><path d="M50 129h40l-6 37q-1 4-5 4H61q-4 0-5-4z" fill="#1F2937"/><path d="M58 134l-3 26" stroke="#fff" stroke-opacity=".15" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="142" r="4.5" fill="#EF4444"/></svg>`}
+ const notes=on?`<text class="stk-nt" x="112" y="72" font-size="15" font-weight="900" fill="var(--f1)" font-family="Arial,sans-serif">♪</text><text class="stk-nt" x="20" y="64" font-size="13" font-weight="900" fill="var(--f1)" font-family="Arial,sans-serif" style="animation-delay:-1.4s">♫</text><text class="stk-nt" x="104" y="44" font-size="11" font-weight="900" fill="var(--f1)" font-family="Arial,sans-serif" style="animation-delay:-2.7s">♪</text>`:'';
+ return `<svg viewBox="0 -24 140 194" aria-hidden="true" style="overflow:visible"><defs><radialGradient id="stkg" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#F3F4F6"/><stop offset="1" stop-color="#6B7280"/></radialGradient></defs><g class="stk-body">${fire}<g class="stk-hd"><circle cx="70" cy="88" r="34" fill="url(#stkg)" stroke="#374151" stroke-width="2.5"/><path d="M40 76h60M37 88h66M40 100h60" stroke="#fff" stroke-opacity=".2" stroke-width="1.5"/>${eyes}<circle cx="48" cy="96" r="4.5" fill="#F87171" opacity=".5"/><circle cx="92" cy="96" r="4.5" fill="#F87171" opacity=".5"/>${w.ears}${w.head}${w.eyes}</g><rect x="42" y="118" width="56" height="11" rx="4" fill="#F59E0B" stroke="#B45309" stroke-width="2"/><path d="M50 129h40l-6 37q-1 4-5 4H61q-4 0-5-4z" fill="#1F2937"/><path d="M58 134l-3 26" stroke="#fff" stroke-opacity=".15" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="142" r="4.5" fill="#EF4444"/></g>${notes}</svg>`}
 function stkMini(){
  const st=(S.me&&S.me.st)||{n:0,ch:0},n=S.me?(st.n||0):0,on=n>0;
- const f=n>=30?['#38BDF8','#E0F2FE']:n>=10?['#F97316','#FDE047']:['#FB923C','#FDE047'];
+ const f=stkTier(n).f;
  const d=n>0&&n%10===0?10:n%10,nxt=n+(10-n%10);
  const dots=Array.from({length:10},(_,i)=>`<i class="${i<d?'on':''}"></i>`).join('');
  const sub=!S.me?'Crea tu cuenta y enciende tu racha':S.stkSaved?'¡Usaste tu oportunidad! Tu racha sigue viva':S.stkLost?'Perdiste tu racha de '+S.stkLost+' días. ¡Empieza otra!':st.ch?'🛡️ Oportunidad lista':'🛡️ Oportunidad a los '+nxt+' días';
- return `<button class="card stkc${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}" onclick="S.stkOpen=true;R()" aria-label="Racha diaria: ${n} días"><div class="mm">${stkSvg(n,on)}</div><div style="flex:1;min-width:0"><div class="stkc-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d" style="justify-content:flex-start;margin:6px 0 5px">${dots}</div><div class="stkc-s">${sub}</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu);flex:0 0 auto"')}</button>`}
+ return `<button class="card stkc${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}" onclick="S.stkOpen=true;R()" aria-label="Racha diaria: ${n} días"><div class="mm">${stkSvg(n,on,S.me&&S.me.fit)}</div><div style="flex:1;min-width:0"><div class="stkc-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d" style="justify-content:flex-start;margin:6px 0 5px">${dots}</div><div class="stkc-s">${sub}</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu);flex:0 0 auto"')}</button>`}
+function stkFitH(){const nA=achCount(),cur=Array.isArray(S.me&&S.me.fit)?S.me.fit:[];
+ const tile=o=>{const ok=nA>=o.need,on=cur.includes(o.id);return `<button class="fitt${on?' on':''}${ok?'':' lk'}" onclick="stkToggleFit('${o.id}')" aria-label="${esc(o.n)}"><i>${ok?o.ic:'🔒'}</i><span><b>${esc(o.n)}</b><em>${ok?(on?'Puesto · toca para quitar':'Desbloqueado'):o.need+' logros'}</em></span></button>`};
+ return `<div class="sec"><span>Atuendos de tu mascota</span><span>${nA} logros</span></div><div class="card" style="--f1:${stkTier((S.me.st&&S.me.st.n)||0).f[0]}"><div class="mu" style="margin:0 0 12px;font-size:13px">Se desbloquean con logros (tienes ${nA}) y se ven al instante en tu micrófono. Puedes combinarlos, pero solo uno por zona (por ejemplo, gorra o corona).</div><div class="fit-g">${OUTFITS.map(tile).join('')}</div></div>`}
+async function stkToggleFit(id){if(!S.me)return;const o=OUTFITS.find(x=>x.id===id);if(!o)return;
+ const n=achCount();if(n<o.need){achFail('Te faltan '+(o.need-n)+' logros para desbloquear '+o.n+'.');return}
+ const prev=Array.isArray(S.me.fit)?S.me.fit:[];
+ const nx=prev.includes(id)?prev.filter(x=>x!==id):[...prev.filter(x=>{const q=OUTFITS.find(y=>y.id===x);return q&&q.slot!==o.slot}),id];
+ S.me={...S.me,fit:nx};R();
+ try{await B.updateUser(S.me.uid,{fit:nx})}catch(e){S.me={...S.me,fit:prev};R();achFail('No se pudo guardar el atuendo.')}}
 function stkSheet(){return `<div class="ov" onclick="S.stkOpen=false;R()"><div class="sh" onclick="event.stopPropagation()">${streakH()}<button class="btn s" style="margin:14px 0 0" onclick="S.stkOpen=false;R()">Cerrar</button></div></div>`}
 
 function streakH(){
  if(!S.me)return `<div class="sec"><span>Racha diaria</span></div><div class="card stk off" style="--f1:#FB923C;--f2:#FDE047"><div class="stk-m">${stkSvg(0,false)}</div><div class="stk-n"><b>0</b><span>días de racha</span></div><div class="mu stk-t">Crea tu cuenta y entra cada día para encender el micrófono. Cada 10 días de racha ganas una oportunidad por si faltas un día.</div><button class="btn sm" style="width:100%;justify-content:center;margin:12px 0 0" onclick="openAuth('create')">Crear cuenta</button></div>`;
  const st=S.me.st||{n:0,ch:0,best:0},n=st.n||0,on=n>0;
- const f=n>=30?['#38BDF8','#E0F2FE']:n>=10?['#F97316','#FDE047']:['#FB923C','#FDE047'];
- const d=n>0&&n%10===0?10:n%10,nxt=n+(10-n%10);
+ const f=stkTier(n).f;
+ const tr=stkTier(n),d=n>0&&n%10===0?10:n%10,nxt=n+(10-n%10);
  const dots=Array.from({length:10},(_,i)=>`<i class="${i<d?'on':''}"></i>`).join('');
  let msg='Entra todos los días para mantener el micrófono encendido.';
  if(S.stkSaved)msg='¡Usaste tu oportunidad! Tu racha sigue viva.';
  else if(S.stkLost)msg='Perdiste tu racha de '+S.stkLost+' días. ¡Hoy empieza una nueva!';
  else if(n===1)msg='¡Hoy empezó tu racha! Vuelve mañana.';
  const chip=st.ch?`<div class="stk-ch on">🛡️ Oportunidad lista: si faltas un día, tu racha sigue</div>`:`<div class="stk-ch">🛡️ Próxima oportunidad al llegar a ${nxt} días (faltan ${nxt-n})</div>`;
- return `<div class="sec"><span>Racha diaria</span><span>Mejor: ${st.best||n}</span></div><div class="card stk${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}"><div class="stk-m">${stkSvg(n,on)}</div><div class="stk-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d">${dots}</div><div class="mu stk-t">${msg}</div>${chip}<div class="mu" style="font-size:11px;text-align:center;margin-top:8px">Ganas 1 oportunidad cada 10 días de racha. Solo puedes tener una a la vez.</div></div>`}
+ return `<div class="sec"><span>Racha diaria</span><span>Mejor: ${st.best||n}</span></div><div class="card stk${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}"><div class="stk-m" onclick="stkHop(this)">${stkSvg(n,on,S.me&&S.me.fit)}</div><div class="stk-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d">${dots}</div><div class="stk-tier">🔥 ${tr.n}${tr.next?` · cambia a ${tr.next.n.toLowerCase()} a los ${tr.next.min} días (faltan ${tr.next.min-n})`:" · ¡el color máximo!"}</div><div class="mu stk-t">${msg}</div>${chip}<div class="mu" style="font-size:11px;text-align:center;margin-top:8px">Ganas 1 oportunidad cada 10 días de racha. Solo puedes tener una a la vez.</div></div>${stkFitH(n)}`}
 
 /* ===== Chat con IA (Gemini) y chat entre amigos ===== */
 /* Pega aquí tu clave de Google AI Studio (empieza con AIza). Restríngela al sitio votafms.github.io en Google Cloud. */
