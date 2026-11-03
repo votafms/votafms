@@ -1985,7 +1985,7 @@ function streakH(){
 
 /* ===== Chat con IA (Gemini) y chat entre amigos ===== */
 /* Pega aquí tu clave de Google AI Studio (empieza con AIza). Restríngela al sitio votafms.github.io en Google Cloud. */
-const IA_KEY='AQ.Ab8RN6K1OPNNee7phN6VV1LlgrNNcA5tPRnW4vBLX6bPxml8VA';
+/* La IA usa Firebase AI Logic: no hace falta ninguna clave aquí. */
 const IA_MODEL='gemini-2.5-flash';
 S.ia={msgs:[],busy:false,uid:null,last:0};S.iaDraft='';
 const iaSaveKey=()=>'vfms_ia_'+(S.me?S.me.uid:'x');
@@ -2024,28 +2024,34 @@ function iaV(){iaLoad();
 function iaReset(){S.ia.msgs=[];iaSave();R()}
 function iaPush(r,t){S.ia.msgs.push({r,t});iaSave()}
 function iaLimit(){const now=Date.now();if(now-S.ia.last<3000)return 'Dame unos segundos entre mensajes 😅';try{const k='vfms_iaq_'+(S.me?S.me.uid:'x')+'_'+dkey();const n=+(localStorage.getItem(k)||0);if(n>=40)return 'Llegaste al límite de 40 mensajes de hoy. Vuelve mañana 🎤';localStorage.setItem(k,String(n+1))}catch(e){}return ''}
+/* IA vía Firebase AI Logic (Gemini): sin claves en la página. Se carga solo al usar la IA. */
+const IA_APPCHECK='';/* opcional: clave reCAPTCHA v3 de App Check */
+const FBV='https://www.gstatic.com/firebasejs/11.10.0/';
+let _iaAI=null;
+async function iaGetAI(){
+ if(_iaAI)return _iaAI;
+ const [am,aim]=await Promise.all([import(FBV+'firebase-app.js'),import(FBV+'firebase-ai.js')]);
+ const app=am.initializeApp(FIREBASE_CONFIG,'vfms-ai');
+ if(IA_APPCHECK){const ac=await import(FBV+'firebase-app-check.js');ac.initializeAppCheck(app,{provider:new ac.ReCaptchaV3Provider(IA_APPCHECK),isTokenAutoRefreshEnabled:true})}
+ _iaAI={ai:aim.getAI(app,{backend:new aim.GoogleAIBackend()}),aim};return _iaAI}
 async function iaAsk(){
+ const {ai,aim}=await iaGetAI();
+ const model=aim.getGenerativeModel(ai,{model:IA_MODEL,systemInstruction:iaSystem(),generationConfig:{temperature:.7,maxOutputTokens:1500}});
  const hist=S.ia.msgs.slice(-12).map(m=>({role:m.r,parts:[{text:m.t}]}));
- const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),30000);
- try{
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+IA_MODEL+':generateContent',{method:'POST',signal:ctl.signal,headers:{'Content-Type':'application/json','x-goog-api-key':IA_KEY},body:JSON.stringify({systemInstruction:{parts:[{text:iaSystem()}]},contents:hist,generationConfig:{temperature:.7,maxOutputTokens:800,thinkingConfig:{thinkingBudget:0}}})});
-  if(r.status===429)throw new Error('busy');
-  if(!r.ok)throw new Error('http'+r.status);
-  const j=await r.json();
-  const t=((j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[]).map(p=>p.text||'').join('').trim();
-  if(!t)throw new Error('empty');
-  return t}finally{clearTimeout(to)}}
+ const res=await Promise.race([model.generateContent({contents:hist}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),30000))]);
+ const t=String(res.response.text()||'').trim();
+ if(!t)throw new Error('empty');
+ return t}
 async function iaSend(t){
  if(!S.me){openAuth('in');return}
  const inp=document.getElementById('iain');
  const text=String(t||(inp?inp.value:S.iaDraft)||'').trim().slice(0,500);
  if(!text||S.ia.busy)return;
- if(!IA_KEY){iaPush('user',text);iaPush('model','⚙️ La IA todavía no está activada en esta app. Falta configurar la clave de Gemini.');S.iaDraft='';if(inp){inp.value='';iaGrow(inp)}iaRefresh();return}
  const lim=iaLimit();if(lim){achFail(lim);return}
  S.ia.last=Date.now();S.iaDraft='';if(inp){inp.value='';iaGrow(inp)}
  iaPush('user',text);S.ia.busy=true;iaRefresh();
  try{iaPush('model',await iaAsk())}
- catch(e){const m=String(e&&e.message||e);iaPush('model',m==='busy'?'Hay muchas personas usando la IA ahora mismo. Intenta de nuevo en un minuto 🙏':(m==='http400'||m==='http403'||m==='http404')?'La IA no está bien configurada todavía (clave o modelo). Avísale al admin.':'No pude responder ahora. Revisa tu conexión e intenta otra vez.')}
+ catch(e){const m=String(e&&e.message||e);console.error('IA',e);iaPush('model',/429|quota|RESOURCE_EXHAUSTED|rate/i.test(m)?'Hay muchas personas usando la IA ahora mismo. Intenta de nuevo en un minuto 🙏':(m==='timeout'||m==='empty')?'No pude responder ahora. Intenta otra vez.':'La IA no está activada o falló: '+m.replace(/\s+/g,' ').slice(0,200))}
  S.ia.busy=false;iaRefresh()}
 
 /* --- Chat entre amigos (Firestore: chats/{id} y chats/{id}/msgs) --- */
