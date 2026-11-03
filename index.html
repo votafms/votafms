@@ -574,6 +574,8 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .cmenu.u{align-self:flex-end;justify-content:flex-end}.cmenu.m{align-self:flex-start}
 .cmenu button{border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:12.5px;cursor:pointer}
 .cmenu button.dg{color:#F87171;border-color:rgba(248,113,113,.4)}
+.pftabs{margin:4px 0 14px}
+.pftabs button{white-space:nowrap}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1333,18 +1335,35 @@ function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const nv=voteNorm
 
 function perfilV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tu cuenta</span><h1>Guarda tus votos</h1><p>Crea una cuenta para votar, ver tus estadísticas y aparecer en la comunidad.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
+
  const m=S.me;
- return `${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${profileHead(m,true)}${likeBarH(m.uid)}${rankCardH(S.myVotes)}<label class="btn s fotobtn">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
- ${themeCardH()}${designCardH()}${nameCardH()}<div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
+ const tab=S.pfTab||'resumen',nv=S.myVotes?S.myVotes.length:'…';
+ const T=[['resumen','Resumen'],['editar','Editar'],['votos','Votos '+nv],['cuenta','Cuenta']];
+ const tabs=`<div class="seg s4 pftabs">${T.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.pfTab='${k}';R()">${t}</button>`).join('')}</div>`;
+ let body='';
+ if(tab==='resumen'){
+  body=`${rankCardH(S.myVotes)}${statsCard(S.myVotes||[])}`}
+ else if(tab==='editar'){
+  body=`<div class="sec" style="margin-top:6px"><span>Información</span></div>
+ <label class="btn s fotobtn" style="margin-bottom:12px">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
+ <div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
  <label class="f">País</label><button class="selbtn" onclick="openPick('p')"><span class="sv${m.p?'':' ph'}">${m.p?`${flagOf(m.p)||'🌎'} ${esc(m.p)}`:'Elige tu país'}</span><span class="sc">▾</span></button>
- <label class="f">MC favorito</label><button class="selbtn" onclick="openPick('m')"><span class="sv${m.m?'':' ph'}">${m.m?`🎤 ${esc(m.m)}`:'Elige tu MC favorito'}</span><span class="sc">▾</span></button>
- <label class="f">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
+ <label class="f" style="margin-top:12px">MC favorito</label><button class="selbtn" onclick="openPick('m')"><span class="sv${m.m?'':' ph'}">${m.m?`🎤 ${esc(m.m)}`:'Elige tu MC favorito'}</span><span class="sc">▾</span></button>
+ <label class="f" style="margin-top:12px">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
  <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
- ${statsCard(S.myVotes||[])}<div class="sec"><span>Mis votos</span><span>${S.myVotes?S.myVotes.length:'…'}</span></div>${voteList(S.myVotes,'perfil')}
- ${isAdmin()?`<button class="btn" style="margin-top:8px" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
- <button class="btn s" style="color:#FF6B7A;margin-top:8px" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>
+ ${nameCardH()}
+ <div class="sec"><span>Apariencia</span></div>
+ ${themeCardH()}${designCardH()}`}
+ else if(tab==='votos'){
+  body=`<div class="sec" style="margin-top:6px"><span>Mis votos</span><span>${nv}</span></div>${voteList(S.myVotes,'perfil')}`}
+ else{
+  body=`<div class="sec" style="margin-top:6px"><span>Sesión</span></div>
+ ${isAdmin()?`<button class="btn" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
+ <button class="btn s" onclick="switchAccount()">🔄 Cambiar de cuenta</button>
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
- <button class="btn s" onclick="switchAccount()">🔄 Cambiar de cuenta</button>`}
+ <div class="sec"><span>Zona de peligro</span></div>
+ <button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
+ return `${profileHead(m,true)}${likeBarH(m.uid)}${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}`}
 async function saveProf(){const m=S.me;if(!m)return;const prof={a:document.getElementById('pf-a').value.trim()};
  try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.draftA=null;S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
 async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};S.msgP='';watchInbox();go('home')}
@@ -1536,6 +1555,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-03T00:05:00-04:00'),text:'Nuevo diseño del perfil: ahora está más ordenado y menos cargado. Debajo de tu tarjeta de perfil tienes 4 pestañas: Resumen (tu rango y estadísticas), Editar (foto, info, nombre de usuario, color de la app y diseño de tarjeta), Votos (todas tus batallas votadas) y Cuenta (cambiar de cuenta, cerrar sesión y eliminar cuenta). Tienes lo mismo de antes, solo mejor organizado.'},
  {ts:Date.parse('2026-11-02T23:55:00-04:00'),text:'Nuevo: Cambiar de cuenta. En tu perfil, debajo de Cerrar sesión, tienes el botón 🔄 Cambiar de cuenta: te abre tus cuentas de Google, eliges la que quieras y entras directo con ella, sin tener que cerrar sesión primero.'},
  {ts:Date.parse('2026-11-02T23:30:00-04:00'),text:'Actualización: ahora puedes borrar mensajes en el chat con tus amigos. Toca un mensaje y elige «Borrar para mí» (solo desaparece de tu chat) o, en los tuyos, «Borrar para todos» (se elimina de forma permanente para los dos y no queda ningún aviso ni rastro). Además, MC IA ahora conoce mucho más: sabe cuántos logros tienes y cuáles te faltan (con lo que debes hacer en cada uno), tu rango, racha, amigos y datos de tu perfil, y también puede decirte cómo está compuesto el perfil de otro usuario (rango, país, MC favorito, color y más) con solo mencionar su nombre de usuario o su ID.'},
  {ts:Date.parse('2026-11-02T19:30:00-04:00'),text:'Nuevo: chat con IA y chat con amigos. En la pestaña IA (abajo) puedes preguntarle a MC IA sobre freestyle y sobre cómo funciona VotaFMS. Y en el perfil de tus amigos tienes el botón Enviar mensaje para chatear con ellos; también aparece 💬 en tu lista de amigos y verás un aviso rojo cuando te escriban.'},
