@@ -1750,6 +1750,27 @@ function lbStart(){const B2=S.lb;const a=B2.a.trim(),b=B2.b.trim();
 
 function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&v.key===key)||null}
 async function refreshMine(){if(!S.me)return;watchInbox();streakTick();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R();await loadAch()}catch(e){}}
+/* ===== Votos guardados con un formato anterior: se adaptan al formato actual al editarlos ===== */
+const mRnm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\bmode\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const mKey=s=>{const k=mRnm(s);if(/^random/.test(k))return 'random';if(/^minutos/.test(k))return 'minutos';if(/^deluxe/.test(k))return 'deluxe';if(/^replica/.test(k))return 'replica';if(/^tematica/.test(k))return 'tematicas';return k};
+const M_OLD=new Set(['easy','hard','easy hard','tematicas']);
+function mFit(arr,n,parts){arr=Array.isArray(arr)?arr:[];if(arr.length===n)return arr.slice();
+ if(parts>1&&arr.length%parts===0&&n%parts===0){const sa=arr.length/parts,sn=n/parts;let o=[];for(let i=0;i<parts;i++)o=o.concat(mFit(arr.slice(i*sa,(i+1)*sa),sn,1));return o}
+ const o=arr.slice(0,n);while(o.length<n)o.push(null);return o}
+function migrateSc(v){
+ const rows=Array.isArray(v.rows)?v.rows:[],sc=Array.isArray(v.sc)?v.sc:[],cur=S.rounds;
+ const names=sc.map((_,j)=>rows[j]&&rows[j].r!=null?mKey(rows[j].r):null),noNames=names.every(x=>x==null);
+ const used=new Set(),out=cur.map(()=>null);
+ cur.forEach((rd,k)=>{const key=mKey(rd.n);let j=names.findIndex((nm,x)=>!used.has(x)&&nm===key);
+  if(j<0&&noNames&&sc[k]&&!used.has(k))j=k;
+  if(j>=0&&sc[j]){used.add(j);const n=szOf(rd),pt=(rd.p&&rd.p.length)||1;out[k]=[mFit(sc[j].a,n,pt),mFit(sc[j].b,n,pt)]}});
+ /* Easy, Hard y Temáticas que ya no existen: si el voto solo tenía eso, pasa al Random */
+ const orphans=sc.map((_,j)=>j).filter(j=>!used.has(j)&&M_OLD.has(names[j]));
+ const ri=cur.findIndex(rd=>mKey(rd.n)==='random');
+ if(orphans.length&&ri>=0){const has=out[ri]&&(out[ri][0].some(x=>x!=null)||out[ri][1].some(x=>x!=null));
+  if(!has){const n=szOf(cur[ri]),pa=[];orphans.forEach(j=>{const a=sc[j].a||[],b=sc[j].b||[];for(let i=0;i<Math.max(a.length,b.length);i++)if(a[i]!=null||b[i]!=null)pa.push([a[i]==null?null:a[i],b[i]==null?null:b[i]])});
+   const A=Array(n).fill(null),B=Array(n).fill(null);pa.slice(0,n).forEach((p,i)=>{A[i]=p[0];B[i]=p[1]});out[ri]=[A,B]}}
+ return cur.map((rd,k)=>out[k]||[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)])}
 function startEdit(v){
  if(!v.sc){S.msgP='Esta votación es antigua y no se puede editar. Bórrala y vótala otra vez.';S.v='perfil';return R()}
  const l=L.find(x=>x.i===v.l)||L[0];
@@ -1757,7 +1778,7 @@ function startEdit(v){
  S.bt={a:v.a,b:v.b,j:v.j||(v.free?'Batalla libre':l.n+' · '+v.date),y:v.y||null,libre:!!v.free};
  S.fmt=v.fmt==='actual'?'actual':'antigua';S.rounds=fmtRounds(S.fmt,l);if(v.rep==='voted')S.rounds.push(S.fmt==='actual'?((v.sc[1]&&v.sc[1].a&&v.sc[1].a.length===1)?REPA:REPA6):REP);
  S.dif=v.dif||null;S.rep=v.rep==='voted'?'voted':(v.rep==='skipped'?'skipped':null);
- S.sc=v.sc.map(p=>[p.a,p.b]);if(S.sc.length!==S.rounds.length||S.rounds.some((rd,k)=>S.sc[k][0].length!==szOf(rd))){S.msgP='Esta votación es de antes del formato nuevo. Bórrala y vótala otra vez.';S.v='perfil';return R()}
+ S.sc=migrateSc(v);
  S.ri=0;S.pi=0;S.editId=v.id;S.v='vote';R();window.scrollTo(0,0);
 }
 function editMine(){const v=S.viewList[S.vi];if(v)startEdit(v)}
