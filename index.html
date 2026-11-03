@@ -1986,7 +1986,7 @@ function streakH(){
 /* ===== Chat con IA (Gemini) y chat entre amigos ===== */
 /* Pega aquí tu clave de Google AI Studio (empieza con AIza). Restríngela al sitio votafms.github.io en Google Cloud. */
 /* La IA usa Firebase AI Logic: no hace falta ninguna clave aquí. */
-const IA_MODEL='gemini-2.5-flash';
+const IA_MODELS=['gemini-3.5-flash-lite','gemini-3.8-flash','gemini-3.5-flash'];let _iaMi=0;/* si un modelo ya no existe, prueba el siguiente */
 S.ia={msgs:[],busy:false,uid:null,last:0};S.iaDraft='';
 const iaSaveKey=()=>'vfms_ia_'+(S.me?S.me.uid:'x');
 function iaLoad(){const u=S.me?S.me.uid:'x';if(S.ia.uid===u)return;S.ia.uid=u;S.ia.msgs=[];try{const a=JSON.parse(localStorage.getItem(iaSaveKey())||'[]');if(Array.isArray(a))S.ia.msgs=a.filter(m=>m&&(m.r==='user'||m.r==='model')&&typeof m.t==='string').slice(-30)}catch(e){}}
@@ -2036,12 +2036,19 @@ async function iaGetAI(){
  _iaAI={ai:aim.getAI(app,{backend:new aim.GoogleAIBackend()}),aim};return _iaAI}
 async function iaAsk(){
  const {ai,aim}=await iaGetAI();
- const model=aim.getGenerativeModel(ai,{model:IA_MODEL,systemInstruction:iaSystem(),generationConfig:{temperature:.7,maxOutputTokens:1500}});
  const hist=S.ia.msgs.slice(-12).map(m=>({role:m.r,parts:[{text:m.t}]}));
- const res=await Promise.race([model.generateContent({contents:hist}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),30000))]);
- const t=String(res.response.text()||'').trim();
- if(!t)throw new Error('empty');
- return t}
+ let last=null;
+ for(let k=0;k<IA_MODELS.length;k++){
+  const i=(_iaMi+k)%IA_MODELS.length;
+  try{
+   const model=aim.getGenerativeModel(ai,{model:IA_MODELS[i],systemInstruction:iaSystem(),generationConfig:{temperature:.7,maxOutputTokens:1500}});
+   const res=await Promise.race([model.generateContent({contents:hist}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),30000))]);
+   const t=String(res.response.text()||'').trim();
+   if(!t)throw new Error('empty');
+   _iaMi=i;return t
+  }catch(e){last=e;if(!/404|no longer available|not found|not supported/i.test(String(e&&e.message||e)))throw e}
+ }
+ throw last}
 async function iaSend(t){
  if(!S.me){openAuth('in');return}
  const inp=document.getElementById('iain');
