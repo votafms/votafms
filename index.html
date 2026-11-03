@@ -2051,7 +2051,7 @@ async function iaSend(t){
  S.ia.last=Date.now();S.iaDraft='';if(inp){inp.value='';iaGrow(inp)}
  iaPush('user',text);S.ia.busy=true;iaRefresh();
  try{iaPush('model',await iaAsk())}
- catch(e){const m=String(e&&e.message||e);console.error('IA',e);iaPush('model',/429|quota|RESOURCE_EXHAUSTED|rate/i.test(m)?'Hay muchas personas usando la IA ahora mismo. Intenta de nuevo en un minuto 🙏':(m==='timeout'||m==='empty')?'No pude responder ahora. Intenta otra vez.':'La IA no está activada o falló: '+m.replace(/\s+/g,' ').slice(0,200))}
+ catch(e){const m=String(e&&e.message||e);console.error('IA',e);iaPush('model',/\b429\b|quota|RESOURCE_EXHAUSTED|too many requests/i.test(m)?'Hay muchas personas usando la IA ahora mismo. Intenta de nuevo en un minuto 🙏':(m==='timeout'||m==='empty')?'No pude responder ahora. Intenta otra vez.':'La IA no está activada o falló: '+m.replace(/\s+/g,' ').slice(0,200))}
  S.ia.busy=false;iaRefresh()}
 
 /* --- Chat entre amigos (Firestore: chats/{id} y chats/{id}/msgs) --- */
