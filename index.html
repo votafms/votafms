@@ -925,7 +925,7 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){S.me={uid,...prof};S.admin=false;B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
+function setMe(uid,prof){S.me={uid,...prof};S.admin=false;S.collab=false;try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
@@ -1334,11 +1334,17 @@ function lgv(){
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
  ${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div>`;
 }
-function link17Form(){return `<div class="card" style="margin-bottom:12px"><b>Añade el link para ver esta batalla</b><div class="mu" style="margin:4px 0 10px">Pega el link de YouTube. Lo verá cualquiera que abra esta batalla.</div><input id="lk17" placeholder="https://youtube.com/watch?v=..."><button class="btn sm" style="width:100%" onclick="saveLink17()">Guardar link</button></div>`}
+const LINK_TEMPS=['2017','2018','2019','2020','2021','2023','2024','2025'];
+const canLink=()=>!!(S.me&&(S.admin||S.collab));
+function link17Form(ed){return `<div class="card" style="margin-bottom:12px"><b>${ed?'Cambiar el link del video':'Añade el link para ver esta batalla'}</b><div class="mu" style="margin:4px 0 10px">Pega el link de YouTube. Lo verá cualquiera que abra esta batalla. <span style="color:var(--ac);font-weight:800">Modo colaborador</span></div><input id="lk17" placeholder="https://youtube.com/watch?v=..."><button class="btn sm" style="width:100%" onclick="saveLink17()">Guardar link</button>${ed?'<button class="btn s sm" style="width:100%;margin-top:8px" onclick="S.lkEdit=false;R()">Cancelar</button>':''}</div>`}
+function linkAreaH(b){if(!LINK_TEMPS.includes(S.temp))return '';
+ if(!canLink())return b.y?'':'<div class="mu" style="margin:0 0 12px;font-size:13px">🎬 Esta batalla aún no tiene video. Pronto lo añadiremos.</div>';
+ if(!b.y)return link17Form(false);
+ return S.lkEdit?link17Form(true):`<button class="btn s sm" style="margin:0 0 12px" onclick="S.lkEdit=true;R()">✏️ Cambiar link del video</button>`}
 async function saveLink17(){const v=(document.getElementById('lk17')||{}).value||'';const m=v.trim().match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
  if(!m){S.msgP='Ese link no parece de YouTube. Revisa el link.';return R()}
- try{const key=linkKey(S.lg,S.temp,S.bt.a,S.bt.b);await B.setLink(key,m[1]);S.links=S.links||{};S.links[key]=m[1];S.bt.y=m[1];S.msgP='Link guardado'}
- catch(e){S.msgP='No se pudo guardar el link. Revisa las reglas de Firestore.'}
+ try{const key=linkKey(S.lg,S.temp,S.bt.a,S.bt.b);await B.setLink(key,m[1]);S.links=S.links||{};S.links[key]=m[1];S.bt.y=m[1];S.lkEdit=false;S.msgP='Link guardado'}
+ catch(e){S.msgP=/permission|insufficient/i.test(String(e&&(e.code||e.message)))?'No tienes permiso para añadir links. Pídele acceso de colaborador al administrador.':'No se pudo guardar el link. Revisa las reglas de Firestore.'}
  R();}
 const LINEUP18es=['Hander','Zasko','Errecé','Arkano','Blon','BTA','Chuty','Force','Skone','Walls'];
 const LINEUP18ar=['Cacha','Stuart','Dtoke','Dani','Wos','MKS','Papo','Trueno','Replik','Klan'];
@@ -1449,7 +1455,7 @@ function voteV(){
  const media=b.y?`<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${b.y}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a href="https://www.youtube.com/watch?v=${b.y}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
  <div class="card"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu" style="text-align:center;margin-top:10px">${esc(b.j||'')}</div></div>
- ${!b.y&&(S.temp==='2017'||S.temp==='2018'||S.temp==='2019'||S.temp==='2020'||S.temp==='2021'||S.temp==='2023'||S.temp==='2024'||S.temp==='2025')?link17Form():''}${S.editId?'':fmtSeg()}${plBtnH()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan"${plAttr()}>${planHTML()}</div></div>`;
+ ${linkAreaH(b)}${S.editId?'':fmtSeg()}${plBtnH()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan"${plAttr()}>${planHTML()}</div></div>`;
 }
 /* ===== Diseños de planilla por rango (15): solo cambian cómo se ve la planilla, no los puntos =====
    El diseño número i se desbloquea al llegar al nivel de rango i (0 = Underground 1 ... 14 = Elite 3).
@@ -1985,6 +1991,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-04T19:40:00-04:00'),text:'Videos de batallas: ahora solo los colaboradores de confianza (y los administradores) pueden añadir o corregir el link de YouTube de una batalla de temporadas anteriores, y ese link queda guardado para que todos lo vean. Si todavía no tiene video, verás un aviso de que pronto lo añadimos.'},
  {ts:Date.parse('2026-11-04T07:10:00-04:00'),text:'MC IA ahora guarda tus conversaciones: toca el botón 🕘 arriba del chat para ver tu historial, abrir una conversación y seguirla donde la dejaste, borrar una o empezar una nueva. Se guardan en este dispositivo.'},
  {ts:Date.parse('2026-11-04T06:50:00-04:00'),text:'MC IA ahora tiene dos novedades: 🎭 elige cómo te habla (Normal, Callejero, Comentarista o Serio) con los botones de «Estilo» arriba del chat, y 🖼️ puedes enviarle imágenes con el botón junto a la caja de texto: capturas de la app, planillas, carteles de batallas, lo que quieras que analice.'},
  {ts:Date.parse('2026-11-04T02:30:00-04:00'),text:'Perfil renovado: ahora arriba ves tu rango, tu racha y tus logros de un vistazo (tócalos para abrirlos). Puedes elegir hasta 3 medallas favoritas que se muestran en tu perfil y los demás también las ven. Añadimos el botón «Compartir mi perfil» y la sección Apariencia ahora está recogida para que la pestaña Editar sea más corta. Además, en FMS España Jornada 1 ya aparece la sede: Sevilla.'},
@@ -2904,6 +2911,27 @@ function iaHistClear(){if(!confirm('¿Borrar todo el historial de MC IA? No se p
  try{localStorage.removeItem(iaHKey());localStorage.removeItem(iaCKey())}catch(e){}S.ia.cid=null;S.ia.msgs=[];_iaSave1();R()}
 const _iaV2=iaV;
 iaV=function(){let h=_iaV2();try{if(S.me)h=h.replace('<button class="fbtn" onclick="iaTrain()">','<button class="fbtn iahb" onclick="iaHistOpen()" aria-label="Historial de conversaciones">🕘</button><button class="fbtn" onclick="iaTrain()">')}catch(e){}return h};
+
+/* ===== Colaboradores de videos: solo ellos (y los admins) pueden añadir o corregir links ===== */
+Object.assign(B,{
+ async getCollab(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'collabs',uid));return d.exists()}catch(e){return false}},
+ async listCollabs(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'collabs'));return q.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
+ async grantCollab(un,by){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'usernames',un));if(!s.exists())throw new Error('nouser');const uid=s.data().uid,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'collabs',uid),{u:un,ts,by});return {uid,u:un,ts,by}},
+ async revokeCollab(uid){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'collabs',uid))},
+ async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})}});
+const _start1=start;start=function(b){S.lkEdit=false;return _start1(b)};
+const _adminV1=adminV;
+adminV=function(){let h=_adminV1();if(!isAdmin())return h;
+ if(S.collabs===undefined){S.collabs=null;B.listCollabs().then(l=>{S.collabs=l;R()}).catch(()=>{S.collabs=[];R()})}
+ const L2=S.collabs;
+ const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página.</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px"><div style="flex:1;min-width:0"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
+ return h.replace('<div class="sec"><span>Comentarios de usuarios</span>',box+'<div class="sec"><span>Comentarios de usuarios</span>')};
+async function collabAdd(){if(!isAdmin())return;const un=((document.getElementById('cbu')||{}).value||'').trim().toLowerCase().replace(/^@/,'');
+ if(!/^[a-z0-9._]{3,20}$/.test(un)){S.collabMsg='Escribe un nombre de usuario válido.';return R()}
+ try{const c=await B.grantCollab(un,S.me.uid);S.collabs=[c,...(S.collabs||[]).filter(x=>x.uid!==c.uid)];S.collabMsg='✓ @'+un+' ya es colaborador.'}
+ catch(e){S.collabMsg=String(e&&e.message)==='nouser'?'No existe ningún usuario con ese nombre.':'No se pudo dar el acceso. ¿Ya publicaste las reglas nuevas de Firestore?'}R()}
+async function collabDel(uid){if(!isAdmin()||!confirm('¿Quitar el acceso a este colaborador?'))return;
+ try{await B.revokeCollab(uid);S.collabs=(S.collabs||[]).filter(x=>x.uid!==uid);S.collabMsg='Acceso quitado.'}catch(e){S.collabMsg='No se pudo quitar el acceso.'}R()}
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
