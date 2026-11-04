@@ -839,6 +839,27 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .pfsh{margin:0 0 14px}
 .pfap{width:100%;display:flex;align-items:center;gap:10px;margin:16px 0 10px;padding:14px 16px;border-radius:18px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);cursor:pointer;font-family:inherit;text-align:left}
 .pfap span{flex:1;display:flex;flex-direction:column;gap:2px}.pfap em{font-style:normal;font-size:12px;color:var(--mu);font-weight:700}.pfap i{font-style:normal;color:var(--mu)}
+/* MC IA: estilos e imágenes */
+.iamodes{display:flex;gap:8px;overflow-x:auto;margin:0 0 10px;padding:2px 0;scrollbar-width:none;align-items:center}
+.iamodes::-webkit-scrollbar{display:none}
+.iamodes span{flex:0 0 auto;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--mu)}
+.iamodes button{flex:0 0 auto;border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:999px;padding:8px 13px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.iamodes button.on{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#1A1300;border-color:transparent;box-shadow:0 6px 14px rgba(var(--acr),.3)}
+.iaatt{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cd2);cursor:pointer;font-size:19px}
+.iaprev{position:absolute;left:8px;right:8px;bottom:calc(100% + 8px);display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:16px;background:var(--cd);border:1px solid var(--bd);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;font-weight:700}
+.iaprev img{width:44px;height:44px;border-radius:10px;object-fit:cover}.iaprev span{flex:1;min-width:0}
+.iaprev button{width:30px;height:30px;border-radius:50%;border:0;background:var(--cd2);color:var(--tx);cursor:pointer;font-weight:800}
+.iaim{display:block;max-width:150px;max-height:150px;border-radius:12px;margin:0 0 6px;object-fit:cover}
+/* MC IA: historial */
+.iahb{padding:8px 11px}
+.iah{gap:8px}.iah .fbtn{padding-left:10px;padding-right:10px;white-space:nowrap}.iah .mu{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.iah>div:nth-child(2){min-width:64px}
+.ihr{display:flex;align-items:stretch;gap:8px;margin-bottom:8px}
+.ihb{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left;padding:12px 14px;border-radius:16px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);cursor:pointer;font-family:inherit}
+.ihr.on .ihb{border-color:color-mix(in srgb,var(--ac) 60%,transparent);background:color-mix(in srgb,var(--ac) 12%,var(--bg2))}
+.ihb b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ihp{font-size:12.5px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ihb small{font-size:11.5px;color:var(--mu);font-weight:700}
+.ihd{flex:0 0 46px;border-radius:16px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;font-size:17px}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1180,7 +1201,7 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.favPick?favPickSheet():'')+(S.stkOpen?stkSheet():'')+(S.plSheet?plSheetH():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.favPick?favPickSheet():'')+(S.iaHist?iaHistSheet():'')+(S.stkOpen?stkSheet():'')+(S.plSheet?plSheetH():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
@@ -1964,6 +1985,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-04T07:10:00-04:00'),text:'MC IA ahora guarda tus conversaciones: toca el botón 🕘 arriba del chat para ver tu historial, abrir una conversación y seguirla donde la dejaste, borrar una o empezar una nueva. Se guardan en este dispositivo.'},
+ {ts:Date.parse('2026-11-04T06:50:00-04:00'),text:'MC IA ahora tiene dos novedades: 🎭 elige cómo te habla (Normal, Callejero, Comentarista o Serio) con los botones de «Estilo» arriba del chat, y 🖼️ puedes enviarle imágenes con el botón junto a la caja de texto: capturas de la app, planillas, carteles de batallas, lo que quieras que analice.'},
  {ts:Date.parse('2026-11-04T02:30:00-04:00'),text:'Perfil renovado: ahora arriba ves tu rango, tu racha y tus logros de un vistazo (tócalos para abrirlos). Puedes elegir hasta 3 medallas favoritas que se muestran en tu perfil y los demás también las ven. Añadimos el botón «Compartir mi perfil» y la sección Apariencia ahora está recogida para que la pestaña Editar sea más corta. Además, en FMS España Jornada 1 ya aparece la sede: Sevilla.'},
  {ts:Date.parse('2026-11-04T02:05:00-04:00'),text:'Nuevos atuendos animados para la mascota de racha (ahora son 8): 🔗 Cadena de Oro (12 logros) que se balancea y brilla, 🏴 Bandana de Calle (16) con la tela ondeando, 🦸 Capa de Campeón (21) que flamea, y ✨ Aura de Leyenda (26) con destellos y la llama en dorado. Los encuentras en tu racha, en «Atuendos de tu mascota».'},
  {ts:Date.parse('2026-11-04T01:30:00-04:00'),text:'Planilla antigua: ahora los 3 y 3,5 se ven en rojo y los 4 en amarillo (con el número bien visible) para que notes rápido las rimas buenas. Aplica a todas las temporadas, también a las votaciones que ya tenías puestas.'},
@@ -2789,6 +2812,98 @@ iaAsk=async function(){
  try{const lu=[...S.ia.msgs].reverse().find(m=>m.r==='user');
   _iaCtxTxt=await Promise.race([iaBuildCtx(lu?lu.t:''),new Promise(res=>setTimeout(()=>res(''),8000))])||''}catch(e){_iaCtxTxt=''}
  return _iaAsk0()};
+
+/* ===== MC IA: estilos de personalidad e imágenes (va por fuera: envuelve las funciones, no las cambia) ===== */
+const IA_MODES=[
+ {id:'normal',ic:'🎤',n:'Normal',p:''},
+ {id:'calle',ic:'🔥',n:'Callejero',p:'Habla como un rapero de barrio: jerga hip hop, frases cortas y con flow, mucha actitud y buena onda. Sin insultos reales ni groserías fuertes.'},
+ {id:'coment',ic:'📣',n:'Comentarista',p:'Responde como un comentarista de batallas en vivo: emocionado, con ritmo, narrando y soltando frases tipo "¡Esto se puso al rojo vivo!". Sin pasarte de largo.'},
+ {id:'serio',ic:'🎓',n:'Serio',p:'Responde de forma profesional, precisa y ordenada, sin jerga ni emojis. Explica con claridad y sé directo.'}];
+const iaModeCur=()=>{const m=S.me&&S.me.iaMode;return IA_MODES.some(x=>x.id===m)?m:'normal'};
+function iaSetMode(id){if(!S.me||!IA_MODES.some(x=>x.id===id))return;S.me={...S.me,iaMode:id};R();try{B.updateUser(S.me.uid,{iaMode:id}).catch(()=>{})}catch(e){}}
+let _iaPend=null;S.iaImg=null;
+const _iaSys1=iaSystem;
+iaSystem=function(){let b=_iaSys1();try{const m=IA_MODES.find(x=>x.id===iaModeCur());
+ if(m&&m.p)b+='\n\nEstilo de respuesta elegido por el usuario: '+m.p+' Mantén todas las reglas anteriores (no inventes datos, respeta al usuario) y sigue respondiendo corto.';
+ if(_iaPend)b+='\n\nEl usuario adjuntó una imagen. Analízala en el contexto de freestyle o de VotaFMS (capturas de la app, planillas de votación, carteles o fotos de batallas). Puedes leer el texto que aparezca en ella. No identifiques a personas reales por su cara; si preguntan quién es, di que no puedes reconocer personas por su rostro, y pide que te digan el nombre.'}catch(e){}return b};
+function iaPickImg(){const f=document.getElementById('iaf');if(f){f.value='';f.click()}}
+function iaImgPick(file){if(!file)return;if(!/^image\//.test(file.type||'')){try{achFail('Elige una imagen.')}catch(e){}return}
+ const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+  const mk=(max,q)=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)};
+  try{S.iaImg={mime:'image/jpeg',b64:mk(1280,.82).split(',')[1],th:mk(140,.6)};R()}catch(e){try{achFail('No pude procesar esa imagen.')}catch(_){}}};
+  im.onerror=()=>{try{achFail('No pude abrir esa imagen. Prueba con JPG o PNG.')}catch(e){}};im.src=rd.result};
+ rd.onerror=()=>{try{achFail('No pude leer la imagen.')}catch(e){}};rd.readAsDataURL(file)}
+function iaImgClear(){S.iaImg=null;R()}
+const _iaSend1=iaSend;
+iaSend=async function(t,train){
+ let sent=false;const n0=S.ia.msgs.length;
+ try{if(S.me&&S.iaImg&&!S.ia.busy){const inp=document.getElementById('iain'),txt=String(t||(inp?inp.value:S.iaDraft)||'').trim();if(!txt)t='Analiza esta imagen y dime qué ves.';_iaPend={...S.iaImg,used:false};S.iaImg=null;sent=true;const pv=document.querySelector('.iaprev');if(pv)pv.remove()}}catch(e){}
+ try{await _iaSend1(t,train)}finally{if(sent){if(S.ia.msgs.length===n0&&_iaPend){S.iaImg={mime:_iaPend.mime,b64:_iaPend.b64,th:_iaPend.th};try{R()}catch(e){}}_iaPend=null}}};
+const _iaPush1=iaPush;
+iaPush=function(r,t){_iaPush1(r,t);try{if(r==='user'&&_iaPend&&!_iaPend.used){_iaPend.used=true;const m=S.ia.msgs[S.ia.msgs.length-1];m.im=_iaPend.th;iaSave()}}catch(e){}};
+const _iaMsgsH1=iaMsgsH;
+iaMsgsH=function(){let h=_iaMsgsH1();try{const us=S.ia.msgs.filter(m=>m.r==='user');let i=0;
+ h=h.replace(/<div class="iab u">/g,()=>{const m=us[i++];return '<div class="iab u">'+(m&&m.im?`<img class="iaim" src="${m.im}" alt="Imagen enviada">`:'')})}catch(e){}return h};
+const _iaAsk2=iaAsk;
+iaAsk=async function(){
+ const pe=_iaPend;if(!pe)return _iaAsk2();
+ try{_iaCtxTxt=await Promise.race([iaBuildCtx('imagen'),new Promise(res=>setTimeout(()=>res(''),8000))])||''}catch(e){_iaCtxTxt=''}
+ const {ai,aim}=await iaGetAI();
+ const ms=S.ia.msgs.slice(-12),li=ms.length-1;
+ const hist=ms.map((m,i)=>({role:m.r,parts:(i===li&&m.r==='user')?[{text:m.t},{inlineData:{mimeType:pe.mime,data:pe.b64}}]:[{text:m.im?m.t+' (el usuario adjuntó una imagen)':m.t}]}));
+ let last=null;
+ for(let k=0;k<IA_MODELS.length;k++){
+  const i=(_iaMi+k)%IA_MODELS.length;
+  try{
+   const model=aim.getGenerativeModel(ai,{model:IA_MODELS[i],systemInstruction:iaSystem(),generationConfig:{temperature:.7,maxOutputTokens:1500}});
+   const res=await Promise.race([model.generateContent({contents:hist}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),45000))]);
+   const t=String(res.response.text()||'').trim();
+   if(!t)throw new Error('empty');
+   _iaMi=i;return t
+  }catch(e){last=e;if(!/404|no longer available|not found|not supported/i.test(String(e&&e.message||e)))throw e}
+ }
+ throw last};
+const _iaV1=iaV;
+iaV=function(){let h=_iaV1();try{if(!S.me)return h;const mode=iaModeCur();
+ const chips=`<div class="iamodes" role="group" aria-label="Estilo de la IA"><span>Estilo</span>${IA_MODES.map(m=>`<button class="${m.id===mode?'on':''}" onclick="iaSetMode('${m.id}')">${m.ic} ${m.n}</button>`).join('')}</div>`;
+ const prev=S.iaImg?`<div class="iaprev"><img src="${S.iaImg.th}" alt=""><span>Imagen lista para enviar</span><button onclick="iaImgClear()" aria-label="Quitar imagen">✕</button></div>`:'';
+ h=h.replace('<div id="iamsgs"',chips+'<div id="iamsgs"').replace('<div class="iabar">','<div class="iabar">'+prev+'<input type="file" id="iaf" accept="image/*" hidden onchange="iaImgPick(this.files[0])"><button class="iaatt" onclick="iaPickImg()" aria-label="Adjuntar imagen">🖼️</button>')}catch(e){}return h};
+
+/* ===== MC IA: historial de conversaciones (guardado en este dispositivo; envuelve iaSave/iaReset/iaLoad/iaV) ===== */
+const iaHKey=()=>'vfms_iah_'+(S.me?S.me.uid:'x'),iaCKey=()=>'vfms_iac_'+(S.me?S.me.uid:'x');
+function iaHList(){try{const a=JSON.parse(localStorage.getItem(iaHKey())||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+function iaHWrite(a){for(let k=0;k<12;k++){try{localStorage.setItem(iaHKey(),JSON.stringify(a));return true}catch(e){if(a.length<=1)break;a=a.slice(0,-1)}}return false}
+function iaHTitle(msgs){const m=msgs.find(x=>x.r==='user');if(!m)return 'Conversación';
+ if(typeof IA_TRAIN_PROMPT!=='undefined'&&m.t===IA_TRAIN_PROMPT)return '🥊 Entrenamiento de rimas';
+ const t=String(m.t||'').replace(/\s+/g,' ').trim();return (m.im?'🖼️ ':'')+(t.length>44?t.slice(0,44)+'…':t||'Conversación')}
+function iaHUpsert(){if(!S.me||!S.ia||!S.ia.msgs.length)return;
+ if(!S.ia.cid){S.ia.cid='c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);try{localStorage.setItem(iaCKey(),S.ia.cid)}catch(e){}}
+ let a=iaHList().filter(c=>c.id!==S.ia.cid);
+ a.unshift({id:S.ia.cid,ts:Date.now(),title:iaHTitle(S.ia.msgs),msgs:S.ia.msgs.slice(-60)});
+ iaHWrite(a.slice(0,30))}
+const _iaSave1=iaSave;iaSave=function(){_iaSave1();try{iaHUpsert()}catch(e){}};
+const _iaReset1=iaReset;iaReset=function(){S.ia.cid=null;try{localStorage.removeItem(iaCKey())}catch(e){}_iaReset1()};
+const _iaLoad1=iaLoad;iaLoad=function(){const u=S.ia.uid;_iaLoad1();if(S.ia.uid!==u){try{S.ia.cid=S.ia.msgs.length?(localStorage.getItem(iaCKey())||null):null}catch(e){S.ia.cid=null}}};
+function iaHWhen(ts){const d=new Date(ts),t=new Date(),y=new Date(t.getTime()-864e5),hm=d.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+ if(d.toDateString()===t.toDateString())return 'Hoy · '+hm;if(d.toDateString()===y.toDateString())return 'Ayer · '+hm;
+ return d.toLocaleDateString('es',{day:'numeric',month:'short'}).replace('.','')+' · '+hm}
+function iaHistOpen(){S.iaHist=true;R()}
+function iaHistClose(){S.iaHist=false;R()}
+function iaHistSheet(){const a=iaHList();
+ const rows=a.map(c=>{const n=c.msgs.length,last=[...c.msgs].reverse().find(m=>m.r==='model'),pv=last?String(last.t||'').replace(/\*\*/g,'').replace(/\s+/g,' ').slice(0,70):'';
+  return `<div class="ihr${c.id===S.ia.cid?' on':''}"><button class="ihb" onclick="iaHistLoad('${c.id}')"><b>${esc(c.title)}</b>${pv?`<span class="ihp">${esc(pv)}</span>`:''}<small>${iaHWhen(c.ts)} · ${n} ${n===1?'mensaje':'mensajes'}${c.id===S.ia.cid?' · Abierta':''}</small></button><button class="ihd" onclick="iaHistDel('${c.id}')" aria-label="Borrar conversación">🗑</button></div>`}).join('');
+ return `<div class="ov" onclick="iaHistClose()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px"><h2 style="margin:0">Historial de MC IA</h2>${a.length?'<button class="fbtn sent" onclick="iaHistClear()">Borrar todo</button>':''}</div><div class="mu" style="margin-bottom:12px;font-size:13px">Tus conversaciones se guardan en este dispositivo. Toca una para continuarla.</div>${rows||'<div class="card mu" style="text-align:center">Todavía no tienes conversaciones guardadas. Escríbele a MC IA y aparecerán aquí.</div>'}<button class="btn" style="margin-top:14px" onclick="iaHistNew()">➕ Nueva conversación</button><button class="btn s" onclick="iaHistClose()">Cerrar</button></div></div>`}
+function iaHistLoad(id){if(S.ia.busy){try{achFail('Espera a que MC IA termine de responder.')}catch(e){}return}
+ const c=iaHList().find(x=>x.id===id);if(!c)return;
+ S.ia.msgs=c.msgs.slice();S.ia.cid=id;S.iaDraft='';S.iaImg=null;try{localStorage.setItem(iaCKey(),id)}catch(e){}
+ _iaSave1();S.iaHist=false;R();setTimeout(()=>window.scrollTo(0,document.body.scrollHeight),50)}
+function iaHistNew(){if(S.ia.busy)return;S.iaHist=false;iaReset()}
+function iaHistDel(id){const wasCur=id===S.ia.cid;iaHWrite(iaHList().filter(c=>c.id!==id));
+ if(wasCur){S.ia.cid=null;S.ia.msgs=[];try{localStorage.removeItem(iaCKey())}catch(e){}_iaSave1()}R()}
+function iaHistClear(){if(!confirm('¿Borrar todo el historial de MC IA? No se puede deshacer.'))return;
+ try{localStorage.removeItem(iaHKey());localStorage.removeItem(iaCKey())}catch(e){}S.ia.cid=null;S.ia.msgs=[];_iaSave1();R()}
+const _iaV2=iaV;
+iaV=function(){let h=_iaV2();try{if(S.me)h=h.replace('<button class="fbtn" onclick="iaTrain()">','<button class="fbtn iahb" onclick="iaHistOpen()" aria-label="Historial de conversaciones">🕘</button><button class="fbtn" onclick="iaTrain()">')}catch(e){}return h};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
