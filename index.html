@@ -2980,7 +2980,36 @@ function vidParseCsv(t){t=String(t||'').replace(/^﻿/,'');const first=t.split(/
   else f+=c}
  row.push(f);if(row.some(x=>String(x).trim()))out.push(row);return out}
 /* ===== Lector de .xlsx sin librerías (zip + XML) para la plantilla de videos ===== */
-async function vidInflateRaw(u8){if(typeof DecompressionStream==='undefined')throw new Error('nodecomp');const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(ds.readable).arrayBuffer())}
+function vidInflateJS(src){
+ const LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],
+ DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],
+ ORD=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+ let pos=0,bit=0,cnt=0,out=new Uint8Array(src.length*5+1024),op=0;
+ const need=n=>{if(op+n>out.length){const o=new Uint8Array(Math.max(out.length*2,op+n));o.set(out.subarray(0,op));out=o}};
+ const bits=n=>{let v=0;for(let i=0;i<n;i++){if(cnt===0){if(pos>=src.length)throw new Error('inflate');bit=src[pos++];cnt=8}v|=(bit&1)<<i;bit>>=1;cnt--}return v};
+ const build=lens=>{const count=new Uint16Array(16),symbol=new Uint16Array(lens.length),offs=new Uint16Array(16);
+  for(let i=0;i<lens.length;i++)count[lens[i]]++;count[0]=0;
+  for(let i=1;i<16;i++)offs[i]=offs[i-1]+count[i-1];
+  for(let i=0;i<lens.length;i++)if(lens[i])symbol[offs[lens[i]]++]=i;
+  return {count,symbol}};
+ const decode=h=>{let code=0,first=0,index=0;for(let len=1;len<16;len++){code|=bits(1);const c=h.count[len];if(code-c<first)return h.symbol[index+(code-first)];index+=c;first+=c;first<<=1;code<<=1}throw new Error('inflate')};
+ let last;
+ do{last=bits(1);const t=bits(2);
+  if(t===0){cnt=0;const len=src[pos]|(src[pos+1]<<8);pos+=4;need(len);out.set(src.subarray(pos,pos+len),op);op+=len;pos+=len}
+  else{let lh,dh;
+   if(t===1){const l=new Uint8Array(288);for(let i=0;i<144;i++)l[i]=8;for(let i=144;i<256;i++)l[i]=9;for(let i=256;i<280;i++)l[i]=7;for(let i=280;i<288;i++)l[i]=8;lh=build(l);dh=build(new Uint8Array(30).fill(5))}
+   else if(t===2){const nl=bits(5)+257,nd=bits(5)+1,nc=bits(4)+4,cl=new Uint8Array(19);
+    for(let i=0;i<nc;i++)cl[ORD[i]]=bits(3);
+    const ch=build(cl),ls=new Uint8Array(nl+nd);let i=0;
+    while(i<nl+nd){const sy=decode(ch);if(sy<16)ls[i++]=sy;else{let rep,v=0;if(sy===16){v=ls[i-1];rep=3+bits(2)}else if(sy===17)rep=3+bits(3);else rep=11+bits(7);while(rep--)ls[i++]=v}}
+    lh=build(ls.subarray(0,nl));dh=build(ls.subarray(nl))}
+   else throw new Error('inflate');
+   for(;;){const sy=decode(lh);if(sy<256){need(1);out[op++]=sy}else if(sy===256)break;else{const si=sy-257,len=LB[si]+bits(LE[si]),ds=decode(dh),dist=DB[ds]+bits(DE[ds]);need(len);for(let k=0;k<len;k++){out[op]=out[op-dist];op++}}}}
+ }while(!last);
+ return out.subarray(0,op)}
+async function vidInflateRaw(u8){
+ try{if(typeof DecompressionStream!=='undefined'){const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();w.write(u8).catch(()=>{});w.close().catch(()=>{});return new Uint8Array(await new Response(ds.readable).arrayBuffer())}}catch(e){}
+ return vidInflateJS(u8)}
 const vidXmlUn=t=>String(t).replace(/&#x([0-9a-fA-F]+);/g,(m,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(m,d)=>String.fromCodePoint(+d)).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
 const vidAt=(s,n)=>{const m=s.match(new RegExp('(?:^|\\s)'+n+'="([^"]*)"'));return m?vidXmlUn(m[1]):null};
 const vidTxt=x=>{x=x.replace(/<rPh[\s\S]*?<\/rPh>/g,'');let o='',m;const re=/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g;while((m=re.exec(x)))o+=vidXmlUn(m[1]);return o};
@@ -3056,7 +3085,7 @@ async function vidImpFile(file){if(!file||!isAdmin())return;S.vimpMsg='';
    items.push({key:d.key,id,st,line:d.line,nm:d.nm,raw:d.raw})});
   S.vimp={items,done:0,busy:false,fin:false,fail:0};R()
  }catch(e){S.vimp=null;const m=String(e&&e.message);
-  S.vimpMsg=m==='xls'?'Ese es un Excel antiguo (.xls). Ábrelo y guárdalo como .xlsx o CSV.':m==='pdf'?'Un PDF no se puede leer. Sube un Excel, CSV u otra hoja de cálculo.':m==='nodecomp'?'Tu navegador no puede abrir Excel. Guárdalo como CSV e inténtalo de nuevo.':'No pude leer ese archivo. Prueba con otro formato (Excel o CSV).';R()}}
+  S.vimpMsg=m==='xls'?'Ese es un Excel antiguo (.xls). Ábrelo y guárdalo como .xlsx o CSV.':m==='pdf'?'Un PDF no se puede leer. Sube un Excel, CSV u otra hoja de cálculo.':m==='nodecomp'?'Tu navegador no puede abrir Excel. Guárdalo como CSV e inténtalo de nuevo.':'No pude leer ese archivo ('+m+'). Prueba con otro formato (Excel o CSV).';console.error('vidImpFile',e);R()}}
 async function vidImpSave(){const V=S.vimp;if(!V||V.busy||!isAdmin())return;
  const todo=V.items.filter(x=>x.st==='new'||x.st==='upd');if(!todo.length)return;
  V.busy=true;V.done=0;V.fail=0;V.err='';R();
