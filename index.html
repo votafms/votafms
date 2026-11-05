@@ -2994,6 +2994,7 @@ async function vidReadXlsx(file){
   F[td.decode(buf.subarray(p+46,p+46+nl))]={m,cs,off};p+=46+nl+xl+cl}
  const get=async nm=>{const f=F[nm];if(!f)return null;const o=f.off,st=o+30+dv.getUint16(o+26,true)+dv.getUint16(o+28,true),raw=buf.subarray(st,st+f.cs);
   return td.decode(f.m===0?raw:await vidInflateRaw(raw))};
+ if(!F['xl/workbook.xml']&&F['content.xml'])return vidOds(await get('content.xml'));
  const wbx=await get('xl/workbook.xml');if(!wbx)throw new Error('nowb');
  const shs=(wbx.match(/<sheet\s[^>]*>/g)||[]).map(t=>({n:vidAt(t,'name')||'',id:vidAt(t,'r:id')}));
  const sh=shs.find(x=>x.n.toLowerCase()==='plantilla')||shs[0];if(!sh)throw new Error('nosheet');
@@ -3010,23 +3011,52 @@ async function vidReadXlsx(file){
    if(ci>=0)row[ci]=v}
   const r2=Array.from(row,x=>x==null?'':String(x));if(r2.some(x=>x.trim()))out.push(r2)}
  return out}
-async function vidRead(file){const h=new Uint8Array(await file.slice(0,2).arrayBuffer());
+function vidOds(x){const tbs=x.match(/<table:table\b[^>]*>[\s\S]*?<\/table:table>/g)||[];
+ const tb=tbs.find(t=>(vidAt(t.match(/^<table:table\b[^>]*>/)[0],'table:name')||'').toLowerCase()==='plantilla')||tbs[0];if(!tb)throw new Error('nosheet');
+ const out=[],rre=/<table:table-row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/table:table-row>)/g;let rm;
+ while((rm=rre.exec(tb))){const rep=Math.min(+(vidAt(rm[1],'table:number-rows-repeated')||1),1000),row=[],cre=/<table:(?:covered-)?table-cell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/table:(?:covered-)?table-cell>)/g;let cm;
+  while((cm=cre.exec(rm[2]||''))){const cr=Math.min(+(vidAt(cm[1],'table:number-columns-repeated')||1),100),inn=cm[2]||'';
+   let ps=(inn.match(/<text:p\b[^>]*>[\s\S]*?<\/text:p>/g)||[]).map(q=>vidXmlUn(q.replace(/<text:s\b[^>]*\/>/g,' ').replace(/<[^>]+>/g,'')));
+   let v=ps.join('\n');if(!v)v=vidAt(cm[1],'office:string-value')||'';
+   const hr=inn.match(/xlink:href="([^"]*)"/);if(hr&&/youtu/i.test(hr[1])&&!/youtu/i.test(v))v=vidXmlUn(hr[1]);
+   for(let k=0;k<cr;k++)row.push(v)}
+  if(row.some(c=>String(c).trim()))for(let k=0;k<rep;k++)out.push(row.slice())}
+ return out}
+function vidParseHtml(t){const out=[],rows=t.match(/<tr\b[\s\S]*?<\/tr>/gi)||[];
+ rows.forEach(tr=>{const r=(tr.match(/<t[dh]\b[^>]*>[\s\S]*?<\/t[dh]>/gi)||[]).map(c=>{const hr=c.match(/<a\b[^>]*href="([^"]*)"/i);
+  let v=vidXmlUn(c.replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ')).trim();
+  if(hr&&/youtu/i.test(hr[1])&&!/youtu/i.test(v))v=vidXmlUn(hr[1]);return v});
+  if(r.some(c=>c))out.push(r)});return out}
+async function vidDecode(file){const b=new Uint8Array(await file.arrayBuffer());
+ if(b[0]===0xFF&&b[1]===0xFE)return new TextDecoder('utf-16le').decode(b.subarray(2));
+ if(b[0]===0xFE&&b[1]===0xFF)return new TextDecoder('utf-16be').decode(b.subarray(2));
+ try{return new TextDecoder('utf-8',{fatal:true}).decode(b)}catch(e){return new TextDecoder('windows-1252').decode(b)}}
+async function vidRead(file){const h=new Uint8Array(await file.slice(0,8).arrayBuffer());
  if(h[0]===0x50&&h[1]===0x4B)return vidReadXlsx(file);
- return vidParseCsv(await file.text())}
+ if(h[0]===0xD0&&h[1]===0xCF&&h[2]===0x11&&h[3]===0xE0)throw new Error('xls');
+ if(h[0]===0x25&&h[1]===0x50&&h[2]===0x44&&h[3]===0x46)throw new Error('pdf');
+ const t=await vidDecode(file);
+ if(/<table[\s>]/i.test(t.slice(0,20000)))return vidParseHtml(t);
+ return vidParseCsv(t)}
 async function vidImpFile(file){if(!file||!isAdmin())return;S.vimpMsg='';
  try{const rows=await vidRead(file);if(rows.length<2){S.vimp=null;S.vimpMsg='El archivo está vacío.';return R()}
-  const nh=rows[0].map(x=>nrm(String(x)));const ix=f=>nh.findIndex(x=>x.startsWith(f));
-  const iL=ix('link'),iK=ix('clave');if(iL<0||iK<0){S.vimp=null;S.vimpMsg='No encuentro las columnas «Link» y «Clave». Usa la plantilla descargada desde aquí.';return R()}
-  const iA=ix('mca'),iB=ix('mcb');
+  const nh=rows[0].map(x=>nrm(String(x)));const ix=(...f)=>nh.findIndex(x=>f.some(k=>x.startsWith(k)));
+  const iL=ix('link','youtube','video','enlace','url'),iK=ix('clave','key'),iA=ix('mca'),iB=ix('mcb'),iG=ix('liga'),iT=ix('temporada');
+  const data=[];
+  if(iL>=0&&iK>=0){rows.slice(1).forEach((r,n)=>data.push({raw:String(r[iL]||'').trim(),key:String(r[iK]||'').trim(),line:n+2,nm:(r[iA]||'')+' vs '+(r[iB]||'')}))}
+  else if(iL>=0&&iA>=0&&iB>=0&&iG>=0&&iT>=0){rows.slice(1).forEach((r,n)=>{const lg=L.find(x=>nrm(x.n)===nrm(r[iG])||x.i===nrm(r[iG])),a=String(r[iA]||'').trim(),b=String(r[iB]||'').trim();
+   data.push({raw:String(r[iL]||'').trim(),key:lg?linkKey(lg.i,String(r[iT]||'').trim(),a,b):'',line:n+2,nm:a+' vs '+b})})}
+  else{rows.forEach((r,n)=>{const kc=r.find(c=>/^\d{4}\|/.test(String(c).trim())),lc=r.find(c=>c!==kc&&/youtu/i.test(String(c)));
+   if(kc&&lc)data.push({raw:String(lc).trim(),key:String(kc).trim(),line:n+1,nm:String(kc).trim().split('|').slice(-2).join(' vs ')})});
+   if(!data.length){S.vimp=null;S.vimpMsg='No encuentro los links junto a su clave. Usa la plantilla descargada desde aquí.';return R()}}
   let cur={};try{cur=await B.getLinks()}catch(e){}
-  const valid=new Set(vidRows().map(r=>r.key)),seen={},items=[];
-  rows.slice(1).forEach((r,n)=>{const raw=String(r[iL]||'').trim();if(!raw)return;const key=String(r[iK]||'').trim(),line=n+2,nm=(r[iA]||'')+' vs '+(r[iB]||'');
-   const ids=ytParse(raw),id=ids.length?ids.join(','):null;let st;
-   if(!valid.has(key))st='unk';else if(!id)st='bad';else if(cur[key]===id)st='same';else st=cur[key]?'upd':'new';
-   if(st==='new'||st==='upd'){seen[key]=true}
-   items.push({key,id,st,line,nm,raw})});
+  const valid=new Set(vidRows().map(r=>r.key)),items=[];
+  data.forEach(d=>{if(!d.raw)return;const ids=ytParse(d.raw),id=ids.length?ids.join(','):null;let st;
+   if(!valid.has(d.key))st='unk';else if(!id)st='bad';else if(cur[d.key]===id)st='same';else st=cur[d.key]?'upd':'new';
+   items.push({key:d.key,id,st,line:d.line,nm:d.nm,raw:d.raw})});
   S.vimp={items,done:0,busy:false,fin:false,fail:0};R()
- }catch(e){S.vimp=null;S.vimpMsg='No pude leer ese archivo. Guárdalo como CSV (UTF-8) e inténtalo de nuevo.';R()}}
+ }catch(e){S.vimp=null;const m=String(e&&e.message);
+  S.vimpMsg=m==='xls'?'Ese es un Excel antiguo (.xls). Ábrelo y guárdalo como .xlsx o CSV.':m==='pdf'?'Un PDF no se puede leer. Sube un Excel, CSV u otra hoja de cálculo.':m==='nodecomp'?'Tu navegador no puede abrir Excel. Guárdalo como CSV e inténtalo de nuevo.':'No pude leer ese archivo. Prueba con otro formato (Excel o CSV).';R()}}
 async function vidImpSave(){const V=S.vimp;if(!V||V.busy||!isAdmin())return;
  const todo=V.items.filter(x=>x.st==='new'||x.st==='upd');if(!todo.length)return;
  V.busy=true;V.done=0;V.fail=0;V.err='';R();
@@ -3042,7 +3072,7 @@ adminV=function(){let h=_adminV2();if(!isAdmin())return h;
  const V=S.vimp,c=st=>V?V.items.filter(x=>x.st===st).length:0;
  const bad=V?V.items.filter(x=>x.st==='bad'||x.st==='unk').slice(0,8):[];
  const prev=V?`<div class="card" style="margin-top:10px"><b>Revisión del archivo</b><div class="mu" style="margin:6px 0 10px;line-height:1.7">🆕 Nuevos: <b>${c('new')}</b><br>🔁 Cambian de link: <b>${c('upd')}</b><br>✓ Ya estaban igual: <b>${c('same')}</b><br>⚠️ Con problema: <b>${c('bad')+c('unk')}</b></div>${bad.length?`<div class="mu" style="font-size:12.5px;margin-bottom:10px">${bad.map(x=>`Fila ${x.line}: ${x.st==='unk'?'clave no reconocida':'link no válido'} (${esc(x.nm)})`).join('<br>')}${c('bad')+c('unk')>bad.length?'<br>…':''}</div>`:''}${V.fin?`<div class="ok" style="margin:0 0 10px">${V.fail?'Se guardaron '+V.done+' y fallaron '+V.fail+'. ¿Publicaste las reglas nuevas de Firestore?'+(V.err?' ('+esc(String(V.err))+')':''):'✓ Listo: '+V.done+' videos guardados para todos.'}</div>`:''}${V.busy?`<div class="mu" style="margin-bottom:8px">Guardando… ${V.done}/${c('new')+c('upd')}</div>`:''}<button class="btn sm" style="width:100%" onclick="vidImpSave()" ${V.busy||!(c('new')+c('upd'))?'disabled':''}>Guardar ${c('new')+c('upd')} videos</button><button class="btn s sm" style="width:100%;margin-top:8px" onclick="vidImpClear()" ${V.busy?'disabled':''}>Cerrar revisión</button></div>`:'';
- const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo (.xlsx o .csv) y revisa antes de guardar. Si una batalla está en partes, pon todos sus links en la misma celda separados por « | », en orden.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Subir plantilla rellenada<input type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
+ const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo (.xlsx o .csv) y revisa antes de guardar. Si una batalla está en partes, pon todos sus links en la misma celda separados por « | », en orden.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Sube tu plantilla XLSX o CSV<input type="file" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
  return h.replace('<div class="sec"><span>Colaboradores de videos</span>',box+'<div class="sec"><span>Colaboradores de videos</span>')};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
