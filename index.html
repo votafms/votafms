@@ -229,6 +229,7 @@ img.av{object-fit:cover}
 .cdate.none{background:var(--cd2);color:var(--mu)}
 .cchev{color:var(--mu);font-size:14px;flex:0 0 auto}
 .cdet{padding:2px 12px 14px;border-top:1px dashed var(--bd)}
+.fbbadge{background:#1877F2!important;color:#fff!important;font-family:Arial,sans-serif;font-size:24px!important;padding-top:3px}
 .gbadge{width:40px;height:40px;border-radius:12px;background:#fff;color:#4285F4;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;flex:0 0 auto;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;justify-content:space-around;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--navbg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--bd)}
 .nav button{flex:1;max-width:120px;border:0;background:none;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:4px;cursor:pointer}
@@ -1190,7 +1191,7 @@ function actualV(){
 let VKEY=null;
 function R(){
  applyTheme();
- const vkey=(S.v==='vote'&&S.bt)?(S.bt.a+'|'+S.bt.b+'|'+(S.bt.y||'')+'|'+S.lg):null;
+ const vkey=(S.v==='vote'&&S.bt)?(S.bt.a+'|'+S.bt.b+'|'+(S.bt.y||'')+'|'+S.lg+'|'+(S.lkEdit?1:0)+(S.collab||S.admin?'c':'')):null;
  const plan=document.getElementById('plan');
  if(vkey&&vkey===VKEY&&plan){
   plan.innerHTML=planHTML();{const sp=plSpec();plan.className=sp.cls;plan.style.cssText=sp.style}
@@ -1818,8 +1819,9 @@ async function handleResetLink(){const q=new URLSearchParams(location.search);co
  try{S.auth.email=await FB.am.verifyPasswordResetCode(FB.auth,oob)}catch(e){S.auth.bad=true;S.auth.err=fbErr(e)}
  R()}
 function authErr(msg){if(S.auth){S.auth.err=msg;S.auth.busy=false}R()}
-function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana de Google antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de Google. Permite ventanas emergentes e intenta de nuevo.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.','auth/operation-not-allowed':'El registro con correo y contraseña no está activado en Firebase (Authentication > Método de acceso).','auth/admin-restricted-operation':'El registro de cuentas nuevas está restringido en Firebase.','auth/unauthorized-domain':'Este dominio no está autorizado en Firebase (Authentication > Configuración > Dominios autorizados).','auth/invalid-api-key':'La clave de Firebase no es válida.','permission-denied':'Firebase no permitió guardar tu perfil (reglas de Firestore).'};console.error('fbErr',e);const c=(e&&e.code)||'';return m[c]||('Algo salió mal. Intenta de nuevo.'+(c?' ('+c+')':''))}
+function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de inicio de sesión. Permite ventanas emergentes e intenta de nuevo.','auth/account-exists-with-different-credential':'Ya existe una cuenta con el correo de ese perfil, creada con otro método (Google o correo y contraseña). Inicia sesión con ese método.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.','auth/operation-not-allowed':'El registro con correo y contraseña no está activado en Firebase (Authentication > Método de acceso).','auth/admin-restricted-operation':'El registro de cuentas nuevas está restringido en Firebase.','auth/unauthorized-domain':'Este dominio no está autorizado en Firebase (Authentication > Configuración > Dominios autorizados).','auth/invalid-api-key':'La clave de Firebase no es válida.','permission-denied':'Firebase no permitió guardar tu perfil (reglas de Firestore).'};console.error('fbErr',e);const c=(e&&e.code)||'';return m[c]||('Algo salió mal. Intenta de nuevo.'+(c?' ('+c+')':''))}
 function gBadge(){return '<span class="gbadge">G</span>'}
+function fbBadge(){return '<span class="gbadge fbbadge">f</span>'}
 function ovWrap(inner,close){return `<div class="ov" onclick="${close}"><div class="sh" onclick="event.stopPropagation()">${inner}</div></div>`}
 function authM(){const A=S.auth;
  if(A.mode==='google')return ovWrap(`<b style="font-size:19px">Elige tu nombre de usuario</b><div class="mu" style="margin:4px 0 14px">Así te verán los demás. Usa de 3 a 20 letras, números, punto o guion bajo.</div><label class="f">Nombre de usuario</label><input placeholder="tu_nombre" value="${esc(A.un)}" oninput="S.auth.un=this.value" onkeydown="if(event.key==='Enter')submitUsername()">${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}<button class="btn" onclick="submitUsername()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':'Guardar y entrar'}</button>`,'closeAuth()');
@@ -1835,8 +1837,9 @@ function authM(){const A=S.auth;
  const c=A.mode==='create';
  return ovWrap(`<div class="seg"><button class="${c?'on':''}" onclick="authTab('create')">Crear cuenta</button><button class="${!c?'on':''}" onclick="authTab('in')">Iniciar sesión</button></div>
  <b style="font-size:19px">${c?'Crea tu cuenta':'Bienvenido de nuevo'}</b>
- <div class="mu" style="margin:4px 0 14px">${c?'Con Google o con correo y contraseña.':'Entra con Google o con tu correo y contraseña.'}</div>
+ <div class="mu" style="margin:4px 0 14px">${c?'Con Google, Facebook o con correo y contraseña.':'Entra con Google, Facebook o con tu correo y contraseña.'}</div>
  <button class="btn s" onclick="googleLogin()" ${A.busy?'disabled':''}>${gBadge()} Continuar con Google</button>
+ <button class="btn s" onclick="facebookLogin()" ${A.busy?'disabled':''}>${fbBadge()} Continuar con Facebook</button>
  <div class="or">o con correo</div>
  <label class="f">Correo</label><input type="email" autocomplete="email" placeholder="tu@correo.com" value="${esc(A.email)}" oninput="S.auth.email=this.value">
  ${c?`<label class="f">Nombre de usuario</label><input placeholder="tu_nombre" autocomplete="username" value="${esc(A.un)}" oninput="S.auth.un=this.value">`:''}
@@ -1850,6 +1853,10 @@ async function googleLogin(){if(S.auth){S.auth.busy=true}S.authBusy=true;R();
  try{const cred=await FB.am.signInWithPopup(FB.auth,new FB.am.GoogleAuthProvider());const prof=await B.getUser(cred.user.uid);S.authBusy=false;
   if(prof){setMe(cred.user.uid,prof)}else{S.auth={mode:'google',step:'user',un:'',err:'',busy:false};R()}
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
+async function facebookLogin(){if(S.auth){S.auth.busy=true}S.authBusy=true;R();
+ try{const pr=new FB.am.FacebookAuthProvider();pr.addScope('email');const cred=await FB.am.signInWithPopup(FB.auth,pr);const prof=await B.getUser(cred.user.uid);S.authBusy=false;
+  if(prof){setMe(cred.user.uid,prof)}else{S.auth={mode:'google',step:'user',un:'',err:'',busy:false};R()}
+ }catch(e){S.authBusy=false;if(e&&e.code==='auth/operation-not-allowed'){console.error('fbErr',e);authErr('El inicio con Facebook aún no está activado en Firebase (Authentication > Método de acceso).')}else authErr(fbErr(e))}}
 /* ===== Sugerencias cuando el nombre de usuario ya está en uso ===== */
 async function nameSuggest(base){
  try{
@@ -1991,6 +1998,9 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-04T21:50:00-04:00'),text:'Panel de administrador: ahora hay una plantilla en lote para los videos. Se descarga un archivo con todas las batallas de las temporadas 2017 a 2025, se rellena la columna de links (entre varias personas, si hace falta), y al subirlo se guardan todos de una vez, con una revisión antes de guardar.'},
+ {ts:Date.parse('2026-11-04T21:30:00-04:00'),text:'Arreglo: el botón «Cambiar link del video» (para colaboradores y administradores) ya funciona. Ahora abre el cuadro para pegar el link nuevo, y al guardar el video se actualiza para todos.'},
+ {ts:Date.parse('2026-11-04T20:10:00-04:00'),text:'Ya puedes crear tu cuenta e iniciar sesión con Facebook, además de Google o correo y contraseña. Busca el botón «Continuar con Facebook» en la pantalla de acceso.'},
  {ts:Date.parse('2026-11-04T19:40:00-04:00'),text:'Videos de batallas: ahora solo los colaboradores de confianza (y los administradores) pueden añadir o corregir el link de YouTube de una batalla de temporadas anteriores, y ese link queda guardado para que todos lo vean. Si todavía no tiene video, verás un aviso de que pronto lo añadimos.'},
  {ts:Date.parse('2026-11-04T07:10:00-04:00'),text:'MC IA ahora guarda tus conversaciones: toca el botón 🕘 arriba del chat para ver tu historial, abrir una conversación y seguirla donde la dejaste, borrar una o empezar una nueva. Se guardan en este dispositivo.'},
  {ts:Date.parse('2026-11-04T06:50:00-04:00'),text:'MC IA ahora tiene dos novedades: 🎭 elige cómo te habla (Normal, Callejero, Comentarista o Serio) con los botones de «Estilo» arriba del chat, y 🖼️ puedes enviarle imágenes con el botón junto a la caja de texto: capturas de la app, planillas, carteles de batallas, lo que quieras que analice.'},
@@ -2932,6 +2942,62 @@ async function collabAdd(){if(!isAdmin())return;const un=((document.getElementBy
  catch(e){S.collabMsg=String(e&&e.message)==='nouser'?'No existe ningún usuario con ese nombre.':'No se pudo dar el acceso. ¿Ya publicaste las reglas nuevas de Firestore?'}R()}
 async function collabDel(uid){if(!isAdmin()||!confirm('¿Quitar el acceso a este colaborador?'))return;
  try{await B.revokeCollab(uid);S.collabs=(S.collabs||[]).filter(x=>x.uid!==uid);S.collabMsg='Acceso quitado.'}catch(e){S.collabMsg='No se pudo quitar el acceso.'}R()}
+
+/* ===== Plantilla de videos (CSV): descargar todas las batallas y subir los links de golpe ===== */
+const vidYt=v=>{const t=String(v||'').trim();const m=t.match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([\w-]{11})/)||t.match(/^([\w-]{11})$/);return m?m[1]:null};
+function vidRows(links){const rows=[],seen=new Set();
+ Object.keys(SEASON_JOR).forEach(k=>{const [lg,season]=k.split('|');if(!LINK_TEMPS.includes(season))return;const l=L.find(x=>x.i===lg);
+  (SEASON_JOR[k]||[]).forEach(j=>(j.b||[]).forEach(b=>{const key=linkKey(lg,season,b[0],b[1]);if(seen.has(key))return;seen.add(key);
+   rows.push({key,lg,ln:l?l.n:lg,season,j:j.lab||('Jornada '+j.n),a:b[0],b:b[1],tipo:b[2]===true?'Exhibición':b[2]==='apl'?'Aplazada':b[2]==='po'?'Play-Off':'',y:(links||{})[key]||''})}))});
+ const li=lg=>L.findIndex(x=>x.i===lg);
+ return rows.sort((x,y)=>li(x.lg)-li(y.lg)||(+y.season)-(+x.season))}
+const vidCsvCell=v=>{v=String(v==null?'':v);return /[",;\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+async function vidDownload(){let links={};try{links=await B.getLinks()}catch(e){}
+ const rows=vidRows(links),head=['Liga','Temporada','Jornada','MC A','MC B','Tipo','Link (pega aquí el link de YouTube)','Clave (NO la cambies)'];
+ const csv='﻿'+[head,...rows.map(r=>[r.ln,r.season,r.j,r.a,r.b,r.tipo,r.y?'https://youtu.be/'+r.y:'',r.key])].map(r=>r.map(vidCsvCell).join(',')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='plantilla-videos-votafms.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+ S.vimpMsg='Descargada: '+rows.length+' batallas ('+rows.filter(r=>r.y).length+' ya tienen video).';R()}
+function vidParseCsv(t){t=String(t||'').replace(/^﻿/,'');const first=t.split(/\r?\n/)[0]||'';
+ const d=[[';',(first.match(/;/g)||[]).length],[',',(first.match(/,/g)||[]).length],['\t',(first.match(/\t/g)||[]).length]].sort((a,b)=>b[1]-a[1])[0][0];
+ const out=[];let row=[],f='',q=false;
+ for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c==='"')q=true;else if(c===d){row.push(f);f=''}
+  else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;row.push(f);f='';if(row.some(x=>String(x).trim()))out.push(row);row=[]}
+  else f+=c}
+ row.push(f);if(row.some(x=>String(x).trim()))out.push(row);return out}
+async function vidImpFile(file){if(!file||!isAdmin())return;S.vimpMsg='';
+ try{const rows=vidParseCsv(await file.text());if(rows.length<2){S.vimp=null;S.vimpMsg='El archivo está vacío.';return R()}
+  const nh=rows[0].map(x=>nrm(String(x)));const ix=f=>nh.findIndex(x=>x.startsWith(f));
+  const iL=ix('link'),iK=ix('clave');if(iL<0||iK<0){S.vimp=null;S.vimpMsg='No encuentro las columnas «Link» y «Clave». Usa la plantilla descargada desde aquí.';return R()}
+  const iA=ix('mca'),iB=ix('mcb');
+  let cur={};try{cur=await B.getLinks()}catch(e){}
+  const valid=new Set(vidRows().map(r=>r.key)),seen={},items=[];
+  rows.slice(1).forEach((r,n)=>{const raw=String(r[iL]||'').trim();if(!raw)return;const key=String(r[iK]||'').trim(),line=n+2,nm=(r[iA]||'')+' vs '+(r[iB]||'');
+   const id=vidYt(raw);let st;
+   if(!valid.has(key))st='unk';else if(!id)st='bad';else if(cur[key]===id)st='same';else st=cur[key]?'upd':'new';
+   if(st==='new'||st==='upd'){seen[key]=true}
+   items.push({key,id,st,line,nm,raw})});
+  S.vimp={items,done:0,busy:false,fin:false,fail:0};R()
+ }catch(e){S.vimp=null;S.vimpMsg='No pude leer ese archivo. Guárdalo como CSV (UTF-8) e inténtalo de nuevo.';R()}}
+async function vidImpSave(){const V=S.vimp;if(!V||V.busy||!isAdmin())return;
+ const todo=V.items.filter(x=>x.st==='new'||x.st==='upd');if(!todo.length)return;
+ V.busy=true;V.done=0;V.fail=0;R();
+ const fm=FB.fm,by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;
+ for(let i=0;i<todo.length;i+=10){const ch=todo.slice(i,i+10);
+  try{const b=fm.writeBatch(FB.db);ch.forEach(x=>b.set(fm.doc(FB.db,'videos',x.key),{y:x.id,ts:Date.now(),by}));await b.commit();
+   ch.forEach(x=>{S.links=S.links||{};S.links[x.key]=x.id;x.st='same'});V.done+=ch.length}
+  catch(e){console.error('vidImp',e);V.fail+=ch.length}
+  R()}
+ V.busy=false;V.fin=true;R()}
+function vidImpClear(){S.vimp=null;S.vimpMsg='';R()}
+const _adminV2=adminV;
+adminV=function(){let h=_adminV2();if(!isAdmin())return h;
+ const V=S.vimp,c=st=>V?V.items.filter(x=>x.st===st).length:0;
+ const bad=V?V.items.filter(x=>x.st==='bad'||x.st==='unk').slice(0,8):[];
+ const prev=V?`<div class="card" style="margin-top:10px"><b>Revisión del archivo</b><div class="mu" style="margin:6px 0 10px;line-height:1.7">🆕 Nuevos: <b>${c('new')}</b><br>🔁 Cambian de link: <b>${c('upd')}</b><br>✓ Ya estaban igual: <b>${c('same')}</b><br>⚠️ Con problema: <b>${c('bad')+c('unk')}</b></div>${bad.length?`<div class="mu" style="font-size:12.5px;margin-bottom:10px">${bad.map(x=>`Fila ${x.line}: ${x.st==='unk'?'clave no reconocida':'link no válido'} (${esc(x.nm)})`).join('<br>')}${c('bad')+c('unk')>bad.length?'<br>…':''}</div>`:''}${V.fin?`<div class="ok" style="margin:0 0 10px">${V.fail?'Se guardaron '+V.done+' y fallaron '+V.fail+'. ¿Publicaste las reglas nuevas de Firestore?':'✓ Listo: '+V.done+' videos guardados para todos.'}</div>`:''}${V.busy?`<div class="mu" style="margin-bottom:8px">Guardando… ${V.done}/${c('new')+c('upd')}</div>`:''}<button class="btn sm" style="width:100%" onclick="vidImpSave()" ${V.busy||!(c('new')+c('upd'))?'disabled':''}>Guardar ${c('new')+c('upd')} videos</button><button class="btn s sm" style="width:100%;margin-top:8px" onclick="vidImpClear()" ${V.busy?'disabled':''}>Cerrar revisión</button></div>`:'';
+ const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo y revisa antes de guardar.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Subir plantilla rellenada<input type="file" accept=".csv,text/csv,text/plain" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
+ return h.replace('<div class="sec"><span>Colaboradores de videos</span>',box+'<div class="sec"><span>Colaboradores de videos</span>')};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
