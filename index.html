@@ -1337,12 +1337,21 @@ function lgv(){
 }
 const LINK_TEMPS=['2017','2018','2019','2020','2021','2023','2024','2025'];
 const canLink=()=>!!(S.me&&(S.admin||S.collab));
-function link17Form(ed){return `<div class="card" style="margin-bottom:12px"><b>${ed?'Cambiar el link del video':'Añade el link para ver esta batalla'}</b><div class="mu" style="margin:4px 0 10px">Pega el link de YouTube. Lo verá cualquiera que abra esta batalla. <span style="color:var(--ac);font-weight:800">Modo colaborador</span></div><input id="lk17" placeholder="https://youtube.com/watch?v=..."><button class="btn sm" style="width:100%" onclick="saveLink17()">Guardar link</button>${ed?'<button class="btn s sm" style="width:100%;margin-top:8px" onclick="S.lkEdit=false;R()">Cancelar</button>':''}</div>`}
+function link17Form(ed){return `<div class="card" style="margin-bottom:12px"><b>${ed?'Cambiar el link del video':'Añade el link para ver esta batalla'}</b><div class="mu" style="margin:4px 0 10px">Pega el link de YouTube. Si la batalla está en partes, pega todos los links en orden separados por un espacio. Lo verá cualquiera que abra esta batalla. <span style="color:var(--ac);font-weight:800">Modo colaborador</span></div><input id="lk17" placeholder="https://youtube.com/watch?v=..."><button class="btn sm" style="width:100%" onclick="saveLink17()">Guardar link</button>${ed?'<button class="btn s sm" style="width:100%;margin-top:8px" onclick="S.lkEdit=false;R()">Cancelar</button>':''}</div>`}
+/* ===== Batallas en varias partes: "id1,id2,id3" en el mismo campo de video ===== */
+function ytIds(y){return String(y||'').split(',').map(x=>x.trim()).filter(x=>/^[\w-]{11}$/.test(x))}
+function ytParse(t){t=String(t||'').trim();const out=[],re=/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/|live\/)([\w-]{11})/g;let m;
+ while((m=re.exec(t)))if(!out.includes(m[1]))out.push(m[1]);
+ if(!out.length&&/^[\w-]{11}$/.test(t))out.push(t);return out}
+function setVPart(i){const b=S.bt;if(!b)return;const ids=ytIds(b.y);if(!ids[i])return;S.vpart={y:b.y,i};
+ const f=document.getElementById('vpf');if(f)f.src='https://www.youtube-nocookie.com/embed/'+ids[i];
+ const a=document.getElementById('vpa');if(a)a.href='https://www.youtube.com/watch?v='+ids[i];
+ document.querySelectorAll('#vpt .stp').forEach((el,k)=>el.classList.toggle('on',k===i))}
 function linkAreaH(b){if(!LINK_TEMPS.includes(S.temp))return '';
  if(!canLink())return b.y?'':'<div class="mu" style="margin:0 0 12px;font-size:13px">🎬 Esta batalla aún no tiene video. Pronto lo añadiremos.</div>';
  if(!b.y)return link17Form(false);
  return S.lkEdit?link17Form(true):`<button class="btn s sm" style="margin:0 0 12px" onclick="S.lkEdit=true;R()">✏️ Cambiar link del video</button>`}
-async function saveLink17(){const v=(document.getElementById('lk17')||{}).value||'';const m=v.trim().match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
+async function saveLink17(){const v=(document.getElementById('lk17')||{}).value||'';const ids=ytParse(v),m=ids.length?[null,ids.join(',')]:null;
  if(!m){S.msgP='Ese link no parece de YouTube. Revisa el link.';return R()}
  try{const key=linkKey(S.lg,S.temp,S.bt.a,S.bt.b);await B.setLink(key,m[1]);S.links=S.links||{};S.links[key]=m[1];S.bt.y=m[1];S.lkEdit=false;S.msgP='Link guardado'}
  catch(e){S.msgP=/permission|insufficient/i.test(String(e&&(e.code||e.message)))?'No tienes permiso para añadir links. Pídele acceso de colaborador al administrador.':'No se pudo guardar el link. Revisa las reglas de Firestore.'}
@@ -1453,7 +1462,9 @@ function counted(m){return mainTot(m)}
 
 function voteV(){
  const b=S.bt,l=curL(),done=S.ri>=S.rounds.length;const [ac1,ac2]=accentOf(l);if(!S.firstSet)return startScreenV(b,l);
- const media=b.y?`<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${b.y}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a href="https://www.youtube.com/watch?v=${b.y}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
+const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:0,vcur=vids[vpi];
+ const vparts=vids.length>1?`<div class="steps" id="vpt">${vids.map((_,k)=>`<button class="stp${k===vpi?' on':''}" onclick="setVPart(${k})">Parte ${k+1}</button>`).join('')}</div>`:'';
+ const media=vcur?`${vparts}<div class="video"><iframe id="vpf" src="https://www.youtube-nocookie.com/embed/${vcur}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a id="vpa" href="https://www.youtube.com/watch?v=${vcur}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
  <div class="card"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu" style="text-align:center;margin-top:10px">${esc(b.j||'')}</div></div>
  ${linkAreaH(b)}${S.editId?'':fmtSeg()}${plBtnH()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan"${plAttr()}>${planHTML()}</div></div>`;
@@ -1998,6 +2009,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-04T22:55:00-04:00'),text:'Batallas en varias partes: cuando una batalla está dividida en varios videos de YouTube, ahora aparecen los botones «Parte 1», «Parte 2»… encima del reproductor para cambiar de video sin salir de la batalla. En el panel de administrador, para cargarlas, pon todos los links de esa batalla en la misma celda de la plantilla separados por « | ».'},
  {ts:Date.parse('2026-11-04T21:57:00-04:00'),text:'Panel de administrador: la plantilla de videos ahora se puede subir directamente en Excel (.xlsx), sin tener que guardarla como CSV. El archivo CSV sigue funcionando igual.'},
  {ts:Date.parse('2026-11-04T21:50:00-04:00'),text:'Panel de administrador: ahora hay una plantilla en lote para los videos. Se descarga un archivo con todas las batallas de las temporadas 2017 a 2025, se rellena la columna de links (entre varias personas, si hace falta), y al subirlo se guardan todos de una vez, con una revisión antes de guardar.'},
  {ts:Date.parse('2026-11-04T21:30:00-04:00'),text:'Arreglo: el botón «Cambiar link del video» (para colaboradores y administradores) ya funciona. Ahora abre el cuadro para pegar el link nuevo, y al guardar el video se actualiza para todos.'},
@@ -2955,7 +2967,7 @@ function vidRows(links){const rows=[],seen=new Set();
 const vidCsvCell=v=>{v=String(v==null?'':v);return /[",;\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
 async function vidDownload(){let links={};try{links=await B.getLinks()}catch(e){}
  const rows=vidRows(links),head=['Liga','Temporada','Jornada','MC A','MC B','Tipo','Link (pega aquí el link de YouTube)','Clave (NO la cambies)'];
- const csv='﻿'+[head,...rows.map(r=>[r.ln,r.season,r.j,r.a,r.b,r.tipo,r.y?'https://youtu.be/'+r.y:'',r.key])].map(r=>r.map(vidCsvCell).join(',')).join('\r\n');
+ const csv='﻿'+[head,...rows.map(r=>[r.ln,r.season,r.j,r.a,r.b,r.tipo,ytIds(r.y).map(i=>'https://youtu.be/'+i).join(' | '),r.key])].map(r=>r.map(vidCsvCell).join(',')).join('\r\n');
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='plantilla-videos-votafms.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
  S.vimpMsg='Descargada: '+rows.length+' batallas ('+rows.filter(r=>r.y).length+' ya tienen video).';R()}
 function vidParseCsv(t){t=String(t||'').replace(/^﻿/,'');const first=t.split(/\r?\n/)[0]||'';
@@ -3009,7 +3021,7 @@ async function vidImpFile(file){if(!file||!isAdmin())return;S.vimpMsg='';
   let cur={};try{cur=await B.getLinks()}catch(e){}
   const valid=new Set(vidRows().map(r=>r.key)),seen={},items=[];
   rows.slice(1).forEach((r,n)=>{const raw=String(r[iL]||'').trim();if(!raw)return;const key=String(r[iK]||'').trim(),line=n+2,nm=(r[iA]||'')+' vs '+(r[iB]||'');
-   const id=vidYt(raw);let st;
+   const ids=ytParse(raw),id=ids.length?ids.join(','):null;let st;
    if(!valid.has(key))st='unk';else if(!id)st='bad';else if(cur[key]===id)st='same';else st=cur[key]?'upd':'new';
    if(st==='new'||st==='upd'){seen[key]=true}
    items.push({key,id,st,line,nm,raw})});
@@ -3031,7 +3043,7 @@ adminV=function(){let h=_adminV2();if(!isAdmin())return h;
  const V=S.vimp,c=st=>V?V.items.filter(x=>x.st===st).length:0;
  const bad=V?V.items.filter(x=>x.st==='bad'||x.st==='unk').slice(0,8):[];
  const prev=V?`<div class="card" style="margin-top:10px"><b>Revisión del archivo</b><div class="mu" style="margin:6px 0 10px;line-height:1.7">🆕 Nuevos: <b>${c('new')}</b><br>🔁 Cambian de link: <b>${c('upd')}</b><br>✓ Ya estaban igual: <b>${c('same')}</b><br>⚠️ Con problema: <b>${c('bad')+c('unk')}</b></div>${bad.length?`<div class="mu" style="font-size:12.5px;margin-bottom:10px">${bad.map(x=>`Fila ${x.line}: ${x.st==='unk'?'clave no reconocida':'link no válido'} (${esc(x.nm)})`).join('<br>')}${c('bad')+c('unk')>bad.length?'<br>…':''}</div>`:''}${V.fin?`<div class="ok" style="margin:0 0 10px">${V.fail?'Se guardaron '+V.done+' y fallaron '+V.fail+'. ¿Publicaste las reglas nuevas de Firestore?':'✓ Listo: '+V.done+' videos guardados para todos.'}</div>`:''}${V.busy?`<div class="mu" style="margin-bottom:8px">Guardando… ${V.done}/${c('new')+c('upd')}</div>`:''}<button class="btn sm" style="width:100%" onclick="vidImpSave()" ${V.busy||!(c('new')+c('upd'))?'disabled':''}>Guardar ${c('new')+c('upd')} videos</button><button class="btn s sm" style="width:100%;margin-top:8px" onclick="vidImpClear()" ${V.busy?'disabled':''}>Cerrar revisión</button></div>`:'';
- const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo (.xlsx o .csv) y revisa antes de guardar.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Subir plantilla rellenada<input type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
+ const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo (.xlsx o .csv) y revisa antes de guardar. Si una batalla está en partes, pon todos sus links en la misma celda separados por « | », en orden.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Subir plantilla rellenada<input type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
  return h.replace('<div class="sec"><span>Colaboradores de videos</span>',box+'<div class="sec"><span>Colaboradores de videos</span>')};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
