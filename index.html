@@ -1998,6 +1998,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-04T21:57:00-04:00'),text:'Panel de administrador: la plantilla de videos ahora se puede subir directamente en Excel (.xlsx), sin tener que guardarla como CSV. El archivo CSV sigue funcionando igual.'},
  {ts:Date.parse('2026-11-04T21:50:00-04:00'),text:'Panel de administrador: ahora hay una plantilla en lote para los videos. Se descarga un archivo con todas las batallas de las temporadas 2017 a 2025, se rellena la columna de links (entre varias personas, si hace falta), y al subirlo se guardan todos de una vez, con una revisión antes de guardar.'},
  {ts:Date.parse('2026-11-04T21:30:00-04:00'),text:'Arreglo: el botón «Cambiar link del video» (para colaboradores y administradores) ya funciona. Ahora abre el cuadro para pegar el link nuevo, y al guardar el video se actualiza para todos.'},
  {ts:Date.parse('2026-11-04T20:10:00-04:00'),text:'Ya puedes crear tu cuenta e iniciar sesión con Facebook, además de Google o correo y contraseña. Busca el botón «Continuar con Facebook» en la pantalla de acceso.'},
@@ -2966,8 +2967,42 @@ function vidParseCsv(t){t=String(t||'').replace(/^﻿/,'');const first=t.split(/
   else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;row.push(f);f='';if(row.some(x=>String(x).trim()))out.push(row);row=[]}
   else f+=c}
  row.push(f);if(row.some(x=>String(x).trim()))out.push(row);return out}
+/* ===== Lector de .xlsx sin librerías (zip + XML) para la plantilla de videos ===== */
+async function vidInflateRaw(u8){if(typeof DecompressionStream==='undefined')throw new Error('nodecomp');const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(ds.readable).arrayBuffer())}
+const vidXmlUn=t=>String(t).replace(/&#x([0-9a-fA-F]+);/g,(m,h)=>String.fromCodePoint(parseInt(h,16))).replace(/&#(\d+);/g,(m,d)=>String.fromCodePoint(+d)).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+const vidAt=(s,n)=>{const m=s.match(new RegExp('(?:^|\\s)'+n+'="([^"]*)"'));return m?vidXmlUn(m[1]):null};
+const vidTxt=x=>{x=x.replace(/<rPh[\s\S]*?<\/rPh>/g,'');let o='',m;const re=/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g;while((m=re.exec(x)))o+=vidXmlUn(m[1]);return o};
+async function vidReadXlsx(file){
+ const buf=new Uint8Array(await file.arrayBuffer()),dv=new DataView(buf.buffer),td=new TextDecoder();
+ let e=-1;for(let i=buf.length-22;i>=Math.max(0,buf.length-70000);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break}}
+ if(e<0)throw new Error('zip');
+ const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const F={};
+ for(let k=0;k<n;k++){if(dv.getUint32(p,true)!==0x02014b50)break;
+  const m=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),off=dv.getUint32(p+42,true);
+  F[td.decode(buf.subarray(p+46,p+46+nl))]={m,cs,off};p+=46+nl+xl+cl}
+ const get=async nm=>{const f=F[nm];if(!f)return null;const o=f.off,st=o+30+dv.getUint16(o+26,true)+dv.getUint16(o+28,true),raw=buf.subarray(st,st+f.cs);
+  return td.decode(f.m===0?raw:await vidInflateRaw(raw))};
+ const wbx=await get('xl/workbook.xml');if(!wbx)throw new Error('nowb');
+ const shs=(wbx.match(/<sheet\s[^>]*>/g)||[]).map(t=>({n:vidAt(t,'name')||'',id:vidAt(t,'r:id')}));
+ const sh=shs.find(x=>x.n.toLowerCase()==='plantilla')||shs[0];if(!sh)throw new Error('nosheet');
+ const rl=(await get('xl/_rels/workbook.xml.rels')||'').match(/<Relationship\s[^>]*>/g)||[];
+ const rel=rl.find(t=>vidAt(t,'Id')===sh.id);let path=rel?vidAt(rel,'Target'):'worksheets/sheet1.xml';
+ path=path.charAt(0)==='/'?path.slice(1):'xl/'+path.replace(/^\.\//,'');
+ const sx=await get(path);if(!sx)throw new Error('nosheetxml');
+ const ssx=await get('xl/sharedStrings.xml'),SS=ssx?(ssx.match(/<si(?:\s[^>]*)?>[\s\S]*?<\/si>|<si\s*\/>/g)||[]).map(vidTxt):[];
+ const colN=r=>{let c=0;const L=String(r).match(/^[A-Z]+/);if(!L)return -1;for(const ch of L[0])c=c*26+ch.charCodeAt(0)-64;return c-1};
+ const out=[],rre=/<row\b[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g;let rm;
+ while((rm=rre.exec(sx))){const row=[],body=rm[1]||'',cre=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;let cm,seq=0;
+  while((cm=cre.exec(body))){const at=cm[1],inn=cm[2]||'',t=vidAt(at,'t'),ci=vidAt(at,'r')?colN(vidAt(at,'r')):seq;seq=ci+1;let v='';
+   if(t==='inlineStr')v=vidTxt(inn);else{const mv=inn.match(/<v>([\s\S]*?)<\/v>/);if(mv){v=vidXmlUn(mv[1]);if(t==='s')v=SS[+v]||''}}
+   if(ci>=0)row[ci]=v}
+  const r2=Array.from(row,x=>x==null?'':String(x));if(r2.some(x=>x.trim()))out.push(r2)}
+ return out}
+async function vidRead(file){const h=new Uint8Array(await file.slice(0,2).arrayBuffer());
+ if(h[0]===0x50&&h[1]===0x4B)return vidReadXlsx(file);
+ return vidParseCsv(await file.text())}
 async function vidImpFile(file){if(!file||!isAdmin())return;S.vimpMsg='';
- try{const rows=vidParseCsv(await file.text());if(rows.length<2){S.vimp=null;S.vimpMsg='El archivo está vacío.';return R()}
+ try{const rows=await vidRead(file);if(rows.length<2){S.vimp=null;S.vimpMsg='El archivo está vacío.';return R()}
   const nh=rows[0].map(x=>nrm(String(x)));const ix=f=>nh.findIndex(x=>x.startsWith(f));
   const iL=ix('link'),iK=ix('clave');if(iL<0||iK<0){S.vimp=null;S.vimpMsg='No encuentro las columnas «Link» y «Clave». Usa la plantilla descargada desde aquí.';return R()}
   const iA=ix('mca'),iB=ix('mcb');
@@ -2996,7 +3031,7 @@ adminV=function(){let h=_adminV2();if(!isAdmin())return h;
  const V=S.vimp,c=st=>V?V.items.filter(x=>x.st===st).length:0;
  const bad=V?V.items.filter(x=>x.st==='bad'||x.st==='unk').slice(0,8):[];
  const prev=V?`<div class="card" style="margin-top:10px"><b>Revisión del archivo</b><div class="mu" style="margin:6px 0 10px;line-height:1.7">🆕 Nuevos: <b>${c('new')}</b><br>🔁 Cambian de link: <b>${c('upd')}</b><br>✓ Ya estaban igual: <b>${c('same')}</b><br>⚠️ Con problema: <b>${c('bad')+c('unk')}</b></div>${bad.length?`<div class="mu" style="font-size:12.5px;margin-bottom:10px">${bad.map(x=>`Fila ${x.line}: ${x.st==='unk'?'clave no reconocida':'link no válido'} (${esc(x.nm)})`).join('<br>')}${c('bad')+c('unk')>bad.length?'<br>…':''}</div>`:''}${V.fin?`<div class="ok" style="margin:0 0 10px">${V.fail?'Se guardaron '+V.done+' y fallaron '+V.fail+'. ¿Publicaste las reglas nuevas de Firestore?':'✓ Listo: '+V.done+' videos guardados para todos.'}</div>`:''}${V.busy?`<div class="mu" style="margin-bottom:8px">Guardando… ${V.done}/${c('new')+c('upd')}</div>`:''}<button class="btn sm" style="width:100%" onclick="vidImpSave()" ${V.busy||!(c('new')+c('upd'))?'disabled':''}>Guardar ${c('new')+c('upd')} videos</button><button class="btn s sm" style="width:100%;margin-top:8px" onclick="vidImpClear()" ${V.busy?'disabled':''}>Cerrar revisión</button></div>`:'';
- const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo y revisa antes de guardar.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Subir plantilla rellenada<input type="file" accept=".csv,text/csv,text/plain" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
+ const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo (.xlsx o .csv) y revisa antes de guardar.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Subir plantilla rellenada<input type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
  return h.replace('<div class="sec"><span>Colaboradores de videos</span>',box+'<div class="sec"><span>Colaboradores de videos</span>')};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
