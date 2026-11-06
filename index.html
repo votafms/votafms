@@ -784,34 +784,49 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .rks-c{flex:0 0 auto;font-size:13px;font-weight:900;color:var(--tc)}
 /* ===== Ver mi rango: ventana ===== */
 .rkx{padding-top:14px}
-.rkx-hero{position:relative;text-align:center;padding:22px 12px 18px;border-radius:24px;overflow:hidden;border:1px solid color-mix(in srgb,var(--tc) 45%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--tc) 22%,var(--cd)),var(--cd))}
-.rkx-glow{position:absolute;left:50%;top:6px;width:200px;height:200px;margin-left:-100px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--tc) 55%,transparent),transparent 68%);animation:rkpulse 3.2s ease-in-out infinite}
-.rkx-bd{position:relative;display:inline-block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.4))}
-.rkx-eb{position:relative;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--mu)}
-.rkx-nm{position:relative;font-size:28px;font-weight:900;letter-spacing:-.4px;line-height:1.1;margin-top:2px}
-.rkx-pts{position:relative;font-size:14px;font-weight:800;color:var(--tc);margin-top:3px;font-variant-numeric:tabular-nums}
-.rkx-prog{margin-top:14px;padding:12px 14px;border-radius:18px;border:1px solid var(--bd);background:var(--bg2)}
-.rkx-bar{height:10px;border-radius:99px;background:var(--cd2);overflow:hidden}.rkx-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 65%,#000),var(--tc))}
-.rkx-pl{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mu);margin-top:8px;font-weight:700}.rkx-pl b{color:var(--tx)}
+@keyframes rkspin{to{transform:rotate(360deg)}}
+@keyframes rkflt{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes rkfloat{0%{transform:translateY(0) scale(.6);opacity:0}20%{opacity:.9}100%{transform:translateY(-170px) scale(1.1);opacity:0}}
+@keyframes rkin{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes rknow{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tc) 70%,transparent)}50%{box-shadow:0 0 0 7px transparent}}
+.rkx-hero{position:relative;text-align:center;padding:26px 12px 20px;border-radius:28px;overflow:hidden;border:1px solid color-mix(in srgb,var(--tc) 50%,transparent);background:radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--tc) 38%,transparent),transparent 70%),linear-gradient(180deg,color-mix(in srgb,var(--tc) 14%,var(--cd)),var(--cd));box-shadow:0 16px 40px color-mix(in srgb,var(--tc) 22%,transparent)}
+.rkx-rays{position:absolute;left:50%;top:-70px;width:360px;height:360px;margin-left:-180px;border-radius:50%;background:repeating-conic-gradient(color-mix(in srgb,var(--tc) 30%,transparent) 0 7deg,transparent 7deg 18deg);-webkit-mask:radial-gradient(circle,#000 12%,transparent 66%);mask:radial-gradient(circle,#000 12%,transparent 66%);animation:rkspin 40s linear infinite}
+.rkx-pa i{position:absolute;bottom:-6px;left:var(--x);width:5px;height:5px;border-radius:50%;background:var(--tc);box-shadow:0 0 8px var(--tc);opacity:0;animation:rkfloat 4.2s ease-in infinite;animation-delay:var(--d)}
+.rkx-bw{position:relative;width:150px;height:150px;margin:0 auto}
+.rkx-ring{position:absolute;inset:0;width:100%;height:100%}
+.rkx-bd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45));animation:rkflt 3.6s ease-in-out infinite}
+.rkx-eb{position:relative;margin-top:10px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:var(--tc)}
+.rkx-nm{position:relative;font-size:32px;font-weight:900;letter-spacing:-.6px;line-height:1.1;margin-top:3px;background:linear-gradient(180deg,var(--tx),var(--tc));-webkit-background-clip:text;background-clip:text;color:transparent}
+.rkx-pp{position:relative;display:flex;justify-content:center;gap:6px;margin-top:10px}
+.rkx-pp i{width:26px;height:6px;border-radius:99px;background:var(--cd2)}.rkx-pp i.on{background:var(--tc);box-shadow:0 0 8px var(--tc)}
+.rkx-prog{margin-top:14px;padding:14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2)}
+.rkx-bar{height:12px;border-radius:99px;background:var(--cd2);overflow:hidden}.rkx-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 60%,#000),var(--tc));box-shadow:0 0 12px var(--tc)}
+.rkx-pl{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mu);margin-top:10px;font-weight:700}.rkx-pl b{color:var(--tx)}.rkx-pl span{display:flex;align-items:center;gap:6px}
 .rkx-st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.rkx-st>div{padding:12px 6px;border:1px solid var(--bd);border-radius:16px;background:var(--bg2);text-align:center}
+.rkx-st>div{padding:12px 6px;border:1px solid var(--bd);border-radius:18px;background:linear-gradient(160deg,color-mix(in srgb,var(--tc) 12%,var(--bg2)),var(--bg2));text-align:center}
+.rkx-st em{display:block;font-style:normal;font-size:18px;margin-bottom:2px}
 .rkx-st b{display:block;font-size:19px;font-weight:900;font-variant-numeric:tabular-nums}.rkx-st span{font-size:11px;color:var(--mu);font-weight:700}
-.rkx-sec{margin:20px 2px 10px;font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--mu)}.rkx-sec small{display:block;margin-top:3px;text-transform:none;letter-spacing:0;font-weight:700;font-size:12px}
-.rkx-t{margin-bottom:10px;padding:12px;border-radius:20px;border:1px solid var(--bd);background:var(--bg2)}
-.rkx-t.cur{border-color:color-mix(in srgb,var(--tc) 60%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 14%,var(--bg2)),var(--bg2))}
-.rkx-t.lock{opacity:.78}
-.rkx-th{display:flex;align-items:center;gap:11px}
-.rkx-tn{flex:1;min-width:0}.rkx-tn b{display:block;font-size:16px}.rkx-tn span{font-size:12px;color:var(--mu);font-weight:700}
-.rkx-th em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--mu)}
-.rkx-t.cur .rkx-th em{color:var(--tc)}
-.rkx-lv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}
-.rkx-l{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 8px;border-radius:14px;border:1px solid var(--bd);background:var(--cd);text-align:center}
-.rkx-l .rkx-d{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;margin-bottom:3px;border:2px solid rgba(255,255,255,.2);background:var(--cd2)}
-.rkx-l:not(.ok) .rkx-d{filter:saturate(.5) brightness(.7)}
-.rkx-l b{font-size:12px}.rkx-l small{font-size:11px;color:var(--mu);font-weight:700;font-variant-numeric:tabular-nums}
-.rkx-l span{font-size:10px;color:var(--mu);font-weight:700;line-height:1.1;margin-top:2px}
-.rkx-l.ok{border-color:color-mix(in srgb,var(--tc) 40%,transparent)}
-.rkx-l.now{border-color:var(--tc);background:color-mix(in srgb,var(--tc) 16%,var(--cd));box-shadow:0 0 0 2px color-mix(in srgb,var(--tc) 28%,transparent)}
+.rkx-sec{margin:22px 2px 12px;font-size:12px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;color:var(--mu)}
+.rkx-t{position:relative;margin-bottom:12px;padding:14px 12px 12px;border-radius:24px;border:1px solid color-mix(in srgb,var(--tc) 30%,var(--bd));background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 12%,var(--bg2)),var(--bg2) 70%);animation:rkin .5s both;animation-delay:calc(var(--i)*70ms)}
+.rkx-t.cur{border-color:var(--tc);box-shadow:0 0 0 1px var(--tc),0 10px 28px color-mix(in srgb,var(--tc) 28%,transparent)}
+.rkx-t.lock{filter:grayscale(.75);opacity:.7}
+.rkx-th{display:flex;align-items:center;gap:12px}
+.rkx-th>svg{filter:drop-shadow(0 4px 10px color-mix(in srgb,var(--tc) 55%,transparent))}
+.rkx-tn{flex:1;min-width:0}.rkx-tn b{display:block;font-size:17px;font-weight:900}.rkx-tn span{font-size:12px;color:var(--mu);font-weight:700}
+.rkx-th em{font-style:normal;font-size:11px;font-weight:900;padding:5px 10px;border-radius:99px;background:var(--cd2);color:var(--mu);white-space:nowrap}
+.rkx-t.cur .rkx-th em{background:var(--tc);color:#111}
+.rkx-lv{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px}
+.rkx-lv:before,.rkx-lv:after{content:"";position:absolute;left:16.6%;top:22px;height:4px;border-radius:4px}
+.rkx-lv:before{right:16.6%;background:var(--cd2)}
+.rkx-lv:after{width:var(--g);background:var(--tc);box-shadow:0 0 10px var(--tc)}
+.rkx-l{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:0 2px}
+.rkx-l .rkx-d{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:16px;font-weight:900;color:#fff;margin-bottom:6px;border:3px solid var(--bg2);background:var(--cd2);box-shadow:0 0 0 2px var(--cd2)}
+.rkx-l.ok .rkx-d{box-shadow:0 0 0 2px var(--tc)}
+.rkx-l:not(.ok) .rkx-d{filter:saturate(.4) brightness(.7)}
+.rkx-l.now .rkx-d{box-shadow:0 0 0 3px var(--tc);animation:rknow 1.8s ease-in-out infinite}
+.rkx-l b{font-size:12.5px;font-weight:900}.rkx-l small{font-size:11px;color:var(--mu);font-weight:700;font-variant-numeric:tabular-nums}
+.rkx-l span{font-size:10px;color:var(--mu);font-weight:700;line-height:1.15;margin-top:2px}
+.rkx-l.now b{color:var(--tc)}
 /* ===== Inicio: ligas ===== */
 .hm h1{font-size:25px}
 .hm-st{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -850,6 +865,21 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .stk-cape{transform-box:fill-box;transform-origin:50% 0;animation:stkcp 2.2s ease-in-out infinite}
 .stk-sp{transform-box:fill-box;transform-origin:center;opacity:0;animation:stksp 2.8s ease-in-out infinite}
 .stk-gw{transform-box:fill-box;transform-origin:center;animation:stkgw 3s ease-in-out infinite}
+@keyframes stkpul{0%,100%{opacity:.78;filter:drop-shadow(0 0 1px #22D3EE)}50%{opacity:1;filter:drop-shadow(0 0 6px #F472B6)}}
+@keyframes stkhv{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes stkrb{to{filter:hue-rotate(360deg)}}
+@keyframes stkwl{0%,100%{transform:rotate(8deg)}50%{transform:rotate(-12deg)}}
+@keyframes stkwr{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(12deg)}}
+@keyframes stkwv{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes stkrot{to{transform:rotate(360deg)}}
+.stk-pul{animation:stkpul 1.8s ease-in-out infinite}
+.stk-hv{animation:stkhv 2.4s ease-in-out infinite}
+.stk-rb{animation:stkrb 5s linear infinite}
+.stk-wl{transform-box:fill-box;transform-origin:100% 100%;animation:stkwl 1.2s ease-in-out infinite}
+.stk-wr{transform-box:fill-box;transform-origin:0% 100%;animation:stkwr 1.2s ease-in-out infinite}
+.stk-wv{animation:stkwv 1.2s ease-in-out infinite}
+.stk-rot{transform-box:fill-box;transform-origin:center;animation:stkrot 14s linear infinite}
+@media (prefers-reduced-motion:reduce){.stk-pul{animation:stkpul 1.8s ease-in-out infinite!important}.stk-hv{animation:stkhv 2.4s ease-in-out infinite!important}.stk-rb{animation:stkrb 5s linear infinite!important}.stk-wl{animation:stkwl 1.2s ease-in-out infinite!important}.stk-wr{animation:stkwr 1.2s ease-in-out infinite!important}.stk-wv{animation:stkwv 1.2s ease-in-out infinite!important}.stk-rot{animation:stkrot 14s linear infinite!important}}
 @media (prefers-reduced-motion:reduce){.stk-sw1{animation:stksw 2.8s ease-in-out infinite!important}.stk-gl{animation:stkgl 3.2s ease-in-out infinite!important}.stk-tail{animation:stktl 1.6s ease-in-out infinite!important}.stk-cape{animation:stkcp 2.2s ease-in-out infinite!important}.stk-sp{animation:stksp 2.8s ease-in-out infinite!important}.stk-gw{animation:stkgw 3s ease-in-out infinite!important}}
 /* ===== Perfil: cabecera rápida, medallas favoritas, apariencia ===== */
 .pfq{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
@@ -2298,19 +2328,22 @@ function rkStripH(){const r=rankInfo(S.myVotes||[]);
 function ranksSheet(){const r=rankInfo(S.myVotes||[]);
  const fm=n=>Number(n).toLocaleString('es');
  const seen=new Set();(S.myVotes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');seen.add(k)});
- const nb=seen.size;
+ const nb=seen.size,C=2*Math.PI*64,off=C*(1-r.pct/100);
+ const ring=`<svg class="rkx-ring" viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="64" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="7"/><circle cx="75" cy="75" r="64" fill="none" stroke="var(--tc)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 75 75)" style="filter:drop-shadow(0 0 6px var(--tc))"/></svg>`;
+ const parts=[8,22,36,50,64,78,90].map((x,i)=>`<i style="--x:${x}%;--d:${(i*.6).toFixed(1)}s"></i>`).join('');
+ const nt=r.next?Math.floor((r.lvl+1)/3):null;
  const tiers=RANKS.map((nm,t)=>{
   const first=t*3===0?0:RANK_TH[t*3-1],last=t===4?null:RANK_TH[t*3+2];
-  const cur=r.t===t,done=r.t>t;
-  const lv=[0,1,2].map(k=>{const i=t*3+k,need=i===0?0:RANK_TH[i-1],ok=r.n>=need,now=r.lvl===i,d=(typeof PL_D!=='undefined')?PL_D[i]:null;
-   return `<div class="rkx-l${now?' now':''}${ok?' ok':''}"><i class="rkx-d" style="${d?'background:'+d.h:''}">${ok?'':'🔒'}</i><b>Nivel ${k+1}</b><small>${fm(need)} pts</small>${d?`<span>${esc(d.n)}</span>`:''}</div>`}).join('');
-  return `<div class="rkx-t${cur?' cur':''}${r.t<t?' lock':''}" style="--tc:${rcol(t)}"><div class="rkx-th">${rankBadge(t,40)}<div class="rkx-tn"><b>${nm}</b><span>${last===null?'Desde '+fm(first)+' pts':fm(first)+' – '+fm(last)+' pts'}</span></div><em>${done?'✓ Completado':cur?'● En curso':'Pendiente'}</em></div><div class="rkx-lv">${lv}</div></div>`}).join('');
+  const cur=r.t===t,done=r.t>t;let got=0;
+  const lv=[0,1,2].map(k=>{const i=t*3+k,need=i===0?0:RANK_TH[i-1],ok=r.n>=need,now=r.lvl===i,d=(typeof PL_D!=='undefined')?PL_D[i]:null;if(ok)got++;
+   return `<div class="rkx-l${now?' now':''}${ok?' ok':''}"><i class="rkx-d" style="${d&&ok?'background:'+d.h:''}">${ok?(now?'★':'✓'):'🔒'}</i><b>Nivel ${k+1}</b><small>${fm(need)} pts</small>${d?`<span>${esc(d.n)}</span>`:''}</div>`}).join('');
+  return `<div class="rkx-t${cur?' cur':''}${r.t<t?' lock':''}" style="--tc:${rcol(t)};--i:${t};--g:${Math.max(got-1,0)*33.4}%"><div class="rkx-th">${rankBadge(t,46)}<div class="rkx-tn"><b>${nm}</b><span>${last===null?'Desde '+fm(first)+' pts':fm(first)+' – '+fm(last)+' pts'}</span></div><em>${done?'✓ Completado':cur?'● En curso':'🔒'}</em></div><div class="rkx-lv">${lv}</div></div>`}).join('');
  const lvl=r.lvl+1;
  return `<div class="ov" onclick="S.ranksOpen=false;R()"><div class="sh rkx" onclick="event.stopPropagation()" style="--tc:${rcol(r.t)}">
- <div class="rkx-hero"><div class="rkx-glow"></div><div class="rkx-bd">${rankBadge(r.t,96)}</div><div class="rkx-eb">Tu rango</div><div class="rkx-nm">${esc(r.name)}</div><div class="rkx-pts">${fm(r.n)} puntos</div></div>
- <div class="rkx-prog"><div class="rkx-bar"><i style="width:${r.pct}%"></i></div><div class="rkx-pl"><span>${r.next?`Siguiente: <b>${esc(rkNext(r.lvl))}</b>`:'Rango máximo alcanzado'}</span><span>${r.next?`Faltan <b>${fm(r.next)}</b> pts`:'100%'}</span></div></div>
- <div class="rkx-st"><div><b>${fm(r.n)}</b><span>Puntos</span></div><div><b>${nb}</b><span>Batallas votadas</span></div><div><b>${lvl}/15</b><span>Nivel</span></div></div>
- <div class="rkx-sec">Escalera de rangos <small>Cada nivel desbloquea un diseño de planilla</small></div>
+ <div class="rkx-hero"><div class="rkx-rays"></div><div class="rkx-pa">${parts}</div><div class="rkx-bw">${ring}<div class="rkx-bd">${rankBadge(r.t,92)}</div></div><div class="rkx-eb">${RANKS[r.t]}</div><div class="rkx-nm">${esc(r.name)}</div><div class="rkx-pp">${[1,2,3].map(i=>`<i class="${i<=r.sub?'on':''}"></i>`).join('')}</div></div>
+ <div class="rkx-prog"><div class="rkx-bar"><i style="width:${r.pct}%"></i></div><div class="rkx-pl"><span>${r.next?`Siguiente: ${rankBadge(nt,22)}<b>${esc(rkNext(r.lvl))}</b>`:'Rango máximo alcanzado'}</span><span>${r.next?`Faltan <b>${fm(r.next)}</b> pts`:'100%'}</span></div></div>
+ <div class="rkx-st"><div><em>⭐</em><b>${fm(r.n)}</b><span>Puntos</span></div><div><em>⚔️</em><b>${nb}</b><span>Batallas votadas</span></div><div><em>📈</em><b>${lvl}/15</b><span>Nivel</span></div></div>
+ <div class="rkx-sec">Escalera de rangos</div>
  ${tiers}
  <button class="btn s" style="margin:14px 0 0" onclick="S.ranksOpen=false;R()">Cerrar</button>
  </div></div>`}
@@ -2687,9 +2720,16 @@ const OUTFITS=[
  {id:'audi',n:'Audífonos',ic:'🎧',slot:'ears',need:7},
  {id:'corona',n:'Corona de Oro',ic:'👑',slot:'head',need:10},
  {id:'cadena',n:'Cadena de Oro',ic:'🔗',slot:'neck',need:12},
+ {id:'neon',n:'Lentes Neón',ic:'🥽',slot:'eyes',need:14},
  {id:'bandana',n:'Bandana de Calle',ic:'🏴',slot:'head',need:16},
+ {id:'halo',n:'Halo Celestial',ic:'😇',slot:'head',need:18},
  {id:'capa',n:'Capa de Campeón',ic:'🦸',slot:'back',need:21},
- {id:'aura',n:'Aura de Leyenda',ic:'✨',slot:'aura',need:26}];
+ {id:'audioro',n:'Audífonos de Oro',ic:'🎶',slot:'ears',need:23},
+ {id:'aura',n:'Aura de Leyenda',ic:'✨',slot:'aura',need:26},
+ {id:'alas',n:'Alas de Llama',ic:'🪽',slot:'back',need:28},
+ {id:'diamante',n:'Collar de Diamante',ic:'💎',slot:'neck',need:31},
+ {id:'cristal',n:'Corona de Cristal',ic:'🔮',slot:'head',need:35},
+ {id:'arco',n:'Aura Arcoíris',ic:'🌈',slot:'aura',need:40}];
 const STK_ART={
  gorra:`<path d="M36 76C36 50 52 44 70 44S104 50 104 76Z" fill="#EF4444" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><path d="M70 44C62 56 62 66 64 76" fill="none" stroke="#7F1D1D" stroke-opacity=".35" stroke-width="2"/><path d="M90 74Q114 69 120 80Q104 85 86 78Z" fill="#B91C1C" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><circle cx="70" cy="44" r="3.5" fill="#FCA5A5" stroke="#7F1D1D" stroke-width="2"/><path d="M48 58Q56 50 66 49" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>`,
  gafas:`<path d="M45 82L36 79M95 82L104 79" stroke="#111827" stroke-width="3" stroke-linecap="round"/><rect x="44" y="75" width="23" height="17" rx="7" fill="#111827"/><rect x="73" y="75" width="23" height="17" rx="7" fill="#111827"/><path d="M67 82h6" stroke="#111827" stroke-width="3.2"/><path d="M48 79l7-1M77 79l7-1" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/>`,
@@ -2699,8 +2739,15 @@ const STK_ART={
  bandana:`<path d="M37 72Q70 52 103 72L101 82Q70 64 39 82Z" fill="#111827" stroke="#000" stroke-width="2" stroke-linejoin="round"/><g fill="#fff" fill-opacity=".85"><circle cx="50" cy="73" r="1.6"/><circle cx="62" cy="68" r="1.6"/><circle cx="76" cy="67" r="1.6"/><circle cx="90" cy="71" r="1.6"/><circle cx="56" cy="78" r="1.2"/><circle cx="84" cy="76" r="1.2"/></g><g class="stk-tail"><path d="M101 74L124 66L119 77L127 86L103 83Z" fill="#EF4444" stroke="#7F1D1D" stroke-width="2.2" stroke-linejoin="round"/></g><circle cx="102" cy="77" r="4.5" fill="#B91C1C" stroke="#7F1D1D" stroke-width="2"/>`,
  capa:`<g class="stk-cape"><path d="M52 126C30 138 22 158 19 178Q40 172 52 180Q70 172 88 180Q100 172 121 178C118 158 110 138 88 126Z" fill="#DC2626" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><path d="M58 130C44 142 40 158 40 172M82 130C96 142 100 158 100 172" fill="none" stroke="#7F1D1D" stroke-opacity=".4" stroke-width="2.2" stroke-linecap="round"/><path d="M19 178Q40 172 52 180Q70 172 88 180Q100 172 121 178" fill="none" stroke="#FACC15" stroke-width="3.5" stroke-linecap="round"/></g>`,
  aura:`<circle class="stk-gw" cx="70" cy="96" r="78" fill="url(#stka)"/><g fill="#FDE68A"><g transform="translate(14 66)"><path class="stk-sp" d="M0-8Q1.4-1.4 8 0Q1.4 1.4 0 8Q-1.4 1.4-8 0Q-1.4-1.4 0-8Z"/></g><g transform="translate(128 84)"><path class="stk-sp" style="animation-delay:-.7s" d="M0-8Q1.4-1.4 8 0Q1.4 1.4 0 8Q-1.4 1.4-8 0Q-1.4-1.4 0-8Z"/></g><g transform="translate(24 138)"><path class="stk-sp" style="animation-delay:-1.4s" d="M0-6Q1-1 6 0Q1 1 0 6Q-1 1-6 0Q-1-1 0-6Z"/></g><g transform="translate(120 140)"><path class="stk-sp" style="animation-delay:-2.1s" d="M0-7Q1.2-1.2 7 0Q1.2 1.2 0 7Q-1.2 1.2-7 0Q-1.2-1.2 0-7Z"/></g><g transform="translate(106 22)"><path class="stk-sp" style="animation-delay:-.35s" d="M0-6Q1-1 6 0Q1 1 0 6Q-1 1-6 0Q-1-1 0-6Z"/></g><g transform="translate(34 18)"><path class="stk-sp" style="animation-delay:-1.8s" d="M0-7Q1.2-1.2 7 0Q1.2 1.2 0 7Q-1.2 1.2-7 0Q-1.2-1.2 0-7Z"/></g></g>`};
-function stkWear(fit){const f=Array.isArray(fit)?fit:[];const has=id=>f.includes(id)&&STK_ART[id];
- return {ears:has('audi')?STK_ART.audi:'',head:['gorra','corona','bandana'].filter(has).map(id=>STK_ART[id]).join(''),eyes:has('gafas')?STK_ART.gafas:'',neck:has('cadena')?STK_ART.cadena:'',back:has('capa')?STK_ART.capa:'',aura:has('aura')?STK_ART.aura:''}}
+STK_ART.neon=`<g class="stk-pul"><rect x="43" y="75" width="25" height="18" rx="8" fill="#0F172A" stroke="#22D3EE" stroke-width="3"/><rect x="72" y="75" width="25" height="18" rx="8" fill="#0F172A" stroke="#F472B6" stroke-width="3"/><path d="M68 83h4" stroke="#A78BFA" stroke-width="3"/><path d="M48 80l8-1M77 80l8-1" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linecap="round"/></g>`;
+STK_ART.halo=`<g class="stk-hv"><ellipse cx="70" cy="38" rx="22" ry="6.5" fill="none" stroke="#CA8A04" stroke-width="5.5"/><ellipse cx="70" cy="38" rx="22" ry="6.5" fill="none" stroke="#FDE047" stroke-width="3.5"/><path d="M54 36Q62 33 70 33" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="1.6" stroke-linecap="round"/></g>`;
+STK_ART.audioro=`<path d="M35 86C33 40 107 40 105 86" fill="none" stroke="#A16207" stroke-width="6" stroke-linecap="round"/><path d="M35 86C33 40 107 40 105 86" fill="none" stroke="#FACC15" stroke-width="2.6" stroke-linecap="round"/><rect x="27" y="77" width="14" height="28" rx="7" fill="#FACC15" stroke="#A16207" stroke-width="2.5"/><rect x="99" y="77" width="14" height="28" rx="7" fill="#FACC15" stroke="#A16207" stroke-width="2.5"/><g class="stk-wv" fill="none" stroke="#FDE047" stroke-width="2.6" stroke-linecap="round"><path d="M21 84Q16 91 21 98M14 79Q7 91 14 103"/><path d="M119 84Q124 91 119 98M126 79Q133 91 126 103"/></g>`;
+STK_ART.alas=`<g class="stk-wl"><path d="M56 130C38 130 14 118 5 90C20 98 27 96 33 90C33 101 39 107 45 109C45 115 51 119 59 121Z" fill="var(--f1)" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/><path d="M16 98C28 108 40 116 52 122M26 94C32 104 42 112 52 118" fill="none" stroke="var(--f2)" stroke-width="2.4" stroke-linecap="round"/></g><g class="stk-wr"><path d="M84 130C102 130 126 118 135 90C120 98 113 96 107 90C107 101 101 107 95 109C95 115 89 119 81 121Z" fill="var(--f1)" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-linejoin="round"/><path d="M124 98C112 108 100 116 88 122M114 94C108 104 98 112 88 118" fill="none" stroke="var(--f2)" stroke-width="2.4" stroke-linecap="round"/></g>`;
+STK_ART.diamante=`<g class="stk-sw1"><path d="M46 119Q70 140 94 119" fill="none" stroke="#94A3B8" stroke-width="4.5" stroke-linecap="round"/><path d="M46 119Q70 140 94 119" fill="none" stroke="#fff" stroke-width="1.8" stroke-dasharray="2 4" stroke-linecap="round"/><path d="M70 130l9 6-9 13-9-13z" fill="#67E8F9" stroke="#0E7490" stroke-width="2" stroke-linejoin="round"/><path d="M61 136h18M70 130l-3.5 6 3.5 13 3.5-13z" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.3"/><path class="stk-gl" d="M85 127l1.8-4.5 1.8 4.5 4.5 1.8-4.5 1.8-1.8 4.5-1.8-4.5-4.5-1.8z" fill="#fff"/></g>`;
+STK_ART.cristal=`<g class="stk-rb"><path d="M43 68L39 40L54 55L62 34L70 53L78 34L86 55L101 40L97 68Z" fill="#A5F3FC" stroke="#0E7490" stroke-width="2.4" stroke-linejoin="round"/><path d="M62 34L66 62M78 34L74 62M54 55L58 66M86 55L82 66" stroke="#fff" stroke-opacity=".75" stroke-width="1.6"/><rect x="43" y="63" width="54" height="8" rx="2.5" fill="#67E8F9" stroke="#0E7490" stroke-width="2"/><circle cx="70" cy="67" r="3" fill="#F0ABFC"/></g><path class="stk-gl" d="M104 40l1.8-4.5 1.8 4.5 4.5 1.8-4.5 1.8-1.8 4.5-1.8-4.5-4.5-1.8z" fill="#fff"/>`;
+STK_ART.arco=`<g class="stk-rb">${STK_ART.aura}<circle class="stk-rot" cx="70" cy="96" r="66" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-dasharray="3 9" stroke-linecap="round"/></g>`;
+function stkWear(fit){const f=Array.isArray(fit)?fit:[];const has=id=>f.includes(id)&&STK_ART[id];const pk=l=>l.filter(has).map(id=>STK_ART[id]).join('');
+ return {ears:pk(['audi','audioro']),head:pk(['gorra','corona','bandana','halo','cristal']),eyes:pk(['gafas','neon']),neck:pk(['cadena','diamante']),back:pk(['capa','alas']),aura:pk(['aura','arco'])}}
 function stkHop(el){const g=el&&el.querySelector('.stk-body');if(!g)return;g.classList.remove('hop');void g.getBoundingClientRect();g.classList.add('hop');setTimeout(()=>g.classList.remove('hop'),850)}
 function stkSvg(n,on,fit){
  const s=stkTier(n).s,w=stkWear(fit);
