@@ -1800,8 +1800,8 @@ async function favSave(){if(!S.me)return;const sel=(S.favSel||pfFav(S.me)).slice
 async function shareProfile(){const m=S.me;if(!m)return;const r=rankInfo(S.myVotes||[]),st=(m.st&&m.st.n)||0;
  const text=m.u+' en VotaFMS · '+r.name+' · 🔥 '+st+(st===1?' día':' días')+' de racha · 🏆 '+achCount()+'/'+ACH_N+' logros';
  const url=/^https?:$/.test(location.protocol)?location.origin+location.pathname:'';
- try{if(navigator.share){await navigator.share(url?{title:'VotaFMS',text,url}:{title:'VotaFMS',text});return}}catch(e){if(e&&e.name==='AbortError')return}
- try{await navigator.clipboard.writeText(text+(url?'\n'+url:''));S.msgP='Copiado. ¡Pégalo donde quieras compartirlo!'}catch(e){S.msgP='No se pudo copiar.'}R()}
+ try{if(navigator.share){await navigator.share(url?{title:'VotaFMS',text,url}:{title:'VotaFMS',text});achMark('embajador');return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(text+(url?'\n'+url:''));S.msgP='Copiado. ¡Pégalo donde quieras compartirlo!';achMark('embajador')}catch(e){S.msgP='No se pudo copiar.'}R()}
 async function saveProf(){const m=S.me;if(!m)return;const prof={a:document.getElementById('pf-a').value.trim()};
  try{await B.updateUser(m.uid,prof);S.me={...S.me,...prof};S.draftA=null;S.msgP='Cambios guardados'}catch(e){S.msgP='No se pudieron guardar los cambios.'}R()}
 async function logout(){try{if(S.me)await B.beat(S.me.uid,false)}catch(e){}stopPresence(true);try{await FB.am.signOut(FB.auth)}catch(e){}S.me=null;S.myVotes=null;S.ach=null;S.likeGiven=false;S.likeCache={};S.msgP='';watchInbox();go('home')}
@@ -2031,6 +2031,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-05T22:15:00-04:00'),text:'Cambio en un logro: Madrugador del Beat ahora se llama Mediodía del Beat ☀️ y se desbloquea votando una batalla entre las 12 y las 2 de la tarde, según la hora de tu país. Quien ya lo había desbloqueado lo conserva.'},
+ {ts:Date.parse('2026-11-05T22:10:00-04:00'),text:'Nuevo: 6 logros más (ya son 40). Madrugador del Beat, por votar de madrugada; Empate de Hierro, por votar una batalla que termine empatada en puntos; Orgullo Quisqueyano, por poner República Dominicana como tu país; Sin Rastro, por borrar un mensaje para todos en el chat; Drip Completo, por vestir a tu mascota de racha en las 6 zonas; y Embajador del Barrio, por compartir tu perfil. Los encuentras en las categorías Votaciones, Comunidad y Rango y estilo.'},
  {ts:Date.parse('2026-11-05T22:00:00-04:00'),text:'Nuevo: 2 logros más (ya son 34). Uno está escondido en algún rincón de la página y tendrás que encontrarlo tú, y el otro es un reto para probar con MC IA. Además bajamos la dificultad de dos logros: Cypher de Quince ahora se llama Cypher de Ocho y pide 8 amigos, y Aplauso de la Rueda ahora pide 4 likes. Si ya cumplías alguno de los dos, se desbloquea solo al abrir la app.'},
  {ts:Date.parse('2026-11-04T22:55:00-04:00'),text:'Batallas en varias partes: cuando una batalla está dividida en varios videos de YouTube, ahora aparecen los botones «Parte 1», «Parte 2»… encima del reproductor para cambiar de video sin salir de la batalla. En el panel de administrador, para cargarlas, pon todos los links de esa batalla en la misma celda de la plantilla separados por « | ».'},
  {ts:Date.parse('2026-11-04T21:57:00-04:00'),text:'Panel de administrador: la plantilla de videos ahora se puede subir directamente en Excel (.xlsx), sin tener que guardarla como CSV. El archivo CSV sigue funcionando igual.'},
@@ -2234,7 +2236,7 @@ function adminV(){
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
 
 /* ===== Logros ===== */
-const ACH_N=34;
+const ACH_N=40;
 const ACH=[
  {id:'cuenta',ic:'🎤',x:'#F59E0B',n:'Pisa el Escenario',d:'Crea tu cuenta y entra a la rueda.'},
  {id:'voto1',ic:'⚖️',x:'#EF4444',n:'Primer Veredicto',d:'Vota tu primera batalla de liga.'},
@@ -2269,7 +2271,13 @@ const ACH=[
  {id:'ia_use',ic:'🤖',x:'#38BDF8',n:'Cypher con la IA',d:'Escríbele cualquier mensaje a MC IA.'},
  {id:'ia_train',ic:'🥊',x:'#F97316',n:'Sparring de Rimas',d:'Entrena rimas con MC IA usando el botón Entrenar.'},
  {id:'easter',ic:'🥚',x:'#A78BFA',n:'Easter egg',d:'Encuentra el secreto escondido en la página. Pista: a veces el micrófono quiere más que un toque.'},
- {id:'te_quiero',ic:'💝',x:'#F43F5E',n:'Inténtalo tú',d:'Dile a MC IA «te quiero».'}
+ {id:'te_quiero',ic:'💝',x:'#F43F5E',n:'Inténtalo tú',d:'Dile a MC IA «te quiero».'},
+ {id:'madrugada',ic:'☀️',x:'#F59E0B',n:'Mediodía del Beat',d:'Vota una batalla entre las 12 y las 2 p.m. (hora de tu país).'},
+ {id:'empate',ic:'⚔️',x:'#64748B',n:'Empate de Hierro',d:'Vota una batalla donde ambos MCs terminen con el mismo puntaje.'},
+ {id:'rd',ic:'🇩🇴',x:'#2563EB',n:'Orgullo Quisqueyano',d:'Pon República Dominicana como tu país en el perfil.'},
+ {id:'sinrastro',ic:'🕵️',x:'#475569',n:'Sin Rastro',d:'Usa «Borrar para todos» en un mensaje del chat.'},
+ {id:'drip',ic:'🧢',x:'#F59E0B',n:'Drip Completo',d:'Ponle atuendo a tu mascota en las 6 zonas a la vez.'},
+ {id:'embajador',ic:'📣',x:'#10B981',n:'Embajador del Barrio',d:'Comparte tu perfil con «Compartir mi perfil».'}
 ];
 S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
 const isLgVote=v=>!v.free;
@@ -2332,6 +2340,13 @@ function achCalc(){
  set('ia_train',!!(me&&me.iaT),0,1,'');
  set('easter',false,0,1,'');
  set('te_quiero',false,0,1,'');
+ set('madrugada',(S.myVotes||[]).some(v=>{if(!v.ts)return false;const h=new Date(v.ts).getHours();return h>=12&&h<14}),0,1,'');
+ set('empate',(S.myVotes||[]).some(v=>{try{const nv=voteNorm(v),a=+nv.ta||0,b=+nv.tb||0;return a>0&&a===b}catch(e){return false}}),0,1,'');
+ set('rd',!!(me&&nrm(me.p)==='republicadominicana'),0,1,'');
+ set('sinrastro',false,0,1,'');
+ let _dz=0,_dt=6;try{const fit=Array.isArray(me&&me.fit)?me.fit:[],sl=new Set(OUTFITS.map(x=>x.slot));_dt=sl.size;_dz=new Set(fit.map(id=>{const q=OUTFITS.find(y=>y.id===id);return q&&q.slot}).filter(Boolean)).size}catch(e){}
+ set('drip',_dz>=_dt&&_dt>0,_dz,_dt,_dz+' / '+_dt+' zonas');
+ set('embajador',false,0,1,'');
  return o}
 function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
 function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
@@ -2339,9 +2354,9 @@ function openAch(){S.achOpen=true;if(S.me&&!S.myVotes){cleanMine().then(v=>{S.my
 function closeAch(){S.achOpen=false;S.achSel=null;R()}
 const ACH_CATS=[
  {k:'ini',n:'Primeros pasos',ic:'🎤',ids:['cuenta','voto1','foto','copyid','bio','coment','cal']},
- {k:'vot',n:'Votaciones',ic:'⚖️',ids:['jornada','voto10','voto30','p40','rep3','libre','actual','es2017','ar2018','ws']},
- {k:'soc',n:'Comunidad',ic:'🤝',ids:['amigos5','amigos15','like','likes5','likes10','visitas5']},
- {k:'ran',n:'Rango y estilo',ic:'👑',ids:['regional3','semi3','pro1','pro3','elite3','tema_ca','jair']},
+ {k:'vot',n:'Votaciones',ic:'⚖️',ids:['jornada','voto10','voto30','p40','rep3','libre','actual','es2017','ar2018','ws','madrugada','empate']},
+ {k:'soc',n:'Comunidad',ic:'🤝',ids:['amigos5','amigos15','like','likes5','likes10','visitas5','sinrastro','embajador']},
+ {k:'ran',n:'Rango y estilo',ic:'👑',ids:['regional3','semi3','pro1','pro3','elite3','tema_ca','jair','rd','drip']},
  {k:'ia',n:'MC IA',ic:'🤖',ids:['ia_use','ia_train']},
  {k:'sec',n:'Secretos',ic:'🥚',ids:['easter','te_quiero']}];
 function achSel(id){S.achSel=(S.achSel===id)?null:id;R()}
@@ -2616,7 +2631,7 @@ async function stkToggleFit(id){if(!S.me)return;const o=OUTFITS.find(x=>x.id===i
  const prev=Array.isArray(S.me.fit)?S.me.fit:[];
  const nx=prev.includes(id)?prev.filter(x=>x!==id):[...prev.filter(x=>{const q=OUTFITS.find(y=>y.id===x);return q&&q.slot!==o.slot}),id];
  S.me={...S.me,fit:nx};R();
- try{await B.updateUser(S.me.uid,{fit:nx})}catch(e){S.me={...S.me,fit:prev};R();achFail('No se pudo guardar el atuendo.')}}
+ try{await B.updateUser(S.me.uid,{fit:nx});syncAch()}catch(e){S.me={...S.me,fit:prev};R();achFail('No se pudo guardar el atuendo.')}}
 /* Colores de la llama en forma visual: toca uno para ver cuándo se desbloquea */
 function stkTiersH(n){const cur=stkTier(n).i,sel=S.stkTierSel;
  const btns=STK_T.map((t,i)=>{const ok=n>=t.min;return `<button class="stkt${i===cur?' on':''}${ok?'':' lk'}${i===sel?' sel':''}" style="--c1:${t.f[0]};--c2:${t.f[1]}" onclick="S.stkTierSel=${i===sel?'null':i};R()" aria-label="${esc(t.n)}"><i>${ok?(i===cur?'🔥':''):'🔒'}</i></button>`}).join('');
@@ -2666,7 +2681,7 @@ Sobre la app VotaFMS:
 - Votar: eliges una liga y una batalla y puntúas ronda por ronda con casillas de 0 a 10 en pasos de medio punto. Hay réplica de 6 casillas por MC y la opción "Diferencia para que sea directa". También hay votación libre pegando el link de YouTube de cualquier batalla. Puedes guardar y editar tus votos.
 - Cada liga muestra una tabla con solo tus votos. En Comunidad está el ranking global de rangos.
 - Rangos: subes ganando puntos al votar. Hay 5 niveles (Underground, Regional, Semi, Profesional y Elite), cada uno con 3 subniveles.
-- Logros: hay 34. Desbloquean colores para la app y diseños de rap para la tarjeta de tu perfil (solo cambian la tarjeta).
+- Logros: hay 40. Desbloquean colores para la app y diseños de rap para la tarjeta de tu perfil (solo cambian la tarjeta).
 - Perfil: foto, MC favorito, biografía, color, ID de usuario de 9 números. Puedes buscar usuarios, agregar amigos, dar likes y ver quién está en línea. Entre amigos hay chat con el botón "Enviar mensaje" en su perfil.
 - Racha diaria: un micrófono en llamas cuenta los días seguidos que entras. Cada 10 días de racha ganas 1 oportunidad por si faltas un día.
 - Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones. MC IA (tú) tiene un botón Entrenar para practicar rimas y un micrófono para dictar por voz.
@@ -2792,6 +2807,7 @@ async function chatDelAll(id){
  S.chatSel=null;const fm=FB.fm;
  try{
   await fm.deleteDoc(fm.doc(FB.db,'chats',c.id,'msgs',id));
+  achMark('sinrastro');
   const rest=c.msgs.filter(m=>m.id!==id),l=rest[rest.length-1];
   await fm.setDoc(fm.doc(FB.db,'chats',c.id),{last:l?{from:l.from,text:String(l.text||'').slice(0,80),ts:l.ts||0}:fm.deleteField()},{merge:true});
  }catch(e){console.error('chatDelAll',e);achFail('No se pudo borrar el mensaje.');chatPaint(true)}}
