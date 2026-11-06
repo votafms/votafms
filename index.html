@@ -883,6 +883,99 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .ihp{font-size:12.5px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ihb small{font-size:11.5px;color:var(--mu);font-weight:700}
 .ihd{flex:0 0 46px;border-radius:16px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;font-size:17px}
+
+/* ============================================================
+   VERSIÓN PC — solo se aplica en pantallas anchas con ratón.
+   En celular y tablet NADA de esto se activa.
+   Para ajustar: cambia los números de este bloque (ancho de la barra lateral = 248px).
+   ============================================================ */
+.hm-top,.nxl{display:contents}
+@keyframes dpop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+ /* --- Estructura: barra lateral a la izquierda + contenido centrado --- */
+ body{padding-left:248px}
+ .top{margin-left:-248px;padding:10px 28px;gap:12px}
+ .brand{font-size:19px;gap:12px}
+ .ib,.avbtn{transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+ .ib:hover,.avbtn:hover{transform:translateY(-1px);border-color:var(--ac);box-shadow:0 6px 16px rgba(var(--acr),.25)}
+ #app{max-width:960px;padding:30px 32px 72px}
+ body[data-v="home"] #app{max-width:1120px}
+ body[data-v="vote"] #app{max-width:1200px}
+ body[data-v="comunidad"] #app{max-width:1040px}
+ body[data-v="perfil"] #app,body[data-v="admin"] #app{max-width:1040px}
+ body[data-v="ia"] #app,body[data-v="res"] #app{max-width:900px}
+
+ /* --- Navegación: la barra de abajo pasa a ser un menú lateral --- */
+ .nav{position:fixed;top:58px;bottom:0;left:0;right:auto;width:248px;transform:none;z-index:5;
+  flex-direction:column;justify-content:flex-start;align-items:stretch;gap:6px;padding:22px 14px 16px;
+  border-radius:0;border:0;border-right:1px solid var(--bd);box-shadow:none;
+  background:color-mix(in srgb,var(--navbg) 90%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+ .nav button{flex:0 0 auto;width:100%;height:48px;padding:0 14px 0 4px;gap:8px;justify-content:flex-start;border-radius:14px;font-size:14.5px;font-weight:800;color:var(--mu);transition:background .18s ease,color .18s ease,transform .12s ease}
+ .nav button .ni{width:40px;height:48px;border-radius:14px}
+ .nav button .nl{display:inline}
+ .nav button:not(.on):hover{background:rgba(var(--acr),.10);color:var(--tx)}
+ .nav button.on{flex:0 0 auto;padding:0 14px 0 4px;color:#1A1300}
+ .nav button.on .ni{width:40px}
+ .nav::after{content:"🎤 VotaFMS · app hecha por fans";margin-top:auto;padding:14px 10px 2px;border-top:1px solid var(--bd);font-size:11.5px;font-weight:700;color:var(--mu);opacity:.85}
+
+ /* --- Textos y secciones más amplios --- */
+ h1.pg{font-size:30px;margin:4px 2px 20px}
+ .sec{margin:32px 2px 14px;font-size:12.5px}
+ .card{padding:20px;margin-bottom:16px}
+ .mu{font-size:13.5px}
+
+ /* --- Inicio --- */
+ .hero{padding:36px 40px;border-radius:30px}
+ .hero:after{width:300px;height:300px;right:-80px;top:-100px}
+ .hero h1,.hm h1{font-size:36px;margin:12px 0 8px}
+ .hero p{max-width:480px;font-size:16px}
+ .hm-top{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:20px;align-items:stretch;margin-bottom:18px}
+ .hm-top>.hero{margin:0}
+ .hm-top>button.stkc{margin:0;height:100%}
+ .lgrid2{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+ .lgrid2 .lt2:last-child:nth-child(odd){grid-column:auto}
+ .lt2{padding:20px;min-height:140px;border-radius:24px}
+ .lt2 b{font-size:20px}
+ .nxl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ .nxl .nxr{margin:0}
+
+ /* --- Ligas y batallas --- */
+ .banner{padding:28px 32px;border-radius:28px;gap:20px}
+ .banner h1{font-size:32px}
+ .banner p{font-size:15px}
+ .bat{padding:18px 22px;border-radius:20px}
+ .bat .side{font-size:17px}
+
+ /* --- Pantalla de votar: video y datos a la izquierda, planilla a la derecha --- */
+ .lgwrap:has(>#plan){display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);column-gap:28px;
+  grid-template-rows:repeat(14,auto) 1fr;align-items:start;justify-items:stretch}
+ .lgwrap:has(>#plan)>*{grid-column:1}
+ .lgwrap:has(>#plan)>#plan{grid-column:2;grid-row:1 / -1}
+ .lgwrap:has(>#plan)>.back{justify-self:start}
+
+ /* --- Ventanas emergentes: pasan de hoja inferior a ventana centrada --- */
+ .ov{align-items:center;padding:28px}
+ .sh{max-width:580px;border-radius:26px;padding:22px 26px 26px;border:1px solid var(--bd);max-height:88vh;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);animation:dpop .24s ease}
+ .sh.ach-sh{max-width:720px;padding-top:24px}
+ .sh.rk{padding-top:24px}
+
+ /* --- Detalles de ratón: efecto al pasar el cursor --- */
+ button.card,.bat,.vrow,.lt2,.ltile,.nxr{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+ button.card:hover,.bat:hover,.vrow:hover,.lt2:hover,.ltile:hover,.nxr:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgba(0,0,0,.34);border-color:color-mix(in srgb,var(--ac) 45%,var(--bd))}
+ button.card:active,.bat:active,.vrow:active,.lt2:active,.ltile:active,.nxr:active{transform:scale(.99)}
+ .btn:not(:disabled):hover{filter:brightness(1.07);transform:translateY(-1px)}
+ .btn:not(:disabled):active{transform:none}
+ .seg button:not(.on):hover,.ulsg button:not(.on):hover{background:rgba(var(--acr),.10);color:var(--tx)}
+ button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+
+ /* --- Barras de desplazamiento finas --- */
+ *{scrollbar-width:thin;scrollbar-color:rgba(var(--acr),.45) transparent}
+ ::-webkit-scrollbar{width:10px;height:10px}
+ ::-webkit-scrollbar-track{background:transparent}
+ ::-webkit-scrollbar-thumb{background:rgba(var(--acr),.38);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
+ ::-webkit-scrollbar-thumb:hover{background:rgba(var(--acr),.6);background-clip:padding-box}
+}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1213,6 +1306,7 @@ function actualV(){
 let VKEY=null;
 function R(){
  applyTheme();
+ try{document.body.setAttribute('data-v',S.v||'home')}catch(e){}
  const vkey=(S.v==='vote'&&S.bt)?(S.bt.a+'|'+S.bt.b+'|'+(S.bt.y||'')+'|'+S.lg+'|'+(S.lkEdit?1:0)+(S.collab||S.admin?'c':'')):null;
  const plan=document.getElementById('plan');
  if(vkey&&vkey===VKEY&&plan){
@@ -1242,12 +1336,11 @@ function homeV(){
   return `<button class="lt2" style="--c:${l.c};--c2:${l.c2};--tx2:${l.tx}" onclick="openLg('${l.i}')"><div class="lt2-h">${logo(l,44)}</div><b>${esc(l.n.replace('FMS ',''))}</b></button>`}).join('');
  const prox=nx.map(e=>{const l=L.find(x=>x.i===e.i),dd=e.dt?mesCorto(e.dt):null;
   return `<button class="card nxr" onclick="openLg('${e.i}')"><span class="nxd"><b>${dd?dd.d:'?'}</b><span>${dd?dd.m:''}</span></span>${l?logo(l,40):''}<span style="flex:1;min-width:0;text-align:left"><b style="display:block">${esc(e.n)}</b><span class="mu" style="font-size:12.5px">${esc(e.s||e.d||'')}</span></span><span class="nxc">›</span></button>`}).join('');
- return `${hero}
-  ${stkMini()}
+ return `<div class="hm-top">${hero}${stkMini()}</div>
  <button class="card libre" onclick="go('libre')"><div class="row"><div class="lbi">${ico('play',22)}</div><div style="flex:1;min-width:0"><b style="font-size:16px">Batalla libre</b><div class="mu">Vota cualquier batalla, aunque no sea de una liga.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>
  <div class="sec"><span>Ligas</span><span>${vis.length}</span></div>
  <div class="lgrid2">${tiles}</div>
- ${nx.length?`<div class="sec"><span>Próximas jornadas</span><span>${nx.length}</span></div>${prox}`:''}
+ ${nx.length?`<div class="sec"><span>Próximas jornadas</span><span>${nx.length}</span></div><div class="nxl">${prox}</div>`:''}
  ${S.me?'':`<button class="btn" onclick="openAuth('create')">Crear cuenta para guardar tus votos</button>`}`;
 }
 function openLg(i){S.lg=i;S.err='';go('lg')}
