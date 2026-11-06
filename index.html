@@ -1484,13 +1484,16 @@ const LINK_TEMPS=['2017','2018','2019','2020','2021','2023','2024','2025'];
 const canLink=()=>!!(S.me&&(S.admin||S.collab));
 function link17Form(ed){return `<div class="card" style="margin-bottom:12px"><b>${ed?'Cambiar el link del video':'Añade el link para ver esta batalla'}</b><div class="mu" style="margin:4px 0 10px">Pega el link de YouTube. Si la batalla está en partes, pega todos los links en orden separados por un espacio. Lo verá cualquiera que abra esta batalla. <span style="color:var(--ac);font-weight:800">Modo colaborador</span></div><input id="lk17" placeholder="https://youtube.com/watch?v=..."><button class="btn sm" style="width:100%" onclick="saveLink17()">Guardar link</button>${ed?'<button class="btn s sm" style="width:100%;margin-top:8px" onclick="S.lkEdit=false;R()">Cancelar</button>':''}</div>`}
 /* ===== Batallas en varias partes: "id1,id2,id3" en el mismo campo de video ===== */
-function ytIds(y){return String(y||'').split(',').map(x=>x.trim()).filter(x=>/^[\w-]{11}$/.test(x))}
+function ytTok(y){return String(y||'').split(',').map(x=>x.trim().match(/^([\w-]{11})(?:@(\d{1,6})(?:-(\d{1,6}))?)?$/)).filter(Boolean).map(m=>({id:m[1],t:m[2]?+m[2]:0,e:m[3]?+m[3]:0}))}
+function ytIds(y){return ytTok(y).map(o=>o.id)}
+function ytSt(y){return ytTok(y).map(o=>o.t)}
+function ytQ(y,i){const o=ytTok(y)[i]||{},p=[];if(o.t)p.push('start='+o.t);if(o.e)p.push('end='+o.e);return p.length?'?'+p.join('&'):''}
 function ytParse(t){t=String(t||'').trim();const out=[],re=/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/|live\/)([\w-]{11})/g;let m;
  while((m=re.exec(t)))if(!out.includes(m[1]))out.push(m[1]);
  if(!out.length&&/^[\w-]{11}$/.test(t))out.push(t);return out}
 function setVPart(i){const b=S.bt;if(!b)return;const ids=ytIds(b.y);if(!ids[i])return;S.vpart={y:b.y,i};
- const f=document.getElementById('vpf');if(f)f.src='https://www.youtube-nocookie.com/embed/'+ids[i];
- const a=document.getElementById('vpa');if(a)a.href='https://www.youtube.com/watch?v='+ids[i];
+ const f=document.getElementById('vpf');const st=ytSt(b.y)[i]||0;if(f)f.src='https://www.youtube-nocookie.com/embed/'+ids[i]+ytQ(b.y,i);
+ const a=document.getElementById('vpa');if(a)a.href='https://www.youtube.com/watch?v='+ids[i]+(st?'&t='+st+'s':'');
  document.querySelectorAll('#vpt .stp').forEach((el,k)=>el.classList.toggle('on',k===i))}
 function linkAreaH(b){if(!LINK_TEMPS.includes(S.temp))return '';
  if(!canLink())return b.y?'':'<div class="mu" style="margin:0 0 12px;font-size:13px">🎬 Esta batalla aún no tiene video. Pronto lo añadiremos.</div>';
@@ -1607,9 +1610,9 @@ function counted(m){return mainTot(m)}
 
 function voteV(){
  const b=S.bt,l=curL(),done=S.ri>=S.rounds.length;const [ac1,ac2]=accentOf(l);if(!S.firstSet)return startScreenV(b,l);
-const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:0,vcur=vids[vpi];
+const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:0,vcur=vids[vpi],vst=ytSt(b.y)[vpi]||0;
  const vparts=vids.length>1?`<div class="steps" id="vpt">${vids.map((_,k)=>`<button class="stp${k===vpi?' on':''}" onclick="setVPart(${k})">Parte ${k+1}</button>`).join('')}</div>`:'';
- const media=vcur?`${vparts}<div class="video"><iframe id="vpf" src="https://www.youtube-nocookie.com/embed/${vcur}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a id="vpa" href="https://www.youtube.com/watch?v=${vcur}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
+ const media=vcur?`${vparts}<div class="video"><iframe id="vpf" src="https://www.youtube-nocookie.com/embed/${vcur}${ytQ(b.y,vpi)}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a id="vpa" href="https://www.youtube.com/watch?v=${vcur}${vst?'&t='+vst+'s':''}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
  <div class="card"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu" style="text-align:center;margin-top:10px">${esc(b.j||'')}</div></div>
  ${linkAreaH(b)}${S.editId?'':fmtSeg()}${plBtnH()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan"${plAttr()}>${planHTML()}</div></div>`;
@@ -3381,6 +3384,100 @@ adminV=function(){let h=_adminV3();if(!isAdmin())return h;
  const rows=V.items.length?`<div class="mu" style="margin:0 0 8px">${V.busy&&!V.done&&!V.fin?'Leyendo títulos…':'Revisa cada batalla antes de guardar.'}</div>${V.items.map((it,i)=>vlkRow(it,i,n,cur)).join('')}${V.fin?`<div class="ok" style="margin:0 0 10px">${V.fail?'Se guardaron '+V.done+' y fallaron '+V.fail+'. ¿Publicaste las reglas de Firestore?'+(V.err?' ('+esc(String(V.err))+')':''):'✓ Listo: '+V.done+' videos guardados para todos.'}</div>`:''}${V.busy&&V.done!=null&&!V.fin?`<div class="mu" style="margin-bottom:8px">Guardando… ${V.done||0}/${nSave}</div>`:''}<button class="btn sm" style="width:100%" onclick="vlkSave()" ${V.busy||!nSave?'disabled':''}>Guardar ${nSave} videos</button><button class="btn s sm" style="width:100%;margin-top:8px" onclick="vlkClear()" ${V.busy?'disabled':''}>Limpiar</button>`:'';
  const box=`<div class="sec"><span>Videos: pegar links y asignar solo</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Pega <b>un link de YouTube por línea</b> (los que quieras). La página lee el título del video, detecta liga, temporada, jornada y los MCs, y lo asigna a su batalla. Si una batalla está en partes, pon todos sus links en la misma línea. Puedes añadir texto después del link como pista (ej: <i>…/abc123 jornada 3</i>).</div><textarea rows="5" placeholder="https://youtu.be/…&#10;https://youtu.be/…" oninput="S.vlk.txt=this.value">${esc(V.txt)}</textarea><input placeholder="Pista para todos (opcional): ej. España 2025 jornada 1" value="${esc(V.ctx)}" oninput="S.vlk.ctx=this.value"><button class="btn sm" style="width:100%" onclick="vlkAnalyze()" ${V.busy?'disabled':''}>🔎 Detectar batallas</button>${V.msg?`<div class="mu" style="margin-top:8px">${esc(V.msg)}</div>`:''}</div>${rows}`;
  return h.replace('<div class="sec"><span>Videos: plantilla en lote</span></div>',box+'<div class="sec"><span>Videos: plantilla en lote</span></div>')};
+
+/* ===== Directo de una jornada: un solo video, cada batalla con su minuto de inicio ===== */
+function djSec(s){s=String(s||'').trim();if(!s)return null;
+ let m=s.match(/^(?:(\d{1,2}):)?(\d{1,2}):(\d{2})$/);if(m)return (+(m[1]||0))*3600+(+m[2])*60+(+m[3]);
+ m=s.match(/^(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?$/i);if(m&&(m[1]||m[2]||m[3]))return (+(m[1]||0))*3600+(+(m[2]||0))*60+(+(m[3]||0));
+ return null}
+const djFmt=n=>{const h=Math.floor(n/3600),m=Math.floor(n%3600/60),s=n%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')};
+const DJ_PRE={
+'b3WI-tz_dr4':{lg:'pe',season:'2024',jl:'Pre-Finals',ts:`00:00 PREVIA
+16:52 INICIO
+22:31 CYPHER DE PRESENTACIÓN
+25:45 Skill vs Letras
+40:20 Vijay Kesh vs Jota
+55:05 MP vs Xplain
+1:09:49 El Menor vs Venti
+1:23:53 KG vs Black Code
+1:40:57 Nekroos vs Carlitos
+1:57:10 Letras vs MP
+2:11:29 Xplain vs Katacrist
+2:25:21 Black Code vs Vijay Kesh
+2:40:46 DECLARACIONES
+3:00:48 Skill vs El Menor
+3:15:52 KG vs Almendrades
+3:30:43 Nekroos vs Jota
+3:47:13 Letras vs Black Code
+4:01:55 Vijay Kesh vs Xplain
+4:17:05 El Menor vs MP
+4:32:17 Jota vs Skill
+4:47:34 Nekroos vs KG`},
+'PbyRTUbs_nA':{lg:'pe',season:'2024',jl:'5 · Finals',ts:`00:00 PREVIA
+21:09 INICIO
+26:30 CYPHER DE PRESENTACIÓN
+32:45 KG vs Vijay Kesh
+46:10 El Menor vs Letras
+1:00:03 Jota vs MP
+1:14:50 Nekroos vs Xplain
+1:29:48 Skill vs Black Code
+1:44:43 KG vs Letras
+1:59:36 Xplain vs Jota
+2:14:25 Vijay Kesh vs Skill
+2:28:59 El Menor vs Nekroos
+2:43:45 DECLARACIONES
+2:57:26 MP vs Black Code
+3:12:00 Letras vs Papicha
+3:26:21 Vijay Kesh vs Sumeria
+3:42:32 El Menor vs Jota
+3:58:19 MP vs KG
+4:12:58 Skill vs Xplain
+4:28:35 Nekroos vs Black Code`}};
+function djEnd(D,sec){if(sec==null)return null;const all=(D.bd||[]).concat(D.rows.map(r=>djSec(r.t)).filter(x=>x!=null));const n=all.filter(x=>x>sec).sort((a,b)=>a-b)[0];return n==null?null:n}
+function djSet(f,v){const D=S.dj;D[f]=v;if(f==='lg'){D.season='';D.ji=''}if(f==='season')D.ji='';D.rows=[];D.msg='';D.fin=false;R()}
+async function djPrep(){const D=S.dj;if(!isAdmin()||D.busy)return;
+ const id=ytParse(D.url)[0];if(!id){D.msg='Pega el link del directo (YouTube).';return R()}
+ const P=DJ_PRE[id];
+ if(P){if(!String(D.ts||'').trim())D.ts=P.ts;if(!D.lg||!D.season||D.ji===''){const ji=(SEASON_JOR[P.lg+'|'+P.season]||[]).findIndex(x=>(x.lab||'').includes(P.jl));if(ji>=0){D.lg=P.lg;D.season=P.season;D.ji=String(ji)}}}
+ const J=SEASON_JOR[D.lg+'|'+D.season]||[],j=J[D.ji];
+ if(!j){D.msg='Elige liga, temporada y jornada.';return R()}
+ D.id=id;D.msg='';D.fin=false;
+ const rows=(j.b||[]).map(b=>({key:linkKey(D.lg,D.season,b[0],b[1],b[3]),a:b[0],b:b[1],tag:b[2]===true?'Exhibición':b[2]==='apl'?'Aplazada':b[2]==='po'?'Play-Off':'',qa:vq(b[0]),qb:vq(b[1]),t:''}));
+ /* lee la lista de tiempos pegada: cada línea con una hora y los nombres de los MCs */
+ D.bd=[];(D.ts||'').split(/\r?\n/).forEach(l=>{const m=l.match(/(?:\d{1,2}:)?\d{1,2}:\d{2}/);if(!m)return;const sec=djSec(m[0]),T=vq(l.replace(m[0],' '));D.bd.push(sec);
+  let c=rows.filter(r=>T.includes(r.qa)&&T.includes(r.qb));
+  if(!c.length){c=rows.filter(r=>T.includes(r.qa)||T.includes(r.qb));if(c.length!==1)c=[]}
+  const r0=c.find(r=>!r.t);if(r0)r0.t=djFmt(sec)});
+ D.rows=rows;D.cur={};R();
+ try{D.cur=await B.getLinks()}catch(e){}
+ R()}
+async function djSave(){const D=S.dj;if(!isAdmin()||D.busy||!D.rows.length)return;
+ const todo=[];let sinT=0,malT=0,yaE=0;
+ D.rows.forEach(r=>{if(r.saved)return;const sec=djSec(r.t);
+  if(String(r.t||'').trim()&&sec==null){malT++;return}
+  if(sec==null&&!D.nt){sinT++;return}
+  const e=djEnd(D,sec),y=sec==null?D.id:D.id+'@'+sec+(e?'-'+e:''),ex=(D.cur||{})[r.key];
+  if(ex===y)return;if(ex&&!D.rep){yaE++;return}
+  todo.push({r,y})});
+ D.sk={sinT,malT,yaE};D.busy=true;D.done=0;D.fail=0;D.err='';R();
+ const fm=FB.fm,by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;
+ for(let i=0;i<todo.length;i+=10){const ch=todo.slice(i,i+10);
+  const rs=await Promise.allSettled(ch.map(o=>fm.setDoc(fm.doc(FB.db,'videos',o.r.key),{y:o.y,ts:Date.now(),by})));
+  rs.forEach((x,j)=>{const o=ch[j];if(x.status==='fulfilled'){o.r.saved=true;D.cur[o.r.key]=o.y;S.links=S.links||{};S.links[o.r.key]=o.y;D.done++}else{console.error('dj',o.r.key,x.reason);D.fail++;D.err=(x.reason&&(x.reason.code||x.reason.message))||'error'}});R()}
+ D.busy=false;D.fin=true;R()}
+const DJS='width:100%;margin-bottom:8px;padding:10px;border-radius:12px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit';
+const _adminV4=adminV;
+adminV=function(){let h=_adminV4();if(!isAdmin())return h;
+ S.dj=S.dj||{lg:'',season:'',ji:'',url:'',ts:'',rows:[],busy:false,msg:'',rep:false,nt:false};const D=S.dj,cur=D.cur||{};
+ const ks=Object.keys(SEASON_JOR).filter(k=>LINK_TEMPS.includes(k.split('|')[1]));
+ const lgs=L.filter(l=>ks.some(k=>k.startsWith(l.i+'|')));
+ const sea=[...new Set(ks.filter(k=>k.startsWith(D.lg+'|')).map(k=>k.split('|')[1]))].sort().reverse();
+ const JJ=(SEASON_JOR[D.lg+'|'+D.season]||[]);
+ const opt=(v,t,s)=>`<option value="${esc(v)}" ${String(v)===String(s)?'selected':''}>${esc(t)}</option>`;
+ const sel=`<select onchange="djSet('lg',this.value)" style="${DJS}">${opt('','Liga…',D.lg)}${lgs.map(l=>opt(l.i,l.n,D.lg)).join('')}</select><select onchange="djSet('season',this.value)" style="${DJS}" ${D.lg?'':'disabled'}>${opt('','Temporada…',D.season)}${sea.map(s=>opt(s,s,D.season)).join('')}</select><select onchange="djSet('ji',this.value)" style="${DJS}" ${D.season?'':'disabled'}>${opt('','Jornada…',D.ji)}${JJ.map((j,i)=>opt(i,j.lab||('Jornada '+j.n),D.ji)).join('')}</select>`;
+ const rows=D.rows.length?`<div class="mu" style="margin:0 0 8px">Revisa el minuto de cada batalla (puedes corregirlo o llenarlo a mano) y guarda. Formato <b>1:23:45</b> o <b>23:45</b>.</div>${D.rows.map((r,i)=>`<div class="card" style="padding:10px 12px"><div class="row" style="gap:10px;align-items:center"><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(r.a)} vs ${esc(r.b)}</div><div class="mu" style="font-size:12px">${r.saved?'✓ Guardada':cur[r.key]?'Ya tiene link':'Sin link'}${r.tag?' · '+r.tag:''}${(()=>{const s=djSec(r.t),e=djEnd(D,s);return s==null?'':' · '+djFmt(s)+(e?' → '+djFmt(e):' → final')})()}</div></div><input value="${esc(r.t)}" placeholder="0:00" inputmode="numeric" oninput="S.dj.rows[${i}].t=this.value" style="width:96px;margin:0;text-align:center"></div></div>`).join('')}<label class="mu" style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" ${D.rep?'checked':''} onchange="S.dj.rep=this.checked" style="width:auto;margin:0"> Reemplazar links que ya existen</label><label class="mu" style="display:flex;gap:8px;align-items:center;margin:0 0 10px"><input type="checkbox" ${D.nt?'checked':''} onchange="S.dj.nt=this.checked" style="width:auto;margin:0"> Guardar también las que no tienen minuto (empiezan desde el inicio del directo)</label>${D.fin?`<div class="ok" style="margin:0 0 10px">${D.fail?'Se guardaron '+D.done+' y fallaron '+D.fail+(D.err?' ('+esc(String(D.err))+')':''):'✓ Guardadas '+D.done+' batallas.'}${D.sk&&(D.sk.sinT||D.sk.malT||D.sk.yaE)?' No guardé: '+[D.sk.sinT?D.sk.sinT+' sin minuto':'',D.sk.malT?D.sk.malT+' con minuto mal escrito':'',D.sk.yaE?D.sk.yaE+' que ya tenían link':''].filter(Boolean).join(', ')+'.':''}</div>`:''}<button class="btn sm" style="width:100%" onclick="djSave()" ${D.busy?'disabled':''}>${D.busy?'Guardando… '+(D.done||0):'Guardar en la jornada'}</button>`:'';
+ const box=`<div class="sec"><span>Directo de una jornada</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Pega el link del directo y la lista de tiempos (la de la descripción o los comentarios del video, una línea por batalla, ej: <i>1:23:45 Nez vs Sweet Pain</i>; incluye también las líneas de declaraciones o previa). Cada batalla se guarda con su tramo: empieza en su minuto y se detiene donde empieza lo siguiente. Los directos de FMS Perú 2024 Pre-Finals y Finals ya traen su lista cargada: solo pega el link.</div>${sel}<input placeholder="Link del directo de YouTube" value="${esc(D.url)}" oninput="S.dj.url=this.value"><textarea rows="5" placeholder="0:12:30 Nez vs Sweet Pain&#10;0:31:10 Arkano vs Dani VK" oninput="S.dj.ts=this.value">${esc(D.ts)}</textarea><button class="btn sm" style="width:100%" onclick="djPrep()" ${D.busy?'disabled':''}>Preparar jornada</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>${rows}`;
+ return h.replace('<div class="sec"><span>Videos: pegar links y asignar solo</span></div>',box+'<div class="sec"><span>Videos: pegar links y asignar solo</span></div>')};
 
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
