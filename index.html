@@ -3315,6 +3315,73 @@ adminV=function(){let h=_adminV2();if(!isAdmin())return h;
  const box=`<div class="sec"><span>Videos: plantilla en lote</span></div><div class="card"><div class="mu" style="margin:0 0 10px">1) Descarga la plantilla con <b>todas las batallas</b> (2017–2025). 2) Tú o tus ayudantes pegan el link de YouTube en la columna «Link» (en Excel o Google Sheets). 3) Sube el archivo (.xlsx o .csv) y revisa antes de guardar. Si una batalla está en partes, pon todos sus links en la misma celda separados por « | », en orden.</div><button class="btn s sm" style="width:100%" onclick="vidDownload()">⬇️ Descargar plantilla (CSV)</button><label class="btn sm" style="width:100%;margin-top:8px;display:block;text-align:center;cursor:pointer">⬆️ Sube tu plantilla XLSX o CSV<input type="file" style="display:none" onchange="vidImpFile(this.files[0]);this.value=''"></label>${S.vimpMsg?`<div class="mu" style="margin-top:8px">${esc(S.vimpMsg)}</div>`:''}</div>${prev}`;
  return h.replace('<div class="sec"><span>Colaboradores de videos</span>',box+'<div class="sec"><span>Colaboradores de videos</span>')};
 
+/* ===== Videos: pega links de YouTube y la página detecta a qué batalla pertenecen ===== */
+const vq=s=>' '+String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9ñ]+/g,' ').trim()+' ';
+const VLG=[['es',['espana','spain']],['ar',['argentina']],['mx',['mexico']],['pe',['peru']],['cl',['chile']],['co',['colombia']],['ca',['caribe']],['in',['internacional','international']],['ws',['world series','worldseries']]];
+let _VIDX=null;
+function vidIdx(){if(_VIDX)return _VIDX;const o=[];
+ Object.keys(SEASON_JOR).forEach(k=>{const [lg,season]=k.split('|');if(!LINK_TEMPS.includes(season))return;const l=L.find(x=>x.i===lg);
+  (SEASON_JOR[k]||[]).forEach(j=>(j.b||[]).forEach(b=>{o.push({key:linkKey(lg,season,b[0],b[1],b[3]),lg,season,ln:l?l.n:lg,jn:j.n,jl:j.lab||('Jornada '+j.n),a:b[0],b:b[1],qa:vq(b[0]),qb:vq(b[1]),tag:b[2]===true?'Exhibición':b[2]==='apl'?'Aplazada':b[2]==='po'?'Play-Off':''})}))});
+ return _VIDX=o}
+/* Lee el texto (título del video + canal + tu pista) y devuelve las batallas que encajan, de la más probable a la menos */
+function vidFind(txt){const T=vq(txt),I=vidIdx();
+ const lgs=VLG.filter(g=>g[1].some(w=>T.includes(' '+w+' '))).map(g=>g[0]);
+ const ym=T.match(/ (20(?:1[7-9]|2[0-5])) /),yr=ym?ym[1]:null;
+ const jm=T.match(/ (?:jornada|fecha|j) ?(\d{1,2}) /),jn=jm?+jm[1]:null;
+ const seen=new Set(),c=[];
+ I.forEach(x=>{if(!T.includes(x.qa)||!T.includes(x.qb)||seen.has(x.key))return;seen.add(x.key);let s=0;
+  if(lgs.includes(x.lg))s+=4;else if(lgs.length)s-=2;
+  if(yr&&x.season===yr)s+=4;else if(yr)s-=3;
+  if(jn&&x.jn===jn)s+=3;else if(jn&&x.jn!=null)s-=2;
+  if(!/^Jornada \d+$/.test(x.jl)&&T.includes(vq(x.jl)))s+=3;
+  c.push({...x,s})});
+ c.sort((p,q)=>q.s-p.s);
+ if(!c.length)return {c:[],sel:-1,st:'none'};
+ if(c.length===1)return {c,sel:0,st:'ok'};
+ const ok=c[0].s>c[1].s&&c[0].s>=4;
+ return {c:c.slice(0,12),sel:ok?0:-1,st:ok?'ok':'amb'}}
+/* Título y canal del video con el servicio público de YouTube (oEmbed) */
+async function vidTitle(id){const u='https://www.youtube.com/watch?v='+id;
+ for(const ep of ['https://www.youtube.com/oembed?format=json&url=','https://noembed.com/embed?url=']){
+  try{const r=await fetch(ep+encodeURIComponent(u));if(!r.ok)continue;const d=await r.json();if(d&&d.title)return {t:d.title,au:d.author_name||''}}catch(e){}}
+ return null}
+function vlkMatch(it){const V=S.vlk,txt=[it.t,it.au,it.hint,V.ctx,it.fix].join(' ');
+ if(!it.t&&!(it.hint||V.ctx||it.fix||'').trim()){it.c=[];it.sel=-1;it.st='nt';return}
+ const f=vidFind(txt);it.c=f.c;it.sel=f.sel;it.st=f.st}
+async function vlkAnalyze(){const V=S.vlk;if(!isAdmin()||V.busy)return;
+ const items=[],seen=new Set();
+ (V.txt||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean).forEach(l=>{const ids=ytParse(l);if(!ids.length)return;const y=ids.join(',');if(seen.has(y))return;seen.add(y);
+  items.push({y,ids,hint:l.replace(/https?:\/\/\S+/g,' ').replace(/\s+/g,' ').trim(),t:'',au:'',st:'wait',c:[],sel:-1})});
+ if(!items.length){V.msg='No encontré links de YouTube. Pega uno por línea.';return R()}
+ V.items=items;V.busy=true;V.fin=false;V.msg='';V.cur={};R();
+ try{V.cur=await B.getLinks()}catch(e){}
+ for(let i=0;i<items.length;i+=5){await Promise.all(items.slice(i,i+5).map(async it=>{const r=await vidTitle(it.ids[0]);if(r){it.t=r.t;it.au=r.au}vlkMatch(it)}));R()}
+ V.busy=false;R()}
+function vlkFix(i,v){const it=S.vlk.items[i];if(!it)return;it.fix=v;vlkMatch(it);R()}
+function vlkSel(i,k){const it=S.vlk.items[i];if(!it)return;it.sel=k;R()}
+function vlkDel(i){S.vlk.items.splice(i,1);R()}
+function vlkClear(){S.vlk={txt:'',ctx:'',items:[],busy:false,msg:''};R()}
+function vlkCount(V){const n={};V.items.forEach(it=>{const c=it.c[it.sel];if(c&&!it.saved)n[c.key]=(n[c.key]||0)+1});return n}
+async function vlkSave(){const V=S.vlk;if(!isAdmin()||V.busy)return;
+ const n=vlkCount(V),todo=V.items.filter(it=>{const c=it.c[it.sel];return c&&!it.saved&&n[c.key]===1&&(V.cur||{})[c.key]!==it.y});
+ if(!todo.length)return;V.busy=true;V.done=0;V.fail=0;V.err='';R();
+ const fm=FB.fm,by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;
+ for(let i=0;i<todo.length;i+=10){const ch=todo.slice(i,i+10);
+  const rs=await Promise.allSettled(ch.map(it=>fm.setDoc(fm.doc(FB.db,'videos',it.c[it.sel].key),{y:it.y,ts:Date.now(),by})));
+  rs.forEach((r,j)=>{const it=ch[j],k=it.c[it.sel].key;if(r.status==='fulfilled'){it.saved=true;V.cur[k]=it.y;S.links=S.links||{};S.links[k]=it.y;V.done++}else{console.error('vlk',k,r.reason);V.fail++;V.err=(r.reason&&(r.reason.code||r.reason.message))||'error'}});R()}
+ V.busy=false;V.fin=true;R()}
+function vlkRow(it,i,n,cur){const c=it.c[it.sel],ex=c?cur[c.key]:'';
+ const tag=it.saved?'✓ Guardada':c?(n[c.key]>1?'⚠️ Otro link va a la misma batalla':ex===it.y?'✓ Ya estaba igual':ex?'🔁 Reemplaza el link actual':'🆕 Nueva'):it.st==='amb'?'👆 Elige la batalla':it.st==='nt'?'No pude leer el título: corrige abajo':it.st==='wait'?'Leyendo…':'No la encuentro: corrige abajo';
+ const sl=it.c.length>1&&!it.saved?`<select onchange="vlkSel(${i},+this.value)" style="width:100%;margin-top:8px;padding:10px;border-radius:12px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit"><option value="-1">Elige la batalla…</option>${it.c.map((x,k)=>`<option value="${k}" ${k===it.sel?'selected':''}>${esc(x.ln+' · '+x.season+' · '+x.jl+' · '+x.a+' vs '+x.b)}</option>`).join('')}</select>`:'';
+ return `<div class="card" style="padding:12px"><div class="row" style="align-items:flex-start;gap:10px"><img src="https://i.ytimg.com/vi/${it.ids[0]}/mqdefault.jpg" alt="" onerror="this.style.display='none'" style="width:92px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;flex:0 0 auto"><div style="flex:1;min-width:0"><div class="mu" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.t||it.ids.join(' + '))}${it.ids.length>1?' ('+it.ids.length+' partes)':''}</div>${c?`<div style="font-weight:800;margin-top:2px">${esc(c.a)} vs ${esc(c.b)}</div><div class="mu" style="font-size:12px">${esc(c.ln)} · ${esc(c.season)} · ${esc(c.jl)}${c.tag?' · '+c.tag:''}</div>`:''}<span class="pill ${c&&!it.saved&&n[c.key]===1?'next':'done'}" style="margin-top:6px">${tag}</span></div><button class="ib" style="width:30px;height:30px;flex:0 0 auto" onclick="vlkDel(${i})" aria-label="Quitar">✕</button></div>${sl}${it.saved?'':`<input placeholder="¿No es esa? Escribe MCs, liga, año o jornada" value="${esc(it.fix||'')}" onchange="vlkFix(${i},this.value)" style="margin:8px 0 0">`}</div>`}
+const _adminV3=adminV;
+adminV=function(){let h=_adminV3();if(!isAdmin())return h;
+ S.vlk=S.vlk||{txt:'',ctx:'',items:[],busy:false,msg:''};const V=S.vlk,cur=V.cur||{},n=vlkCount(V);
+ const nSave=V.items.filter(it=>{const c=it.c[it.sel];return c&&!it.saved&&n[c.key]===1&&cur[c.key]!==it.y}).length;
+ const rows=V.items.length?`<div class="mu" style="margin:0 0 8px">${V.busy&&!V.done&&!V.fin?'Leyendo títulos…':'Revisa cada batalla antes de guardar.'}</div>${V.items.map((it,i)=>vlkRow(it,i,n,cur)).join('')}${V.fin?`<div class="ok" style="margin:0 0 10px">${V.fail?'Se guardaron '+V.done+' y fallaron '+V.fail+'. ¿Publicaste las reglas de Firestore?'+(V.err?' ('+esc(String(V.err))+')':''):'✓ Listo: '+V.done+' videos guardados para todos.'}</div>`:''}${V.busy&&V.done!=null&&!V.fin?`<div class="mu" style="margin-bottom:8px">Guardando… ${V.done||0}/${nSave}</div>`:''}<button class="btn sm" style="width:100%" onclick="vlkSave()" ${V.busy||!nSave?'disabled':''}>Guardar ${nSave} videos</button><button class="btn s sm" style="width:100%;margin-top:8px" onclick="vlkClear()" ${V.busy?'disabled':''}>Limpiar</button>`:'';
+ const box=`<div class="sec"><span>Videos: pegar links y asignar solo</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Pega <b>un link de YouTube por línea</b> (los que quieras). La página lee el título del video, detecta liga, temporada, jornada y los MCs, y lo asigna a su batalla. Si una batalla está en partes, pon todos sus links en la misma línea. Puedes añadir texto después del link como pista (ej: <i>…/abc123 jornada 3</i>).</div><textarea rows="5" placeholder="https://youtu.be/…&#10;https://youtu.be/…" oninput="S.vlk.txt=this.value">${esc(V.txt)}</textarea><input placeholder="Pista para todos (opcional): ej. España 2025 jornada 1" value="${esc(V.ctx)}" oninput="S.vlk.ctx=this.value"><button class="btn sm" style="width:100%" onclick="vlkAnalyze()" ${V.busy?'disabled':''}>🔎 Detectar batallas</button>${V.msg?`<div class="mu" style="margin-top:8px">${esc(V.msg)}</div>`:''}</div>${rows}`;
+ return h.replace('<div class="sec"><span>Videos: plantilla en lote</span></div>',box+'<div class="sec"><span>Videos: plantilla en lote</span></div>')};
+
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
  let ds=null;
