@@ -3295,7 +3295,7 @@ async function vidImpFile(file){if(!file||!isAdmin())return;S.vimpMsg='';
   let cur={};try{cur=await B.getLinks()}catch(e){}
   const valid=new Set(vidRows().map(r=>r.key)),items=[];
   data.forEach(d=>{if(!d.raw)return;const ids=ytParse(d.raw),id=ids.length?ids.join(','):null;let st;
-   if(!valid.has(d.key))st='unk';else if(!id)st='bad';else if(cur[d.key]===id)st='same';else st=cur[d.key]?'upd':'new';
+   if(!valid.has(d.key))st='unk';else if(!id)st='bad';else if(ytIds(cur[d.key]).join(',')===id)st='same';else st=cur[d.key]?'upd':'new';
    items.push({key:d.key,id,st,line:d.line,nm:d.nm,raw:d.raw})});
   S.vimp={items,done:0,busy:false,fin:false,fail:0};R()
  }catch(e){S.vimp=null;const m=String(e&&e.message);
