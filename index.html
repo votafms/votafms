@@ -1347,6 +1347,44 @@ body[data-v="comunidad"] .toplist{gap:10px}
  body[data-v="comunidad"] #app>.seg{max-width:440px}
  body[data-v="comunidad"] .toplist{max-width:860px}
 }
+
+/* ===== Marcador en vivo (delgado, dentro de la planilla) ===== */
+.sb{--sbA:var(--ac);--sbB:#38BDF8;position:sticky;top:calc(62px + env(safe-area-inset-top,0px));z-index:5;margin:0 0 12px;padding:8px 12px 7px;border-radius:16px;background:color-mix(in srgb,var(--cd) 90%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--bd);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.sb-r{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.sb-n{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;color:var(--mu)}
+.sb-n::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--sbA)}
+.sb-n.r{text-align:right}
+.sb-n.r::before{display:none}
+.sb-n.r::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px;background:var(--sbB)}
+.sb-v{flex:none;min-width:26px;text-align:center;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--mu);transition:color .2s}
+.sb-v.lead{color:var(--tx)}
+.sb-bar{flex:0 0 70px;height:6px;border-radius:99px;background:var(--sbB);overflow:hidden}
+.sb-bar u{display:block;height:100%;background:var(--sbA);border-radius:99px;transition:width .32s cubic-bezier(.2,.8,.2,1)}
+.sb-p{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.sb-p i{flex:1;max-width:34px;height:4px;border-radius:9px;background:var(--bd)}
+.sb-p i.a{background:var(--sbA)}.sb-p i.b{background:var(--sbB)}.sb-p i.t{background:var(--mu)}
+.sb-v.bump{animation:sbb .32s ease}
+@keyframes sbb{50%{transform:scale(1.22)}}
+@media (prefers-reduced-motion:reduce){.sb-bar u{transition:none}.sb-v.bump{animation:none}}
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){.sb{top:72px}}
+
+/* ===== Voz del duelo ===== */
+.duch-r{display:flex;align-items:center;gap:8px}
+.duch-mb{width:48px;height:48px;border-radius:50%;border:1px solid rgba(var(--acr),.5);background:var(--cd);color:var(--tx);font-size:21px;cursor:pointer;box-shadow:var(--sh);padding:0;display:flex;align-items:center;justify-content:center}
+.duch-mb[hidden]{display:none}
+.duch-mb.on{background:#EF4444;border-color:#FCA5A5;animation:duvp 1.4s infinite}
+@keyframes duvp{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 0 0 12px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.duch-p{height:min(400px,62vh)}
+.duv{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
+.duv-join{border:0;border-radius:12px;padding:10px 12px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer;background:var(--ac);color:#1A1300}
+.duv-row{display:flex;gap:6px}
+.duv-mic{flex:1;min-width:0;border:1px solid var(--bd);border-radius:12px;padding:10px 8px;font:inherit;font-weight:800;font-size:13px;cursor:pointer;background:var(--cd2);color:var(--tx)}
+.duv-mic.on{background:#EF4444;border-color:#FCA5A5;color:#fff;animation:duvp 1.4s infinite}
+.duv-sp,.duv-x{border:1px solid var(--bd);border-radius:12px;padding:0 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;background:var(--cd2);color:var(--tx)}
+.duv-sp.off{opacity:.6}
+.duv-sub,.duv-st{font-size:12px;color:var(--mu);line-height:1.35}
+.duv-err{font-size:12px;color:#EF4444;line-height:1.35}
+.du-st.mic{background:rgba(239,68,68,.16);color:#EF4444;border-color:rgba(239,68,68,.5);animation:duvp 1.4s infinite}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1561,7 +1599,7 @@ function startSeg(){const f=S.first||0;return `<div class="card" style="margin-b
 function setFirst(i){S.first=i;R()}
 function planHTML(){
  if(S.float)return `<div class="card" style="text-align:center"><b>La planilla está flotando</b><div class="mu" style="margin:6px 0 12px">Puedes votar desde la planilla flotante mientras ves el video en otra ventana.</div><button class="btn s" onclick="closeFloat()">Regresar la planilla a la página</button></div>`;
- return bodyV();
+ return scoreH()+bodyV();
 }
 function openFloat(){S.float=true;S.floatMin=false;R();window.scrollTo(0,0)}
 function closeFloat(){S.float=false;R()}
@@ -3927,7 +3965,7 @@ function duGo(d){const liga=d.mode==='liga'&&L.some(x=>x.i===d.lg);S.dul.live=tr
 async function duStart(){try{await FB.fm.updateDoc(duRef(S.dul.code),{st:'live'})}catch(e){S.dum='No se pudo empezar.';R()}}
 function duStop(){const D=S.dul;if(D&&D.unsub)try{D.unsub()}catch(e){}}
 function duEnd(msg){duStop();S.dul=null;S.duelOn=false;S.duv='menu';S.dum=msg||'';S.v='duel';R()}
-async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir del duelo?'))return;const me=S.me.uid;try{await FB.fm.updateDoc(duRef(D.code),D.role==='host'?{st:'done'}:{guest:null,gu:'',['sh.'+me]:false,['pv.'+me]:null})}catch(e){}duEnd('')}
+async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir del duelo?'))return;const me=S.me.uid;try{await FB.fm.updateDoc(duRef(D.code),D.role==='host'?{st:'done'}:{guest:null,gu:'',['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null})}catch(e){}duEnd('')}
 async function duShare(v){const D=S.dul;if(!D)return;D.sig='';try{await FB.fm.updateDoc(duRef(D.code),{['sh.'+S.me.uid]:!!v,['pv.'+S.me.uid]:null})}catch(e){}}
 /* --- Video sincronizado: pausar, reanudar, adelantar y cambiar de parte afectan a los dos --- */
 const duCmd=(f,a)=>{const el=document.getElementById('vpf');if(el&&el.contentWindow)el.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:a||[]}),'*')};
@@ -3956,7 +3994,7 @@ setInterval(()=>{const D=S.dul;if(!D||!D.live||!D.d||!S.me||!S.rounds||!S.sc||!(
 function duBarH(){const D=S.dul;if(!D||!D.live||!D.d||!S.me)return '';const d=D.d,me=S.me.uid,host=d.host===me,fid=host?d.guest:d.host,fn=host?d.gu:d.hu,on=!!(d.sh&&d.sh[me]),fOn=!!(fid&&d.sh&&d.sh[fid]),pv=(fOn&&d.pv&&d.pv[fid])||null,op=D.open!==false,num=v=>v==null?'–':fmt(v);
  const tbl=pv?`<div class="dur dh"><span></span><b>${esc(d.a)}</b><b>${esc(d.b)}</b></div>`+(pv.rows||[]).map(r=>`<div class="dur"><span>${esc(r.n)}</span><b>${r.ok===false?'–':num(r.ta)}</b><b>${r.ok===false?'–':num(r.tb)}</b></div>`).join('')+`<div class="dur dt"><span>Total</span><b>${num(pv.ta)}</b><b>${num(pv.tb)}</b></div>`:'';
  const who=d.st==='done'&&!host?'El anfitrión salió del duelo':(fid?'con @'+esc(fn):'Tu amigo salió del duelo');const liga=d.mode==='liga',dup=liga&&!D.saved&&S.bt&&(S.myVotes||[]).some(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:S.bt.a,b:S.bt.b})),note=dup?'<div class="mu" style="font-size:12px;margin:8px 0 0">Ya votaste esta batalla de liga: al guardar se actualizará tu voto.</div>':'';
- return `<div class="dub"><div class="row" style="justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><b>⚔️ Duelo · ${esc(D.code)}</b></div><button class="btn s sm" style="width:auto;margin:0" onclick="duLeave()">Salir</button></div><div class="du-bt">${esc(d.a)}<em>VS</em>${esc(d.b)}</div><div class="du-meta"><span class="pill">Batalla ${d.rd||1}</span><span class="pill ${liga?'next':''}">${liga?'Liga':'Libre'}</span>${host?'<span class="pill next">Anfitrión</span>':''}<span class="du-st wt">${who}</span></div><div style="display:flex;gap:8px;margin-top:10px"><button class="dut" style="margin:0;width:auto;flex:1" onclick="duChatToggle()">💬 Chat${duUnread()?' · '+duUnread()+' nuevo'+(duUnread()>1?'s':''):''}</button><button class="dut" style="margin:0;width:auto;flex:1" onclick="duRoom()">🏠 Sala</button></div>${note}${fid&&!(d.st==='done'&&!host)?`<label class="dusw"><input type="checkbox" ${on?'checked':''} onchange="duShare(this.checked)"> Permitir que @${esc(fn)} vea mi votación</label>`:''}${fOn?`<button class="dut" onclick="S.dul.open=${op?'false':'true'};duRender()">${op?'Ocultar':'Ver'} votación de @${esc(fn)}</button>${op?(pv?`<div class="duf">${tbl}</div>`:'<div class="mu" style="font-size:12px;margin:6px 0 0">Aún no puntúa…</div>'):''}`:''}</div>`}
+ return `<div class="dub"><div class="row" style="justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><b>⚔️ Duelo · ${esc(D.code)}</b></div><button class="btn s sm" style="width:auto;margin:0" onclick="duLeave()">Salir</button></div><div class="du-bt">${esc(d.a)}<em>VS</em>${esc(d.b)}</div><div class="du-meta"><span class="pill">Batalla ${d.rd||1}</span><span class="pill ${liga?'next':''}">${liga?'Liga':'Libre'}</span>${host?'<span class="pill next">Anfitrión</span>':''}<span class="du-st wt">${who}</span>${duVoiceChip()}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="dut" style="margin:0;width:auto;flex:1" onclick="duChatToggle()">💬 Chat${duUnread()?' · '+duUnread()+' nuevo'+(duUnread()>1?'s':''):''}</button><button class="dut" style="margin:0;width:auto;flex:1" onclick="duRoom()">🏠 Sala</button></div>${note}${fid&&!(d.st==='done'&&!host)?`<label class="dusw"><input type="checkbox" ${on?'checked':''} onchange="duShare(this.checked)"> Permitir que @${esc(fn)} vea mi votación</label>`:''}${fOn?`<button class="dut" onclick="S.dul.open=${op?'false':'true'};duRender()">${op?'Ocultar':'Ver'} votación de @${esc(fn)}</button>${op?(pv?`<div class="duf">${tbl}</div>`:'<div class="mu" style="font-size:12px;margin:6px 0 0">Aún no puntúa…</div>'):''}`:''}</div>`}
 function duRender(){const el=document.getElementById('dubar');if(el)el.innerHTML=duBarH()}
 /* --- Pantallas: menú, crear sala, unirse, sala de espera --- */
 function duelV(){const D=S.dul,c=S.duc||{},v=S.duv||'menu',bk='<button class="back" onclick="go(\'home\')">‹ Volver</button>',msg=S.dum?`<div class="mu" style="margin:8px 0">${esc(S.dum)}</div>`:'';
@@ -4014,10 +4052,10 @@ const _R2=R;R=function(){_R2();try{duRender()}catch(e){}};
 function duMsgs(){const D=S.dul,ch=(D&&D.d&&D.d.ch)||{},a=[];Object.keys(ch).forEach(u=>(ch[u]||[]).forEach(m=>a.push({...m,uid:u})));return a.sort((x,y)=>(x.ts||0)-(y.ts||0)||String(x.id).localeCompare(String(y.id)))}
 function duUnread(){const D=S.dul;if(!D||!S.me||D.chatOpen)return 0;return duMsgs().filter(m=>m.uid!==S.me.uid&&(m.ts||0)>(D.chatSeen||0)).length}
 function duChatEl(){let el=document.getElementById('duch');if(el)return el;el=document.createElement('div');el.id='duch';el.className='duch';el.hidden=true;
- el.innerHTML='<div class="duch-pv" id="duchv" hidden onclick="duChatToggle(true)"></div><div class="duch-p" id="duchp" hidden><div class="duch-h"><b>💬 Chat del duelo</b><button onclick="duChatToggle(false)" aria-label="Cerrar chat">✕</button></div><div class="duch-l" id="duchl"></div><div class="duch-f"><input id="duchi" maxlength="200" placeholder="Comenta la batalla…" autocomplete="off" enterkeyhint="send"><button onclick="duChatSend()">Enviar</button></div></div><button class="duch-b" id="duchb" onclick="duChatToggle()" aria-label="Chat del duelo">💬 <span>Chat</span><i id="duchn" hidden></i></button>';
+ el.innerHTML='<div class="duch-pv" id="duchv" hidden onclick="duChatToggle(true)"></div><div class="duch-p" id="duchp" hidden><div class="duch-h"><b>💬 Chat del duelo</b><button onclick="duChatToggle(false)" aria-label="Cerrar chat">✕</button></div><div class="duv" id="duchvc"></div><div class="duch-l" id="duchl"></div><div class="duch-f"><input id="duchi" maxlength="200" placeholder="Comenta la batalla…" autocomplete="off" enterkeyhint="send"><button onclick="duChatSend()">Enviar</button></div></div><div class="duch-r"><button class="duch-b" id="duchb" onclick="duChatToggle()" aria-label="Chat del duelo">💬 <span>Chat</span><i id="duchn" hidden></i></button><button class="duch-mb" id="duchm" hidden onclick="voiceMic()"></button></div>';
  document.body.appendChild(el);el.querySelector('#duchi').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();duChatSend()}});return el}
 function duChatToggle(v){const D=S.dul;if(!D)return;D.chatOpen=v==null?!D.chatOpen:!!v;D.chatSig='';duChatSync();if(D.chatOpen){const i=document.getElementById('duchi');if(i&&!/iPhone|iPad|Android/i.test(navigator.userAgent))i.focus()}}
-function duChatSync(){const D=S.dul,vis=!!(D&&D.d&&D.d.st!=='done'&&S.me&&(S.v==='duel'||(D.live&&(S.v==='vote'||S.v==='res'))));
+function duChatSync(){const D=S.dul,vis=!!(D&&D.d&&D.d.st!=='done'&&S.me&&(S.v==='duel'||(D.live&&(S.v==='vote'||S.v==='res'))||(V&&V.joined)));
  if(!vis){const e=document.getElementById('duch');if(e)e.hidden=true;return}
  const el=duChatEl();el.hidden=false;const ms=duMsgs(),me=S.me.uid,last=ms[ms.length-1],open=!!D.chatOpen,sig=ms.length+'|'+(last?last.id:'')+'|'+(open?1:0);
  const lastTs=last?last.ts||0:0;if(open)D.chatSeen=lastTs;else if(D.chatSeen==null)D.chatSeen=0;
@@ -4061,6 +4099,87 @@ async function duFixOld(all){const has=new Set(all.filter(x=>!x.free).map(bkey))
   if(!l)continue;const k=bkey({...v,free:false,l});if(has.has(k))continue;
   const up={free:false,l,j,key:ck(l,v.a,v.b)};
   try{await B.updateVote(v.id,up);Object.assign(v,up);has.add(k)}catch(e){}}}
+
+/* ===== Marcador en vivo ===== */
+function scoreH(){
+ if(!S.rounds||!S.sc||!S.bt)return '';
+ const a=mainTot(0),b=mainTot(1),k=S.bt.a+'|'+S.bt.b+'|'+S.lg;
+ if(S._sbk!==k){S._sbk=k;S._sbA=a;S._sbB=b}
+ const pa=S._sbA||0,pb=S._sbB||0,tot=a+b,sh=tot>0?Math.round(a*1000/tot)/10:50,pt=pa+pb,psh=pt>0?Math.round(pa*1000/pt)/10:50,f=n=>Number.isInteger(n)?n:n.toFixed(1);
+ const pips=S.rounds.map((r,i)=>{if(r.rep&&!repDone())return '';const c=S.sc[i];if(!c)return '';
+  if(!(c[0].every(x=>x!=null)&&c[1].every(x=>x!=null)))return '<i></i>';const x=sumR(i,0),y=sumR(i,1);return `<i class="${x>y?'a':(y>x?'b':'t')}"></i>`}).join('');
+ return `<div class="sb" id="sb" data-a="${a}" data-b="${b}" data-pa="${pa}" data-pb="${pb}" data-sh="${sh}" data-psh="${psh}"><div class="sb-r"><span class="sb-n">${esc(S.bt.a)}</span><b class="sb-v${a>b?' lead':''}" id="sba">${f(pa)}</b><span class="sb-bar"><u id="sbf" style="width:${psh}%"></u></span><b class="sb-v${b>a?' lead':''}" id="sbb">${f(pb)}</b><span class="sb-n r">${esc(S.bt.b)}</span></div>${pips?`<div class="sb-p">${pips}</div>`:''}</div>`}
+function sbAnim(){const e=document.getElementById('sb');if(!e)return;
+ const a=+e.dataset.a,b=+e.dataset.b,pa=+e.dataset.pa,pb=+e.dataset.pb,sh=+e.dataset.sh,fa=document.getElementById('sba'),fb=document.getElementById('sbb'),bar=document.getElementById('sbf');
+ S._sbA=a;S._sbB=b;const f=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+ const still=(pa===a&&pb===b)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+ if(still){fa.textContent=f(a);fb.textContent=f(b);bar.style.width=sh+'%';return}
+ void bar.offsetWidth;bar.style.width=sh+'%';
+ const el=a>pa?fa:(b>pb?fb:null);if(el){el.classList.add('bump')}
+ const t0=performance.now(),Dm=320;(function st(t){const p=Math.min(1,(t-t0)/Dm),q=1-Math.pow(1-p,3),r=n=>Math.round(n*2)/2;
+  fa.textContent=f(r(pa+(a-pa)*q));fb.textContent=f(r(pb+(b-pb)*q));if(p<1&&document.body.contains(fa))requestAnimationFrame(st);else{fa.textContent=f(a);fb.textContent=f(b)}})(t0)}
+{const _R5=R;R=function(){_R5();try{sbAnim()}catch(e){}}}
+
+/* ===== Voz del duelo: audio directo entre los dos (WebRTC); la sala de Firestore solo sirve para conectarlos ===== */
+const DU_ICE=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]; /* Para conexiones más estables en redes difíciles se puede agregar aquí un servidor TURN */
+var V={joined:false,mic:false,spk:true,st:'',pc:null,stream:null,sid:null,peerT:0,iceN:0,out:[],outT:null,audio:null,speaking:false,gotAns:false,err:'',needTap:false,busy:false,done:new Set(),spT:null,ac:null};
+const vcMe=()=>S.me&&S.me.uid, vcDoc=()=>S.dul&&S.dul.d;
+async function vcPub(patch){const D=S.dul;if(!D||!S.me)return;try{await FB.fm.updateDoc(duRef(D.code),patch)}catch(e){}}
+function vcOpus(sdp){return sdp.replace(/a=fmtp:(\d+) [^\r\n]*useinbandfec=1[^\r\n]*/,m=>/usedtx/.test(m)?m:m+';usedtx=1;maxaveragebitrate=40000')}
+function vcEnsureAudio(){if(V.audio)return;const a=document.createElement('audio');a.autoplay=true;a.setAttribute('playsinline','');a.style.display='none';document.body.appendChild(a);V.audio=a}
+function vcClosePc(){if(V.pc){try{V.pc.ontrack=V.pc.onicecandidate=V.pc.onconnectionstatechange=null;V.pc.close()}catch(e){}V.pc=null}V.out=[];V.iceN=0;V.gotAns=false;clearInterval(V.spT);V.speaking=false;if(V.audio)V.audio.srcObject=null}
+function vcWatch(stream){try{clearInterval(V.spT);const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;V.ac=V.ac||new AC();if(V.ac.state==='suspended')V.ac.resume().catch(()=>{});
+ const an=V.ac.createAnalyser();an.fftSize=256;V.ac.createMediaStreamSource(stream).connect(an);const buf=new Uint8Array(an.frequencyBinCount);
+ V.spT=setInterval(()=>{an.getByteFrequencyData(buf);let m=0;for(let i=0;i<buf.length;i++)m+=buf[i];const s=m/buf.length>14;if(s!==V.speaking){V.speaking=s;voiceUI()}},200)}catch(e){}}
+function vcNewPc(sid){vcClosePc();const pc=new RTCPeerConnection({iceServers:DU_ICE});V.pc=pc;V.sid=sid;V.st='conectando';
+ V.stream.getTracks().forEach(t=>pc.addTrack(t,V.stream));
+ pc.onicecandidate=e=>{if(e.candidate){V.out.push(JSON.stringify(e.candidate));clearTimeout(V.outT);V.outT=setTimeout(vcFlushIce,120)}};
+ pc.ontrack=e=>{vcEnsureAudio();const st=e.streams[0];V.audio.srcObject=st;V.audio.muted=!V.spk;V.audio.play().then(()=>{V.needTap=false;voiceUI()}).catch(()=>{V.needTap=true;voiceUI()});vcWatch(st)};
+ pc.onconnectionstatechange=()=>{const c=pc.connectionState;if(c==='connected')V.err='';V.st=c==='connected'?'conectado':((c==='failed'||c==='disconnected')?'reconectando':'conectando');voiceUI();
+  if(c==='failed')setTimeout(()=>{if(V.pc===pc&&pc.connectionState==='failed')vcRestart()},1500);
+  else if(c==='disconnected')setTimeout(()=>{if(V.pc===pc&&pc.connectionState!=='connected')vcRestart()},6000)};
+ return pc}
+function vcRestart(){if(!V.joined)return;vcClosePc();V.sid=null;V.peerT=0;duVoiceSync()}
+async function vcFlushIce(){if(!V.out.length||!S.me)return;const c=V.out.splice(0),me=S.me.uid,au=FB.fm.arrayUnion;
+ const val=au?au(...c):[...(((vcDoc()||{}).ice||{})[me]||[]),...c];await vcPub({['ice.'+me]:val})}
+function vcDrainIce(){const d=vcDoc();if(!V.pc||!d||!S.me||!V.pc.remoteDescription)return;const me=S.me.uid,o=d.host===me?d.guest:d.host,arr=(d.ice&&d.ice[o])||[];
+ while(V.iceN<arr.length){const c=arr[V.iceN++];try{V.pc.addIceCandidate(JSON.parse(c)).catch(()=>{})}catch(e){}}}
+async function duVoiceSync(){const D=S.dul,d=D&&D.d;if(!V.joined||!d||!S.me||V.busy)return;
+ const me=S.me.uid,isHost=d.host===me,other=isHost?d.guest:d.host;if(!other){if(V.pc){vcClosePc();V.sid=null;V.st=''}return}
+ const pv=d.vc&&d.vc[other],rtc=d.rtc||{};
+ if(!pv||!pv.on){if(V.pc){vcClosePc();V.sid=null;V.st='';V.peerT=0;voiceUI()}return}
+ if(isHost){
+  if(!V.pc||V.peerT!==pv.t){V.busy=true;try{V.peerT=pv.t;const sid=String(Date.now()),pc=vcNewPc(sid);let o=await pc.createOffer();o={type:o.type,sdp:vcOpus(o.sdp)};await pc.setLocalDescription(o);await vcPub({rtc:{sid,offer:o},['ice.'+me]:[],['ice.'+other]:[]})}catch(e){V.err='No se pudo conectar la voz.';vcClosePc();V.sid=null}V.busy=false;setTimeout(duVoiceSync,300)}
+  else if(rtc.sid===V.sid&&rtc.answer&&!V.gotAns&&V.pc.signalingState==='have-local-offer'){V.gotAns=true;try{await V.pc.setRemoteDescription(rtc.answer);vcDrainIce()}catch(e){}}
+ }else if(rtc.sid&&rtc.offer&&!V.done.has(rtc.sid)){
+  V.busy=true;V.done.add(rtc.sid);try{const pc=vcNewPc(rtc.sid);await pc.setRemoteDescription(rtc.offer);let a=await pc.createAnswer();a={type:a.type,sdp:vcOpus(a.sdp)};await pc.setLocalDescription(a);await vcPub({'rtc.answer':a});vcDrainIce()}catch(e){V.err='No se pudo conectar la voz.';vcClosePc();V.sid=null}V.busy=false;setTimeout(duVoiceSync,300)}
+ vcDrainIce()}
+async function voiceJoin(){if(V.joined)return;
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){V.err='Tu navegador no permite usar el micrófono aquí (se necesita una conexión segura HTTPS).';return voiceUI()}
+ try{V.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}})}
+ catch(e){V.err='No se pudo acceder al micrófono. Revisa el permiso del navegador.';return voiceUI()}
+ V.err='';V.joined=true;V.mic=false;V.needTap=false;V.stream.getAudioTracks().forEach(t=>t.enabled=false);vcEnsureAudio();
+ await vcPub({['vc.'+vcMe()]:{on:true,mic:false,t:Date.now()}});voiceUI();try{duRender()}catch(e){}duVoiceSync()}
+function voiceMic(v){if(!V.joined||!V.stream)return;V.mic=v==null?!V.mic:!!v;V.stream.getAudioTracks().forEach(t=>t.enabled=V.mic);vcPub({['vc.'+vcMe()+'.mic']:V.mic});voiceUI();try{duRender()}catch(e){}}
+function voiceSpk(){V.spk=!V.spk;if(V.audio)V.audio.muted=!V.spk;voiceUI()}
+function voiceTap(){if(V.audio)V.audio.play().then(()=>{V.needTap=false;voiceUI()}).catch(()=>{});if(V.ac&&V.ac.state==='suspended')V.ac.resume().catch(()=>{})}
+function voiceStop(silent){const was=V.joined;vcClosePc();if(V.stream){V.stream.getTracks().forEach(t=>t.stop());V.stream=null}
+ V.joined=false;V.mic=false;V.st='';V.sid=null;V.peerT=0;V.needTap=false;V.busy=false;
+ if(was&&!silent)vcPub({['vc.'+vcMe()]:{on:false,mic:false,t:Date.now()}});voiceUI();try{duRender()}catch(e){}}
+function vcFriendLine(){const d=vcDoc(),me=S.me&&S.me.uid;if(!d||!me)return '';const o=d.host===me?d.guest:d.host,fn=d.host===me?d.gu:d.hu;
+ if(!o)return 'Tu amigo no está en la sala.';const pv=d.vc&&d.vc[o];if(!pv||!pv.on)return '@'+esc(fn)+' aún no activa la voz.';
+ if(V.st!=='conectado')return V.st==='reconectando'?'⏳ Reconectando…':'⏳ Conectando con @'+esc(fn)+'…';
+ return pv.mic?(V.speaking?'🎙️ @'+esc(fn)+' está hablando':'🎙️ @'+esc(fn)+' tiene el micro encendido'):'🔇 @'+esc(fn)+' tiene el micro apagado'}
+function duVoiceChip(){if(!V||!V.joined)return '';return `<span class="du-st ${V.mic?'mic':'wt'}">${V.mic?'🔴 Tu micro: ENCENDIDO':'🎙️ Tu micro: apagado'}</span>`}
+function voiceUI(){const el=document.getElementById('duch');if(!el)return;const box=el.querySelector('#duchvc');if(!box)return;
+ const d=vcDoc(),me=S.me&&S.me.uid,fn=d?(d.host===me?d.gu:d.hu):'',o=d?(d.host===me?d.guest:d.host):null,pv=o&&d.vc&&d.vc[o];let h;
+ if(!V.joined)h=`<button class="duv-join" onclick="voiceJoin()">🎙️ Activar voz${fn?' con @'+esc(fn):''}</button>${V.err?`<div class="duv-err">${esc(V.err)}</div>`:`<div class="duv-sub">Tu micrófono empieza apagado. Usa audífonos para evitar eco.${pv&&pv.on?' @'+esc(fn)+' ya está en la voz.':''}</div>`}`;
+ else h=`<div class="duv-row"><button class="duv-mic${V.mic?' on':''}" onclick="voiceMic()">${V.mic?'🔴 Micrófono ENCENDIDO':'🎙️ Micrófono apagado'}</button><button class="duv-sp${V.spk?'':' off'}" onclick="voiceSpk()" aria-label="Sonido">${V.spk?'🔊':'🔇'}</button><button class="duv-x" onclick="voiceStop()">Salir</button></div><div class="duv-st">${vcFriendLine()}</div>${V.needTap?'<button class="duv-join" onclick="voiceTap()">Toca aquí para activar el audio</button>':''}${V.err?`<div class="duv-err">${esc(V.err)}</div>`:''}`;
+ if(box.dataset.h!==h){box.innerHTML=h;box.dataset.h=h}
+ const mb=el.querySelector('#duchm');if(mb){mb.hidden=!V.joined;mb.className='duch-mb'+(V.mic?' on':'');mb.textContent=V.mic?'🔴':'🎙️';mb.setAttribute('aria-label',V.mic?'Apagar micrófono':'Encender micrófono')}}
+{const _duRender2=duRender;duRender=function(){_duRender2();try{duVoiceSync();voiceUI()}catch(e){}}}
+{const _duStop=duStop;duStop=function(){try{voiceStop(true)}catch(e){}_duStop()}}
+window.addEventListener('beforeunload',()=>{try{if(V&&V.joined)voiceStop()}catch(e){}});
 const _homeV3=homeV;homeV=function(){const h=_homeV3(),mk='<div class="sec"><span>Ligas</span>';return h.includes(mk)?h.replace(mk,duCard()+mk):h};
 /* Inicio ordenado: bienvenida, próxima jornada, formas de votar, ligas, tu progreso, próximas jornadas */
 const _homeV4=homeV;
