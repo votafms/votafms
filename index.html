@@ -1263,6 +1263,90 @@ button.card.fvempty{display:flex;align-items:center;gap:12px;padding:12px 16px;b
  .nav button .nl,.nav button.on .nl{display:block;font-size:10.5px;font-weight:800;line-height:1;animation:none;letter-spacing:0}
  .hm .kicker+h1{margin-top:6px}
 }
+
+/* ===== Rediseño ordenado: perfil, liga, inicio, calendario, navegación y comunidad ===== */
+/* -- Barra inferior: ya no tapa el final de las listas -- */
+#app{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(96px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 35%,transparent);pointer-events:none;z-index:6}
+.nav{box-shadow:0 6px 16px rgba(0,0,0,.20)!important}
+
+/* -- Inicio: acciones como dos mosaicos iguales -- */
+.hm-acts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 6px}
+.hm-acts .card.libre{margin:0;padding:16px 14px;min-height:132px;display:flex}
+.hm-acts .card.libre .row{flex-direction:column;align-items:flex-start;gap:12px;width:100%;height:100%}
+.hm-acts .card.libre .row>svg{display:none}
+.hm-acts .card.libre .row>div:nth-child(2){flex:1}
+.hm-acts .card.libre b{font-size:15.5px}
+.hm-acts .card.libre .mu{font-size:12px;line-height:1.35;margin-top:3px}
+.hm-acts .lbi{width:46px;height:46px;border-radius:15px;font-size:22px;box-shadow:0 8px 18px rgba(var(--acr),.3)}
+.cdw{border-left:4px solid var(--ac)}
+.cdn{letter-spacing:-.3px}
+body[data-v="home"] .sec{margin:26px 2px 12px}
+
+/* -- Calendario: fecha grande, estado claro, flecha visible -- */
+.ccard{border-radius:20px;margin-bottom:14px}
+.chead{padding:14px;gap:14px}
+.cdate{width:60px;padding:12px 0;border-radius:16px;box-shadow:0 8px 18px rgba(var(--acr),.28)}
+.cdate b{font-size:25px}
+.cchev{width:34px;height:34px;font-size:15px;border-width:1.5px;transition:transform .2s ease,background .2s ease}
+.chead[aria-expanded="true"] .cchev{transform:rotate(180deg);background:rgba(var(--acr),.28)}
+.cmonth{margin:28px 2px 14px}
+
+/* -- Liga: bloques bien separados -- */
+.lgside>*{margin-bottom:16px}
+.lgside>.back{margin-bottom:12px}
+.lgmain>.sec:first-child{margin-top:4px}
+
+/* -- Perfil: bloques con aire -- */
+.pfside>.sec,.pfmain>.sec{margin-top:24px}
+.pfside>.sec:first-of-type{margin-top:20px}
+
+/* -- Comunidad: el texto se integra como tarjeta -- */
+body[data-v="comunidad"] .toprow{padding:13px 14px;border-radius:18px}
+body[data-v="comunidad"] .toplist{gap:10px}
+
+/* ================= PC ================= */
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+ body::after{display:none}
+ #app{padding-bottom:72px}
+ .nav{box-shadow:none!important}
+
+ /* Inicio */
+ body[data-v="home"] #app{max-width:1180px}
+ .hm-acts{gap:18px;margin-bottom:8px}
+ .hm-acts .card.libre{min-height:104px;padding:20px 22px}
+ .hm-acts .card.libre .row{flex-direction:row;align-items:center;gap:16px}
+ .hm-acts .card.libre .row>svg{display:block}
+ .hm-acts .card.libre b{font-size:17px}
+ .hm-acts .card.libre .mu{font-size:13px}
+ .cdw{padding:20px 26px}
+ .cdn{font-size:36px}
+
+ /* Perfil: lateral fijo + columna principal */
+ body[data-v="perfil"] #app{max-width:1180px}
+ .pfgrid{display:grid;grid-template-columns:minmax(360px,4.6fr) minmax(0,7fr);gap:32px;align-items:start}
+ .pfside{position:sticky;top:78px}
+ .pfmain>.sec:first-child{margin-top:4px}
+ .pfmain .pftabs{max-width:520px}
+
+ /* Liga: cabecera y selector a la izquierda, tabla y jornadas a la derecha */
+ body[data-v="lg"] #app{max-width:1180px}
+ .lgwrap:has(>.lgside){display:grid;grid-template-columns:minmax(300px,4fr) minmax(0,8fr);gap:0 32px;align-items:start}
+ .lgside{position:sticky;top:78px}
+ .lgside .banner{flex-direction:column;align-items:flex-start;padding:24px}
+ .lgside .banner h1{font-size:28px}
+
+ /* Calendario en dos columnas */
+ body[data-v="cal"] #app{max-width:1180px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:22px;align-content:start;align-items:start}
+ body[data-v="cal"] #app>h1.pg,body[data-v="cal"] #app>.cmonth,body[data-v="cal"] #app>.card.mu{grid-column:1/-1}
+ body[data-v="cal"] #app>.seg{grid-column:1/-1;max-width:440px}
+ body[data-v="cal"] #app>.ccard{margin-bottom:6px}
+
+ /* Comunidad */
+ body[data-v="comunidad"] #app{max-width:1100px}
+ body[data-v="comunidad"] #app>.seg{max-width:440px}
+ body[data-v="comunidad"] .toplist{max-width:860px}
+}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1747,9 +1831,9 @@ function lgv(){
   <div class="jpills"><span class="pill ${e.k==='next'?'next':e.k==='done'?'done':''}">${esc(e.st)}</span>${sedeOk(e)?` <span class="pill">📍 ${esc(e.s)}</span>`:''}</div>
   ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}</div>`}).join('');
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}">
- <button class="back" onclick="go('home')">${ico('back',18)} Ligas</button>
+ <div class="lgside"><button class="back" onclick="go('home')">${ico('back',18)} Ligas</button>
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
- <div class="lgctl">${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}</div>${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div>`;
+ <div class="lgctl">${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}</div></div><div class="lgmain">${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div></div>`;
 }
 const LINK_TEMPS=['2017','2018','2019','2020','2021','2023','2024','2025'];
 const canLink=()=>!!(S.me&&(S.admin||S.collab));
@@ -2178,7 +2262,7 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
  <div class="sec"><span>Zona de peligro</span></div>
  <button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
- return `${profileHead(m,true)}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>Medallas</span></div>${favMedalsH(m,true)}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}`}
+ return `<div class="pfgrid"><div class="pfside">${profileHead(m,true)}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>Medallas</span></div>${favMedalsH(m,true)}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div></div><div class="pfmain"><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div></div>`}
 /* ===== Perfil: cabecera rápida, medallas favoritas y compartir ===== */
 const pfFav=u=>Array.isArray(u&&u.favAch)?u.favAch.filter(id=>ACH.some(a=>a.id===id)).slice(0,3):[];
 function pfQuickH(){const m=S.me,r=rankInfo(S.myVotes||[]),st=(m.st&&m.st.n)||0;
@@ -3991,7 +4075,7 @@ homeV=function(){const h=_homeV4();const tp=document.createElement('template');t
   else if(c.includes('sec')&&/Próximas jornadas/i.test(tx)){prox.push(k);if(kids[i+1]){prox.push(kids[i+1]);i++}}
   else rest.push(k)}
  modes.sort((a,b)=>/Duelo/.test(a.textContent)-/Duelo/.test(b.textContent));
- return [...hero,...cd,...modes,...lig,...prog,...prox,...rest].map(k=>k.outerHTML).join('')};
+ return [...hero,...cd].map(k=>k.outerHTML).join('')+(modes.length?'<div class="sec"><span>Accesos rápidos</span></div><div class="hm-acts">'+modes.map(k=>k.outerHTML).join('')+'</div>':'')+[...lig,...prog,...prox,...rest].map(k=>k.outerHTML).join('')};
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
  let ds=null;
@@ -4090,7 +4174,7 @@ async function init(){
  watchAuth();R();handleResetLink();calSync();}
 init();
 
-const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return re.test(h)?h.replace(re,(m,a,b)=>'<div class="sec"><span>Accesos rápidos</span></div><div class="qa">'+a+b+'</div>'):h};
+const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return h};
 </script></body></html>
 
 
