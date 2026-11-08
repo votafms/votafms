@@ -1042,6 +1042,23 @@ input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(var(
 :root:not([data-theme="dark"]) .bat{background:var(--cd)}
 :root:not([data-theme="dark"]) .btn{box-shadow:0 8px 18px rgba(var(--acr),.28)}
 :root:not([data-theme="dark"]) .stat big{text-shadow:none}}
+.cdw{margin:14px 0 4px;padding:14px 16px;border-radius:22px;border:1px solid rgba(var(--acr),.4);background:linear-gradient(135deg,rgba(var(--acr),.20),rgba(var(--acr2),.05)),var(--cd);box-shadow:0 0 26px rgba(var(--acr),.18)}
+.cdn{font-size:30px;font-weight:900;letter-spacing:-.5px;margin:10px 0 4px;color:var(--ac2);text-shadow:0 0 16px rgba(var(--acr),.5)}
+.rgs{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none}.rgs::-webkit-scrollbar{display:none}
+.rg{flex:0 0 auto;border:0;background:none;color:var(--tx);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:0;min-width:64px}
+.ring{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;position:relative;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.09) 0);box-shadow:0 0 14px rgba(var(--acr),.25)}
+.ring:before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--bg2)}
+.ring b{position:relative;font-size:13px}.rg small{font-size:11.5px;color:var(--mu);font-weight:700}
+.rg:active{transform:scale(.94)}
+.ducode{font-size:42px;font-weight:900;letter-spacing:8px;margin:6px 0 10px;color:var(--ac2);text-shadow:0 0 18px rgba(var(--acr),.55)}
+.dub{margin:0 0 12px;padding:12px 14px;border-radius:20px;border:1px solid rgba(var(--acr),.45);background:linear-gradient(135deg,rgba(var(--acr),.18),rgba(var(--acr2),.04)),var(--cd);box-shadow:0 0 22px rgba(var(--acr),.16)}
+.dusw{display:flex;align-items:center;gap:8px;margin:10px 0 0;font-size:13px;color:var(--mu);cursor:pointer}.dusw input{width:auto;margin:0}
+.duf{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(var(--acr),.10);border:1px solid rgba(var(--acr),.28)}
+.duft{font-size:26px;font-weight:900;color:var(--ac2);margin:2px 0}
+.dut{display:block;width:100%;margin:10px 0 0;padding:9px 12px;border-radius:12px;border:1px solid rgba(var(--acr),.35);background:rgba(var(--acr),.10);color:var(--tx);font:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.dur{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(var(--acr),.14)}
+.dur span{font-size:11.5px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px}.dur b{text-align:center;font-size:14px}
+.dur.dh b{font-size:12px;color:var(--mu)}.dur.dt{border-bottom:0}.dur.dt b{font-size:17px;color:var(--ac2)}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1107,7 +1124,7 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){S.me={uid,...prof};S.admin=false;S.collab=false;try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
+function setMe(uid,prof){S.me={uid,...prof};S.admin=false;S.collab=false;S.collabCal=false;try{B.getCollabCal(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabCal){S.collabCal=v;R()}})}catch(e){}try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
@@ -1523,7 +1540,7 @@ function link17Form(ed){return `<div class="card" style="margin-bottom:12px"><b>
 function ytTok(y){return String(y||'').split(',').map(x=>x.trim().match(/^([\w-]{11})(?:@(\d{1,6})(?:-(\d{1,6}))?)?$/)).filter(Boolean).map(m=>({id:m[1],t:m[2]?+m[2]:0,e:m[3]?+m[3]:0}))}
 function ytIds(y){return ytTok(y).map(o=>o.id)}
 function ytSt(y){return ytTok(y).map(o=>o.t)}
-function ytQ(y,i){const o=ytTok(y)[i]||{},p=[];if(o.t)p.push('start='+o.t);if(o.e)p.push('end='+o.e);return p.length?'?'+p.join('&'):''}
+function ytQ(y,i){const o=ytTok(y)[i]||{},p=['enablejsapi=1'];if(/^https?:/.test(location.origin))p.push('origin='+encodeURIComponent(location.origin));if(o.t)p.push('start='+o.t);if(o.e)p.push('end='+o.e);return '?'+p.join('&')}
 function ytParse(t){t=String(t||'').trim();const out=[],re=/(?:youtu\.be\/|[?&]v=|shorts\/|embed\/|live\/)([\w-]{11})/g;let m;
  while((m=re.exec(t)))if(!out.includes(m[1]))out.push(m[1]);
  if(!out.length&&/^[\w-]{11}$/.test(t))out.push(t);return out}
@@ -3197,7 +3214,7 @@ const _adminV1=adminV;
 adminV=function(){let h=_adminV1();if(!isAdmin())return h;
  if(S.collabs===undefined){S.collabs=null;B.listCollabs().then(l=>{S.collabs=l;R()}).catch(()=>{S.collabs=[];R()})}
  const L2=S.collabs;
- const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página.</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px"><div style="flex:1;min-width:0"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
+ const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página.</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px"><div style="flex:1;min-width:0"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabCal('${esc(c.uid)}',${c.cal?0:1})">${c.cal?'Calendario ✓':'Calendario'}</button><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
  return h.replace('<div class="sec"><span>Comentarios de usuarios</span>',box+'<div class="sec"><span>Comentarios de usuarios</span>')};
 async function collabAdd(){if(!isAdmin())return;const un=((document.getElementById('cbu')||{}).value||'').trim().toLowerCase().replace(/^@/,'');
  if(!/^[a-z0-9._]{3,20}$/.test(un)){S.collabMsg='Escribe un nombre de usuario válido.';return R()}
@@ -3515,6 +3532,150 @@ adminV=function(){let h=_adminV4();if(!isAdmin())return h;
  const box=`<div class="sec"><span>Directo de una jornada</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Pega el link del directo y la lista de tiempos (la de la descripción o los comentarios del video, una línea por batalla, ej: <i>1:23:45 Nez vs Sweet Pain</i>; incluye también las líneas de declaraciones o previa). Cada batalla se guarda con su tramo: empieza en su minuto y se detiene donde empieza lo siguiente. Los directos de FMS Perú 2024 Pre-Finals y Finals ya traen su lista cargada: solo pega el link.</div>${sel}<input placeholder="Link del directo de YouTube" value="${esc(D.url)}" oninput="S.dj.url=this.value"><textarea rows="5" placeholder="0:12:30 Nez vs Sweet Pain&#10;0:31:10 Arkano vs Dani VK" oninput="S.dj.ts=this.value">${esc(D.ts)}</textarea><button class="btn sm" style="width:100%" onclick="djPrep()" ${D.busy?'disabled':''}>Preparar jornada</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>${rows}`;
  return h.replace('<div class="sec"><span>Videos: pegar links y asignar solo</span></div>',box+'<div class="sec"><span>Videos: pegar links y asignar solo</span></div>')};
 
+/* ===== Calendario editable (solo tú y quien tenga el permiso) + inicio con cuenta atrás y progreso ===== */
+const canCal=()=>!!(S.me&&(S.admin||S.collabCal));
+B.loadCal=async()=>{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','calendar'));return d.exists()?JSON.parse(d.data().cal):null};
+B.saveCal=async()=>{const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'config','calendar'),{cal:JSON.stringify(CAL),ts:Date.now(),by:S.me.uid})};
+B.getCollabCal=async uid=>{const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'collabs',uid));return d.exists()&&!!d.data().cal}catch(e){return false}};
+async function calSync(){try{const c=await B.loadCal();if(Array.isArray(c)&&c.length){CAL.splice(0,CAL.length,...c);R()}}catch(e){}}
+async function collabCal(uid,v){if(!isAdmin())return;try{const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'collabs',uid),{cal:!!v},{merge:true});const c=(S.collabs||[]).find(x=>x.uid===uid);if(c)c.cal=!!v;S.collabMsg=v?'Ahora puede editar el calendario.':'Ya no puede editar el calendario.'}catch(e){S.collabMsg='No se pudo cambiar el permiso. ¿Publicaste las reglas nuevas?'}R()}
+function ceSet(i,f,v){const e=CAL[i];if(!e)return;
+ if(f==='b')e.b=v.split(/\n/).map(x=>x.trim()).filter(Boolean);
+ else if(f==='dt'){if(v){const [y,m,d]=v.split('-');e.dt=v;e.d=(+d)+' de '+MES_L[+m-1].toLowerCase()+' de '+y}else{delete e.dt;e.d=''}}
+ else if(f==='k'){e.k=v;e.st=v==='next'?'Próxima':'Sin fecha confirmada'}
+ else e[f]=v}
+function ceDel(i){if(!canCal()||!CAL[i])return;if(!confirm('¿Quitar "'+CAL[i].n+'" del calendario?'))return;CAL.splice(i,1);S.ce.msg='Quitada. Toca Guardar calendario para publicar el cambio.';R()}
+function ceAdd(){const D=S.ce,l=L.find(x=>x.i===D.lg);if(!l)return;CAL.push({i:l.i,n:l.n+' · Jornada',d:'',s:'',st:'Próxima',k:'next',lu:[],b:[],note:''});D.msg='Añadida abajo del todo. Rellénala y guarda.';R()}
+async function ceSave(){if(!canCal()||S.ce.busy)return;S.ce.busy=true;S.ce.msg='Guardando…';R();try{await B.saveCal();S.ce.msg='✓ Calendario guardado. Ya lo ven todos.'}catch(e){S.ce.msg='No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste las reglas nuevas de Firestore?'}S.ce.busy=false;R()}
+function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
+ const sty='width:100%;margin:0 0 8px;padding:12px;border-radius:14px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit';
+ const rows=CAL.map((e,i)=>({e,i})).filter(x=>x.e.k!=='done').map(({e,i})=>{const l=L.find(x=>x.i===e.i);
+  return `<div class="card"><div class="mu" style="margin:0 0 6px;font-size:12px;color:${l?l.c:'var(--mu)'}">${l?esc(l.n):''}</div><div class="row" style="gap:8px;align-items:center;margin-bottom:8px"><input value="${esc(e.n)}" oninput="ceSet(${i},'n',this.value)" style="margin:0;flex:1;font-weight:700"><button class="ib" onclick="ceDel(${i})" aria-label="Quitar" style="width:34px;height:34px;flex:0 0 auto">✕</button></div>
+<div class="row" style="gap:8px"><input type="date" value="${esc(e.dt||'')}" onchange="ceSet(${i},'dt',this.value)" style="flex:1;margin:0 0 8px"><select onchange="ceSet(${i},'k',this.value)" style="flex:1;${sty}"><option value="next" ${e.k==='next'?'selected':''}>Próxima</option><option value="none" ${e.k==='none'?'selected':''}>Sin fecha</option></select></div>
+<input value="${esc(e.s||'')}" placeholder="Sede (ej: Cali, Colombia)" oninput="ceSet(${i},'s',this.value)">
+<textarea rows="4" placeholder="Una batalla por línea: MC A vs MC B" oninput="ceSet(${i},'b',this.value)">${esc((e.b||[]).filter(x=>typeof x==='string').join('\n'))}</textarea></div>`}).join('');
+ return `<div class="sec"><span>Editar calendario</span><span>${CAL.filter(e=>e.k!=='done').length}</span></div><div class="mu" style="margin:0 2px 10px">Cambia fechas, sedes y batallas de las próximas jornadas. Lo que cambies se publica para todos al guardar. Las jornadas finalizadas no se editan aquí.</div>${rows}<div class="card"><div class="row" style="gap:8px"><select onchange="S.ce.lg=this.value" style="flex:1;${sty}">${L.map(l=>`<option value="${l.i}" ${l.i===D.lg?'selected':''}>${esc(l.n)}</option>`).join('')}</select><button class="btn s sm" style="width:auto;flex:0 0 auto;margin:0 0 8px" onclick="ceAdd()">+ Añadir jornada</button></div><button class="btn sm" style="width:100%" onclick="ceSave()" ${D.busy?'disabled':''}>Guardar calendario</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>`}
+const _adminV5=adminV;
+adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
+const _calV=calV;
+calV=function(){return _calV()+((S.me&&!S.admin&&S.collabCal)?calEditV():'')};
+function cdText(t){const d=t-Date.now();if(d<=0)return 'Es hoy';const m=Math.floor(d/6e4),D=Math.floor(m/1440),H=Math.floor(m%1440/60);return (D?D+(D===1?' día ':' días '):'')+H+' h '+(m%60)+' min'}
+function homeExtra(){const n=new Date(),hoy=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+ const nx=CAL.filter(e=>e.k==='next'&&e.dt&&e.dt>=hoy).sort((a,b)=>a.dt.localeCompare(b.dt))[0];let h='';
+ if(nx){const t=Date.parse(nx.dt+'T00:00:00'),l=L.find(x=>x.i===nx.i);
+  h+=`<div class="cdw"><div class="row" style="gap:10px;align-items:center">${l?logo(l,40):''}<div style="min-width:0"><div class="mu" style="font-size:12px;margin:0">Próxima jornada</div><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nx.n)}</b></div></div><div id="cdn" data-t="${t}" class="cdn">${cdText(t)}</div><div class="mu" style="font-size:12px;margin:0">${esc(nx.d||'')}${nx.s?' · '+esc(nx.s):''}</div></div>`}
+ if(S.me){const rg=L.filter(l=>!HIDDEN_LIGAS.includes(l.i)).map(l=>({l,p:lgProg(l)})).filter(x=>x.p.tot>0);
+  if(rg.length)h+=`<div class="sec"><span>Tu progreso 2026</span></div><div class="rgs">${rg.map(({l,p})=>{const pc=Math.round(p.done*100/p.tot);return `<button class="rg" onclick="openLg('${l.i}')" aria-label="${esc(l.n)} ${pc}%"><span class="ring" style="--p:${pc};--c:${l.c}"><b>${pc}%</b></span><small>${esc(l.n.replace('FMS ',''))}</small></button>`}).join('')}</div>`}
+ return h}
+const _homeV=homeV;
+homeV=function(){const h=_homeV(),x=homeExtra(),mk='<div class="sec">';const i=h.indexOf(mk);return x?(i>=0?h.slice(0,i)+x+h.slice(i):h+x):h};
+setInterval(()=>{const el=document.getElementById('cdn');if(el)el.textContent=cdText(+el.dataset.t)},30000);
+/* ===== Duelo con amigo: sala con código, mismo video sincronizado y votación en tiempo real ===== */
+const duRef=c=>FB.fm.doc(FB.db,'duels',c);
+const DUC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const duCode=()=>Array.from({length:6},()=>DUC[Math.floor(Math.random()*DUC.length)]).join('');
+const duSty='width:100%;margin:0 0 8px;padding:12px;border-radius:14px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit';
+/* Planillas antiguas que puede elegir el anfitrión (cada una usa las rondas de esa temporada) */
+const DU_TP=[['auto','La de la batalla'],['2026','Temporada 2026'],['2025','Temporada 2024 / 2025'],['2023','Temporada 2023'],['2021','Temporada 2021 / 2022'],['2020','Temporada 2020'],['2018','Temporada 2018 / 2019'],['2017','Temporada 2017'],['in','FMS Internacional'],['libre','Batalla libre']];
+const DU_RF={'2017':'t17','2018':'t18','2020':'t20','2021':'t21','2023':'t23','2025':'t25','in':'in','libre':'libre'};
+function duTpName(d){if(d.fmt==='actual')return 'Planilla actual';const t=DU_TP.find(x=>x[0]===(d.tp||'auto'));return 'Planilla antigua'+(t&&t[0]!=='auto'?' · '+t[1]:'')}
+function duCard(){return `<button class="card libre" onclick="duOpen()"><div class="row"><div class="lbi">🤝</div><div style="flex:1;min-width:0"><b style="font-size:16px">Duelo con amigo</b><div class="mu">Vota la misma batalla en vivo con un código.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>`}
+function duOpen(){if(!S.me)return openAuth('create');if(!FB){S.msgP='Sin conexión con el servidor. Recarga la página.';return R()}S.duc=S.duc||{mode:'liga',lg:'es',temp:'',ji:'',bi:'',a:'',b:'',y:'',fmt:'actual',tp:'auto',sel:null,code:''};S.duv=S.dul?'lobby':'menu';B.getLinks().then(l=>{S.links=l}).catch(()=>{});go('duel')}
+function duSeasons(lg){const k=Object.keys(SEASON_JOR).filter(x=>x.startsWith(lg+'|')).map(x=>x.split('|')[1]);if(CAL.some(e=>e.i===lg&&(e.b||[]).length))k.push('2026');return [...new Set(k)].sort().reverse()}
+function duJors(lg,t){if(t==='2026')return CAL.filter(e=>e.i===lg&&(e.b||[]).length).map(e=>({n:e.n,bs:e.b.map(b=>{const x=batOf(e,b);return {a:x.a,b:x.b,y:x.y||''}})}));
+ return (SEASON_JOR[lg+'|'+t]||[]).map(j=>({n:j.lab||('Jornada '+j.n),bs:(j.b||[]).map(b=>({a:b[0],b:b[1],y:(S.links||{})[linkKey(lg,t,b[0],b[1],b[3])]||''}))}))}
+function duF(f,v){const c=S.duc;c[f]=v;if(f==='lg'){c.temp='';c.ji='';c.bi='';c.sel=null}if(f==='temp'){c.ji='';c.bi='';c.sel=null}if(f==='ji'){c.bi='';c.sel=null}
+ if(f==='bi'){const x=(duJors(c.lg,c.temp)[+c.ji]||{bs:[]}).bs[+v];c.sel=x||null}R()}
+function duCol(i){if(L.some(x=>x.i===i)){S.duCol=i;R()}}
+async function duCreate(){const c=S.duc,fm=FB.fm;let a,b,y,j;S.dum='';
+ if(c.y.trim()&&!ytParse(c.y).length){S.dum='Ese link no parece de YouTube.';return R()}
+ if(c.mode==='libre'){a=c.a.trim();b=c.b.trim();y=ytParse(c.y).join(',');j='Batalla libre'}
+ else{if(!c.sel){S.dum='Elige la batalla.';return R()}a=c.sel.a;b=c.sel.b;y=ytParse(c.y).join(',')||c.sel.y||'';const jn=(duJors(c.lg,c.temp)[+c.ji]||{}).n||'';j=c.temp==='2026'?jn:L.find(x=>x.i===c.lg).n+' · '+seasonLabel(c.temp)+(jn?' · '+jn:'')}
+ if(!a||!b){S.dum='Escribe los dos MCs.';return R()}
+ const code=duCode(),d={host:S.me.uid,hu:S.me.u,guest:null,gu:'',lg:c.mode==='libre'?(S.duCol||'es'):c.lg,a,b,y,j,mode:c.mode,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt,tp:c.fmt==='actual'?'auto':(c.tp||'auto'),st:'wait',sh:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0},ts:Date.now()};
+ try{await fm.setDoc(duRef(code),d);duSub(code,'host')}catch(e){S.dum='No se pudo crear la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
+async function duJoin(){const fm=FB.fm,code=String(S.duc.code||'').trim().toUpperCase();S.dum='';if(code.length!==6){S.dum='El código tiene 6 caracteres.';return R()}
+ try{const sn=await fm.getDoc(duRef(code));if(!sn.exists()){S.dum='No existe ninguna sala con ese código.';return R()}const d=sn.data();
+  if(d.st==='done'){S.dum='Esa sala ya se cerró.';return R()}
+  if(d.host===S.me.uid)return duSub(code,'host');
+  if(d.guest&&d.guest!==S.me.uid){S.dum='Esa sala ya está completa.';return R()}
+  if(d.guest!==S.me.uid)await fm.updateDoc(duRef(code),{guest:S.me.uid,gu:S.me.u});duSub(code,'guest')}
+ catch(e){S.dum='No se pudo entrar a la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
+function duSub(code,role){duStop();S.dul={code,role,d:null,mute:0,lastN:0,ls:null,t:0,lt:0,lts:0,el:null,got:0,live:false,sig:'',open:true,rem:0,saved:0};S.duv='lobby';S.v='duel';
+ S.dul.unsub=FB.fm.onSnapshot(duRef(code),sn=>{const D=S.dul;if(!D||D.code!==code)return;if(!sn.exists())return duEnd('La sala ya no existe.');const d=sn.data();D.d=d;
+  if(d.st==='done'&&role==='guest'&&!D.live)return duEnd('El anfitrión cerró la sala.');
+  if(d.st==='live'&&!D.live)duGo(d);
+  const v=d.vid||{};if(v.n&&v.n!==D.lastN){D.lastN=v.n;if(v.by!==S.me.uid)duApply(v)}
+  if(D.live)duRender();else R()},()=>duEnd('Se perdió la conexión con la sala.'))}
+function duGo(d){S.dul.live=true;S.duelOn=true;if(!L.some(x=>x.i===S.duCol))S.duCol=d.lg||'es';S.lg=S.duCol;S.fmt24=0;S.fmt=d.fmt;S.dum='';start({a:d.a,b:d.b,j:'Duelo · '+(d.j||'Batalla libre'),y:d.y||null,libre:true,temp:d.temp||'2026'})}
+async function duStart(){try{await FB.fm.updateDoc(duRef(S.dul.code),{st:'live'})}catch(e){S.dum='No se pudo empezar.';R()}}
+function duStop(){const D=S.dul;if(D&&D.unsub)try{D.unsub()}catch(e){}}
+function duEnd(msg){duStop();S.dul=null;S.duelOn=false;S.duv='menu';S.dum=msg||'';S.v='duel';R()}
+async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir del duelo?'))return;const me=S.me.uid;try{await FB.fm.updateDoc(duRef(D.code),D.role==='host'?{st:'done'}:{guest:null,gu:'',['sh.'+me]:false,['pv.'+me]:null})}catch(e){}duEnd('')}
+async function duShare(v){const D=S.dul;if(!D)return;D.sig='';try{await FB.fm.updateDoc(duRef(D.code),{['sh.'+S.me.uid]:!!v,['pv.'+S.me.uid]:null})}catch(e){}}
+/* --- Video sincronizado: pausar, reanudar, adelantar y cambiar de parte afectan a los dos --- */
+const duCmd=(f,a)=>{const el=document.getElementById('vpf');if(el&&el.contentWindow)el.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:a||[]}),'*')};
+const duPart=()=>{const b=S.bt;if(!b)return 0;const ids=ytIds(b.y);return (S.vpart&&S.vpart.y===b.y&&ids[S.vpart.i])?S.vpart.i:0};
+function duPub(st,t,x){const D=S.dul;if(!D||!S.me)return;D.ls=st==='play'?1:2;FB.fm.updateDoc(duRef(D.code),{vid:{st,t:Math.round((t||0)*10)/10,by:S.me.uid,n:Date.now(),ts:Date.now(),part:duPart(),...(x||{})}}).catch(()=>{})}
+function duApply(v){const D=S.dul;if(!document.getElementById('vpf'))return;
+ if(v.part!=null&&v.part!==duPart()){D.rem=1;try{_setVPart2(v.part)}finally{D.rem=0}D.got=0;D.ls=null;D.mute=Date.now()+2500;return}
+ D.mute=Date.now()+1500;D.ls=v.st==='play'?1:2;
+ if(Math.abs((D.t||0)-v.t)>(v.st==='play'?1.2:0.6))duCmd('seekTo',[v.t+(v.st==='play'?0.4:0),true]);
+ duCmd(v.st==='play'?'playVideo':'pauseVideo')}
+function duState(st){const D=S.dul;if(!D||Date.now()<D.mute||(st!==1&&st!==2)||st===D.ls)return;duPub(st===1?'play':'pause',D.t)}
+window.addEventListener('message',ev=>{const D=S.dul,el=document.getElementById('vpf');if(!D||!D.live||!el||ev.source!==el.contentWindow)return;let m;try{m=JSON.parse(ev.data)}catch(e){return}D.got=1;
+ if(m.event==='infoDelivery'&&m.info){const i=m.info;
+  if(typeof i.currentTime==='number'){const now=Date.now(),c=i.currentTime;
+   if(D.lts&&now>=D.mute&&D.ls){const e=D.ls===1?D.lt+(now-D.lts)/1000:D.lt;if(Math.abs(c-e)>(D.ls===1?3:1.5))duPub(D.ls===1?'play':'pause',c)}
+   D.t=c;D.lt=c;D.lts=now}
+  if(typeof i.playerState==='number')duState(i.playerState)}else if(m.event==='onStateChange')duState(m.info)});
+setInterval(()=>{const D=S.dul;if(!D||!D.live)return;const el=document.getElementById('vpf');if(!el||!el.contentWindow)return;if(el!==D.el){D.el=el;D.got=0}if(!D.got)el.contentWindow.postMessage(JSON.stringify({event:'listening',id:1,channel:'widget'}),'*')},1000);
+/* --- Votación en vivo del amigo: solo se publica si activaste "Permitir que mi amigo vea mi votación" --- */
+function duPv(){const rows=[];
+ if(S.fmt==='actual'){ACT.forEach((x,i)=>{const ta=S.sc[0][0][i],tb=S.sc[0][1][i];rows.push({n:x.k,ta:ta==null?null:ta,tb:tb==null?null:tb,ok:ta!=null||tb!=null,rep:false})});
+  if(S.rep==='voted'&&S.sc[1])rows.push({n:'RÉPLICA',ta:sum(S.sc[1][0]),tb:sum(S.sc[1][1]),ok:S.sc[1][0].some(x=>x!=null)||S.sc[1][1].some(x=>x!=null),rep:true})}
+ else S.rounds.forEach((r,k)=>rows.push({n:String(r.n),ta:sumR(k,0),tb:sumR(k,1),ok:S.sc[k][0].some(x=>x!=null)||S.sc[k][1].some(x=>x!=null),rep:!!r.rep}));
+ return {ta:mainTot(0),tb:mainTot(1),rows}}
+setInterval(()=>{const D=S.dul;if(!D||!D.live||!D.d||!S.me||!S.rounds||!S.sc||!(D.d.sh&&D.d.sh[S.me.uid]))return;let pv;try{pv=duPv()}catch(e){return}const sg=JSON.stringify(pv);if(sg===D.sig)return;D.sig=sg;FB.fm.updateDoc(duRef(D.code),{['pv.'+S.me.uid]:pv}).catch(()=>{})},1500);
+function duBarH(){const D=S.dul;if(!D||!D.live||!D.d||!S.me)return '';const d=D.d,me=S.me.uid,host=d.host===me,fid=host?d.guest:d.host,fn=host?d.gu:d.hu,on=!!(d.sh&&d.sh[me]),fOn=!!(fid&&d.sh&&d.sh[fid]),pv=(fOn&&d.pv&&d.pv[fid])||null,op=D.open!==false,num=v=>v==null?'–':fmt(v);
+ const tbl=pv?`<div class="dur dh"><span></span><b>${esc(d.a)}</b><b>${esc(d.b)}</b></div>`+(pv.rows||[]).map(r=>`<div class="dur"><span>${esc(r.n)}</span><b>${r.ok===false?'–':num(r.ta)}</b><b>${r.ok===false?'–':num(r.tb)}</b></div>`).join('')+`<div class="dur dt"><span>Total</span><b>${num(pv.ta)}</b><b>${num(pv.tb)}</b></div>`:'';
+ const who=d.st==='done'&&!host?'El anfitrión salió del duelo':(fid?'con @'+esc(fn):'Tu amigo salió del duelo');
+ return `<div class="dub"><div class="row" style="justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><b>Duelo · ${esc(D.code)}</b><div class="mu" style="font-size:12px;margin:0">${who}${host?' · anfitrión':''}</div></div><button class="btn s sm" style="width:auto;margin:0" onclick="duLeave()">Salir</button></div>${fid&&!(d.st==='done'&&!host)?`<label class="dusw"><input type="checkbox" ${on?'checked':''} onchange="duShare(this.checked)"> Permitir que @${esc(fn)} vea mi votación</label>`:''}${fOn?`<button class="dut" onclick="S.dul.open=${op?'false':'true'};duRender()">${op?'Ocultar':'Ver'} votación de @${esc(fn)}</button>${op?(pv?`<div class="duf">${tbl}</div>`:'<div class="mu" style="font-size:12px;margin:6px 0 0">Aún no puntúa…</div>'):''}`:''}</div>`}
+function duRender(){const el=document.getElementById('dubar');if(el)el.innerHTML=duBarH()}
+/* --- Pantallas: menú, crear sala, unirse, sala de espera --- */
+function duelV(){const D=S.dul,c=S.duc||{},v=S.duv||'menu',bk='<button class="back" onclick="go(\'home\')">‹ Volver</button>',msg=S.dum?`<div class="mu" style="margin:8px 0">${esc(S.dum)}</div>`:'';
+ if(D&&D.live)return `${bk}<h1 class="pg">Duelo en curso</h1>${D.d?`<div class="card"><b>${esc(D.d.a)} vs ${esc(D.d.b)}</b><div class="mu" style="margin:4px 0 0">${esc(D.d.j||'')}</div></div>`:''}<button class="btn" onclick="go('${D.saved?'res':'vote'}')">${D.saved?'Ver mi resultado':'Volver a la votación'}</button><button class="btn s" onclick="duLeave()">Salir del duelo</button>`;
+ if(D&&D.d){const d=D.d,host=D.role==='host',col=L.some(x=>x.i===S.duCol)?S.duCol:d.lg;
+  return `${bk}<h1 class="pg">Sala de duelo</h1><div class="card" style="text-align:center"><div class="mu" style="margin:0">Código de la sala</div><div class="ducode">${esc(D.code)}</div><button class="btn s sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${esc(D.code)}');this.textContent='Copiado ✓'">Copiar código</button></div>
+<div class="card"><b>${esc(d.a)} vs ${esc(d.b)}</b><div class="mu" style="margin:4px 0 0">${esc(d.j||'')}</div><div class="mu" style="margin:2px 0 0">${duTpName(d)}${d.y?'':' · sin video'}</div></div>
+<div class="card"><div class="row" style="justify-content:space-between"><span>@${esc(d.hu)} <span class="pill next">Anfitrión</span></span><span>✓</span></div><div class="row" style="justify-content:space-between;margin-top:8px"><span>${d.guest?'@'+esc(d.gu):'Esperando a tu amigo…'}</span><span>${d.guest?'✓':'…'}</span></div></div>
+<div class="sec"><span>Tu color de planilla</span><span>${esc((L.find(x=>x.i===col)||{n:''}).n)}</span></div><div class="lpick">${L.map(l=>`<button class="${col===l.i?'on':''}" onclick="duCol('${l.i}')">${logo(l,34)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>
+${host?`<button class="btn" style="margin-top:14px" ${d.guest?'':'disabled'} onclick="duStart()">Empezar duelo</button>`:`<div class="mu" style="text-align:center;margin:14px 0 8px">Esperando a que @${esc(d.hu)} empiece…</div>`}<button class="btn s" onclick="duLeave()">Salir de la sala</button>${msg}`}
+ if(v==='create'){const lgs=c.lg,ss=duSeasons(lgs),js=c.temp?duJors(lgs,c.temp):[],bs=(js[+c.ji]||{bs:[]}).bs,o=(val,t,s)=>`<option value="${esc(val)}" ${String(val)===String(s)?'selected':''}>${esc(t)}</option>`,sg=(k,t)=>`<button class="${c.mode===k?'on':''}" onclick="duF('mode','${k}')">${t}</button>`,fg=(k,t)=>`<button class="${c.fmt===k?'on':''}" onclick="duF('fmt','${k}')">${t}</button>`,tps=DU_TP.filter(t=>!(c.mode==='libre'&&t[0]==='libre'));
+  return `${bk}<h1 class="pg">Crear sala</h1><div class="seg">${sg('liga','Batalla de liga')}${sg('libre','Batalla libre')}</div>
+${c.mode==='liga'?`<select onchange="duF('lg',this.value)" style="${duSty}">${L.map(l=>o(l.i,l.n,c.lg)).join('')}</select><select onchange="duF('temp',this.value)" style="${duSty}">${o('','Temporada…',c.temp)}${ss.map(t=>o(t,seasonLabel(t),c.temp)).join('')}</select><select onchange="duF('ji',this.value)" style="${duSty}" ${c.temp?'':'disabled'}>${o('','Jornada…',c.ji)}${js.map((j,i)=>o(i,j.n,c.ji)).join('')}</select><select onchange="duF('bi',this.value)" style="${duSty}" ${c.ji!==''?'':'disabled'}>${o('','Batalla…',c.bi)}${bs.map((b,i)=>o(i,b.a+' vs '+b.b,c.bi)).join('')}</select>`:`<input placeholder="MC 1" value="${esc(c.a)}" oninput="S.duc.a=this.value"><input placeholder="MC 2" value="${esc(c.b)}" oninput="S.duc.b=this.value">`}
+<input placeholder="Link de YouTube${c.sel&&c.sel.y?' (opcional, ya tiene video)':''}" value="${esc(c.y)}" oninput="S.duc.y=this.value">
+<div class="sec"><span>Planilla</span></div><div class="seg">${fg('actual','Actual')}${fg('antigua','Antigua')}</div>
+${c.fmt==='antigua'?`<select onchange="duF('tp',this.value)" style="${duSty}">${tps.map(t=>o(t[0],t[1],c.tp||'auto')).join('')}</select>`:''}
+<button class="btn" onclick="duCreate()">Crear sala</button>${msg}`}
+ if(v==='join')return `${bk}<h1 class="pg">Unirme a una sala</h1><div class="card"><input placeholder="Código de 6 caracteres" value="${esc(c.code)}" maxlength="6" autocapitalize="characters" autocomplete="off" oninput="S.duc.code=this.value.toUpperCase()" style="text-align:center;letter-spacing:6px;font-size:22px;font-weight:800"><button class="btn" onclick="duJoin()">Entrar al duelo</button></div>${msg}`;
+ return `${bk}<h1 class="pg">Duelo con amigo</h1><button class="btn" onclick="S.duv='create';R()">Crear una sala</button><button class="btn s" onclick="S.duv='join';R()">Tengo un código</button>${msg}`}
+/* --- Enganches con la votación existente (solo actúan dentro de un duelo) --- */
+const duOn=()=>!!(S.duelOn&&S.dul&&S.dul.live);
+const _voteV2=voteV;voteV=function(){if(!duOn())return _voteV2();return '<div id="dubar"></div>'+_voteV2().replace(/<button class="back" onclick="go\('libre'\)">([\s\S]*?) Batalla libre<\/button>/,'<button class="back" onclick="duLeave()">$1 Salir del duelo</button>')};
+const _resV2=resV;resV=function(){if(!duOn())return _resV2();S.dul.saved=1;return '<div id="dubar"></div>'+_resV2()};
+const _setFmt2=setFmt;setFmt=function(f){if(S.duelOn)return;return _setFmt2(f)};
+const _fmtSeg2=fmtSeg;fmtSeg=function(){return S.duelOn?'':_fmtSeg2()};
+const _linkAreaH2=linkAreaH;linkAreaH=function(b){return S.duelOn?'':_linkAreaH2(b)};
+const _setVPart2=setVPart;setVPart=function(i){_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
+const _fmtRounds2=fmtRounds;fmtRounds=function(f,l){const D=S.dul,d=D&&D.d;if(!S.duelOn||!d)return _fmtRounds2(f,l);
+ if(f==='actual')return [ACTR];
+ const tp=d.tp||'auto';if(DU_RF[tp])return RF[DU_RF[tp]].slice();
+ const rl=L.find(x=>x.i===d.lg)||l;if(tp==='2026')return RF[rl.f].slice();
+ if(d.mode==='libre')return RF.libre.slice();
+ const lb=S.libre;S.libre=false;try{return _fmtRounds2(f,rl)}finally{S.libre=lb}};
+const _R2=R;R=function(){_R2();try{duRender()}catch(e){}};
+const _homeV3=homeV;homeV=function(){const h=_homeV3(),mk='<div class="sec"><span>Ligas</span>';return h.includes(mk)?h.replace(mk,duCard()+mk):h};
 /* ===== Deslizar hacia abajo para cerrar las hojas inferiores ===== */
 (function(){
  let ds=null;
@@ -3604,13 +3765,13 @@ async function toggleLike(uid){
  finally{S.likeBusy=false;setTimeout(()=>{S.likePop=null},600)}}
 function achFail(msg){const el=document.createElement('div');el.className='ach-toast';el.style.borderColor='#EF4444';el.innerHTML=`<div class="tm" style="background:#EF4444">⚠️</div><div><b style="font-size:13px;font-weight:700">${esc(msg)}</b></div>`;document.body.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4200)}
 
-const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV};
+const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV,duel:duelV};
 async function init(){
  const q=new URLSearchParams(location.search);
  if(q.get('panel')==='1'){document.body.classList.add('panel');S.lg=q.get('l')||'es';start({a:q.get('a')||'MC 1',b:q.get('b')||'MC 2',j:'Planilla',y:q.get('y')||null,libre:q.get('libre')==='1'})}
  const ok=await initFB();
  if(!ok){document.getElementById('app').innerHTML='<div class="card">No se pudo conectar con la base de datos. Revisa tu conexión y recarga la página.</div>';return}
- watchAuth();R();handleResetLink();}
+ watchAuth();R();handleResetLink();calSync();}
 init();
 
 </script></body></html>
