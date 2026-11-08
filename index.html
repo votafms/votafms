@@ -1164,7 +1164,7 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow});
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -1235,7 +1235,21 @@ const IC={bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d=
 function ico(n,s=20){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`}
 function logo(l,w){if(LOGO[l.i])return `<span style="display:inline-flex;flex:0 0 auto;background:#fff;border-radius:14px;padding:5px;box-shadow:0 6px 14px rgba(0,0,0,.28)"><img src="${LOGO[l.i]}" width="${w}" height="${Math.round(w*1.15)}" alt="${esc(l.n)}" style="display:block;object-fit:contain"></span>`;return `<div style="width:${w}px;height:${Math.round(w*1.15)}px;border-radius:12px;background:${l.c};display:flex;align-items:center;justify-content:center;color:${l.tx};font-weight:900">${l.t}</div>`}
 const av=(name,cls='')=>`<span class="av ${cls}">${esc(String(name||'?')[0].toUpperCase())}</span>`;
-function avU(u,cls=''){return u&&u.foto?`<img class="av ${cls}" src="${u.foto}" alt="">`:`<span class="av ${cls}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`}
+function avU(u,cls=''){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.pf[u.uid].foto;if(!f&&u.foto===undefined)pfQueue(u.uid)}return f?`<img class="av ${cls}" src="${f}" alt="">`:`<span class="av ${cls}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`}
+function avX(uid,name,cls=''){const f=(S.me&&S.me.uid===uid&&S.me.foto)||(uid&&S.pf&&S.pf[uid]&&S.pf[uid].foto);if(f)return `<img class="av ${cls}" src="${f}" alt="">`;if(uid)pfQueue(uid);return av(name,cls)}
+/* Caché de fotos de perfil: se piden una sola vez y luego se ven en todos los apartados */
+S.pf=S.pf||{};let _pfQ=new Set(),_pfT=null,_pfAll=0;
+function pfQueue(uid){if(!uid||!S.me||S.pf[uid]!==undefined)return;S.pf[uid]=null;_pfQ.add(uid);clearTimeout(_pfT);_pfT=setTimeout(pfFlush,120)}
+async function pfFlush(){const ids=[..._pfQ];_pfQ=new Set();if(!ids.length||!S.me)return;let ch=false;
+ try{if(ids.length>3&&Date.now()-_pfAll>120000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'';S.pf[u.uid]={foto:f};if(f&&ids.includes(u.uid))ch=true})}}catch(e){}
+ await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'';S.pf[id]={foto:f};if(f)ch=true}catch(e){S.pf[id]={foto:''}}}));
+ if(ch)R()}
+/* Rango visible igual en todos lados: si el rp guardado de alguien es de otra versión, se recalcula con sus votos */
+S.rkc=S.rkc||{};let _rkQ=[],_rkRun=0,_rkT=null;
+function rkQueue(uid){if(S.rkc[uid])return;S.rkc[uid]={n:null};_rkQ.push(uid);rkPump()}
+function rkPump(){while(_rkRun<5&&_rkQ.length){const uid=_rkQ.shift();_rkRun++;B.votesOfUser(uid).then(v=>{S.rkc[uid]={n:rankInfo(splitDups(v).keep).n,at:Date.now()}}).catch(()=>{S.rkc[uid]={n:null}}).finally(()=>{_rkRun--;clearTimeout(_rkT);_rkT=setTimeout(()=>{if(S.v==='search')ulRefresh();else if(S.v==='comunidad')R()},250);rkPump()})}}
+function rkN(x){if(S.me&&x.uid===S.me.uid){if(S.myVotes)return rankInfo(S.myVotes).n;return x.rv===RANK_V?(x.rp||0):(S.me.rp||0)}
+ if(x.rv===RANK_V)return x.rp||0;const c=S.rkc[x.uid];if(c&&c.n!=null)return c.n;rkQueue(x.uid);return x.rp||0}
 const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',admin:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
 const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
@@ -1305,7 +1319,7 @@ function friendsCard(){const me=S.me.uid;const inc=(S.fr||[]).filter(f=>f.status
  return `<div class="sec"><span>Amigos</span><span>${acc.length}</span></div>
  ${inc.length?`<div class="card"><b>Solicitudes recibidas</b>${inc.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><span style="display:flex;gap:6px"><button class="fbtn" onclick="friendAct('${esc(o.uid)}','${esc(o.u)}')">Aceptar</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Rechazar</button></span></div>`}).join('')}</div>`:''}
  ${out.length?`<div class="card"><b>Solicitudes enviadas</b>${out.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Cancelar</button></div>`}).join('')}</div>`:''}
- <div class="card">${acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="openU('${esc(o.uid)}')">${av(o.u)} ${esc(o.u)}</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></div>`}).join(''):'<div class="mu">Todavía no tienes amigos. Busca usuarios y envíales una solicitud.</div>'}</div>`}
+ <div class="card">${acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="openU('${esc(o.uid)}')">${avX(o.uid,o.u)} ${esc(o.u)}</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></div>`}).join(''):'<div class="mu">Todavía no tienes amigos. Busca usuarios y envíales una solicitud.</div>'}</div>`}
 
 function startSeg(){const f=S.first||0;return `<div class="card" style="margin-bottom:12px;padding:12px"><div class="mu" style="margin-bottom:8px;font-weight:700">¿Quién empieza?</div><div class="seg" style="margin:0"><button class="${f===0?'on':''}" onclick="setFirst(0)">${esc(S.bt.a)}</button><button class="${f===1?'on':''}" onclick="setFirst(1)">${esc(S.bt.b)}</button></div></div>`}
 function setFirst(i){S.first=i;R()}
@@ -1924,9 +1938,9 @@ function ulOnline(uid){const i=presInfo(uid);return !!(i&&i.on)}
 function ulRow(x){const fr=friendOf(x.uid),mine=S.me&&S.me.uid===x.uid;
  const st=(!S.me||mine)?'':!fr?'add':fr.status==='accepted'?'friend':fr.from===S.me.uid?'sent':'incoming';
  const lab={add:'Añadir',sent:'Enviada',incoming:'Aceptar',friend:'Amigos'}[st]||'';
- const r=rankFromTotal(x.rp||0);
+ const rn=rkN(x),r=rankFromTotal(rn);
  const meta=[x.p?`${flagOf(x.p)||'🌎'} ${esc(x.p)}`:'',x.m?`🎤 ${esc(x.m)}`:''].filter(Boolean).join(' · ');
- return `<div class="vrow ulr" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}${mine?' <span class="ult">Tú</span>':''}</b><div class="ulrk" style="--tc:${rcol(r.t)}">${esc(r.name)}${(x.rp||0)>0?' · '+x.rp+' pts':''}</div>${meta?`<div class="mu ulm">${meta}</div>`:''}<div class="mu ulm">ID ${fmtPid(pid(x.uid))}</div>${presLine(x.uid)}</div><div class="ulr2">${rankBadge(r.t,30)}${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div></div>`}
+ return `<div class="vrow ulr" onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<div style="flex:1;min-width:0"><b>${esc(x.u)}${mine?' <span class="ult">Tú</span>':''}</b><div class="ulrk" style="--tc:${rcol(r.t)}">${esc(r.name)}${rn>0?' · '+rn+' pts':''}</div>${meta?`<div class="mu ulm">${meta}</div>`:''}<div class="mu ulm">ID ${fmtPid(pid(x.uid))}</div>${presLine(x.uid)}</div><div class="ulr2">${rankBadge(r.t,30)}${st?`<button class="fbtn ${st}" onclick="event.stopPropagation();friendAct('${esc(x.uid)}','${esc(x.u)}')">${lab}</button>`:''}</div></div>`}
 function ulist(){const list=S.users||[];
  if(!list.length)return `<div class="card mu">Todavía no hay usuarios registrados. ¡Sé el primero!</div>`;
  const raw=(S.q||'').trim(),q=ulNorm(raw);
@@ -1937,7 +1951,7 @@ function ulist(){const list=S.users||[];
  let sf=S.sf;if(!me&&sf!=='all')sf='all';
  let f=base.filter(x=>sf==='friends'?isFriend(x.uid):sf==='online'?ulOnline(x.uid):sf==='inc'?isInc(x):true);
  const ss=S.ss;
- if(ss==='rank')f=[...f].sort((a,b)=>(b.rp||0)-(a.rp||0)||ulNorm(a.u).localeCompare(ulNorm(b.u),'es'));
+ if(ss==='rank')f=[...f].sort((a,b)=>rkN(b)-rkN(a)||ulNorm(a.u).localeCompare(ulNorm(b.u),'es'));
  else if(ss==='new')f=[...f].sort((a,b)=>ulJoined(b)-ulJoined(a)||ulNorm(a.u).localeCompare(ulNorm(b.u),'es'));
  else f=[...f].sort((a,b)=>ulNorm(a.u).localeCompare(ulNorm(b.u),'es',{numeric:true}));
  const chip=(k,t,n)=>`<button class="ulc${sf===k?' on':''}" onclick="S.sf='${k}';ulRefresh()">${t}<i>${n}</i></button>`;
@@ -2384,7 +2398,7 @@ function friendsSheet(){const me=S.me?S.me.uid:null;if(!me)return '';
  const acc=(S.fr||[]).filter(f=>f.status==='accepted');
  const oth=f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName};
  let body='';
- if(tab==='amigos'){body=acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))} <span style="text-align:left">${esc(o.u)}${presLine(o.uid)}</span></button><span style="display:flex;gap:6px;align-items:center"><button class="fbtn" onclick="openChat('${esc(o.uid)}','${esc(o.u)}')" aria-label="Chat">💬${chatUnreadFor(o.uid)?'<i class="cdot"></i>':''}</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></span></div>`}).join(''):'<div class="mu">Todavía no tienes amigos.</div>';}
+ if(tab==='amigos'){body=acc.length?acc.map(f=>{const o=oth(f);return `<div class="frow"><button class="linkbtn" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,avX(o.uid,o.u))} <span style="text-align:left">${esc(o.u)}${presLine(o.uid)}</span></button><span style="display:flex;gap:6px;align-items:center"><button class="fbtn" onclick="openChat('${esc(o.uid)}','${esc(o.u)}')" aria-label="Chat">💬${chatUnreadFor(o.uid)?'<i class="cdot"></i>':''}</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Eliminar</button></span></div>`}).join(''):'<div class="mu">Todavía no tienes amigos.</div>';}
  else if(tab==='top'){body=crewTopH()}
  else if(tab==='recibidas'){body=inc.length?inc.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><span style="display:flex;gap:6px"><button class="fbtn" onclick="friendAct('${esc(o.uid)}','${esc(o.u)}')">Aceptar</button><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Rechazar</button></span></div>`}).join(''):'<div class="mu">No tienes solicitudes recibidas.</div>';}
  else{body=out.length?out.map(f=>{const o=oth(f);return `<div class="frow"><span>${esc(o.u)}</span><button class="fbtn sent" onclick="rejectFriend('${f.id}')">Cancelar</button></div>`}).join(''):'<div class="mu">No has enviado solicitudes.</div>';}
@@ -2403,6 +2417,7 @@ async function saveUsername(){const m=S.me;if(!m)return;const nu=(document.getEl
  catch(e){const tk=e&&e.message==='taken';if(tk)S.nameSug=await nameSuggest(nu);S.msgP=tk?'Ese nombre de usuario ya está en uso. Prueba con otro.':'No se pudo cambiar el nombre. Intenta de nuevo.'}
  R();}
 const RANKS=['Underground','Regional','Semiprofesional','Profesional','Elite'];
+const RANK_V=2; /* versión de la escala de puntos: los rp guardados con otra versión están desactualizados */
 const LP={ws:150,es:130,in:110,ar:100,mx:95,cl:90,co:85,pe:80,ca:75};
 const RANK_TH=[100,250,450,700,1000,1350,1750,2200,2700,3300,4000,4800,5700,6700];
 function leaguePts(l){return LP[l]||0;}
@@ -2460,7 +2475,7 @@ const bkey=v=>(v.free?'libre':v.l)+'|'+(v.temp||'2026')+'|'+[nrm(v.a),nrm(v.b)].
 function splitDups(list){const seen=new Set(),keep=[],dups=[];[...(list||[])].sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(v=>{if(v.free){keep.push(v);return}const k=bkey(v);if(seen.has(k)){dups.push(v)}else{seen.add(k);keep.push(v)}});keep.sort((a,b)=>(b.ts||0)-(a.ts||0));return {keep,dups}}
 async function cleanMine(){const all=await B.votesOfUser(S.me.uid);try{await duFixOld(all)}catch(e){}const r=splitDups(all);for(const d of r.dups){try{if(d.id)await B.deleteVote(d.id)}catch(e){}}syncMyRank(r.keep);return r.keep}
 /* Guarda mis puntos de rango en mi perfil (campo rp) para que el top se calcule con 1 sola consulta */
-async function syncMyRank(votes){if(!S.me)return;try{const n=rankInfo(votes).n;if(S.me.rp===n)return;await B.updateUser(S.me.uid,{rp:n});S.me={...S.me,rp:n};S.gtop=null}catch(e){}}
+async function syncMyRank(votes){if(!S.me)return;try{const n=rankInfo(votes).n;if(S.me.rp===n&&S.me.rv===RANK_V)return;await B.updateUser(S.me.uid,{rp:n,rv:RANK_V});S.me={...S.me,rp:n,rv:RANK_V};S.gtop=null;S.rkc={}}catch(e){}}
 function adminV(){
  if(!isAdmin())return `<div class="card">No tienes acceso a este panel.</div><button class="btn s" onclick="go('perfil')">Volver</button>`;
  const list=S.adm;
@@ -2741,7 +2756,7 @@ async function loadTop(){if(!S.me)return;const me=S.me.uid;
  const acc=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName});
  const rows=[];
  try{const mine=S.myVotes||await cleanMine();S.myVotes=mine;rows.push({uid:me,u:S.me.u,self:true,r:rankInfo(mine)})}catch(e){rows.push({uid:me,u:S.me.u,self:true,r:rankInfo(S.myVotes||[])})}
- await Promise.all(acc.map(async o=>{try{const d=await B.getUser(o.uid);if(d&&typeof d.rp==='number'){rows.push({uid:o.uid,u:o.u,r:rankFromTotal(d.rp)})}else{const v=splitDups(await B.votesOfUser(o.uid)).keep;rows.push({uid:o.uid,u:o.u,r:rankInfo(v)})}}catch(e){rows.push({uid:o.uid,u:o.u,r:rankInfo([]),err:true})}}));
+ await Promise.all(acc.map(async o=>{try{const d=await B.getUser(o.uid);if(d&&typeof d.rp==='number'&&d.rv===RANK_V){rows.push({uid:o.uid,u:o.u,r:rankFromTotal(d.rp)})}else{const v=splitDups(await B.votesOfUser(o.uid)).keep;rows.push({uid:o.uid,u:o.u,r:rankInfo(v)})}}catch(e){rows.push({uid:o.uid,u:o.u,r:rankInfo([]),err:true})}}));
  rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
  S.top={loading:false,rows};if(S.friendsOpen&&S.frTab==='top')R()}
 function crewTopH(){const T=S.top;
@@ -2750,7 +2765,7 @@ function crewTopH(){const T=S.top;
  const medal=['🥇','🥈','🥉'];
  const list=rows.map((o,i)=>{if(last===null||o.r.n!==last)pos=i+1;last=o.r.n;
   const mk=pos<=3?medal[pos-1]:pos;
-  return `<div class="toprow${o.self?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${o.self?withDot(o.uid,av(o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${o.self?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
+  return `<div class="toprow${o.self?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${o.self?withDot(o.uid,avX(o.uid,o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,avX(o.uid,o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${o.self?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
  return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🏆 <b style="color:var(--tx)">Top Crew</b>: el ranking de rangos entre tú y tus amigos, del más alto al más bajo.</div>${rows.length>1?'':'<div class="mu" style="margin-bottom:8px">Aún no tienes amigos en el top. Agrega amigos para competir por el primer lugar.</div>'}<div class="toplist">${list}</div>`}
 
 /* ===== Top Global: ranking de todos los usuarios por rango ===== */
@@ -2761,11 +2776,12 @@ async function loadGlobalTop(force){if(!S.me)return;
  S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null,at:0};R();
  try{
   const us=await B.listUsers();
-  S.gcache=S.gcache||{};
+  S.gcache=S.gcache||{};us.forEach(u=>{S.pf[u.uid]={foto:u.foto||''}});
   /* Los usuarios que aún no tienen el campo rp guardado (no han abierto la app desde esa actualización) se calculan con sus votos */
   const all=await Promise.all(us.map(async u=>{
-   let n=u.rp||0;
-   if(!(n>0)){const c=S.gcache[u.uid];
+   let n=u.rv===RANK_V?(u.rp||0):-1;
+   if(S.me&&u.uid===S.me.uid&&S.myVotes)n=rankInfo(S.myVotes).n;
+   if(n<0){const c=S.gcache[u.uid];
     if(c&&Date.now()-c.at<300000)n=c.n;
     else{try{const v=splitDups(await B.votesOfUser(u.uid)).keep;n=rankInfo(v).n;S.gcache[u.uid]={n,at:Date.now()}}catch(e){n=0}}}
    return {uid:u.uid,u:u.u||u.uid,r:rankFromTotal(n)}}));
@@ -2773,7 +2789,7 @@ async function loadGlobalTop(force){if(!S.me)return;
   rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
   rows.splice(50);
   const me=S.me.uid;
-  if(!rows.some(o=>o.uid===me)){let n=S.me.rp;if(typeof n!=='number'&&S.myVotes)n=rankInfo(S.myVotes).n;if(n>0)rows.push({uid:me,u:S.me.u,r:rankFromTotal(n),out:true})}
+  if(!rows.some(o=>o.uid===me)){let n=S.myVotes?rankInfo(S.myVotes).n:S.me.rp;if(typeof n!=='number')n=0;if(n>0)rows.push({uid:me,u:S.me.u,r:rankFromTotal(n),out:true})}
   S.gtop={loading:false,rows,at:Date.now()};if(S.v==='comunidad')R()
  }catch(e){S.gtop={loading:false,rows:[],err:true,at:0};R()}}
 function globalTopH(){const T=S.gtop;
@@ -2789,7 +2805,7 @@ function globalTopH(){const T=S.gtop;
  const list=rows.map((o,i)=>{if(last===null||o.r.n!==last)pos=i+1;last=o.r.n;
   const mk=o.out?'···':pos<=3?medal[pos-1]:pos;
   const isMe=o.uid===me;
-  return `<div class="toprow${isMe?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${isMe?withDot(o.uid,av(o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,av(o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${isMe?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
+  return `<div class="toprow${isMe?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${isMe?withDot(o.uid,avX(o.uid,o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,avX(o.uid,o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${isMe?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
  return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: todos los usuarios de la app ordenados por rango, del más alto al más bajo (máximo 50).</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
 
 /* ===== Racha diaria: Mic en llamas (1 oportunidad cada 10 días de racha) ===== */
@@ -3062,7 +3078,7 @@ async function chatDelAll(id){
  }catch(e){console.error('chatDelAll',e);achFail('No se pudo borrar el mensaje.');chatPaint(true)}}
 function chatPaint(keep){const el=document.getElementById('cmsgs');if(!el)return;const st=el.scrollTop;el.innerHTML=chatMsgsH();el.scrollTop=keep?st:el.scrollHeight}
 function chatSheet(){const c=S.chat;if(!c)return '';
- return `<div class="ov" onclick="closeChat()"><div class="sh chs" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">${av(c.name)}<div style="flex:1;min-width:0"><b style="font-size:17px">${esc(c.name)}</b><div class="mu" style="font-size:12px">Chat de amigos</div></div><button class="fbtn sent" onclick="closeChat()">Cerrar</button></div><div id="cmsgs" class="cmsgs">${chatMsgsH()}</div><div class="iabar" style="position:static;margin-top:10px"><textarea id="cin" rows="1" maxlength="500" placeholder="Escribe un mensaje…" oninput="S.chatDraft=this.value;iaGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">${esc(S.chatDraft)}</textarea><button class="iasend" onclick="chatSend()" aria-label="Enviar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></div></div></div>`}
+ return `<div class="ov" onclick="closeChat()"><div class="sh chs" onclick="event.stopPropagation()"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">${avX(c.uid,c.name)}<div style="flex:1;min-width:0"><b style="font-size:17px">${esc(c.name)}</b><div class="mu" style="font-size:12px">Chat de amigos</div></div><button class="fbtn sent" onclick="closeChat()">Cerrar</button></div><div id="cmsgs" class="cmsgs">${chatMsgsH()}</div><div class="iabar" style="position:static;margin-top:10px"><textarea id="cin" rows="1" maxlength="500" placeholder="Escribe un mensaje…" oninput="S.chatDraft=this.value;iaGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">${esc(S.chatDraft)}</textarea><button class="iasend" onclick="chatSend()" aria-label="Enviar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></div></div></div>`}
 function openChat(uid,name){
  if(!S.me){openAuth('in');return}
  if(!isFriend(uid)){achFail('Solo puedes escribirle a tus amigos.');return}
@@ -3130,7 +3146,7 @@ async function iaOthersCtx(text,us){
  for(const h of hits.slice(0,3)){
   try{
    const d=pub(await B.getUser(h.uid)||h),vv=await B.votesOfUser(h.uid).catch(()=>[]);
-   const keep=splitDups(vv).keep;let n=d.rp||0;if(!(n>0))n=rankInfo(keep).n;
+   const keep=splitDups(vv).keep;let n=rankInfo(keep).n;
    const r=rankFromTotal(n),pos=us.filter(x=>(x.rp||0)>n).length+1;
    const th=themeOf(d),dz=dzOf(d),fr=isFriend(h.uid)||isAdmin();
    let likes='?';try{likes=(await B.likesTo(h.uid)).length}catch(e){}
@@ -3710,11 +3726,11 @@ function duelV(){const D=S.dul,c=S.duc||{},v=S.duv||'menu',bk='<button class="ba
  const duPill=d=>`<span class="pill ${d.mode==='liga'?'next':''}">${d.mode==='liga'?'Batalla de liga · cuenta para rangos':'Batalla libre · no cuenta para rangos'}</span>`,
   duVs=(x,y)=>`<div class="du-vs"><b>${esc(x)}</b><em>VS</em><b>${esc(y)}</b></div>`,
   duHero=(i,t,sb)=>`<div class="du-hero"><div class="du-ico">${i}</div><div style="min-width:0"><h1 class="pg">${t}</h1>${sb?`<div class="du-sub">${sb}</div>`:''}</div></div>`,
-  duPl=(name,tag,chip)=>`<div class="du-pl">${av(name)}<div class="n">@${esc(name)}${tag?`<small>${tag}</small>`:''}</div>${chip}</div>`;
+  duPl=(uid,name,tag,chip)=>`<div class="du-pl">${avX(uid,name)}<div class="n">@${esc(name)}${tag?`<small>${tag}</small>`:''}</div>${chip}</div>`;
  if(D&&D.live){const d=D.d||{},host=D.role==='host',rd=d.rd||1,vt=u=>d.sv&&d.sv[u]===rd?'<span class="du-st ok">✓ Ya votó</span>':'<span class="du-st wt">Votando…</span>';
   return `${bk}${duHero('🏟️','Sala de duelo · '+esc(D.code),'Batalla '+rd+' · '+(host?'Eres el anfitrión':'Invitado de @'+esc(d.hu)))}
 <div class="du-sec">Batalla actual</div><div class="card">${duVs(d.a,d.b)}<div class="du-jt">${esc(d.j||'')}</div><div class="du-meta">${duPill(d)}</div></div>
-<div class="du-sec">Jugadores</div><div class="card" style="padding:6px 16px">${duPl(d.hu,'Anfitrión',vt(d.host))}${d.guest?duPl(d.gu,'',vt(d.guest)):'<div class="du-pl"><div class="n" style="color:var(--mu)">Tu amigo salió de la sala.</div></div>'}</div>
+<div class="du-sec">Jugadores</div><div class="card" style="padding:6px 16px">${duPl(d.host,d.hu,'Anfitrión',vt(d.host))}${d.guest?duPl(d.guest,d.gu,'',vt(d.guest)):'<div class="du-pl"><div class="n" style="color:var(--mu)">Tu amigo salió de la sala.</div></div>'}</div>
 <div class="du-acts"><button class="btn" onclick="go('${D.saved?'res':'vote'}')">${D.saved?'Ver mi resultado':'Volver a la votación'}</button>
 ${host?`<button class="btn s" onclick="duNextOpen()">Elegir siguiente batalla</button>`:`<div class="du-note">${D.saved?'Esperando a que @'+esc(d.hu)+' elija la siguiente batalla…':'Cuando termines de votar, @'+esc(d.hu)+' elegirá la siguiente batalla.'}</div>`}
 <button class="btn s" onclick="duLeave()">Salir del duelo</button></div>`}
@@ -3722,7 +3738,7 @@ ${host?`<button class="btn s" onclick="duNextOpen()">Elegir siguiente batalla</b
   return `${bk}${duHero('🚪','Sala de duelo',host?'Comparte el código y empieza cuando tu amigo entre.':'Ya estás dentro. Espera a que el anfitrión empiece.')}
 <div class="card du-code"><div class="mu" style="margin:0">Código de la sala</div><div class="ducode">${esc(D.code)}</div><button class="btn s sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${esc(D.code)}');this.textContent='Copiado ✓'">Copiar código</button></div>
 <div class="du-sec">Batalla</div><div class="card">${duVs(d.a,d.b)}<div class="du-jt">${esc(d.j||'')}</div><div class="du-jt" style="margin-top:2px">${duTpName(d)}${d.y?'':' · sin video'}</div><div class="du-meta">${duPill(d)}</div></div>
-<div class="du-sec">Jugadores</div><div class="card" style="padding:6px 16px">${duPl(d.hu,'Anfitrión','<span class="du-st ok">✓ Listo</span>')}${d.guest?duPl(d.gu,'','<span class="du-st ok">✓ Listo</span>'):'<div class="du-pl"><div class="du-ico" style="width:34px;height:34px;font-size:16px;border-radius:50%">⏳</div><div class="n" style="color:var(--mu)">Esperando a tu amigo…</div><span class="du-st wt">…</span></div>'}</div>
+<div class="du-sec">Jugadores</div><div class="card" style="padding:6px 16px">${duPl(d.host,d.hu,'Anfitrión','<span class="du-st ok">✓ Listo</span>')}${d.guest?duPl(d.guest,d.gu,'','<span class="du-st ok">✓ Listo</span>'):'<div class="du-pl"><div class="du-ico" style="width:34px;height:34px;font-size:16px;border-radius:50%">⏳</div><div class="n" style="color:var(--mu)">Esperando a tu amigo…</div><span class="du-st wt">…</span></div>'}</div>
 ${d.mode==='liga'?'':`<div class="du-sec">Tu color de planilla · ${esc((L.find(x=>x.i===col)||{n:''}).n)}</div><div class="lpick">${L.map(l=>`<button class="${col===l.i?'on':''}" onclick="duCol('${l.i}')">${logo(l,34)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>`}
 <div class="du-acts">${host?`<button class="btn" ${d.guest?'':'disabled'} onclick="duStart()">Empezar duelo</button>`:`<div class="du-note">Esperando a que @${esc(d.hu)} empiece…</div>`}<button class="btn s" onclick="duLeave()">Salir de la sala</button>${msg}</div>`}
  if(v==='create'){const lgs=c.lg,ss=duSeasons(lgs),js=c.temp?duJors(lgs,c.temp):[],bs=(js[+c.ji]||{bs:[]}).bs,o=(val,t,s)=>`<option value="${esc(val)}" ${String(val)===String(s)?'selected':''}>${esc(t)}</option>`,sg=(k,t)=>`<button class="${c.mode===k?'on':''}" onclick="duF('mode','${k}')">${t}</button>`,fg=(k,t)=>`<button class="${c.fmt===k?'on':''}" onclick="duF('fmt','${k}')">${t}</button>`,tps=DU_TP.filter(t=>!(c.mode==='libre'&&t[0]==='libre'));
