@@ -2368,7 +2368,7 @@ async function saveUsername(){const m=S.me;if(!m)return;const nu=(document.getEl
  catch(e){const tk=e&&e.message==='taken';if(tk)S.nameSug=await nameSuggest(nu);S.msgP=tk?'Ese nombre de usuario ya está en uso. Prueba con otro.':'No se pudo cambiar el nombre. Intenta de nuevo.'}
  R();}
 const RANKS=['Underground','Regional','Semiprofesional','Profesional','Elite'];
-const LP={ws:100,es:80,in:60,ar:50,mx:45,cl:40,co:35,pe:30,ca:25};
+const LP={ws:150,es:130,in:110,ar:100,mx:95,cl:90,co:85,pe:80,ca:75};
 const RANK_TH=[100,250,450,700,1000,1350,1750,2200,2700,3300,4000,4800,5700,6700];
 function leaguePts(l){return LP[l]||0;}
 function rankFromTotal(total){
