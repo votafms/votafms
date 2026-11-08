@@ -1138,14 +1138,13 @@ button.card.fvempty{display:flex;align-items:center;gap:12px;padding:12px 16px;b
 .lgwrap .banner{margin-bottom:16px}
 .lgwrap .rks{margin-bottom:16px}
 .lgwrap .sec{margin:28px 2px 12px}
-.seasel{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px 12px 16px;margin-bottom:16px}
-.seasel .sl{flex:0 0 auto;font-size:14px}
-.selw{position:relative;flex:1;max-width:260px;min-width:0}
+.seasel{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px 16px;margin-bottom:16px}
+.seasel .sl{font-size:12px;color:var(--mu);font-weight:800;margin-left:2px}
+.selw{position:relative;display:block;width:100%;min-width:0}
 .selw:after{content:"";position:absolute;right:16px;top:50%;width:7px;height:7px;border-right:2px solid var(--ac);border-bottom:2px solid var(--ac);transform:translateY(-70%) rotate(45deg);pointer-events:none}
 .selw select{-webkit-appearance:none;appearance:none;display:block;width:100%;margin:0;padding:11px 38px 11px 16px;border-radius:999px;border:1px solid rgba(var(--acr),.4);background:rgba(var(--acr),.10);color:var(--tx);font:inherit;font-weight:800;font-size:14px;cursor:pointer;text-overflow:ellipsis;outline:none}
 .selw select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(var(--acr),.22)}
 .selw select option{background:var(--cd);color:var(--tx)}
-@media (max-width:360px){.seasel{flex-direction:column;align-items:stretch;gap:10px}.selw{max-width:none}}
 
 /* Inicio */
 .card.libre{padding:14px 16px;background:var(--cd);border-color:var(--bd);box-shadow:none}
@@ -1163,9 +1162,10 @@ button.card.fvempty{display:flex;align-items:center;gap:12px;padding:12px 16px;b
 .cmonth{display:flex;align-items:center;gap:12px;margin:28px 2px 12px;font-size:12.5px;letter-spacing:1.2px;color:var(--ac)}
 .cmonth:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--acr),.45),transparent)}
 .ccard{margin-bottom:12px;border-radius:20px}
-.chead{padding:14px;gap:14px}
-.cdate{width:56px;padding:10px 0;border-radius:16px}
-.cchev{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;color:var(--ac);background:rgba(var(--acr),.14);border:1px solid rgba(var(--acr),.32)}
+.chead{padding:14px;gap:12px}
+.chead b{text-wrap:balance;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.2}
+.cdate{width:52px;padding:10px 0;border-radius:16px}
+.cchev{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;color:var(--ac);background:rgba(var(--acr),.14);border:1px solid rgba(var(--acr),.32)}
 .cdet{padding:4px 14px 16px}
 
 /* Comunidad y Ranking */
@@ -1181,7 +1181,7 @@ button.card.fvempty{display:flex;align-items:center;gap:12px;padding:12px 16px;b
 /* Solo móvil y tablet: menú inferior flotante con margen, sombra suave y espacio extra al final */
 @media not all and (min-width:1100px) and (hover:hover) and (pointer:fine){
  #app{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
- .nav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:520px;margin:0 auto;padding:6px 8px;border-radius:26px;border:1px solid rgba(var(--acr),.30);box-shadow:0 6px 16px rgba(0,0,0,.26)}
+ .nav{box-shadow:0 4px 14px rgba(0,0,0,.22)}
  .nav button.on .ni{box-shadow:0 4px 12px rgba(var(--acr),.4)}
  .hm-top>.hero{margin-bottom:14px}
 }
