@@ -2423,7 +2423,7 @@ function ranksSheet(){const r=rankInfo(S.myVotes||[]);
  </div></div>`}
 const bkey=v=>(v.free?'libre':v.l)+'|'+(v.temp||'2026')+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');
 function splitDups(list){const seen=new Set(),keep=[],dups=[];[...(list||[])].sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(v=>{if(v.free){keep.push(v);return}const k=bkey(v);if(seen.has(k)){dups.push(v)}else{seen.add(k);keep.push(v)}});keep.sort((a,b)=>(b.ts||0)-(a.ts||0));return {keep,dups}}
-async function cleanMine(){const all=await B.votesOfUser(S.me.uid);const r=splitDups(all);for(const d of r.dups){try{if(d.id)await B.deleteVote(d.id)}catch(e){}}syncMyRank(r.keep);return r.keep}
+async function cleanMine(){const all=await B.votesOfUser(S.me.uid);try{await duFixOld(all)}catch(e){}const r=splitDups(all);for(const d of r.dups){try{if(d.id)await B.deleteVote(d.id)}catch(e){}}syncMyRank(r.keep);return r.keep}
 /* Guarda mis puntos de rango en mi perfil (campo rp) para que el top se calcule con 1 sola consulta */
 async function syncMyRank(votes){if(!S.me)return;try{const n=rankInfo(votes).n;if(S.me.rp===n)return;await B.updateUser(S.me.uid,{rp:n});S.me={...S.me,rp:n};S.gtop=null}catch(e){}}
 function adminV(){
@@ -3753,6 +3753,15 @@ async function duNextGo(){const D=S.dul;if(!D||D.role!=='host'||!D.d)return;cons
  if(D&&D.live&&S.duv==='next'&&D.role==='host'){S.dul=null;S.duv='create';let h;try{h=_duelV3()}finally{S.dul=D;S.duv='next'}
   return h.replace('<h1 class="pg">Crear sala</h1>','<h1 class="pg">Siguiente batalla</h1>').replace('onclick="duCreate()">Crear sala</button>','onclick="duNextGo()">Iniciar siguiente batalla</button>').replace(/<button class="back" onclick="go\('home'\)">/,'<button class="back" onclick="S.duv=\'room\';R()">')}
  return _duelV3()}}
+
+/* ===== Reparación: votos de duelo de liga guardados antes como "libres" pasan a ser votos de liga ===== */
+async function duFixOld(all){const has=new Set(all.filter(x=>!x.free).map(bkey)),byLen=[...L].sort((a,b)=>b.n.length-a.n.length);
+ for(const v of all){
+  if(!v.free||!v.id||typeof v.j!=='string'||v.j.indexOf('Duelo · ')!==0||v.j==='Duelo · Batalla libre')continue;
+  const j=v.j.slice(8);let l=null;const m=byLen.find(x=>j.indexOf(x.n)===0);if(m)l=m.i;else{const e=CAL.find(e=>e.n===j);if(e)l=e.i}
+  if(!l)continue;const k=bkey({...v,free:false,l});if(has.has(k))continue;
+  const up={free:false,l,j,key:ck(l,v.a,v.b)};
+  try{await B.updateVote(v.id,up);Object.assign(v,up);has.add(k)}catch(e){}}}
 const _homeV3=homeV;homeV=function(){const h=_homeV3(),mk='<div class="sec"><span>Ligas</span>';return h.includes(mk)?h.replace(mk,duCard()+mk):h};
 /* Inicio ordenado: bienvenida, próxima jornada, formas de votar, ligas, tu progreso, próximas jornadas */
 const _homeV4=homeV;
