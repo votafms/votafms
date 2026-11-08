@@ -1202,6 +1202,67 @@ button.card.fvempty{display:flex;align-items:center;gap:12px;padding:12px 16px;b
  .cdn{font-size:34px}
  .card.libre{padding:18px 20px}
 }
+
+/* ===== Reorganización fuerte por bloques (v3) ===== */
+/* --- PERFIL: identidad unida, estadísticas en una sola tira, acciones en 2 columnas --- */
+.pbn{margin-bottom:0;border-radius:26px 26px 0 0}
+.pinfo{margin:0 0 4px;border-radius:0 0 26px 26px;border-top:0;box-shadow:var(--sh)}
+.pfq{gap:0;padding:6px;margin:0 0 4px;background:var(--cd);border:1px solid rgba(var(--acr),.3);border-radius:24px;box-shadow:var(--sh)}
+.pfq button{background:none;border:0;box-shadow:none;border-radius:18px;min-height:96px}
+.pfq button+button{border-left:1px solid var(--bd);border-radius:0}
+.pfacts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 4px}
+.pfacts .likebar{flex-direction:column;justify-content:center;align-items:center;gap:2px;margin:0;text-align:center;min-height:88px;border-radius:22px}
+.pfacts .likebar span:last-child{font-size:12px;line-height:1.25}
+.pfacts .btn.s.pfsh{flex-direction:column;height:100%;min-height:88px;margin:0;border-radius:22px;text-align:center;line-height:1.25;white-space:normal}
+
+/* --- LIGA: panel de control (rango + temporada) y jornadas como tarjetas --- */
+.lgctl{border:1px solid rgba(var(--acr),.3);border-radius:24px;overflow:hidden;background:var(--cd);box-shadow:var(--sh);margin:0 0 6px}
+.lgctl .rks,.lgctl .seasel{margin:0;border:0;border-radius:0;box-shadow:none;background:none}
+.lgctl .seasel{border-top:1px solid var(--bd)}
+.jgrp{border:1px solid rgba(var(--acr),.28);border-radius:26px;padding:0 14px 8px;margin:0 0 18px;background:var(--cd);box-shadow:var(--sh);overflow:hidden}
+.jhd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 -14px 12px;padding:14px 16px;background:linear-gradient(90deg,rgba(var(--acr),.28),rgba(var(--acr),.06));border-bottom:1px solid rgba(var(--acr),.28)}
+.jhd b{font-size:17px;font-weight:900}
+.jhd span{font-size:12px;font-weight:700;color:var(--mu)}
+.jpills{margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px}
+
+/* --- INICIO: accesos rápidos lado a lado --- */
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 6px}
+.qa .card.libre{margin:0;padding:16px}
+.qa .card.libre .row{flex-direction:column;align-items:flex-start;gap:12px}
+.qa .card.libre .row>svg{display:none}
+.qa .card.libre b{font-size:16px}
+.qa .card.libre .mu{font-size:12.5px;margin-top:3px;line-height:1.35}
+
+/* --- CALENDARIO: línea de tiempo con color de liga --- */
+.ccard{border-left:5px solid var(--lc,var(--ac))}
+.cmonth{margin:30px 0 14px;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:900;letter-spacing:1.4px;color:var(--tx);background:linear-gradient(90deg,rgba(var(--acr),.28),rgba(var(--acr),.05));border:1px solid rgba(var(--acr),.3)}
+.cmonth:after{display:none}
+.seg+.cmonth{margin-top:18px}
+
+/* --- COMUNIDAD y RANKING --- */
+.clg{margin:0 0 22px}
+.clh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;margin:0;border-radius:20px 20px 0 0;background:linear-gradient(90deg,color-mix(in srgb,var(--lc) 55%,transparent),color-mix(in srgb,var(--lc) 10%,transparent));border:1px solid color-mix(in srgb,var(--lc) 60%,transparent);position:relative;z-index:1}
+.clh b{font-size:16px;font-weight:900;color:var(--tx)}
+.clh span{font-size:12px;font-weight:800;color:var(--tx);opacity:.85}
+.clg>.card{margin-bottom:0;border-top:0;border-top-left-radius:0;border-top-right-radius:0}
+.clg>.card>.row{display:none}
+.toprow:nth-child(1){padding:16px 12px;background:linear-gradient(90deg,rgba(250,204,21,.28),transparent 80%),var(--bg2);border-color:rgba(250,204,21,.6)}
+.toprow:nth-child(2){background:linear-gradient(90deg,rgba(203,213,225,.22),transparent 80%),var(--bg2);border-color:rgba(203,213,225,.5)}
+.toprow:nth-child(3){background:linear-gradient(90deg,rgba(224,145,58,.24),transparent 80%),var(--bg2);border-color:rgba(224,145,58,.55)}
+.toprow:nth-child(-n+3) .pos{font-size:24px}
+.toprow:nth-child(1) .tn b{font-size:17px}
+
+/* --- NAVEGACIÓN móvil: todas las etiquetas visibles --- */
+@media not all and (min-width:1100px) and (hover:hover) and (pointer:fine){
+ .nav{padding:7px 8px;gap:0;border-radius:26px;justify-content:space-around}
+ .nav button,.nav button.on{flex:1 1 0;min-width:0;height:auto;padding:2px 0 0;flex-direction:column;justify-content:flex-start;gap:3px;background:none;box-shadow:none;border-radius:16px;color:var(--mu)}
+ .nav button .ni,.nav button.on .ni{width:52px;height:30px;border-radius:999px}
+ .nav button{color:#D5DBEC}
+ .nav button.on{color:#fff}
+ .nav button.on .ni{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#1A1300;box-shadow:0 4px 12px rgba(var(--acr),.4)}
+ .nav button .nl,.nav button.on .nl{display:block;font-size:10.5px;font-weight:800;line-height:1;animation:none;letter-spacing:0}
+ .hm .kicker+h1{margin-top:6px}
+}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1664,7 +1725,7 @@ function comunidadV(){
  const head=`<h1 class="pg">Comunidad</h1>${seg}<div class="cnote">Promedio de todos los usuarios. Las batallas libres no cuentan.</div>`;
  if(!S.comm5)return head+'<div class="card mu">Cargando tablas…</div>';
  return head+COMUN.map(id=>{const l=L.find(x=>x.i===id);const votes=(S.comm5[id]||[]).filter(v=>!v.free&&(v.temp||'2026')==='2026');const [a1]=accentOf(l);
-  return `<div class="sec" style="color:${a1}"><span>${esc(l.n)}</span><span>${commCount(votes)}</span></div>${votes.length?tablaHTML(standings(id,votes),l):'<div class="card mu">Todavía no hay votaciones en esta liga.</div>'}`}).join('');
+  return `<div class="clg" style="--lc:${a1}"><div class="clh"><b>${esc(l.n)}</b><span>${commCount(votes)}</span></div>${votes.length?tablaHTML(standings(id,votes),l):'<div class="card mu">Todavía no hay votaciones en esta liga.</div>'}</div>`}).join('');
 }
 function standingsCard(l){
  if(l.i==='in')return '';
@@ -1682,13 +1743,13 @@ function lgv(){
  const [ac1,ac2]=accentOf(l);
  const cur=(ents.find(x=>x.e.k==='next')||ents[ents.length-1]||{e:{st:'Sin fecha confirmada',d:''}}).e;
  const groups=ents.map(({e,ci})=>{const bs=e.b||[];
-  return `<div class="sec"><span>${esc(jLabel(e))}</span><span>${esc(e.d||'Fecha por confirmar')}</span></div>
-  <div style="margin:0 0 10px"><span class="pill ${e.k==='next'?'next':e.k==='done'?'done':''}">${esc(e.st)}</span>${sedeOk(e)?` <span class="pill">📍 ${esc(e.s)}</span>`:''}</div>
-  ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}`}).join('');
+  return `<div class="jgrp"><div class="jhd"><b>${esc(jLabel(e))}</b><span>${esc(e.d||'Fecha por confirmar')}</span></div>
+  <div class="jpills"><span class="pill ${e.k==='next'?'next':e.k==='done'?'done':''}">${esc(e.st)}</span>${sedeOk(e)?` <span class="pill">📍 ${esc(e.s)}</span>`:''}</div>
+  ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}</div>`}).join('');
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}">
  <button class="back" onclick="go('home')">${ico('back',18)} Ligas</button>
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
- ${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div>`;
+ <div class="lgctl">${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}</div>${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div>`;
 }
 const LINK_TEMPS=['2017','2018','2019','2020','2021','2023','2024','2025'];
 const canLink=()=>!!(S.me&&(S.admin||S.collab));
@@ -1998,7 +2059,7 @@ function calCard(e,ci){
  const nb=(e.b||[]).length;
  const col=e.k==='next'?'next':e.k==='done'?'done':'';
  const det=open?`<div class="cdet">${e.lu&&e.lu.length?`<div class="mu" style="margin:10px 0 6px;font-weight:700">Line-up</div><div class="chips" style="margin-top:0">${e.lu.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>`:''}${nb?`<div class="mu" style="margin:12px 0 6px;font-weight:700">Batallas</div>${e.b.map(x=>crow(batOf(e,x))).join('')}`:'<div class="mu" style="margin-top:10px">Aún no hay batallas confirmadas.</div>'}${e.note?`<div class="mu" style="margin-top:8px;font-size:12px">${esc(e.note)}</div>`:''}</div>`:'';
- return `<div class="ccard"><button class="chead" onclick="toggleCal(${ci})" aria-expanded="${open}">${cd}<div style="flex:1;min-width:0;text-align:left"><div class="row" style="gap:8px;margin-bottom:3px">${l?logo(l,24):''}<b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.n)}</b></div><div class="mu" style="margin:0;font-size:12px">${esc(e.s||(e.dt?'Sede por confirmar':'Fecha por confirmar'))}</div><div style="margin-top:6px"><span class="pill ${col}">${esc(e.st)}</span>${nb?` <span class="mu" style="font-size:12px">${nb} ${nb===1?'batalla':'batallas'}</span>`:''}</div></div><span class="cchev">${open?'▴':'▾'}</span></button>${det}</div>`}
+ return `<div class="ccard" style="--lc:${l?l.c:'var(--ac)'}"><button class="chead" onclick="toggleCal(${ci})" aria-expanded="${open}">${cd}<div style="flex:1;min-width:0;text-align:left"><div class="row" style="gap:8px;margin-bottom:3px">${l?logo(l,24):''}<b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.n)}</b></div><div class="mu" style="margin:0;font-size:12px">${esc(e.s||(e.dt?'Sede por confirmar':'Fecha por confirmar'))}</div><div style="margin-top:6px"><span class="pill ${col}">${esc(e.st)}</span>${nb?` <span class="mu" style="font-size:12px">${nb} ${nb===1?'batalla':'batallas'}</span>`:''}</div></div><span class="cchev">${open?'▴':'▾'}</span></button>${det}</div>`}
 function calV(){
  const tab=S.calTab||'prox';
  const list=CAL.map((e,ci)=>({e,ci})).filter(x=>tab==='fin'?x.e.k==='done':x.e.k!=='done');
@@ -2117,7 +2178,7 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
  <div class="sec"><span>Zona de peligro</span></div>
  <button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
- return `${profileHead(m,true)}${likeBarH(m.uid)}${pfQuickH()}${favMedalsH(m,true)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}`}
+ return `${profileHead(m,true)}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>Medallas</span></div>${favMedalsH(m,true)}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}`}
 /* ===== Perfil: cabecera rápida, medallas favoritas y compartir ===== */
 const pfFav=u=>Array.isArray(u&&u.favAch)?u.favAch.filter(id=>ACH.some(a=>a.id===id)).slice(0,3):[];
 function pfQuickH(){const m=S.me,r=rankInfo(S.myVotes||[]),st=(m.st&&m.st.n)||0;
@@ -2898,7 +2959,7 @@ function globalTopH(){const T=S.gtop;
   const mk=o.out?'···':pos<=3?medal[pos-1]:pos;
   const isMe=o.uid===me;
   return `<div class="toprow${isMe?' me':''}" style="--tc:${rcol(o.r.t)}"><span class="pos">${mk}</span>${isMe?withDot(o.uid,avX(o.uid,o.u)):`<button class="linkbtn" style="padding:0" onclick="S.friendsOpen=false;openU('${esc(o.uid)}')">${withDot(o.uid,avX(o.uid,o.u))}</button>`}<div class="tn"><b>${esc(o.u)}${isMe?' (Tú)':''}</b><small>${esc(o.r.name)}</small></div><div style="display:flex;align-items:center;gap:8px">${rankBadge(o.r.t,34)}<span class="tp">${o.r.n} pts</span></div></div>`}).join('');
- return `<div class="mu" style="margin:0 0 10px;font-size:12.5px">🌍 <b style="color:var(--tx)">Top Global</b>: todos los usuarios de la app ordenados por rango, del más alto al más bajo (máximo 50).</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
+ return `<div class="cnote">🌍 <b style="color:var(--tx)">Top Global</b>: todos los usuarios de la app ordenados por rango, del más alto al más bajo (máximo 50).</div><div class="toplist">${list}</div>${S.gtop&&S.gtop.at?`<div style="text-align:center;margin-top:10px"><button class="linkbtn" style="font-size:12px;color:var(--mu)" onclick="loadGlobalTop(true)">Actualizar</button></div>`:''}`}
 
 /* ===== Racha diaria: Mic en llamas (1 oportunidad cada 10 días de racha) ===== */
 const dkey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -4029,6 +4090,7 @@ async function init(){
  watchAuth();R();handleResetLink();calSync();}
 init();
 
+const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return re.test(h)?h.replace(re,(m,a,b)=>'<div class="sec"><span>Accesos rápidos</span></div><div class="qa">'+a+b+'</div>'):h};
 </script></body></html>
 
 
