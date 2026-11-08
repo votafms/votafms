@@ -1649,7 +1649,7 @@ function seasonLineup(lg,temp){if(temp==='2025')return LINEUP25[lg]||[];if(temp=
 function curSeason(lg){const x=S.season;const opts=SEASON_OPTS[lg]||[];return opts.some(o=>o[0]===x)?x:(opts.length?opts[0][0]:'2026')}
 function linkKey(lg,temp,a,b,x){return ((lg==='es'&&temp==='2017')?'2017|'+a+'|'+b:temp+'|'+lg+'|'+a+'|'+b)+(x?'|'+x:'')}
 function jorV(lg,season){const J=SEASON_JOR[lg+'|'+season]||[];
- const bh=(ji,bi,b)=>`<button class="bat" onclick="startSeasonBat('${lg}','${season}',${ji},${bi})"><span class="side">${esc(b[0])}</span><span class="vs">${b[2]==='apl'?'APL':b[2]===true?'EXH':'VS'}</span><span class="side r">${esc(b[1])}</span></button><div style="height:8px"></div>`;
+ const bh=(ji,bi,b)=>`<button class="bat" onclick="startSeasonBat('${lg}','${season}',${ji},${bi})"><span class="side">${esc(b[0])}</span><span class="vs">${b[2]==='apl'?'APL':b[2]===true?'EXH':'VS'}</span><span class="side r">${esc(b[1])}</span></button>${(S.myVotes||[]).some(v=>!v.free&&bkey(v)===bkey({l:lg,temp:season,a:b[0],b:b[1]}))?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`;
  return J.map((j,ji)=>{
   const head=`<div class="sec"><span>${esc(j.lab||('Jornada '+j.n))}</span><span>${esc(j.fecha||'')}</span></div>${j.ciudad?`<div class="mu" style="margin:-4px 2px 8px">${esc(j.ciudad)}</div>`:''}`;
   if(j.g&&GRP23[lg]&&season==='2023'){
@@ -2168,7 +2168,7 @@ function lbStart(){const B2=S.lb;const a=B2.a.trim(),b=B2.b.trim();
  if(B2.yt.trim()){const m=B2.yt.trim().match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);if(!m){B2.err='Ese link no parece de YouTube. Déjalo vacío o revisa el link.';return R()}y=m[1]}
  B2.err='';S.lg=B2.lg;start({a,b,j:'Batalla libre',y,libre:true})}
 
-function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&v.key===key)||null}
+function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&(v.temp||'2026')==='2026'&&v.key===key)||null}
 async function refreshMine(){if(!S.me)return;watchInbox();streakTick();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R();await loadAch()}catch(e){}}
 /* ===== Votos guardados con un formato anterior: se adaptan al formato actual al editarlos ===== */
 const mRnm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\bmode\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();
