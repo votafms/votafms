@@ -1006,6 +1006,42 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
  ::-webkit-scrollbar-thumb{background:rgba(var(--acr),.38);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
  ::-webkit-scrollbar-thumb:hover{background:rgba(var(--acr),.6);background-clip:padding-box}
 }
+
+/* ===== Arena neón: capa visual (no toca funciones; respeta el color de cada tema/liga) ===== */
+body{background:radial-gradient(700px 420px at 8% -8%,rgba(var(--acr),.26),transparent 62%),radial-gradient(620px 420px at 100% 4%,rgba(var(--acr2),.16),transparent 60%),var(--bg)}
+.top{border-bottom:1px solid rgba(var(--acr),.28);box-shadow:0 1px 18px rgba(var(--acr),.12)}
+.ib{border-color:rgba(var(--acr),.34);background:rgba(var(--acr),.08);transition:transform .15s}
+.ib:active{transform:scale(.92)}
+.av{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--ac),0 0 14px rgba(var(--acr),.5)}
+.hero{border-radius:26px;background:linear-gradient(150deg,rgba(var(--acr),.34),rgba(var(--acr2),.08) 70%),var(--cd);border:1px solid rgba(var(--acr),.55);box-shadow:0 0 34px rgba(var(--acr),.28)}
+.hero:after{background:rgba(var(--acr2),.09)}
+.sec span:first-child{position:relative;padding-left:11px}
+.sec span:first-child:before{content:"";position:absolute;left:0;top:50%;width:3px;height:13px;margin-top:-6px;border-radius:2px;background:var(--ac);box-shadow:0 0 8px var(--ac)}
+.card{border-radius:22px;background:linear-gradient(180deg,rgba(var(--acr),.07),transparent 55%),var(--cd);border-color:rgba(var(--acr),.22);box-shadow:0 10px 28px rgba(0,0,0,.32)}
+.btn{border-radius:999px;padding:14px 18px;box-shadow:0 0 0 1px rgba(var(--acr),.55),0 0 20px rgba(var(--acr),.42);transition:transform .12s}
+.btn:active{transform:scale(.98)}
+.btn.s{background:rgba(var(--acr),.10);border:1px solid rgba(var(--acr),.38);box-shadow:none}
+.pill{border-color:rgba(var(--acr),.35);background:rgba(var(--acr),.10)}
+.chip{border-color:rgba(var(--acr),.3)}
+input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(var(--acr),.22)}
+.seg{border-color:rgba(var(--acr),.28);border-radius:999px}
+.seg button{border-radius:999px}
+.seg button.on{box-shadow:0 0 14px rgba(var(--acr),.5)}
+.stat{border-color:rgba(var(--acr),.25);border-radius:18px}
+.stat big{text-shadow:0 0 14px rgba(var(--acr),.55)}
+.bat{border-radius:20px;border-color:rgba(var(--acr),.28);background:linear-gradient(90deg,rgba(var(--acr),.10),transparent 40%,transparent 60%,rgba(var(--acr2),.10)),var(--cd)}
+.bat:active{border-color:var(--ac);box-shadow:0 0 18px rgba(var(--acr),.4)}
+.vs{box-shadow:0 0 12px rgba(var(--acr),.6)}
+.ltile{border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.video{border-radius:18px;border:1px solid rgba(var(--acr),.4);box-shadow:0 0 26px rgba(var(--acr),.22);overflow:hidden}
+.nav{border-color:rgba(var(--acr),.4);box-shadow:0 0 24px rgba(var(--acr),.28)}
+.nav button.on .ni{box-shadow:0 0 16px rgba(var(--acr),.6)}
+@media (prefers-color-scheme:light){
+:root:not([data-theme="dark"]) .hero{background:linear-gradient(135deg,var(--ac),var(--ac2));border:0}
+:root:not([data-theme="dark"]) .card{background:var(--cd);box-shadow:0 8px 22px rgba(15,23,42,.08)}
+:root:not([data-theme="dark"]) .bat{background:var(--cd)}
+:root:not([data-theme="dark"]) .btn{box-shadow:0 8px 18px rgba(var(--acr),.28)}
+:root:not([data-theme="dark"]) .stat big{text-shadow:none}}
 </style></head>
 <body>
 <header class="top" id="top"></header>
