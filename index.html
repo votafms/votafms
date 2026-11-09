@@ -1385,6 +1385,18 @@ body[data-v="comunidad"] .toplist{gap:10px}
 .duv-sub,.duv-st{font-size:12px;color:var(--mu);line-height:1.35}
 .duv-err{font-size:12px;color:#EF4444;line-height:1.35}
 .du-st.mic{background:rgba(239,68,68,.16);color:#EF4444;border-color:rgba(239,68,68,.5);animation:duvp 1.4s infinite}
+
+/* ===== Marcador: más discreto, se puede ocultar ===== */
+.sb{padding:6px 10px 6px;border-radius:14px;box-shadow:none;background:color-mix(in srgb,var(--cd) 82%,transparent);margin-bottom:10px}
+.sb-r{gap:7px;font-size:12px}
+.sb-v{font-size:15px;min-width:24px}
+.sb-bar{flex-basis:58px;height:5px}
+.sb-p{margin-top:5px}.sb-p i{height:3px}
+.sb-x{flex:none;border:1px solid var(--bd);background:transparent;color:var(--mu);border-radius:99px;padding:3px 9px;font:700 11px/1.2 inherit;cursor:pointer;margin-left:2px}
+.sb-x:hover{color:var(--tx);border-color:var(--ac)}
+.sb-chip{display:flex;justify-content:flex-end;margin:0 0 8px}
+.sb-chip button{border:1px solid var(--bd);background:var(--cd);color:var(--mu);border-radius:99px;padding:5px 12px;font:700 11.5px/1.2 inherit;cursor:pointer;opacity:.85}
+.sb-chip button:hover{opacity:1;color:var(--tx);border-color:var(--ac)}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -4101,14 +4113,17 @@ async function duFixOld(all){const has=new Set(all.filter(x=>!x.free).map(bkey))
   try{await B.updateVote(v.id,up);Object.assign(v,up);has.add(k)}catch(e){}}}
 
 /* ===== Marcador en vivo ===== */
+function sbPref(){try{const v=localStorage.getItem('vfms_sb');if(v)return v==='on'}catch(e){}return !!S._sbOn}
+function sbToggle(){const on=!sbPref();S._sbOn=on;try{localStorage.setItem('vfms_sb',on?'on':'off')}catch(e){}S._sbk=null;R()}
 function scoreH(){
- if(!S.rounds||!S.sc||!S.bt)return '';
+ if(!S.rounds||!S.sc||!S.bt||S.hideTot)return '';
+ if(!sbPref())return '<div class="sb-chip"><button onclick="sbToggle()">👁 Mostrar marcador</button></div>';
  const a=mainTot(0),b=mainTot(1),k=S.bt.a+'|'+S.bt.b+'|'+S.lg;
  if(S._sbk!==k){S._sbk=k;S._sbA=a;S._sbB=b}
  const pa=S._sbA||0,pb=S._sbB||0,tot=a+b,sh=tot>0?Math.round(a*1000/tot)/10:50,pt=pa+pb,psh=pt>0?Math.round(pa*1000/pt)/10:50,f=n=>Number.isInteger(n)?n:n.toFixed(1);
  const pips=S.rounds.map((r,i)=>{if(r.rep&&!repDone())return '';const c=S.sc[i];if(!c)return '';
   if(!(c[0].every(x=>x!=null)&&c[1].every(x=>x!=null)))return '<i></i>';const x=sumR(i,0),y=sumR(i,1);return `<i class="${x>y?'a':(y>x?'b':'t')}"></i>`}).join('');
- return `<div class="sb" id="sb" data-a="${a}" data-b="${b}" data-pa="${pa}" data-pb="${pb}" data-sh="${sh}" data-psh="${psh}"><div class="sb-r"><span class="sb-n">${esc(S.bt.a)}</span><b class="sb-v${a>b?' lead':''}" id="sba">${f(pa)}</b><span class="sb-bar"><u id="sbf" style="width:${psh}%"></u></span><b class="sb-v${b>a?' lead':''}" id="sbb">${f(pb)}</b><span class="sb-n r">${esc(S.bt.b)}</span></div>${pips?`<div class="sb-p">${pips}</div>`:''}</div>`}
+ return `<div class="sb" id="sb" data-a="${a}" data-b="${b}" data-pa="${pa}" data-pb="${pb}" data-sh="${sh}" data-psh="${psh}"><div class="sb-r"><span class="sb-n">${esc(S.bt.a)}</span><b class="sb-v${a>b?' lead':''}" id="sba">${f(pa)}</b><span class="sb-bar"><u id="sbf" style="width:${psh}%"></u></span><b class="sb-v${b>a?' lead':''}" id="sbb">${f(pb)}</b><span class="sb-n r">${esc(S.bt.b)}</span><button class="sb-x" onclick="sbToggle()" aria-label="Ocultar marcador">Ocultar</button></div>${pips?`<div class="sb-p">${pips}</div>`:''}</div>`}
 function sbAnim(){const e=document.getElementById('sb');if(!e)return;
  const a=+e.dataset.a,b=+e.dataset.b,pa=+e.dataset.pa,pb=+e.dataset.pb,sh=+e.dataset.sh,fa=document.getElementById('sba'),fb=document.getElementById('sbb'),bar=document.getElementById('sbf');
  S._sbA=a;S._sbB=b;const f=n=>Number.isInteger(n)?String(n):n.toFixed(1);
