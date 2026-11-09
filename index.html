@@ -1534,7 +1534,7 @@ body{background:repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 2px,tra
 h1.pg{font-family:var(--dsp);font-weight:400;font-size:38px;text-transform:uppercase;letter-spacing:1px;text-shadow:3px 3px 0 rgba(var(--acr),.55);margin:10px 2px 18px}
 .sec{margin:30px 2px 14px;font-size:13px}
 .sec span:first-child{font-family:var(--dsp);font-weight:400;font-size:17px;letter-spacing:1.5px;background:var(--ac);color:#111;padding:4px 14px 3px;transform:skew(-10deg) rotate(-1deg);display:inline-block;box-shadow:3px 3px 0 #000}
-.sec span:last-child{font-family:var(--dsp);font-weight:400;font-size:16px;color:var(--ac);border:2px solid var(--ac);padding:1px 10px;border-radius:4px}
+.sec>span:nth-child(2){font-family:var(--dsp);font-weight:400;font-size:16px;color:var(--ac);border:2px solid var(--ac);padding:1px 10px;border-radius:4px}
 .card{border-radius:14px!important;border:2px solid rgba(var(--acr),.4)!important;box-shadow:var(--hd)!important;background:linear-gradient(180deg,rgba(var(--acr),.09),transparent 60%),var(--cd)!important}
 .btn{border-radius:10px!important;border:2px solid #000!important;box-shadow:var(--hd)!important;font-family:var(--dsp);font-weight:400!important;font-size:17px;letter-spacing:1px;text-transform:uppercase;color:#111!important}
 .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000!important}
@@ -1561,6 +1561,15 @@ h1.pg{font-family:var(--dsp);font-weight:400;font-size:38px;text-transform:upper
 .fvc,.fvempty{display:none!important}
 .vrow,.bat{border-radius:12px!important;border:2px solid rgba(var(--acr),.3)!important;box-shadow:3px 3px 0 rgba(0,0,0,.6)}
 input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--acr),.4)!important}
+
+/* ===== Apartados plegables ===== */
+.sec[data-cg]{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;justify-content:flex-start!important}
+.sec[data-cg]>span:nth-child(2){margin-left:auto}
+.sec .chv{font-style:normal;margin-left:10px;color:var(--ac);font-size:22px;line-height:1;transition:transform .2s;flex:none;text-shadow:2px 2px 0 #000}
+.sec>.chv:nth-child(2){margin-left:auto}
+.sec.cl .chv{transform:rotate(-90deg)}
+.sec.cl{border-bottom:2px dashed rgba(var(--acr),.45);padding-bottom:10px;margin-bottom:6px}
+.cgrp.cl{display:none}
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -4900,6 +4909,27 @@ async function init(){
 init();
 
 const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return h};
+/* ===== Apartados plegables: los más cargados se minimizan y siguen visibles como cabecera ===== */
+const CS={g:()=>{try{return JSON.parse(localStorage.getItem('colsec')||'{}')}catch(e){return {}}},s:o=>{try{localStorage.setItem('colsec',JSON.stringify(o))}catch(e){}}};
+const CS_SKIP=['vote','res','ia','libre','cal','duel','admin','editor','vd'];
+function collapseSecs(){
+ if(CS_SKIP.includes(S.v))return;const app=document.getElementById('app');if(!app)return;const st=CS.g();
+ app.querySelectorAll('.sec:not([data-cg])').forEach(h=>{
+  h.setAttribute('data-cg','1');const par=h.parentElement,kids=[];let n=h.nextElementSibling;
+  while(n&&!n.classList.contains('sec')){kids.push(n);n=n.nextElementSibling}
+  if(!kids.length)return;
+  const sibs=[...par.children].filter(x=>x.classList&&x.classList.contains('sec'));
+  const g=document.createElement('div');g.className='cgrp';par.insertBefore(g,kids[0]);kids.forEach(k=>g.appendChild(k));
+  const chv=document.createElement('i');chv.className='chv';chv.textContent='▾';h.appendChild(chv);h.setAttribute('role','button');h.tabIndex=0;
+  const key=S.v+(S.v==='perfil'?'.'+(S.pfTab||'resumen'):'')+'|'+(h.firstElementChild?h.firstElementChild.textContent.trim():'');
+  const ex=sibs.length<2||(kids.length===1&&kids[0].classList.contains('lgrid2'))||(S.v==='lg'&&sibs[0]===h);
+  const c=key in st?!!st[key]:(!ex&&g.scrollHeight>520);
+  const set=v=>{g.classList.toggle('cl',v);h.classList.toggle('cl',v);h.setAttribute('aria-expanded',String(!v))};set(c);
+  const tg=()=>{const v=!g.classList.contains('cl');set(v);const o=CS.g();o[key]=v;CS.s(o)};
+  h.addEventListener('click',tg);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tg()}});
+ })}
+const _Rcs=R;R=function(){const r=_Rcs.apply(this,arguments);try{collapseSecs()}catch(e){}return r};
+
 </script></body></html>
 
 
