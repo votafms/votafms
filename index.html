@@ -1428,6 +1428,23 @@ body[data-v="comunidad"] .toplist{gap:10px}
 .xed .xlg{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .xed .xlg .btn{margin:0;cursor:pointer}
 .xed .xrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.xed .xshare{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 12px;padding:13px 16px;border-radius:14px;border:1.5px solid var(--ac);background:transparent;color:var(--ac);font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.xed .xshare:active{transform:scale(.98)}
+.xed .xsr{padding:12px 0;border-bottom:1px solid rgba(128,128,128,.22)}
+.xed .xsr:last-child{border-bottom:0;padding-bottom:0}
+.xed .xsr:first-child{padding-top:0}
+.xed .xsh1{display:flex;align-items:center;gap:10px}
+.xed .xsh1>b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xed .xsh2{display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(128,128,128,.12)}
+.xed .xsh2>div{flex:1;min-width:0}
+.xed .xsh2 .mu{font-size:12.5px;margin-top:2px}
+.xed .xsw{display:inline-flex;align-items:center;gap:8px;cursor:pointer;flex:none;font-size:13px;font-weight:700}
+.xed .xsw input{position:absolute;opacity:0;width:0;height:0}
+.xed .xsw i{position:relative;width:46px;height:26px;border-radius:99px;background:rgba(128,128,128,.4);transition:background .2s;flex:none}
+.xed .xsw i:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35);transition:transform .2s}
+.xed .xsw input:checked+i{background:var(--ac)}
+.xed .xsw input:checked+i:after{transform:translateX(20px)}
+.xed .xsw input:focus-visible+i{outline:2px solid var(--ac);outline-offset:2px}
 .xed .xrow input,.xed .xrow .xsel{margin:0;flex:1;min-width:0}
 .xed .xrow .nm{flex:1;min-width:0;font-weight:700;padding:11px 14px;border-radius:14px;background:var(--bg2);border:1px solid var(--bd)}
 .xed .xrow .ib{flex:none;margin:0}
@@ -2676,6 +2693,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-09T11:00:00-04:00'),text:'Modo editor: ahora puedes compartir tus ligas con tus amigos. En tu liga toca «Compartir liga con amigos», elige a quién (solo salen los que tienes agregados) y por defecto solo podrán verla. Si quieres, activa «Dar permiso de editar» a cada amigo para que también pueda modificarla. Las ligas que te compartan aparecen en Ligas, en «Compartidas conmigo».'},
  {ts:Date.parse('2026-11-09T10:05:00-04:00'),text:'Modo editor: los colores de la tarjeta (principal y secundario) ahora cambian al instante mientras los eliges, sin demoras.'},
  {ts:Date.parse('2026-11-09T10:00:00-04:00'),text:'Modo editor renovado: ahora al crear una liga eliges entre Liga automática y Liga manual. En la automática pones el nombre, logo y colores, añades participantes y la app crea todas las jornadas sin repetir cruces; después no votas con planilla, solo tocas cada batalla y eliges quién ganó (+3 para uno y 0 para el otro, o +2 y 1) y la tabla se arma sola. En la manual todo sigue como antes: escribes las batallas y las votas ronda por ronda. En las dos puedes quitar a un participante que se salga (se borran sus batallas y la tabla se actualiza) y la pantalla de edición quedó ordenada por pasos numerados para que sea más fácil de entender.'},
  {ts:Date.parse('2026-11-06T10:05:00-04:00'),text:'Corrección en FMS Chile 2021/2022: faltaban 4 batallas y ya están añadidas, así que cada MC suma sus 11. Además acomodamos batallas recuperativas que estaban en otra jornada. Ahora Teorema vs Metalingüística está en la jornada 4, Joqerr vs Rodamiento en la 6, Teorema vs Tom Crowley en la 7, Acertijo vs Jokker en la 8, JNO vs Jokker en la 9, y Anubis vs Rodamiento y Basek vs Jokker en la 10. Ya puedes votarlas.'},
@@ -4663,20 +4681,49 @@ const _csEd=calSync;calSync=async function(){await _csEd();await edSync()};
 
 /* ===== Modo editor de colaboradores: sus propias ligas, aparte de la página ===== */
 const canSb=()=>!!(S.me&&(S.admin||S.collabEd));
-const LX=[];let X={l:[],uid:null};
+const LX=[];let X={l:[],uid:null};const SH={l:[],uid:null,r:{}};
 const isX=i=>String(i||'').startsWith('x_');
 L.find=function(f){return Array.prototype.find.call(this,f)||LX.find(f)};
 function xReg(g){const o={i:g.id,n:g.n,t:String(g.n||'ED').replace(/^FMS\s*/i,'').slice(0,2).toUpperCase(),c:g.c,c2:g.c2,tx:'#fff',f:g.id,ed:1},l=LX.find(x=>x.i===g.id);
  if(l)Object.assign(l,o);else LX.push(o);RF[g.id]=g.rounds.map(r=>({n:r.n,p:[{c:r.c}]}));if(g.logo)LOGO[g.id]=g.logo;else delete LOGO[g.id]}
 function xStub(list){(list||[]).forEach(v=>{if(v.ed&&!L.find(x=>x.i===v.l))LX.push({i:v.l,n:v.edn||'Liga editor',t:'ED',c:v.edc||'#7C3AED',c2:v.edc2||v.edc||'#C084FC',tx:'#fff',f:v.l,ed:1})})}
-const _smX=setMe;setMe=function(u,p){X={l:[],uid:null};LX.length=0;return _smX(u,p)};
-async function xLoad(){if(!S.me||X.uid===S.me.uid)return;X.uid=S.me.uid;try{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'users',S.me.uid)),j=d.exists()&&d.data().mle;X.l=j?(JSON.parse(j).l||[]):[]}catch(e){X.l=[]}X.l.forEach(xReg);R()}
-async function xSave(){S.mx.busy=1;S.mx.msg='Guardando…';R();try{X.l.forEach(xReg);await B.updateUser(S.me.uid,{mle:JSON.stringify({l:X.l})});S.mx.msg='✓ Guardado'}catch(e){S.mx.msg='No se pudo guardar ('+((e&&e.code)||'error')+'). Revisa las reglas de Firestore.'}S.mx.busy=0;R()}
+const _smX=setMe;setMe=function(u,p){X={l:[],uid:null};LX.length=0;SH.l=[];SH.uid=null;SH.r={};const r=_smX(u,p);setTimeout(()=>shLoad(1),500);return r};
+async function xLoad(){if(!S.me||X.uid===S.me.uid)return;X.uid=S.me.uid;try{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'users',S.me.uid)),j=d.exists()&&d.data().mle;X.l=j?(JSON.parse(j).l||[]):[]}catch(e){X.l=[]}
+ try{const fm=FB.fm;for(const g of X.l){if(!xShN(g))continue;try{const d=await fm.getDoc(fm.doc(FB.db,'ligasComp',g.id));if(d.exists()){const x=d.data();if((x.ts||0)>(g.ts||0)){const n=JSON.parse(x.cfg);n.sh=g.sh;n.ts=x.ts;Object.assign(g,n)}}}catch(e){}}}catch(e){}
+ X.l.forEach(xReg);R()}
+async function xSave(){const cg=xCur(),sub=S.v==='lg'&&cg&&!xOwn(cg);S.mx.busy=1;S.mx.msg='Guardando…';R();
+ try{X.l.forEach(xReg);SH.l.forEach(xReg);
+  if(sub){if(!xCan(cg))throw {code:'sin-permiso'};await xPush(cg)}
+  else{X.l.forEach(g=>{if(xShN(g))g.ts=Date.now()});await B.updateUser(S.me.uid,{mle:JSON.stringify({l:X.l})});for(const g of X.l){if(xShN(g))await xPush(g)}}
+  S.mx.msg='✓ Guardado'}
+ catch(e){S.mx.msg='No se pudo guardar ('+((e&&e.code)||'error')+'). Revisa las reglas de Firestore.'}
+ S.mx.busy=0;R()}
 function xInit(){S.mx=S.mx||{t:'v',busy:0,msg:'',vl:0};xLoad();if(S.me&&S.myVotes==null&&!S.mx.vl){S.mx.vl=1;B.votesOfUser(S.me.uid).then(v=>{S.myVotes=v;R()}).catch(()=>{})}}
-const xCur=()=>X.l.find(g=>g.id===S.lg);
+const xCur=()=>X.l.find(g=>g.id===S.lg)||SH.l.find(g=>g.id===S.lg);
+const xOwn=g=>!!g&&X.l.includes(g);
+const xCan=g=>!!g&&(xOwn(g)||(SH.r[g.id]||{}).r==='e');
+const xShN=g=>Object.keys((g&&g.sh)||{}).length;
+const xFr=()=>{const me=S.me.uid;return (S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName})};
+async function shLoad(force){if(!S.me||!FB)return;if(!force&&SH.uid===S.me.uid)return;const me=S.me.uid;SH.uid=me;
+ try{await refreshFriends();const fm=FB.fm,sn=await fm.getDocs(fm.query(fm.collection(FB.db,'ligasComp'),fm.where('m','array-contains',me)));if(!S.me||S.me.uid!==me)return;
+  const nl=[],nr={};sn.docs.forEach(d=>{const x=d.data();if(!x||!isFriend(x.o))return;let g;try{g=JSON.parse(x.cfg)}catch(e){return}if(!g||!g.id||X.l.some(o=>o.id===g.id))return;g.sh=g.sh||{};nr[g.id]={o:x.o,n:x.on||'un amigo',r:(x.e||[]).includes(me)?'e':'v'};nl.push(g);xReg(g)});
+  SH.l=nl;SH.r=nr}catch(e){}
+ R()}
+async function xPush(g){const fm=FB.fm,ref=fm.doc(FB.db,'ligasComp',g.id);
+ try{if(!xOwn(g)){await fm.updateDoc(ref,{cfg:JSON.stringify(g),ts:Date.now()});return}
+  const m=Object.keys(g.sh||{});await fm.setDoc(ref,{o:S.me.uid,on:S.me.u,cfg:JSON.stringify(g),ts:g.ts||Date.now(),m,e:m.filter(k=>g.sh[k]==='e')})}
+ catch(e){throw {code:((e&&e.code)||'error')+' en ligas compartidas'}}}
+function xShNotif(uid,g,r){try{B.addNotif({to:uid,from:S.me.uid,fromName:S.me.u,text:S.me.u+(r==='e'?' te dio permiso para editar su liga «':' compartió contigo su liga «')+g.n+'»',ts:Date.now(),read:false,type:'vote'}).catch(()=>{})}catch(e){}}
+function xShTog(uid){const g=xCur();if(!g||!xOwn(g))return;g.sh=g.sh||{};const on=!!g.sh[uid];if(on)delete g.sh[uid];else{g.sh[uid]='v';xShNotif(uid,g,'v')}
+ if(!xShN(g)){try{FB.fm.deleteDoc(FB.fm.doc(FB.db,'ligasComp',g.id)).catch(()=>{})}catch(e){}}xSave()}
+function xShEd(uid){const g=xCur();if(!g||!xOwn(g)||!(g.sh||{})[uid])return;g.sh[uid]=g.sh[uid]==='e'?'v':'e';if(g.sh[uid]==='e')xShNotif(uid,g,'e');xSave()}
+function xShareH(g){const fr=xFr(),sh=g.sh||{};
+ const rows=fr.map(f=>{const r=sh[f.uid],on=!!r,id=esc(f.uid);return `<div class="xsr"><div class="xsh1">${avX(f.uid,f.u)}<b>${esc(f.u)}</b><label class="xsw"><span>Compartir</span><input type="checkbox" ${on?'checked':''} onchange="xShTog('${id}')"><i></i></label></div>${on?`<div class="xsh2"><div><b>Dar permiso de editar</b><div class="mu">${r==='e'?'Puede modificar esta liga.':'Solo puede verla, no puede tocar nada.'}</div></div><label class="xsw"><input type="checkbox" ${r==='e'?'checked':''} onchange="xShEd('${id}')"><i></i></label></div>`:''}</div>`}).join('');
+ return `<div class="sec"><span>Compartir liga</span><span>${xShN(g)}</span></div><div class="card"><div class="mu">Solo puedes compartirla con tus amigos agregados. Al compartirla, tu amigo solo la ve. Si quieres que también pueda editarla, actívale «Dar permiso de editar».</div></div>`+(fr.length?`<div class="card">${rows}</div>`:`<div class="card mu" style="text-align:center">Aún no tienes amigos agregados. Ve a Buscar, envíales una solicitud y, cuando la acepten, podrás compartirles tu liga.</div>`)+(S.mx.msg?`<div class="mu" style="text-align:center">${esc(S.mx.msg)}</div>`:'')}
+function xShTiles(){if(!SH.l.length)return '';return `<div class="sec"><span>Compartidas conmigo</span><span>${SH.l.length}</span></div><div class="lgrid2">${SH.l.map(g=>{const l=LX.find(x=>x.i===g.id)||{i:g.id,n:g.n,t:'ED',c:g.c,tx:'#fff'},r=SH.r[g.id]||{};return `<button class="lt2" style="--c:${g.c};--c2:${g.c2};--tx2:#fff" onclick="xOpen('${esc(g.id)}')"><div class="lt2-h">${logo(l,44)}</div><b>${esc(g.n)}</b><span style="font-size:11px;opacity:.85">${r.r==='e'?'✏️ Puedes editar':'👁 Solo ver'} · ${esc(r.n||'')}</span></button>`}).join('')}</div>`}
 const xBk=(g,b)=>(S.myVotes||[]).find(v=>v.ed&&v.l===g.id&&bkey(v)===bkey({l:g.id,a:b.a,b:b.b}));
 function xNew(mode){const au=mode==='auto',id='x_'+S.me.uid.slice(0,6)+Date.now().toString(36),g={id,mode:au?'auto':'manual',n:(au?'Liga automática ':'Mi liga ')+(X.l.length+1),c:'#7C3AED',c2:'#C084FC',logo:'',tabla:au,rounds:[{n:'Random',c:6},{n:'Deluxe',c:9}],jors:au?[]:[{n:'Jornada 1',bats:[]}],parts:[],res:{}};X.l.push(g);xReg(g);xSave();xOpen(id,'e')}
-function xOpen(id,t){S.lg=id;S.mx.t=t||'v';S.mx.o=null;S.mx.gm='';go('lg')}
+function xOpen(id,t){S.mx=S.mx||{t:'v',busy:0,msg:'',vl:0};S.lg=id;S.mx.t=t||'v';S.mx.o=null;S.mx.gm='';S.mx.msg='';if(X.l.some(g=>g.id===id))refreshFriends().then(()=>R());else shLoad(1);go('lg')}
 function xVote(ji,bi){const j=xCur().jors[ji],b=j.bats[bi];S.libre=false;S.fmt='antigua';S.temp='2026';start({a:b.a,b:b.b,j:j.n,y:b.y||null})}
 function xSet(k,v,r){const g=xCur();g[k]=v;xReg(g);if(r)R()}
 function xRd(k,f,v){const g=xCur();if(f==null){if(k<0)g.rounds.push({n:'Ronda '+(g.rounds.length+1),c:6});else if(g.rounds.length>1)g.rounds.splice(k,1);return R()}g.rounds[k][f]=f==='c'?Math.max(1,Math.min(20,+v||1)):v;xReg(g)}
@@ -4689,7 +4736,7 @@ let xColT=0;
 function xCol(k,v,fin){const g=xCur();if(!g)return;g[k]=v;if(fin){xColT=0;xReg(g);return R()}
  if(xColT)return;xColT=requestAnimationFrame(()=>{xColT=0;const b=document.querySelector('.banner');if(b){b.style.setProperty('--c',g.c);b.style.setProperty('--c2',g.c2)}})}
 async function xLogo(f){if(!f)return;try{xSet('logo',await imagenCuadrada(f,160),1)}catch(e){S.mx.msg='No se pudo leer la imagen.';R()}}
-function xDel(){const g=xCur();if(!g||!confirm('¿Eliminar "'+g.n+'"? Tus votos de esta liga se conservan en el perfil.'))return;X.l=X.l.filter(x=>x!==g);xSave();go('mle')}
+function xDel(){const g=xCur();if(!g||!confirm('¿Eliminar "'+g.n+'"? Tus votos de esta liga se conservan en el perfil.'))return;X.l=X.l.filter(x=>x!==g);if(xShN(g)){try{FB.fm.deleteDoc(FB.fm.doc(FB.db,'ligasComp',g.id)).catch(()=>{})}catch(e){}}xSave();go('mle')}
 const xAuto=g=>!!g&&g.mode==='auto';
 const xPk=(a,b)=>[a,b].map(t=>String(t).toLowerCase()).sort().join('|');
 const xRs=(g,b)=>{const r=(g.res||{})[xPk(b.a,b.b)];if(!r)return null;const same=String(r.a).toLowerCase()===String(b.a).toLowerCase();return {a:same?r.sa:r.sb,b:same?r.sb:r.sa}};
@@ -4722,12 +4769,12 @@ function xAddB(k){const g=xCur(),A=document.getElementById('xa'+k),B=document.ge
  const q=xPk(a,b);if(g.jors.some(j=>j.bats.some(x=>xPk(x.a,x.b)===q))){if(w)w.textContent='Esa batalla ya está en otra jornada.';return}
  g.jors[k].bats.push({a,b,y:''});xSave()}
 function xDelB(k,i){const g=xCur(),b=g.jors[k]&&g.jors[k].bats[i];if(!b)return;g.jors[k].bats.splice(i,1);if(g.res)delete g.res[xPk(b.a,b.b)];xSave()}
-function xOpenRes(k){S.mx.o=S.mx.o===k?null:k;R()}
-function xRes(ji,bi,sa,sb){const g=xCur(),b=g.jors[ji].bats[bi];g.res=g.res||{};if(sa==null)delete g.res[xPk(b.a,b.b)];else g.res[xPk(b.a,b.b)]={a:b.a,sa,b:b.b,sb};S.mx.o=null;xSave()}
+function xOpenRes(k){if(!xCan(xCur()))return;S.mx.o=S.mx.o===k?null:k;R()}
+function xRes(ji,bi,sa,sb){if(!xCan(xCur()))return;const g=xCur(),b=g.jors[ji].bats[bi];g.res=g.res||{};if(sa==null)delete g.res[xPk(b.a,b.b)];else g.res[xPk(b.a,b.b)]={a:b.a,sa,b:b.b,sb};S.mx.o=null;xSave()}
 function mleV(){if(!canSb())return `<button class="back" onclick="go('home')">‹ Volver</button><div class="card">No tienes acceso al modo editor.</div>`;xInit();
  const t=X.l.map(g=>{const l=LX.find(x=>x.i===g.id)||{i:g.id,n:g.n,t:'ED',c:g.c,tx:'#fff'};return `<button class="lt2" style="--c:${g.c};--c2:${g.c2};--tx2:#fff" onclick="xOpen('${g.id}')"><div class="lt2-h">${logo(l,44)}</div><b>${esc(g.n)}</b><span style="font-size:11px;opacity:.85">${xAuto(g)?'⚡ Automática':'✍️ Manual'}</span></button>`}).join(''),
  opt=(m,ic,n,d)=>`<button class="card libre xopt" onclick="xNew('${m}')"><div class="lbi">${ic}</div><div><b>${n}</b><div class="mu">${d}</div></div></button>`;
- return `<div class="xed"><button class="back" onclick="go('home')">‹ Ligas</button><div class="du-hero"><div class="du-ico">🎨</div><div style="min-width:0"><h1 class="pg">Modo editor</h1><div class="du-sub">Tu espacio aparte: crea ligas con tu logo y colores. No cambia la página ni suma a tu rango.</div></div></div>${t?`<div class="sec"><span>Mis ligas</span><span>${X.l.length}</span></div><div class="lgrid2">${t}</div>`:''}<div class="sec"><span>Crear una liga nueva</span></div>${opt('auto','⚡','Liga automática','Añades participantes y la app arma las jornadas. Tú solo marcas quién ganó.')}${opt('manual','✍️','Liga manual','Escribes las batallas de cada jornada y las votas con planilla.')}${S.mx.msg?`<div class="mu" style="text-align:center">${esc(S.mx.msg)}</div>`:''}</div>`}
+ return `<div class="xed"><button class="back" onclick="go('home')">‹ Ligas</button><div class="du-hero"><div class="du-ico">🎨</div><div style="min-width:0"><h1 class="pg">Modo editor</h1><div class="du-sub">Tu espacio aparte: crea ligas con tu logo y colores. No cambia la página ni suma a tu rango.</div></div></div>${t?`<div class="sec"><span>Mis ligas</span><span>${X.l.length}</span></div><div class="lgrid2">${t}</div>`:''}${xShTiles()}<div class="sec"><span>Crear una liga nueva</span></div>${opt('auto','⚡','Liga automática','Añades participantes y la app arma las jornadas. Tú solo marcas quién ganó.')}${opt('manual','✍️','Liga manual','Escribes las batallas de cada jornada y las votas con planilla.')}${S.mx.msg?`<div class="mu" style="text-align:center">${esc(S.mx.msg)}</div>`:''}</div>`}
 function xResPick(g,ji,bi,b,r){const op=[[3,0],[2,1],[1,1],[1,2],[0,3]],cur=r?r.a+'-'+r.b:'',nm=(x,y)=>x>y?`+${x} ${esc(b.a)} · ${y} ${esc(b.b)}`:y>x?`+${y} ${esc(b.b)} · ${x} ${esc(b.a)}`:`Empate · 1 ${esc(b.a)} · 1 ${esc(b.b)}`;
  return `<div class="card" style="margin:-2px 0 10px"><div class="mu" style="margin-bottom:10px">¿Quién ganó?</div>${op.map(([x,y])=>`<button class="xro${cur===x+'-'+y?' on':''}" onclick="xRes(${ji},${bi},${x},${y})"><b>${x}–${y}</b><span>${nm(x,y)}</span></button>`).join('')}${r?`<button class="xro rm" onclick="xRes(${ji},${bi},null)">Quitar resultado</button>`:''}</div>`}
 function xVotA(g){return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.filter(b=>xRs(g,b)).length}/${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const r=xRs(g,b),k=ji+'-'+bi;return `<button class="bat" onclick="xOpenRes('${k}')"><span class="side">${esc(b.a)}</span><span class="vs">${r?r.a+'–'+r.b:'VS'}</span><span class="side r">${esc(b.b)}</span></button>${S.mx.o===k?xResPick(g,ji,bi,b,r):''}`}).join('')||'<div class="card mu">Sin batallas en esta jornada.</div>'}`).join('')||'<div class="card mu">Aún no hay jornadas. Ve a Editar, añade participantes y pulsa «Generar jornadas».</div>'}
@@ -4749,7 +4796,7 @@ function xEdit(g){const m=S.mx,A=xAuto(g),names=xNames(g),l=LX.find(x=>x.i===g.i
  dis=`${sec(1,'Diseño')}<div class="card"><label class="f">Nombre de la liga</label><input value="${esc(g.n)}" oninput="xSet('n',this.value)"><div class="xcols">${col('c','Color principal')}${col('c2','Color secundario')}</div><label class="f">Logo</label><div class="xlg">${logo(l,52)}<label class="btn s sm"><input type="file" accept="image/*" hidden onchange="xLogo(this.files[0])">${g.logo?'Cambiar':'Subir imagen'}</label>${g.logo?`<button class="btn s sm" onclick="xSet('logo','',1)">Quitar</button>`:''}</div></div>`,
  pl=ren=>names.map((n,i)=>`<div class="xrow">${ren?`<input value="${esc(n)}" onchange="xRenP(${i},this.value)" aria-label="Nombre del participante">`:`<div class="nm">${esc(n)}</div>`}<button class="ib del" onclick="xDelP(${i})" aria-label="Quitar a ${esc(n)}">✕</button></div>`).join('')||'<div class="mu" style="margin-bottom:8px">Aún no hay participantes.</div>',
  gmm=m.gm?`<div class="mu" style="text-align:center;margin-bottom:8px">${esc(m.gm)}</div>`:'',
- fin=`${sec(5,'Guardar')}<div class="card"><button class="btn" onclick="xSave()" ${m.busy?'disabled':''}>Guardar liga</button><button class="xdel" onclick="xDel()">Eliminar liga</button>${m.msg?`<div class="mu" style="text-align:center">${esc(m.msg)}</div>`:''}</div>`;
+ fin=`${xOwn(g)?sec(5,'Compartir')+`<div class="card"><button class="btn s" style="margin-bottom:0" onclick="S.mx.t='s';R()">👥 Compartir liga con mis amigos${xShN(g)?' ('+xShN(g)+')':''}</button></div>`:''}${sec(xOwn(g)?6:5,'Guardar')}<div class="card"><button class="btn" onclick="xSave()" ${m.busy?'disabled':''}>Guardar liga</button>${xOwn(g)?'<button class="xdel" onclick="xDel()">Eliminar liga</button>':''}${m.msg?`<div class="mu" style="text-align:center">${esc(m.msg)}</div>`:''}</div>`;
  if(A){const opts=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
   return `${hint('Diseño → participantes → jornadas. Después, en la pestaña Jornadas, toca cada batalla para marcar quién ganó.')}${dis}
 ${sec(2,'Participantes',names.length)}<div class="card">${pl(1)}<label class="f">Añadir (uno por línea, máx. 20)</label><textarea id="xnp" rows="3" placeholder="Nombre 1&#10;Nombre 2"></textarea><button class="btn s" onclick="xAddP()">＋ Añadir</button>${gmm}<div class="mu">Escribe sobre un nombre para cambiarlo. ✕ lo quita con sus batallas y resultados.</div></div>
@@ -4763,7 +4810,7 @@ ${sec(4,'Participantes',names.length)}<div class="card">${pl(0)}${gmm}<div class
 ${fin}`}
 function mlgV(){xInit();const g=xCur();if(!g)return `<button class="back" onclick="go('mle')">‹ Modo editor</button><div class="card">${X.uid?'Liga no encontrada.':'Cargando…'}</div>`;
  const l=LX.find(x=>x.i===g.id)||{},T=S.mx.t;
- return `<div class="xed"><button class="back" onclick="go('mle')">‹ Modo editor</button><div class="banner" style="--c:${g.c};--c2:${g.c2}">${logo(l,56)}<div style="min-width:0"><span class="kicker">${xAuto(g)?'Liga automática':'Liga manual'}</span><h1>${esc(g.n)}</h1><p>${xAuto(g)?(g.parts||[]).length+' participantes · '+g.jors.length+' jornadas':g.jors.length+' jornadas · '+g.rounds.length+' rondas'}</p></div></div><div class="seg">${[['v',xAuto(g)?'Jornadas':'Votar'],...(xTb(g)?[['t','Tabla']]:[]),['e','Editar']].map(([k,n])=>`<button class="${T===k?'on':''}" onclick="S.mx.t='${k}';R()">${n}</button>`).join('')}</div>`+(T==='t'&&xTb(g)?xTab(g):T==='e'?xEdit(g):xVot(g))+`</div>`}
+ return `<div class="xed"><button class="back" onclick="go(canSb()?'mle':'home')">‹ ${canSb()?'Modo editor':'Ligas'}</button><div class="banner" style="--c:${g.c};--c2:${g.c2}">${logo(l,56)}<div style="min-width:0"><span class="kicker">${xAuto(g)?'Liga automática':'Liga manual'}${xOwn(g)?'':' · de '+esc((SH.r[g.id]||{}).n||'un amigo')}</span><h1>${esc(g.n)}</h1><p>${xAuto(g)?(g.parts||[]).length+' participantes · '+g.jors.length+' jornadas':g.jors.length+' jornadas · '+g.rounds.length+' rondas'}</p></div></div>${xOwn(g)?`<button class="xshare" onclick="S.mx.t='s';R()">👥 Compartir liga con amigos${xShN(g)?' · '+xShN(g):''}</button>`:`<div class="xt" style="margin:0 2px 12px">${xCan(g)?'✏️ Tienes permiso para editar esta liga.':'👁 Solo puedes verla. No puedes modificarla.'}</div>`}<div class="seg">${[['v',xAuto(g)?'Jornadas':'Votar'],...(xTb(g)?[['t','Tabla']]:[]),...(xCan(g)?[['e','Editar']]:[]),...(xOwn(g)?[['s','Compartir']]:[])].map(([k,n])=>`<button class="${T===k?'on':''}" onclick="S.mx.t='${k}';R()">${n}</button>`).join('')}</div>`+(T==='t'&&xTb(g)?xTab(g):T==='e'&&xCan(g)?xEdit(g):T==='s'&&xOwn(g)?xShareH(g):xVot(g))+`</div>`}
 /* Integración: separado del rango, notificaciones y perfil */
 const _riX=rankInfo;rankInfo=function(v){return _riX((v||[]).filter(x=>!x.ed))};
 const _nfX=notifyFriends;notifyFriends=function(v){if(v&&v.ed)return;return _nfX(v)};
@@ -4771,7 +4818,7 @@ const _bvX=buildVote;buildVote=function(){const v=_bvX(),l=L.find(x=>x.i===S.lg)
 const _lfX=loadFor;loadFor=function(v){if(v==='lg'&&isX(S.lg))return;return _lfX.apply(this,arguments)};
 const _vlX=voteList;voteList=function(list,from){xStub(list);const h=_vlX(list,from);if(!Array.isArray(list)||!list.some(v=>v.ed))return h;const T='<button class="vrow"';
  return h.split(T).map((s,k)=>{const v=k&&list[k-1];if(!v||!v.ed)return s;const c=v.edc||'#7C3AED';return s.replace(/<span class="pill[^"]*">[^<]*<\/span>/,`<span class="pill" style="background:${c}2e;color:${c};border-color:${c}80">✏️ Modo editor</span>`)}).join(T)};
-const _hX=VIEW.home;VIEW.home=function(){const h=_hX();if(!canSb())return h;const mk='<div class="sec"><span>Ligas</span>';return h.replace(mk,`<button class="card libre" onclick="go('mle')"><div class="row"><div class="lbi">🎨</div><div style="flex:1;min-width:0"><b style="font-size:16px">Modo editor</b><div class="mu">Crea tus propias ligas, aparte de la página.</div></div></div></button>`+mk)};
+const _hX=VIEW.home;VIEW.home=function(){const h=_hX(),mk='<div class="sec"><span>Ligas</span>',sh=xShTiles();if(!canSb())return sh?h.replace(mk,sh+mk):h;return h.replace(mk,`<button class="card libre" onclick="go('mle')"><div class="row"><div class="lbi">🎨</div><div style="flex:1;min-width:0"><b style="font-size:16px">Modo editor</b><div class="mu">Crea tus propias ligas, aparte de la página.</div></div></div></button>`+sh+mk)};
 const _lgX=VIEW.lg;VIEW.lg=()=>isX(S.lg)?mlgV():_lgX();VIEW.mle=mleV;
 
 /* Móvil: al bajar se ocultan cabecera y barra inferior; al subir reaparecen */
