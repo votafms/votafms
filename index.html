@@ -1458,6 +1458,24 @@ body[data-v="comunidad"] .toplist{gap:10px}
 .cp-row{display:flex;gap:9px;flex-wrap:wrap}
 .cp-c{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.28);padding:0;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .cp-c:active{transform:scale(.9)}
+/* ===== Modo compacto móvil: más contenido en pantalla ===== */
+@media (max-width:700px){
+#app{padding:8px 10px calc(104px + env(safe-area-inset-bottom,0px))}
+.card{padding:12px;margin-bottom:8px;border-radius:18px}
+.sec{margin:14px 2px 6px}
+.banner{padding:12px 14px;margin-bottom:8px;border-radius:20px;gap:10px}
+.banner h1{font-size:18px;margin:2px 0 0}
+.bat{padding:10px 12px;margin-bottom:4px;border-radius:16px}
+.seg{margin-bottom:10px}
+.fp{max-height:58vh}
+.top{padding:calc(6px + env(safe-area-inset-top,0px)) 12px 6px}
+.sb{top:calc(52px + env(safe-area-inset-top,0px));margin-bottom:8px}
+.top,.nav,.sb,body::after{transition:transform .25s ease,opacity .25s ease,top .25s ease}
+body.hd .top{transform:translateY(-110%)}
+body.hd .nav{transform:translate(-50%,170%)}
+body.hd .sb{top:calc(6px + env(safe-area-inset-top,0px))}
+body.hd::after{opacity:0}
+}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -2363,7 +2381,9 @@ function perfilV(){
  <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
  ${nameCardH()}
  <button class="pfap" onclick="S.pfAp=!S.pfAp;R()"><span><b>🎨 Apariencia</b><em>Colores de la app y diseño de tu tarjeta</em></span><i>${S.pfAp?'▴':'▾'}</i></button>
- ${S.pfAp?themeCardH()+designCardH():''}`}
+ ${S.pfAp?themeCardH()+designCardH():''}
+ <button class="pfap" onclick="S.pfVz=!S.pfVz;R()"><span><b>♿ Accesibilidad</b><em>Lector de voz para baja visión</em></span><i>${S.pfVz?'▴':'▾'}</i></button>
+ ${S.pfVz?vzPanelH():''}`}
  else if(tab==='votos'){
   body=`<div class="sec" style="margin-top:6px"><span>Mis votos</span><span>${nv}</span></div>${voteList(S.myVotes,'perfil')}`}
  else{
@@ -4658,6 +4678,37 @@ const _vlX=voteList;voteList=function(list,from){xStub(list);const h=_vlX(list,f
  return h.split(T).map((s,k)=>{const v=k&&list[k-1];if(!v||!v.ed)return s;const c=v.edc||'#7C3AED';return s.replace(/<span class="pill[^"]*">[^<]*<\/span>/,`<span class="pill" style="background:${c}2e;color:${c};border-color:${c}80">✏️ Modo editor</span>`)}).join(T)};
 const _hX=VIEW.home;VIEW.home=function(){const h=_hX();if(!canSb())return h;const mk='<div class="sec"><span>Ligas</span>';return h.replace(mk,`<button class="card libre" onclick="go('mle')"><div class="row"><div class="lbi">🎨</div><div style="flex:1;min-width:0"><b style="font-size:16px">Modo editor</b><div class="mu">Crea tus propias ligas, aparte de la página.</div></div></div></button>`+mk)};
 const _lgX=VIEW.lg;VIEW.lg=()=>isX(S.lg)?mlgV():_lgX();VIEW.mle=mleV;
+
+/* Móvil: al bajar se ocultan cabecera y barra inferior; al subir reaparecen */
+(function(){let y=scrollY;addEventListener('scroll',()=>{const n=scrollY,d=n-y;if(Math.abs(d)<8)return;y=n;const fin=n+innerHeight>=document.body.scrollHeight-6;document.body.classList.toggle('hd',d>0&&n>70&&!fin)},{passive:true})})();
+const _goH=go;go=function(){document.body.classList.remove('hd');return _goH.apply(this,arguments)};
+
+/* ===== Lector de voz (estilo TalkBack) para baja visión ===== */
+const VZ={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const vzOn=()=>VZ.g('vz')==='1',vz2=()=>VZ.g('vz2')!=='0',vzRate=()=>+(VZ.g('vzr')||1);
+const vzFree=a=>!!a&&(/^(TEXTAREA|SELECT)$/.test(a.tagName)||(a.tagName==='INPUT'&&!/^(checkbox|radio|file|color|button|submit)$/.test(a.type)));
+const vzT=e=>(e.getAttribute('aria-label')||e.innerText||e.value||e.title||'').replace(/\s+/g,' ').trim().slice(0,160);
+function vzSay(t){if(!t||!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(t),v=speechSynthesis.getVoices().find(x=>/^es/i.test(x.lang));u.lang=v?v.lang:'es-ES';if(v)u.voice=v;u.rate=vzRate();speechSynthesis.cancel();speechSynthesis.speak(u)}
+function vzCtx(e){let n=e;const app=document.getElementById('app');while(n&&n!==app){let p=n.previousElementSibling;while(p){if(p.classList.contains('sec')&&p.firstElementChild)return p.firstElementChild.textContent.trim();p=p.previousElementSibling}n=n.parentElement}const h=document.querySelector('#app h1,#app .pg');return h?vzT(h):''}
+function vzDesc(e){const tg=e.tagName,ty=(e.type||'').toLowerCase();let lb=vzT(e),r='',ex='';
+ if(tg==='INPUT'||tg==='TEXTAREA'||tg==='SELECT'){const pl=e.previousElementSibling,l=pl&&pl.tagName==='LABEL'?pl.innerText.trim()+'. ':'';lb=l+(e.getAttribute('aria-label')||e.placeholder||'');
+  if(ty==='checkbox'||ty==='radio')r=(e.checked?'activada':'desactivada')+', casilla';else if(ty==='range')r='control deslizante, valor '+e.value;else if(ty==='color')r='selector de color';else if(ty==='file')r='elegir archivo';else if(tg==='SELECT')r='lista, '+((e.options[e.selectedIndex]||{}).text||'');else r='campo de texto'+(e.value?', contiene '+e.value.slice(0,80):', vacío')}
+ else if(tg==='A')r='enlace';else r='botón';
+ if(/(^| )(on|act|sel)( |$)/.test(e.className))r+=', seleccionado';if(e.disabled)r+=', no disponible';
+ const nv=e.closest('.nav');if(nv){const bs=[...nv.querySelectorAll('button')];ex='barra inferior, '+(bs.indexOf(e)+1)+' de '+bs.length}else if(e.closest('.top'))ex='cabecera';else if(e.closest('.seg')){const bs=[...e.parentElement.children];ex='pestañas, '+(bs.indexOf(e)+1)+' de '+bs.length}else ex=vzCtx(e);
+ return [lb||'sin etiqueta',r,ex?'en '+ex:''].filter(Boolean).join('. ')}
+let vzL='',vzT0=0;
+document.addEventListener('click',e=>{if(!vzOn()||!e.target.closest)return;
+ const a=e.target.closest('button,a,[onclick],[role=button],summary,label,input,select,textarea');
+ if(a){if(vzFree(a))return;const d=vzDesc(a),same=vzL===d&&Date.now()-vzT0<6000;
+  if(vz2()&&!same){e.preventDefault();e.stopImmediatePropagation();vzL=d;vzT0=Date.now();vzSay(d+'. Toca dos veces para activar')}else{vzL='';if(!vz2())vzSay(d)}return}
+ const x=e.target.closest('.card,.vrow,.sec,h1,h2,h3,p,li,.std,.banner,.mu');if(x)vzSay(vzT(x).slice(0,240))},true);
+document.addEventListener('focusin',e=>{if(vzOn()&&vzFree(e.target))vzSay(vzDesc(e.target))});
+document.addEventListener('change',e=>{const t=e.target;if(vzOn()&&t.matches&&t.matches('input[type=range],input[type=checkbox],input[type=radio],select'))vzSay(vzDesc(t))});
+const _goV=go;go=function(){const r=_goV.apply(this,arguments);if(vzOn())setTimeout(()=>{const h=document.querySelector('#app h1,#app .pg,#app .sec span');vzSay('Pantalla: '+(h?vzT(h):''))},450);return r};
+function vzSet(k,v){VZ.s(k,v);R();if(k==='vz')vzSay(v?'Lector de voz activado. Toca una vez para escuchar y dos veces para activar.':'Lector de voz desactivado.');else if(k==='vzr')vzSay('Velocidad cambiada.')}
+function vzPanelH(){const on=vzOn(),r=vzRate(),sg=(a,b,n1,n2)=>`<div class="seg" style="margin:0 0 10px"><button class="${a?'on':''}" onclick="${n1[1]}">${n1[0]}</button>${n2?`<button class="${a?'':'on'}" onclick="${n2[1]}">${n2[0]}</button>`:''}</div>`;
+ return `<div class="card"><b>♿ Lector de voz</b><div class="mu" style="margin:4px 0 10px">Lee en voz alta lo que tocas y dónde estás, como TalkBack. Se guarda solo en este dispositivo.</div>${sg(on,0,['Activado',"vzSet('vz',1)"],['Desactivado',"vzSet('vz',0)"])}<label class="f">Para activar un botón</label>${sg(vz2(),0,['Doble toque',"vzSet('vz2',1)"],['Un toque',"vzSet('vz2',0)"])}<label class="f">Velocidad de la voz</label><div class="seg" style="margin:0"><button class="${r<1?'on':''}" onclick="vzSet('vzr',0.8)">Lenta</button><button class="${r==1?'on':''}" onclick="vzSet('vzr',1)">Normal</button><button class="${r>1?'on':''}" onclick="vzSet('vzr',1.3)">Rápida</button></div><button class="btn s sm" style="margin-top:10px" onclick="vzSay('Así suena la voz del lector.')">▶ Probar voz</button></div>`}
 
 async function init(){
  const q=new URLSearchParams(location.search);
