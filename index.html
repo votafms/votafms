@@ -1411,6 +1411,53 @@ body[data-v="comunidad"] .toplist{gap:10px}
 .dip{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--ac);transform-origin:left;animation:dipb linear forwards}
 @keyframes dipb{to{transform:scaleX(0)}}
 .dipp{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:9px 12px;border-radius:14px;background:rgba(var(--acr),.1);border:1px solid rgba(var(--acr),.3);font-size:12.5px}
+/* ===== Modo editor ===== */
+.edchips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;scrollbar-width:none}
+.edchips::-webkit-scrollbar{display:none}
+.edchip{flex:0 0 auto;display:flex;align-items:center;gap:7px;border:1px solid var(--bd);background:var(--bg2);color:var(--mu);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.edchip.on{background:rgba(var(--acr),.18);color:var(--ac);border-color:rgba(var(--acr),.5)}
+.edr{padding:12px}
+.edrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.edrow input{margin:0;flex:1;min-width:0}
+.edrow .mu{flex:1;min-width:0}
+.edn{flex:0 0 26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(var(--acr),.18);color:var(--ac);font-weight:900;font-size:12px}
+.edmv,.edx{flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font-weight:900;cursor:pointer;padding:0;font-family:inherit}
+.edx{color:#FF6B7A}
+.edmv:disabled,.edx:disabled{opacity:.3;cursor:default}
+.edpt{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:10px;margin-bottom:8px}
+.edst{display:flex;align-items:center;gap:10px;margin-left:auto}
+.edst button{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);background:var(--cd2);color:var(--tx);font-size:18px;font-weight:900;cursor:pointer;padding:0;font-family:inherit}
+.edst b{min-width:22px;text-align:center}
+.edpv{display:flex;justify-content:center;padding:4px 0 10px}
+.edsls{display:flex;gap:8px}
+.edsl{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:16px;border:2px solid transparent;background:var(--bg2);color:var(--tx);cursor:pointer;font-family:inherit}
+.edsl.on{border-color:var(--ac)}
+.edsl b{font-size:12px}
+.edsl small{font-size:10.5px;color:var(--mu);letter-spacing:.4px}
+.edsc{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.3);box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.edsc.sm{width:16px;height:16px;border-width:1px;box-shadow:none}
+#edcp{position:fixed;inset:0;z-index:88;display:flex;align-items:flex-end;justify-content:center}
+.cp-bk{position:absolute;inset:0;background:rgba(3,6,14,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.cp-sh{position:relative;width:min(100%,460px);max-height:92vh;overflow:auto;background:var(--cd);border:1px solid var(--bd);border-radius:24px 24px 0 0;padding:14px 16px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.5)}
+.cp-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.cp-hd b{font-size:15px;min-width:0}
+.cp-wr{position:relative;width:min(70vw,250px);aspect-ratio:1;margin:10px auto 14px;touch-action:none;border-radius:50%;cursor:crosshair;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.cp-wr canvas{width:100%;height:100%;display:block;border-radius:50%}
+.cp-x{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.65),0 3px 10px rgba(0,0,0,.55);pointer-events:none}
+.cp-x:before,.cp-x:after{content:"";position:absolute;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.9)}
+.cp-x:before{left:50%;top:-8px;bottom:-8px;width:2px;margin-left:-1px}
+.cp-x:after{top:50%;left:-8px;right:-8px;height:2px;margin-top:-1px}
+.cp-vl{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:12px;color:var(--mu);font-weight:700}
+.cp-vl input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:16px;border-radius:999px;padding:0;margin:0;border:1px solid rgba(255,255,255,.2);outline:none}
+.cp-vl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.45);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.cp-vl input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.45)}
+.cp-cur{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.cp-dot{flex:0 0 auto;width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.35);box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.cp-cur input{margin:0;flex:1;min-width:0;text-align:center;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.cp-lb{margin:12px 2px 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:1px;color:var(--mu);font-weight:700}
+.cp-row{display:flex;gap:9px;flex-wrap:wrap}
+.cp-c{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.28);padding:0;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.cp-c:active{transform:scale(.9)}
 </style></head>
 <body>
 <header class="top" id="top"></header>
@@ -1550,7 +1597,7 @@ function rkQueue(uid){if(S.rkc[uid])return;S.rkc[uid]={n:null};_rkQ.push(uid);rk
 function rkPump(){while(_rkRun<5&&_rkQ.length){const uid=_rkQ.shift();_rkRun++;B.votesOfUser(uid).then(v=>{S.rkc[uid]={n:rankInfo(splitDups(v).keep).n,at:Date.now()}}).catch(()=>{S.rkc[uid]={n:null}}).finally(()=>{_rkRun--;clearTimeout(_rkT);_rkT=setTimeout(()=>{if(S.v==='search')ulRefresh();else if(S.v==='comunidad')R()},250);rkPump()})}}
 function rkN(x){if(S.me&&x.uid===S.me.uid){if(S.myVotes)return rankInfo(S.myVotes).n;return x.rv===RANK_V?(x.rp||0):(S.me.rp||0)}
  if(x.rv===RANK_V)return x.rp||0;const c=S.rkc[x.uid];if(c&&c.n!=null)return c.n;rkQueue(x.uid);return x.rp||0}
-const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',admin:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
+const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',admin:'perfil',editor:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
 const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
 function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i);return {a:(p[0]||'').trim(),b:(p[1]||'').trim(),sa:null,sb:null,j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||null,j:e.n+' · '+e.d}}
@@ -1731,7 +1778,7 @@ document.addEventListener('keydown',aKey);
 function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c&&KBUF==='1'?'Escribe 0 para poner 10, o Enter para dejar 1.':c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
 function votarReplicaA(){if(S.rep==='voted')return;S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;S.selA=null;R()}
 function quitarReplicaA(){const k=S.rounds.findIndex(r=>r.rep);if(k>=0){S.rounds.splice(k,1);S.sc.splice(k,1)}S.rep=null;S.selA=null;S.sheet=null;S.ri=0;R()}
-function actRowsV(v){const rows=ACT.map((x,i)=>({r:x.k,ta:v.sc[0].a[i],tb:v.sc[0].b[i]}));if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
+function actRowsV(v){const nm=Array.isArray(v.al)?v.al:null,n=nm?nm.length:Math.min(ACT.length,v.sc[0].a.length),rows=[];for(let i=0;i<n;i++)rows.push({r:(nm&&nm[i])||(ACT[i]&&ACT[i].k)||('Ronda '+(i+1)),ta:v.sc[0].a[i],tb:v.sc[0].b[i]});if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
 function actualV(){
  difNorm();const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
  const complete=c1.every(x=>x!=null)&&c2.every(x=>x!=null);
@@ -1746,7 +1793,7 @@ function actualV(){
  const repOk=S.rep!=='voted'||(S.sc[1]&&S.sc[1][0].every(x=>x!=null)&&S.sc[1][1].every(x=>x!=null));
  const canSave=complete&&(S.rep==='voted'||!tie||S.rep==='skipped');
  const prompt=tie&&!S.rep?`<div class="card" style="text-align:center;margin-top:12px"><b>${ma===mb?'Empate':'Diferencia de '+fmt(Math.abs(ma-mb))} ${ma} – ${mb}</b><div class="mu" style="margin:6px 0 12px">${ma===mb?'Como los dos sacaron el mismo puntaje, la réplica decide el ganador. Si no la juegas, queda empate.':'La diferencia es menor a '+S.dif+', así que la réplica decide el ganador. Si no la juegas, se cuenta por los puntos.'}</div><button class="btn" onclick="votarReplicaA()">Jugar réplica</button><button class="btn s" onclick="omitirReplica()">No jugar réplica</button></div>`:'';
- const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las 5 casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">La réplica está incompleta: si guardas así, no se tomará en cuenta.</div>`:'');
+ const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las ${ACT.length} casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">La réplica está incompleta: si guardas así, no se tomará en cuenta.</div>`:'');
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
  <span class="tbg">${plQuickH()}<button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></span></div>
  ${difBar()}<div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
@@ -2173,7 +2220,7 @@ function sheetH(){const h=S.sheet;
 function buildVote(){const act=S.fmt==='actual';const a=mainTot(0),b=mainTot(1);
  const useRep=repDone();
  const rows=S.rounds.map((r,k)=>({r:r.n,ta:sumR(k,0),tb:sumR(k,1),rep:!!r.rep})).filter(r=>useRep||!r.rep);
- const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:useRep?'voted':(S.rep==='voted'?'none':(S.rep||'none')),fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,dif:S.dif||null,sc:S.sc.filter((_,k)=>useRep||!(S.rounds[k]&&S.rounds[k].rep)).map(p=>({a:p[0],b:p[1]}))};if(useRep){bv.ra=repTotM(0);bv.rb=repTotM(1)}return bv}
+ const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:useRep?'voted':(S.rep==='voted'?'none':(S.rep||'none')),fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,dif:S.dif||null,sc:S.sc.filter((_,k)=>useRep||!(S.rounds[k]&&S.rounds[k].rep)).map(p=>({a:p[0],b:p[1]}))};if(useRep){bv.ra=repTotM(0);bv.rb=repTotM(1)}if(act)bv.al=ACT.map(x=>x.k);return bv}
 function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{const nv=voteNorm(r),o=outcomeOf(r);sa+=nv.ta;sb+=nv.tb;if(o.w==='a')wa++;else if(o.w==='b')wb++});return {n:rows.length,wa,wb,sa,sb}}
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
@@ -2322,6 +2369,7 @@ function perfilV(){
  else{
   body=`<div class="sec" style="margin-top:6px"><span>Sesión</span></div>
  ${isAdmin()?`<button class="btn" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
+ ${canEd()?`<button class="btn" onclick="edOpen()">🎨 Modo editor</button>`:''}
  <button class="btn s" onclick="switchAccount()">🔄 Cambiar de cuenta</button>
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
  <div class="sec"><span>Zona de peligro</span></div>
@@ -3583,7 +3631,7 @@ const _adminV1=adminV;
 adminV=function(){let h=_adminV1();if(!isAdmin())return h;
  if(S.collabs===undefined){S.collabs=null;B.listCollabs().then(l=>{S.collabs=l;R()}).catch(()=>{S.collabs=[];R()})}
  const L2=S.collabs;
- const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página.</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px"><div style="flex:1;min-width:0"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabCal('${esc(c.uid)}',${c.cal?0:1})">${c.cal?'Calendario ✓':'Calendario'}</button><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
+ const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página. Con los botones de cada colaborador puedes darle también <b>Calendario</b> o <b>Editor</b> (modo editor: rondas, colores y logos).</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabCal('${esc(c.uid)}',${c.cal?0:1})">${c.cal?'Calendario ✓':'Calendario'}</button><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabEd('${esc(c.uid)}',${c.ed?0:1})">${c.ed?'Editor ✓':'Editor'}</button><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
  return h.replace('<div class="sec"><span>Comentarios de usuarios</span>',box+'<div class="sec"><span>Comentarios de usuarios</span>')};
 async function collabAdd(){if(!isAdmin())return;const un=((document.getElementById('cbu')||{}).value||'').trim().toLowerCase().replace(/^@/,'');
  if(!/^[a-z0-9._]{3,20}$/.test(un)){S.collabMsg='Escribe un nombre de usuario válido.';return R()}
@@ -4382,6 +4430,184 @@ async function toggleLike(uid){
 function achFail(msg){const el=document.createElement('div');el.className='ach-toast';el.style.borderColor='#EF4444';el.innerHTML=`<div class="tm" style="background:#EF4444">⚠️</div><div><b style="font-size:13px;font-weight:700">${esc(msg)}</b></div>`;document.body.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4200)}
 
 const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV,duel:duelV};
+/* ===== MODO EDITOR: rondas, colores y logos (solo administrador y quien tenga el permiso «Editor») ===== */
+const canEd=()=>!!(S.me&&(S.admin||S.collabEd));
+B.getCollabEd=async uid=>{const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'collabs',uid));return d.exists()&&!!d.data().ed}catch(e){return false}};
+const _setMeEd=setMe;setMe=function(uid,prof){S.collabEd=false;const r0=_setMeEd(uid,prof);try{B.getCollabEd(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabEd){S.collabEd=v;R()}})}catch(e){}return r0};
+async function collabEd(uid,v){if(!isAdmin())return;try{const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'collabs',uid),{ed:!!v},{merge:true});const c=(S.collabs||[]).find(x=>x.uid===uid);if(c)c.ed=!!v;S.collabMsg=v?'Ahora puede usar el modo editor.':'Ya no puede usar el modo editor.'}catch(e){S.collabMsg='No se pudo cambiar el permiso. ¿Publicaste las reglas nuevas?'}R()}
+
+const ED={tab:'vot',tpl:'act',lg:'es',slot:'c',dirty:false,msg:'',busy:false};
+const ED_TPLS=[['act','Planilla actual'],['es','Ligas · España'],['std','Ligas · resto'],['ws','World Series'],['libre','Batalla libre'],['in','Internacional'],['t25','2024 / 2025'],['t23','2023'],['t21','2021 / 2022'],['t20','2020'],['t18','2018 / 2019'],['t17','2017']];
+const ED_SL=[['c','Principal'],['c2','Secundario'],['tx','Texto']];
+const edClone=o=>JSON.parse(JSON.stringify(o));
+const edSan=(s,n)=>String(s==null?'':s).replace(/[<>&"`\\]/g,'').replace(/'/g,'’').slice(0,n||30);
+const ED_DEF={act:edClone(ACT),rf:{},col:{},logo:{...LOGO}};
+ED_TPLS.forEach(t=>{if(t[0]!=='act'&&RF[t[0]])ED_DEF.rf[t[0]]=edClone(RF[t[0]])});
+L.forEach(l=>{ED_DEF.col[l.i]={c:l.c,c2:l.c2,tx:l.tx}});
+const edSame=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+
+/* --- Validar y aplicar una configuración (la que viene de Firestore o la que se está editando) --- */
+function edCleanRounds(a){if(!Array.isArray(a)||!a.length||a.length>14)return null;const out=[];
+ for(const r of a){if(!r||!Array.isArray(r.p)||!r.p.length||r.p.length>5)return null;
+  const o={n:edSan(r.n,28)||'Ronda',p:[]};
+  for(const p of r.p){if(!p)return null;const q={c:Math.min(20,Math.max(1,Math.round(+p.c)||1))};
+   if(p.t!=null&&String(p.t).trim())q.t=edSan(p.t,28);
+   const m=Math.round(+p.max);if(p.max!=null&&m>=1&&m<=10&&m!==4)q.max=m;
+   if(p.rv)q.rv=1;o.p.push(q)}
+  out.push(o)}
+ return out}
+function edApply(c){if(!c||typeof c!=='object')return;
+ if(Array.isArray(c.act)&&c.act.length&&c.act.length<=12){const a=c.act.filter(x=>x&&x.k!=null).map(x=>({k:edSan(x.k,24)||'RONDA',max:Math.min(10,Math.max(1,Math.round(+x.max)||10))}));if(a.length)ACT.splice(0,ACT.length,...a)}
+ if(c.rf&&typeof c.rf==='object')Object.keys(c.rf).forEach(k=>{if(!ED_TPLS.some(t=>t[0]===k&&k!=='act'))return;const r=edCleanRounds(c.rf[k]);if(r)RF[k]=r});
+ if(c.col&&typeof c.col==='object')Object.keys(c.col).forEach(id=>{const l=L.find(x=>x.i===id),v=c.col[id];if(!l||!v)return;['c','c2','tx'].forEach(f=>{if(/^#[0-9a-f]{6}$/i.test(v[f]||''))l[f]=v[f]})});
+ if(c.logo&&typeof c.logo==='object')Object.keys(c.logo).forEach(id=>{const u=c.logo[id];if(L.some(x=>x.i===id)&&typeof u==='string'&&u.length<260000&&/^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(u))LOGO[id]=u})}
+/* Solo se guarda lo que cambió respecto a lo original */
+function edBuild(){const c={v:1};
+ if(!edSame(ACT,ED_DEF.act))c.act=edClone(ACT);
+ const rf={};ED_TPLS.forEach(t=>{const k=t[0];if(k!=='act'&&RF[k]&&!edSame(RF[k],ED_DEF.rf[k]))rf[k]=edClone(RF[k])});if(Object.keys(rf).length)c.rf=rf;
+ const col={};L.forEach(l=>{const d=ED_DEF.col[l.i];if(l.c!==d.c||l.c2!==d.c2||l.tx!==d.tx)col[l.i]={c:l.c,c2:l.c2,tx:l.tx}});if(Object.keys(col).length)c.col=col;
+ const lo={};L.forEach(l=>{if(LOGO[l.i]&&LOGO[l.i]!==ED_DEF.logo[l.i])lo[l.i]=LOGO[l.i]});if(Object.keys(lo).length)c.logo=lo;
+ return c}
+async function edSync(){if(ED.dirty)return;try{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','editor'));if(d.exists()){const c=JSON.parse(d.data().cfg||'{}');edApply(c);R()}}catch(e){}}
+async function edSave(){if(!canEd()||ED.busy)return;ED.busy=true;ED.msg='Guardando…';R();
+ try{const js=JSON.stringify(edBuild());if(js.length>900000)throw new Error('big');
+  const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'config','editor'),{cfg:js,ts:Date.now(),by:S.me.uid});ED.dirty=false;ED.msg='✓ Publicado. Ya lo ven todos los usuarios.'}
+ catch(e){ED.msg=String(e&&e.message)==='big'?'Los logos pesan demasiado. Quita alguno o usa imágenes más simples.':'No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste la regla de config/editor en Firestore?'}
+ ED.busy=false;R()}
+function edOpen(){if(!canEd())return;ED.msg='';go('editor')}
+const edD=()=>{ED.dirty=true};
+
+/* --- Planilla actual (ACT) --- */
+function edAN(i,v){ACT[i].k=edSan(v,24);edD()}
+function edAM(i,d){ACT[i].max=Math.min(10,Math.max(1,ACT[i].max+d));edD();R()}
+function edAMv(i,d){const j=i+d;if(j<0||j>=ACT.length)return;[ACT[i],ACT[j]]=[ACT[j],ACT[i]];edD();R()}
+function edADel(i){if(ACT.length<2)return;if(!confirm('¿Quitar la ronda «'+ACT[i].k+'»?'))return;ACT.splice(i,1);edD();R()}
+function edAAdd(){if(ACT.length>=12)return;ACT.push({k:'RONDA '+(ACT.length+1),max:10});edD();R()}
+/* --- Planillas antiguas (RF) --- */
+function edRN(k,i,v){RF[k][i].n=edSan(v,28)||'Ronda';edD()}
+function edPT(k,i,j,v){const p=RF[k][i].p[j],t=edSan(v,28).trim();if(t)p.t=t;else delete p.t;edD()}
+function edPC(k,i,j,d){const p=RF[k][i].p[j];p.c=Math.min(20,Math.max(1,p.c+d));edD();R()}
+function edPM(k,i,j,d){const p=RF[k][i].p[j],m=Math.min(10,Math.max(1,(p.max||4)+d));if(m===4)delete p.max;else p.max=m;edD();R()}
+function edPAdd(k,i){const r=RF[k][i];if(r.p.length>=5)return;r.p.forEach((p,j)=>{if(!p.t)p.t='Parte '+(j+1)});r.p.push({t:'Parte '+(r.p.length+1),c:6});edD();R()}
+function edPDel(k,i,j){const r=RF[k][i];if(r.p.length<2)return;r.p.splice(j,1);edD();R()}
+function edRAdd(k){if(RF[k].length>=14)return;RF[k].push({n:'Ronda '+(RF[k].length+1),p:[{c:6}]});edD();R()}
+function edRDel(k,i){if(RF[k].length<2)return;if(!confirm('¿Quitar la ronda «'+RF[k][i].n+'»?'))return;RF[k].splice(i,1);edD();R()}
+function edRMv(k,i,d){const a=RF[k],j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];edD();R()}
+function edReset(k){if(!confirm('¿Volver esta planilla a como estaba originalmente?'))return;if(k==='act')ACT.splice(0,ACT.length,...edClone(ED_DEF.act));else if(ED_DEF.rf[k])RF[k]=edClone(ED_DEF.rf[k]);edD();R()}
+function edResetAll(){if(!confirm('¿Restablecer TODO (rondas, colores y logos) a lo original? Para que lo vean todos tienes que volver a guardar.'))return;
+ ACT.splice(0,ACT.length,...edClone(ED_DEF.act));Object.keys(ED_DEF.rf).forEach(k=>{RF[k]=edClone(ED_DEF.rf[k])});
+ L.forEach(l=>{Object.assign(l,ED_DEF.col[l.i]);if(ED_DEF.logo[l.i])LOGO[l.i]=ED_DEF.logo[l.i];else delete LOGO[l.i]});edD();ED.msg='Todo quedó como al principio. Toca «Guardar y publicar» para aplicarlo a todos.';R()}
+
+const edStep=(m,p,v)=>`<div class="edst"><button onclick="${m}" aria-label="Menos">−</button><b>${v}</b><button onclick="${p}" aria-label="Más">+</button></div>`;
+const edMvBtns=(fu,fd,fx,i,n,minN)=>`<button class="edmv" onclick="${fu}" ${i?'':'disabled'} aria-label="Subir">↑</button><button class="edmv" onclick="${fd}" ${i<n-1?'':'disabled'} aria-label="Bajar">↓</button><button class="edx" onclick="${fx}" ${n<minN+1?'disabled':''} aria-label="Quitar">✕</button>`;
+
+function edVotH(){const k=ED.tpl;
+ const chips=`<div class="edchips">${ED_TPLS.map(t=>`<button class="edchip${k===t[0]?' on':''}" onclick="ED.tpl='${t[0]}';R()">${t[1]}</button>`).join('')}</div>`;
+ const rst=`<button class="btn s" onclick="edReset('${k}')">Restablecer esta planilla</button>`;
+ if(k==='act'){
+  return chips+`<div class="mu" style="margin:0 2px 10px">Planilla actual: cada fila es una ronda con una casilla por MC. Cambia el nombre, el puntaje máximo y cuántas rondas quieres.</div>`
+  +ACT.map((x,i)=>`<div class="card edr"><div class="edrow"><span class="edn">${i+1}</span><input value="${esc(x.k)}" maxlength="24" placeholder="Nombre de la ronda" oninput="edAN(${i},this.value)">${edMvBtns(`edAMv(${i},-1)`,`edAMv(${i},1)`,`edADel(${i})`,i,ACT.length,1)}</div><div class="edrow"><span class="mu">Puntaje máximo de la casilla</span>${edStep(`edAM(${i},-1)`,`edAM(${i},1)`,x.max)}</div></div>`).join('')
+  +`<button class="btn s" onclick="edAAdd()" ${ACT.length>=12?'disabled':''}>+ Añadir ronda</button>${rst}`}
+ const rd=RF[k]||[];
+ return chips+`<div class="mu" style="margin:0 2px 10px">Planilla antigua: cada ronda se divide en partes (por ejemplo Minuto 1 y Minuto 2) y cada parte tiene sus casillas. Además de las casillas, cada parte lleva siempre Téc., Flow y P.Esc.</div>`
+ +rd.map((r,i)=>`<div class="card edr"><div class="edrow"><span class="edn">${i+1}</span><input value="${esc(r.n)}" maxlength="28" placeholder="Nombre de la ronda" oninput="edRN('${k}',${i},this.value)">${edMvBtns(`edRMv('${k}',${i},-1)`,`edRMv('${k}',${i},1)`,`edRDel('${k}',${i})`,i,rd.length,1)}</div>
+${r.p.map((p,j)=>`<div class="edpt"><div class="edrow"><input value="${esc(p.t||'')}" maxlength="28" placeholder="Título de la parte (opcional)" oninput="edPT('${k}',${i},${j},this.value)"><button class="edx" onclick="edPDel('${k}',${i},${j})" ${r.p.length<2?'disabled':''} aria-label="Quitar parte">✕</button></div><div class="edrow"><span class="mu">Casillas por MC</span>${edStep(`edPC('${k}',${i},${j},-1)`,`edPC('${k}',${i},${j},1)`,p.c)}</div><div class="edrow" style="margin-bottom:0"><span class="mu">Puntos máx. por casilla</span>${edStep(`edPM('${k}',${i},${j},-1)`,`edPM('${k}',${i},${j},1)`,p.max||4)}</div></div>`).join('')}
+<button class="btn s sm" style="margin:0" onclick="edPAdd('${k}',${i})" ${r.p.length>=5?'disabled':''}>+ Añadir parte</button></div>`).join('')
+ +`<button class="btn s" onclick="edRAdd('${k}')" ${rd.length>=14?'disabled':''}>+ Añadir ronda</button>${rst}`}
+
+/* --- Colores --- */
+function edPvH(){const l=L.find(x=>x.i===ED.lg)||L[0];return `<div class="lt2" style="--c:${l.c};--c2:${l.c2};--tx2:${l.tx};width:min(100%,190px);cursor:default"><div class="lt2-h">${logo(l,44)}</div><b>${esc(l.n.replace('FMS ',''))}</b></div>`}
+function edSlotsH(){const l=L.find(x=>x.i===ED.lg)||L[0];return ED_SL.map(([k,t])=>`<button class="edsl${ED.slot===k?' on':''}" onclick="edSlot('${k}')"><span class="edsc" style="background:${l[k]}"></span><b>${t}</b><small>${esc(String(l[k]).toUpperCase())}</small></button>`).join('')}
+function edPvRefresh(){const a=document.getElementById('edpv');if(a)a.innerHTML=edPvH();const b=document.getElementById('edsl');if(b)b.innerHTML=edSlotsH()}
+function edSlot(k){if(ED.slot===k)return cpOpen(ED.lg,k);ED.slot=k;edPvRefresh()}
+function edSetCol(id,slot,hex,quiet){const l=L.find(x=>x.i===id);if(!l||!/^#[0-9a-f]{6}$/i.test(hex))return;l[slot]=hex.toLowerCase();if(!quiet)ED.dirty=true;edPvRefresh()}
+function edPal(h){edSetCol(ED.lg,ED.slot,h)}
+function edColReset(){const d=ED_DEF.col[ED.lg];Object.assign(L.find(x=>x.i===ED.lg),d);edD();R()}
+const rgb2hex=(r,g,b)=>'#'+[r,g,b].map(x=>Math.max(0,Math.min(255,x)).toString(16).padStart(2,'0')).join('');
+const hsl2hex=(h,s,l)=>{const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return rgb2hex(...[f(0),f(8),f(4)].map(x=>Math.round(x*255)))};
+const ED_PAL=(()=>{const o=[];[[.9,.32],[.85,.46],[.9,.62],[.95,.80]].forEach(([s,l])=>{for(let h=0;h<360;h+=30)o.push(hsl2hex(h,s,l))});return o.concat(['#000000','#18181B','#3F3F46','#71717A','#A1A1AA','#D4D4D8','#F4F4F5','#FFFFFF'])})();
+function edColH(){const l=L.find(x=>x.i===ED.lg)||L[0];
+ return `<div class="edchips">${L.map(x=>`<button class="edchip${ED.lg===x.i?' on':''}" onclick="ED.lg='${x.i}';R()"><span class="edsc sm" style="background:${x.c}"></span>${esc(x.n.replace('FMS ',''))}</button>`).join('')}</div>
+<div class="card" style="text-align:center"><div id="edpv" class="edpv">${edPvH()}</div><div class="mu" style="font-size:12px;margin:2px 0 12px">Así se ve la plaza en la pantalla de inicio.</div>
+<div class="edsls" id="edsl">${edSlotsH()}</div><div class="mu" style="font-size:12px;margin:8px 0 12px">Toca un color de arriba para elegir cuál cambiar (tócalo otra vez para abrir el selector).</div>
+<button class="btn" onclick="cpOpen(ED.lg,ED.slot)">🎡 Selector con cruceta</button></div>
+<div class="sec"><span>Muchos colores</span><span>toca uno</span></div><div class="card"><div class="cp-row wrap">${ED_PAL.map(h=>`<button class="cp-c" style="background:${h}" onclick="edPal('${h}')" aria-label="${h}"></button>`).join('')}</div></div>
+<button class="btn s" onclick="edColReset()">Restablecer colores de esta plaza</button>`}
+
+/* --- Logos --- */
+function edLogoFile(id,inp){const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+ if(!/^image\//.test(f.type)){ED.msg='Elige una imagen (PNG, JPG o WebP).';return R()}
+ const fr=new FileReader();fr.onerror=()=>{ED.msg='No se pudo leer ese archivo.';R()};
+ fr.onload=()=>{const im=new Image();im.onerror=()=>{ED.msg='No se pudo abrir esa imagen.';R()};
+  im.onload=()=>{const enc=mx=>{const k=Math.min(1,mx/Math.max(im.width,im.height)),w=Math.max(1,Math.round(im.width*k)),h=Math.max(1,Math.round(im.height*k)),cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(im,0,0,w,h);let u=cv.toDataURL('image/webp',.85);if(!/^data:image\/webp/.test(u))u=cv.toDataURL('image/png');return u};
+   let u=enc(192);if(u.length>150000)u=enc(128);if(u.length>200000){ED.msg='Esa imagen pesa demasiado, prueba con una más simple.';return R()}
+   LOGO[id]=u;edD();ED.msg='Logo cargado. Toca «Guardar y publicar» para que lo vean todos.';R()};
+  im.src=fr.result};fr.readAsDataURL(f)}
+function edLogoDel(id){if(ED_DEF.logo[id])LOGO[id]=ED_DEF.logo[id];else delete LOGO[id];edD();R()}
+function edLogoH(){return `<div class="mu" style="margin:0 2px 10px">Sube el logo de cada plaza. Se ve mejor un PNG con fondo transparente; la imagen se ajusta sola de tamaño.</div>`
+ +L.map(l=>{const custom=!!LOGO[l.i]&&LOGO[l.i]!==ED_DEF.logo[l.i];return `<div class="card row" style="align-items:center;gap:12px">${logo(l,52)}<div style="flex:1;min-width:0"><b>${esc(l.n)}</b><div class="mu" style="font-size:12px">${custom?'Logo nuevo':LOGO[l.i]?'Logo original':'Sin logo'}</div></div><span style="display:flex;flex-direction:column;gap:6px"><label class="btn s sm" style="margin:0;cursor:pointer;width:auto" for="edf_${l.i}">Subir foto</label>${custom?`<button class="btn s sm" style="margin:0;width:auto" onclick="edLogoDel('${l.i}')">Quitar</button>`:''}</span><input type="file" id="edf_${l.i}" accept="image/*" hidden onchange="edLogoFile('${l.i}',this)"></div>`}).join('')}
+
+function edBar(){return `<div class="card" style="margin-top:14px"><button class="btn" onclick="edSave()" ${ED.busy?'disabled':''}>${ED.busy?'Guardando…':'Guardar y publicar para todos'}</button><button class="btn s" style="margin-bottom:0" onclick="edResetAll()">Restablecer todo</button>${ED.msg?`<div class="mu" style="margin-top:8px">${esc(ED.msg)}</div>`:''}${ED.dirty?'<div class="mu" style="margin-top:6px;color:var(--ac)">● Cambios sin publicar: por ahora solo los ves tú. Puedes probarlos votando una batalla.</div>':''}</div>`}
+function editorV(){
+ if(!canEd())return `<button class="back" onclick="go('perfil')">‹ Volver</button><div class="card">No tienes acceso al modo editor.</div>`;
+ const tabs=[['vot','🗳️ Votación'],['col','🎨 Colores'],['logo','🖼️ Logos']];
+ const body=ED.tab==='col'?edColH():ED.tab==='logo'?edLogoH():edVotH();
+ return `<button class="back" onclick="go('perfil')">‹ Volver</button>
+<div class="du-hero"><div class="du-ico">🎨</div><div style="min-width:0"><h1 class="pg">Modo editor</h1><div class="du-sub">Cambia rondas, colores y logos. Pruébalo y publícalo cuando quede bien.</div></div></div>
+<div class="seg">${tabs.map(([k,t])=>`<button class="${ED.tab===k?'on':''}" onclick="ED.tab='${k}';R()">${t}</button>`).join('')}</div>${body}${edBar()}`}
+
+/* --- Selector de color: rueda con cruceta, brillo, tonos que aparecen al moverte y paleta --- */
+const hsv2rgb=(h,s,v)=>{const f=n=>{const k=(n+h/60)%6;return v-v*s*Math.max(0,Math.min(k,4-k,1))};return [f(5),f(3),f(1)].map(x=>Math.round(x*255))};
+const hsv2hex=(h,s,v)=>rgb2hex(...hsv2rgb(h,s,v));
+function hex2hsv(hex){hex=String(hex||'#000000').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const r=parseInt(hex.substr(0,2),16)/255,g=parseInt(hex.substr(2,2),16)/255,b=parseInt(hex.substr(4,2),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;if(d){if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}return [h||0,mx?d/mx:0,mx]}
+let CP=null;const CPH=[];
+const cpEl=id=>document.getElementById(id);
+const cpCirc=a=>a.map(h=>`<button class="cp-c" style="background:${h}" onclick="cpSet('${h}')" aria-label="${h}"></button>`).join('');
+const cpHex=()=>hsv2hex(CP.h,CP.s,CP.v);
+function cpDraw(){const c=cpEl('cpc');if(!c||!CP)return;const n=c.width,ctx=c.getContext('2d'),im=ctx.createImageData(n,n),R0=n/2,v=CP.v;
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){const dx=x+.5-R0,dy=y+.5-R0,d=Math.hypot(dx,dy),i=(y*n+x)*4;if(d>R0){im.data[i+3]=0;continue}
+  const rgb=hsv2rgb((Math.atan2(dy,dx)*180/Math.PI+360)%360,Math.min(1,d/R0),v);im.data[i]=rgb[0];im.data[i+1]=rgb[1];im.data[i+2]=rgb[2];im.data[i+3]=255}
+ ctx.putImageData(im,0,0)}
+function cpRows(){if(!CP)return;const {h,s,v}=CP;
+ const t1=[.3,.45,.6,.75,.9,1].map(x=>hsv2hex(h,s,x)).concat([.12,.3,.5,.7,.85,1].map(x=>hsv2hex(h,x,v)));
+ const t2=[180,30,-30,120,-120,150,-150].map(d=>hsv2hex((h+d+360)%360,s,v));
+ cpEl('cps1').innerHTML=cpCirc(t1);cpEl('cps2').innerHTML=cpCirc(t2);
+ cpEl('cps3').innerHTML=CP.trail.length?cpCirc(CP.trail):'<span class="mu" style="font-size:12px">Mueve la cruceta y aquí se van guardando los colores por los que pasas.</span>'}
+function cpUpd(apply){if(!CP)return;const w=cpEl('cpw');if(!w)return;const hex=cpHex(),r=w.clientWidth/2,a=CP.h*Math.PI/180,cx=cpEl('cpx');
+ cx.style.left=(r+Math.cos(a)*CP.s*r)+'px';cx.style.top=(r+Math.sin(a)*CP.s*r)+'px';cx.style.background=hex;
+ cpEl('cpd').style.background=hex;const hi=cpEl('cph');if(document.activeElement!==hi)hi.value=hex.toUpperCase();
+ const sl=cpEl('cpv');sl.value=Math.round(CP.v*100);sl.style.background='linear-gradient(90deg,#000,'+hsv2hex(CP.h,CP.s,1)+')';
+ if(apply!==false)edSetCol(CP.lg,CP.slot,hex);
+ if(!CP.raf)CP.raf=requestAnimationFrame(()=>{if(CP){CP.raf=0;cpRows()}})}
+function cpTrail(hex){CP.trail=[hex].concat(CP.trail.filter(x=>x!==hex)).slice(0,30)}
+function cpSet(hex){if(!CP)return;const t=hex2hsv(hex);CP.h=t[0];CP.s=t[1];CP.v=t[2];cpTrail(hex.toLowerCase());cpDraw();cpUpd()}
+function cpBr(x){if(!CP)return;CP.v=Math.max(0,Math.min(1,x/100));cpDraw();cpUpd()}
+function cpHexIn(x){if(!CP||!/^#?[0-9a-f]{6}$/i.test(x.trim()))return;const t=hex2hsv(x.trim().replace('#','#'));CP.h=t[0];CP.s=t[1];CP.v=t[2];cpDraw();cpUpd()}
+function cpBind(){const w=cpEl('cpw');let down=false;
+ const mv=e=>{const r=w.getBoundingClientRect(),R0=r.width/2,x=e.clientX-r.left-R0,y=e.clientY-r.top-R0;CP.h=(Math.atan2(y,x)*180/Math.PI+360)%360;CP.s=Math.min(1,Math.hypot(x,y)/R0);
+  if(CP.lx==null||Math.hypot(e.clientX-CP.lx,e.clientY-CP.ly)>26){CP.lx=e.clientX;CP.ly=e.clientY;cpTrail(cpHex())}cpUpd()};
+ w.addEventListener('pointerdown',e=>{down=true;try{w.setPointerCapture(e.pointerId)}catch(_){}CP.lx=null;mv(e);e.preventDefault()});
+ w.addEventListener('pointermove',e=>{if(down){mv(e);e.preventDefault()}});
+ const up=()=>{if(down){down=false;if(CP){cpTrail(cpHex());cpRows()}}};
+ w.addEventListener('pointerup',up);w.addEventListener('pointercancel',up)}
+function cpOpen(lg,slot){const l=L.find(x=>x.i===lg);if(!l)return;const t=hex2hsv(l[slot]);
+ CP={lg,slot,h:t[0],s:t[1],v:t[2],orig:l[slot],trail:CPH.slice(),lx:null,raf:0};
+ let el=cpEl('edcp');if(el)el.remove();el=document.createElement('div');el.id='edcp';
+ const nm=(ED_SL.find(x=>x[0]===slot)||['',''])[1];
+ el.innerHTML=`<div class="cp-bk" onclick="cpClose(true)"></div><div class="cp-sh"><div class="cp-hd"><b>Color ${nm.toLowerCase()} · ${esc(l.n)}</b><button class="fbtn sent" onclick="cpClose(false)">Cancelar</button></div>
+<div class="cp-wr" id="cpw"><canvas id="cpc" width="240" height="240"></canvas><div class="cp-x" id="cpx"></div></div>
+<div class="cp-vl"><span>Brillo</span><input type="range" id="cpv" min="0" max="100" oninput="cpBr(this.value)"></div>
+<div class="cp-cur"><span class="cp-dot" id="cpd"></span><input id="cph" maxlength="7" autocapitalize="characters" autocomplete="off" spellcheck="false" oninput="cpHexIn(this.value)"><button class="btn sm" style="width:auto;margin:0" onclick="cpClose(true)">Listo</button></div>
+<div class="cp-lb">Tonos parecidos</div><div class="cp-row wrap" id="cps1"></div>
+<div class="cp-lb">Combinan con este</div><div class="cp-row wrap" id="cps2"></div>
+<div class="cp-lb">Los que has ido probando</div><div class="cp-row wrap" id="cps3"></div>
+<div class="cp-lb">Paleta</div><div class="cp-row wrap">${ED_PAL.map(h=>`<button class="cp-c" style="background:${h}" onclick="cpSet('${h}')" aria-label="${h}"></button>`).join('')}</div></div>`;
+ document.body.appendChild(el);cpBind();cpDraw();cpUpd(false)}
+function cpClose(ok){if(!CP)return;if(ok)CPH.splice(0,CPH.length,...CP.trail);else edSetCol(CP.lg,CP.slot,CP.orig,true);const e=cpEl('edcp');if(e)e.remove();if(CP.raf)cancelAnimationFrame(CP.raf);CP=null;R()}
+
+VIEW.editor=editorV;
+const _csEd=calSync;calSync=async function(){await _csEd();await edSync()};
+
 async function init(){
  const q=new URLSearchParams(location.search);
  if(q.get('panel')==='1'){document.body.classList.add('panel');S.lg=q.get('l')||'es';start({a:q.get('a')||'MC 1',b:q.get('b')||'MC 2',j:'Planilla',y:q.get('y')||null,libre:q.get('libre')==='1'})}
