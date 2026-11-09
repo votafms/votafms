@@ -2645,6 +2645,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-09T10:05:00-04:00'),text:'Modo editor: los colores de la tarjeta (principal y secundario) ahora cambian al instante mientras los eliges, sin demoras.'},
  {ts:Date.parse('2026-11-09T10:00:00-04:00'),text:'Modo editor renovado: ahora al crear una liga eliges entre Liga automática y Liga manual. En la automática pones el nombre, logo y colores, añades participantes y la app crea todas las jornadas sin repetir cruces; después no votas con planilla, solo tocas cada batalla y eliges quién ganó (+3 para uno y 0 para el otro, o +2 y 1) y la tabla se arma sola. En la manual todo sigue como antes: escribes las batallas y las votas ronda por ronda. En las dos puedes quitar a un participante que se salga (se borran sus batallas y la tabla se actualiza) y la pantalla de edición quedó ordenada por pasos numerados para que sea más fácil de entender.'},
  {ts:Date.parse('2026-11-06T10:05:00-04:00'),text:'Corrección en FMS Chile 2021/2022: faltaban 4 batallas y ya están añadidas, así que cada MC suma sus 11. Además acomodamos batallas recuperativas que estaban en otra jornada. Ahora Teorema vs Metalingüística está en la jornada 4, Joqerr vs Rodamiento en la 6, Teorema vs Tom Crowley en la 7, Acertijo vs Jokker en la 8, JNO vs Jokker en la 9, y Anubis vs Rodamiento y Basek vs Jokker en la 10. Ya puedes votarlas.'},
  {ts:Date.parse('2026-11-05T22:15:00-04:00'),text:'Cambio en un logro: Madrugador del Beat ahora se llama Mediodía del Beat ☀️ y se desbloquea votando una batalla entre las 12 y las 2 de la tarde, según la hora de tu país. Quien ya lo había desbloqueado lo conserva.'},
@@ -4653,6 +4654,9 @@ function xJ(k,f,v){const g=xCur();if(f==null){if(k<0)g.jors.push({n:'Jornada '+(
   g.jors.forEach((o,i)=>{if(i!==k)o.bats.forEach(b=>seen.add(pk(b)))});
   j.bats=v.split('\n').map(s=>{const p=s.split('|'),m=p[0].split(/\s+vs\.?\s+/i);if(m.length<2)return null;return {a:m[0].trim(),b:m.slice(1).join(' vs ').trim(),y:ytParse(p[1]||'').join(',')}}).filter(b=>{if(!b||!b.a||!b.b)return false;const q=pk(b);if(b.a.toLowerCase()===b.b.toLowerCase()||seen.has(q)){dup.push(b.a+' vs '+b.b);return false}seen.add(q);return true});
   const w=document.getElementById('xw'+k);if(w)w.textContent=dup.length?'⚠ No se agregó (ya se enfrentaron o es el mismo MC): '+dup.join(', '):''}}
+let xColT=0;
+function xCol(k,v,fin){const g=xCur();if(!g)return;g[k]=v;if(fin){xColT=0;xReg(g);return R()}
+ if(xColT)return;xColT=requestAnimationFrame(()=>{xColT=0;const b=document.querySelector('.banner');if(b){b.style.setProperty('--c',g.c);b.style.setProperty('--c2',g.c2)}})}
 async function xLogo(f){if(!f)return;try{xSet('logo',await imagenCuadrada(f,160),1)}catch(e){S.mx.msg='No se pudo leer la imagen.';R()}}
 function xDel(){const g=xCur();if(!g||!confirm('¿Eliminar "'+g.n+'"? Tus votos de esta liga se conservan en el perfil.'))return;X.l=X.l.filter(x=>x!==g);xSave();go('mle')}
 const xAuto=g=>!!g&&g.mode==='auto';
@@ -4707,7 +4711,7 @@ function xTab(g){if(xAuto(g))return xTabA(g);const m={},add=n=>m[n]=m[n]||{n,pts
  const r=Object.values(m).sort((x,y)=>y.pts-x.pts||y.w-x.w||y.ptb-x.ptb);
  return r.length?tablaHTML(r,LX.find(x=>x.i===g.id),{noTags:true})+'<div class="mu" style="text-align:center">Victoria 3 · empate 1 · PTB = puntos totales de tus votos.</div>':'<div class="card mu">Añade batallas y vota para ver la tabla.</div>'}
 function xEdit(g){const m=S.mx,A=xAuto(g),names=xNames(g),sec=(n,t,r)=>`<div class="sec"><span>${n} · ${t}</span>${r!=null?`<span>${r}</span>`:''}</div>`,
- col=(k,t)=>`<div style="flex:1"><label class="f">${t}</label><input type="color" value="${g[k]}" oninput="xSet('${k}',this.value)" style="height:44px;padding:4px"></div>`,
+ col=(k,t)=>`<div style="flex:1"><label class="f">${t}</label><input type="color" value="${g[k]}" oninput="xCol('${k}',this.value)" onchange="xCol('${k}',this.value,1)" style="height:44px;padding:4px"></div>`,
  sel=`width:100%;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);border-radius:14px;padding:11px 10px;font:inherit;min-width:0`,
  dis=`${sec(1,'Diseño de la liga')}<div class="card"><label class="f">Nombre de la liga</label><input value="${esc(g.n)}" oninput="xSet('n',this.value)"><div class="row">${col('c','Color principal')}${col('c2','Color secundario')}</div><label class="f">Logo</label><input type="file" accept="image/*" onchange="xLogo(this.files[0])">${g.logo?`<button class="btn s sm" onclick="xSet('logo','',1)">Quitar logo</button>`:''}</div>`,
  pl=ren=>names.map((n,i)=>`<div class="row" style="gap:8px">${ren?`<input value="${esc(n)}" onchange="xRenP(${i},this.value)" style="flex:1" aria-label="Nombre del participante">`:`<div style="flex:1;font-weight:700;padding:0 4px 10px">${esc(n)}</div>`}<button class="ib" style="margin-bottom:10px" onclick="xDelP(${i})" aria-label="Quitar a ${esc(n)}">✕</button></div>`).join('')||'<div class="mu">Aún no hay participantes.</div>',
