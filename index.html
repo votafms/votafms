@@ -1524,7 +1524,44 @@ body.hd .nav{transform:translate(-50%,170%)}
 body.hd .sb{top:calc(6px + env(safe-area-inset-top,0px))}
 body.hd::after{opacity:0}
 }
-</style></head>
+
+/* ===== REDISEÑO CALLE: rap, cintas y sombras duras ===== */
+:root{--dsp:Anton,Impact,Haettenschweiler,"Arial Narrow Bold",system-ui,sans-serif;--hd:4px 4px 0 rgba(0,0,0,.75)}
+body{background:repeating-linear-gradient(45deg,rgba(255,255,255,.018) 0 2px,transparent 2px 6px),radial-gradient(700px 420px at 100% -5%,rgba(var(--acr),.28),transparent 60%),radial-gradient(600px 420px at 0% 30%,rgba(var(--acr2),.10),transparent 60%),var(--bg)}
+.top{border-bottom:0!important;box-shadow:0 6px 0 rgba(0,0,0,.5)!important;padding-bottom:12px}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;background:repeating-linear-gradient(135deg,var(--ac) 0 10px,#0b0b0b 10px 20px)}
+.brand b{font-family:var(--dsp);font-weight:400;font-size:26px;letter-spacing:1px;text-transform:uppercase;font-style:italic;background:none;color:var(--ac);-webkit-text-fill-color:var(--ac);text-shadow:3px 3px 0 #000;transform:skew(-6deg)}
+h1.pg{font-family:var(--dsp);font-weight:400;font-size:38px;text-transform:uppercase;letter-spacing:1px;text-shadow:3px 3px 0 rgba(var(--acr),.55);margin:10px 2px 18px}
+.sec{margin:30px 2px 14px;font-size:13px}
+.sec span:first-child{font-family:var(--dsp);font-weight:400;font-size:17px;letter-spacing:1.5px;background:var(--ac);color:#111;padding:4px 14px 3px;transform:skew(-10deg) rotate(-1deg);display:inline-block;box-shadow:3px 3px 0 #000}
+.sec span:last-child{font-family:var(--dsp);font-weight:400;font-size:16px;color:var(--ac);border:2px solid var(--ac);padding:1px 10px;border-radius:4px}
+.card{border-radius:14px!important;border:2px solid rgba(var(--acr),.4)!important;box-shadow:var(--hd)!important;background:linear-gradient(180deg,rgba(var(--acr),.09),transparent 60%),var(--cd)!important}
+.btn{border-radius:10px!important;border:2px solid #000!important;box-shadow:var(--hd)!important;font-family:var(--dsp);font-weight:400!important;font-size:17px;letter-spacing:1px;text-transform:uppercase;color:#111!important}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000!important}
+.btn.s{background:var(--cd2)!important;color:var(--tx)!important;border-color:rgba(var(--acr),.6)!important}
+.hero{border-radius:16px!important;border:3px solid #000!important;box-shadow:6px 6px 0 var(--ac)!important;background:repeating-linear-gradient(135deg,rgba(0,0,0,.16) 0 16px,transparent 16px 32px),linear-gradient(135deg,var(--ac),var(--ac2))!important;color:#111!important}
+.hero h1{font-family:var(--dsp);font-weight:400;font-size:46px;line-height:1;text-transform:uppercase;letter-spacing:1px;text-shadow:3px 3px 0 rgba(255,255,255,.4)}
+.hero .kicker{background:#111;color:var(--ac);padding:3px 10px;border-radius:3px;display:inline-block;transform:rotate(-2deg);letter-spacing:2px}
+.lgrid2{gap:16px!important}
+.lt2{border-radius:14px!important;border:3px solid #000!important;box-shadow:5px 5px 0 var(--ac)!important;min-height:132px;transition:transform .15s}
+.lgrid2>.lt2:nth-child(odd){transform:rotate(-1.4deg)}.lgrid2>.lt2:nth-child(even){transform:rotate(1.2deg)}
+.lt2:active{transform:scale(.96) rotate(0)}
+.lt2 b{font-family:var(--dsp);font-weight:400;font-size:21px;letter-spacing:1px;text-transform:uppercase;text-shadow:2px 2px 0 rgba(0,0,0,.45)}
+.nxl.hs{display:flex!important;flex-direction:row!important;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 4px 12px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.nxl.hs::-webkit-scrollbar{display:none}
+.nxl.hs .nxr{flex:0 0 285px;scroll-snap-align:start;margin:0!important}
+.nxd b{font-family:var(--dsp);font-weight:400;font-size:28px}
+.nav{border-radius:18px!important;border:3px solid #000!important;background:var(--bg2)!important;box-shadow:0 0 0 2px var(--ac),6px 6px 0 rgba(0,0,0,.7)!important}
+.nav button.on{border-radius:12px!important;background:var(--ac)!important;box-shadow:3px 3px 0 #000!important;color:#111!important}
+.nav button.on .nl{font-family:var(--dsp);letter-spacing:1px;text-transform:uppercase;font-size:14px}
+.seg{border:2px solid rgba(var(--acr),.45)!important;border-radius:10px!important;box-shadow:3px 3px 0 rgba(0,0,0,.6)}
+.seg button{font-family:var(--dsp);font-weight:400!important;letter-spacing:1px;text-transform:uppercase}
+.seg button.on{background:var(--ac)!important;color:#111!important;border-radius:6px!important}
+.pftabs{margin-bottom:16px}
+.fvc,.fvempty{display:none!important}
+.vrow,.bat{border-radius:12px!important;border:2px solid rgba(var(--acr),.3)!important;box-shadow:3px 3px 0 rgba(0,0,0,.6)}
+input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--acr),.4)!important}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
 <main id="app"></main>
@@ -1884,7 +1921,7 @@ function R(){
  renderFloat();
 }
 function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
-function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],['search','Buscar','search'],['perfil','Perfil','user'],['comunidad','Comunidad','users'],['ia','IA','']];return items.map(([k,t,ic])=>`<button class="${nk()===k?'on':''}" onclick="go('${k}')" aria-label="${t}"${nk()===k?' aria-current="page"':''}><span class="ni">${ic?ico(ic,20):'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>'}</span><span class="nl">${t}</span></button>`).join('')}
+function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],['comunidad','Comunidad','users'],['ia','IA',''],['search','Buscar','search'],['perfil','Perfil','user']];return items.map(([k,t,ic])=>`<button class="${nk()===k?'on':''}" onclick="go('${k}')" aria-label="${t}"${nk()===k?' aria-current="page"':''}><span class="ni">${ic?ico(ic,20):'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>'}</span><span class="nl">${t}</span></button>`).join('')}
 
 const mesCorto=dt=>{try{const d=new Date(dt+'T12:00:00');return {d:d.getDate(),m:d.toLocaleDateString('es',{month:'short'}).replace('.','').toUpperCase()}}catch(e){return {d:'',m:''}}};
 function lgProg(l){let tot=0,done=0;const n0=new Date(),hoy=n0.getFullYear()+'-'+String(n0.getMonth()+1).padStart(2,'0')+'-'+String(n0.getDate()).padStart(2,'0');CAL.filter(e=>e.i===l.i&&(e.k==='done'||(e.dt&&e.dt<=hoy))).forEach(e=>(e.b||[]).forEach(b=>{tot++;try{if(myVoteOf(l.i,batOf(e,b)))done++}catch(_){}}));return {tot,done}}
@@ -1899,10 +1936,11 @@ function homeV(){
  const prox=nx.map(e=>{const l=L.find(x=>x.i===e.i),dd=e.dt?mesCorto(e.dt):null;
   return `<button class="card nxr" onclick="openLg('${e.i}')"><span class="nxd"><b>${dd?dd.d:'?'}</b><span>${dd?dd.m:''}</span></span>${l?logo(l,40):''}<span style="flex:1;min-width:0;text-align:left"><b style="display:block">${esc(e.n)}</b><span class="mu" style="font-size:12.5px">${esc(e.s||e.d||'')}</span></span><span class="nxc">›</span></button>`}).join('');
  return `<div class="hm-top">${hero}${stkMini()}</div>
- <button class="card libre" onclick="go('libre')"><div class="row"><div class="lbi">${ico('play',22)}</div><div style="flex:1;min-width:0"><b style="font-size:16px">Batalla libre</b><div class="mu">Vota cualquier batalla, aunque no sea de una liga.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>
+ ${nx.length?`<div class="sec"><span>🔥 Próximas jornadas</span><span>${nx.length}</span></div><div class="nxl hs">${prox}</div>`:''}
  <div class="sec"><span>Ligas</span><span>${vis.length}</span></div>
  <div class="lgrid2">${tiles}</div>
- ${nx.length?`<div class="sec"><span>Próximas jornadas</span><span>${nx.length}</span></div><div class="nxl">${prox}</div>`:''}
+ <div class="sec"><span>Más batallas</span></div>
+ <button class="card libre" onclick="go('libre')"><div class="row"><div class="lbi">${ico('play',22)}</div><div style="flex:1;min-width:0"><b style="font-size:16px">Batalla libre</b><div class="mu">Vota cualquier batalla, aunque no sea de una liga.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>
  ${S.me?'':`<button class="btn" onclick="openAuth('create')">Crear cuenta para guardar tus votos</button>`}`;
 }
 function openLg(i){S.lg=i;S.err='';go('lg')}
@@ -2405,7 +2443,7 @@ function userV(){if(!S.uProf)return `<button class="back" onclick="go('search')"
  const nm=esc(S.uProf.u);
  const btn=(!S.me||mine)?'':st==='friend'?`<span class="pill next">Son amigos</span><button class="btn" style="margin-left:8px" onclick="openChat('${S.uid}','${nm}')">💬 Enviar mensaje</button>`:st==='sent'?`<button class="btn s" onclick="rejectFriend('${fr.id}')">Solicitud enviada · Cancelar</button>`:st==='incoming'?`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Aceptar solicitud de amistad</button>`:`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Enviar solicitud de amistad</button>`;
  const body=canSee?`${statsCard(S.uVotes||[])}<div class="sec"><span>Historial de batallas</span><span>${(S.uVotes||[]).length}</span></div>${voteList(S.uVotes,'user')}`:`<div class="card" style="text-align:center"><b>Historial privado</b><div class="mu" style="margin-top:6px">Solo los amigos pueden ver las batallas votadas de este usuario. Envíale una solicitud y, cuando la acepte, podrás verlo.</div></div>`;
- return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${likeBarH(S.uid)}${favMedalsH(S.uProf,false)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
+ return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${likeBarH(S.uid)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
 function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const nv=voteNorm(v),o=outcomeOf(v),a=nv.ta,b=nv.tb,w=outcomeText(v,o),l=L.find(x=>x.i===v.l);
  return `<button class="back" onclick="go('${S.vb==='perfil'?'perfil':'user'}')">${ico('back',18)} Volver</button><div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,56)}<div style="flex:1;min-width:0"><span class="kicker">Voto de ${esc(v.u||'')}</span><h1 style="font-size:19px">${esc(v.a)} vs ${esc(v.b)}</h1><p>${esc(l.n)} · ${esc(v.date||'')}</p></div></div><div class="win">${w}</div><div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(v.a)}</span><span class="h" style="color:var(--b2)">${esc(v.b)}</span>${(v.fmt==='actual'&&v.sc?actRowsV(v):v.rows).map(r=>`<span class="n">${esc(r.r)}</span><span class="c">${fmt(r.ta)}</span><span class="c">${fmt(r.tb)}</span>`).join('')}<b>Total</b><span class="c">${fmt(a)}</span><span class="c">${fmt(b)}</span></div></div>${S.vb==='perfil'?`<div class="row" style="gap:8px;margin-top:6px"><button class="btn" style="margin:0" onclick="editMine()">Editar voto</button><button class="btn s" style="margin:0" onclick="deleteMine()">Borrar voto</button></div>`:'<div class="mu" style="text-align:center">Solo lectura: este voto no se puede modificar.</div>'}`}
 
@@ -2414,7 +2452,7 @@ function perfilV(){
 
  const m=S.me;
  const tab=S.pfTab||'resumen',nv=S.myVotes?S.myVotes.length:'…';
- const T=[['resumen','Resumen'],['editar','Editar'],['votos','Votos '+nv],['cuenta','Cuenta']];
+ const T=[['resumen','Resumen'],['votos','Votos '+nv],['editar','Editar'],['cuenta','Cuenta']];
  const tabs=`<div class="seg s4 pftabs">${T.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.pfTab='${k}';R()">${t}</button>`).join('')}</div>`;
  let body='';
  if(tab==='resumen'){
@@ -2442,12 +2480,12 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
  <div class="sec"><span>Zona de peligro</span></div>
  <button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
- return `<div class="pfgrid"><div class="pfside">${profileHead(m,true)}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>Medallas</span></div>${favMedalsH(m,true)}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div></div><div class="pfmain"><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div></div>`}
+ return `<div class="pfgrid"><div class="pfside">${profileHead(m,true)}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div></div><div class="pfmain"><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div></div>`}
 /* ===== Perfil: cabecera rápida, medallas favoritas y compartir ===== */
 const pfFav=u=>Array.isArray(u&&u.favAch)?u.favAch.filter(id=>ACH.some(a=>a.id===id)).slice(0,3):[];
 function pfQuickH(){const m=S.me,r=rankInfo(S.myVotes||[]),st=(m.st&&m.st.n)||0;
  return `<div class="pfq"><button onclick="openRanks()" style="--tc:${rcol(r.t)}">${rankBadge(r.t,28)}<span><small>Rango</small><b>${esc(r.name)}</b></span></button><button onclick="S.stkOpen=true;S.stkTierSel=null;R()"><i>🔥</i><span><small>Racha</small><b>${st} ${st===1?'día':'días'}</b></span></button><button onclick="openAch()"><i>🏆</i><span><small>Logros</small><b>${achCount()}/${ACH_N}</b></span></button></div>`}
-function favMedalsH(u,isMe){const f=pfFav(u);if(!isMe&&!f.length)return '';
+function favMedalsH(u,isMe){return '';const f=pfFav(u);if(!isMe&&!f.length)return '';
  if(isMe&&!f.length)return `<button class="card fvc fvempty" onclick="S.favPick=true;R()" aria-label="Elegir medallas favoritas"><span class="fve-i">🏅</span><span class="fve-t"><b>Medallas favoritas</b><em>Elige hasta 3 logros para lucir en tu perfil</em></span><i>＋</i></button>`;
  const slot=i=>{const a=f[i]?ACH.find(x=>x.id===f[i]):null;
   const inner=a?`<span class="axr" style="--ax:${a.x};--p:100"><span class="axi" style="background:radial-gradient(circle at 35% 28%,color-mix(in srgb,${a.x} 55%,#fff),${a.x});box-shadow:0 6px 16px color-mix(in srgb,${a.x} 45%,transparent)">${a.ic}</span></span><b>${esc(a.n)}</b>`:`<span class="axr" style="--ax:#888;--p:0"><span class="axi" style="font-size:24px;color:var(--mu)">＋</span></span><b style="color:var(--mu)">Elegir</b>`;
@@ -2693,6 +2731,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-09T12:00:00-04:00'),text:'Rediseño total con estilo calle: nuevo look de rap (cintas, sombras duras, tipografía de graffiti), Inicio reorganizado con las próximas jornadas arriba, barra inferior reordenada (Ligas, Calendario, Comunidad, IA, Buscar, Perfil) y perfil más limpio: ya no se muestran medallas favoritas, y las pestañas ahora son Resumen, Votos, Editar y Cuenta. Todas las funciones siguen igual.'},
  {ts:Date.parse('2026-11-09T11:00:00-04:00'),text:'Modo editor: ahora puedes compartir tus ligas con tus amigos. En tu liga toca «Compartir liga con amigos», elige a quién (solo salen los que tienes agregados) y por defecto solo podrán verla. Si quieres, activa «Dar permiso de editar» a cada amigo para que también pueda modificarla. Las ligas que te compartan aparecen en Ligas, en «Compartidas conmigo».'},
  {ts:Date.parse('2026-11-09T10:05:00-04:00'),text:'Modo editor: los colores de la tarjeta (principal y secundario) ahora cambian al instante mientras los eliges, sin demoras.'},
  {ts:Date.parse('2026-11-09T10:00:00-04:00'),text:'Modo editor renovado: ahora al crear una liga eliges entre Liga automática y Liga manual. En la automática pones el nombre, logo y colores, añades participantes y la app crea todas las jornadas sin repetir cruces; después no votas con planilla, solo tocas cada batalla y eliges quién ganó (+3 para uno y 0 para el otro, o +2 y 1) y la tabla se arma sola. En la manual todo sigue como antes: escribes las batallas y las votas ronda por ronda. En las dos puedes quitar a un participante que se salga (se borran sus batallas y la tabla se actualiza) y la pantalla de edición quedó ordenada por pasos numerados para que sea más fácil de entender.'},
