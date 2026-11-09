@@ -2879,7 +2879,7 @@ const ACH=[
  {id:'embajador',ic:'📣',x:'#10B981',n:'Embajador del Barrio',d:'Comparte tu perfil con «Compartir mi perfil».'}
 ];
 S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
-const isLgVote=v=>!v.free;
+const isLgVote=v=>!v.free&&!v.ed;
 function jornadaBest(){
  const votes=(S.myVotes||[]).filter(isLgVote);
  const pk=(lg,t,a,b)=>lg+'|'+t+'|'+[nrm(a),nrm(b)].sort().join('|');
@@ -3631,7 +3631,7 @@ const _adminV1=adminV;
 adminV=function(){let h=_adminV1();if(!isAdmin())return h;
  if(S.collabs===undefined){S.collabs=null;B.listCollabs().then(l=>{S.collabs=l;R()}).catch(()=>{S.collabs=[];R()})}
  const L2=S.collabs;
- const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página. Con los botones de cada colaborador puedes darle también <b>Calendario</b> o <b>Editor</b> (modo editor: rondas, colores y logos).</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabCal('${esc(c.uid)}',${c.cal?0:1})">${c.cal?'Calendario ✓':'Calendario'}</button><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabEd('${esc(c.uid)}',${c.ed?0:1})">${c.ed?'Editor ✓':'Editor'}</button><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
+ const box=`<div class="sec"><span>Colaboradores de videos</span><span>${L2?L2.length:'…'}</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Dale acceso a alguien de confianza solo para <b>añadir y corregir links de videos</b>. No puede ver ni cambiar nada más de la página. Con los botones de cada colaborador puedes darle también <b>Calendario</b> o <b>Editor</b> (modo editor aparte: sus propias ligas, sin tocar la página).</div><input id="cbu" placeholder="Nombre de usuario (ej: gazirfan)" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:100%" onclick="collabAdd()">Dar acceso</button>${S.collabMsg?`<div class="mu" style="margin-top:8px">${esc(S.collabMsg)}</div>`:''}</div>${L2&&L2.length?L2.map(c=>`<div class="card row" style="align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><b>@${esc(c.u||c.uid)}</b><div class="mu" style="font-size:12px">Desde ${c.ts?new Date(c.ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—'}</div></div><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabCal('${esc(c.uid)}',${c.cal?0:1})">${c.cal?'Calendario ✓':'Calendario'}</button><button class="btn s sm" style="margin:0 6px 0 0" onclick="collabEd('${esc(c.uid)}',${c.ed?0:1})">${c.ed?'Editor ✓':'Editor'}</button><button class="btn s sm" style="margin:0;color:#FF6B7A" onclick="collabDel('${esc(c.uid)}')">Quitar</button></div>`).join(''):''}`;
  return h.replace('<div class="sec"><span>Comentarios de usuarios</span>',box+'<div class="sec"><span>Comentarios de usuarios</span>')};
 async function collabAdd(){if(!isAdmin())return;const un=((document.getElementById('cbu')||{}).value||'').trim().toLowerCase().replace(/^@/,'');
  if(!/^[a-z0-9._]{3,20}$/.test(un)){S.collabMsg='Escribe un nombre de usuario válido.';return R()}
@@ -4431,7 +4431,7 @@ function achFail(msg){const el=document.createElement('div');el.className='ach-t
 
 const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV,duel:duelV};
 /* ===== MODO EDITOR: rondas, colores y logos (solo administrador y quien tenga el permiso «Editor») ===== */
-const canEd=()=>!!(S.me&&(S.admin||S.collabEd));
+const canEd=()=>!!(S.me&&S.admin);
 B.getCollabEd=async uid=>{const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'collabs',uid));return d.exists()&&!!d.data().ed}catch(e){return false}};
 const _setMeEd=setMe;setMe=function(uid,prof){S.collabEd=false;const r0=_setMeEd(uid,prof);try{B.getCollabEd(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabEd){S.collabEd=v;R()}})}catch(e){}return r0};
 async function collabEd(uid,v){if(!isAdmin())return;try{const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'collabs',uid),{ed:!!v},{merge:true});const c=(S.collabs||[]).find(x=>x.uid===uid);if(c)c.ed=!!v;S.collabMsg=v?'Ahora puede usar el modo editor.':'Ya no puede usar el modo editor.'}catch(e){S.collabMsg='No se pudo cambiar el permiso. ¿Publicaste las reglas nuevas?'}R()}
@@ -4607,6 +4607,55 @@ function cpClose(ok){if(!CP)return;if(ok)CPH.splice(0,CPH.length,...CP.trail);el
 
 VIEW.editor=editorV;
 const _csEd=calSync;calSync=async function(){await _csEd();await edSync()};
+
+/* ===== Modo editor de colaboradores: sus propias ligas, aparte de la página ===== */
+const canSb=()=>!!(S.me&&(S.admin||S.collabEd));
+const LX=[];let X={l:[],uid:null};
+const isX=i=>String(i||'').startsWith('x_');
+L.find=function(f){return Array.prototype.find.call(this,f)||LX.find(f)};
+function xReg(g){const o={i:g.id,n:g.n,t:String(g.n||'ED').replace(/^FMS\s*/i,'').slice(0,2).toUpperCase(),c:g.c,c2:g.c2,tx:'#fff',f:g.id,ed:1},l=LX.find(x=>x.i===g.id);
+ if(l)Object.assign(l,o);else LX.push(o);RF[g.id]=g.rounds.map(r=>({n:r.n,p:[{c:r.c}]}));if(g.logo)LOGO[g.id]=g.logo;else delete LOGO[g.id]}
+function xStub(list){(list||[]).forEach(v=>{if(v.ed&&!L.find(x=>x.i===v.l))LX.push({i:v.l,n:v.edn||'Liga editor',t:'ED',c:v.edc||'#7C3AED',c2:v.edc2||v.edc||'#C084FC',tx:'#fff',f:v.l,ed:1})})}
+const _smX=setMe;setMe=function(u,p){X={l:[],uid:null};LX.length=0;return _smX(u,p)};
+async function xLoad(){if(!S.me||X.uid===S.me.uid)return;X.uid=S.me.uid;try{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'users',S.me.uid)),j=d.exists()&&d.data().mle;X.l=j?(JSON.parse(j).l||[]):[]}catch(e){X.l=[]}X.l.forEach(xReg);R()}
+async function xSave(){S.mx.busy=1;S.mx.msg='Guardando…';R();try{X.l.forEach(xReg);await B.updateUser(S.me.uid,{mle:JSON.stringify({l:X.l})});S.mx.msg='✓ Guardado'}catch(e){S.mx.msg='No se pudo guardar ('+((e&&e.code)||'error')+'). Revisa las reglas de Firestore.'}S.mx.busy=0;R()}
+function xInit(){S.mx=S.mx||{t:'v',busy:0,msg:'',vl:0};xLoad();if(S.me&&S.myVotes==null&&!S.mx.vl){S.mx.vl=1;B.votesOfUser(S.me.uid).then(v=>{S.myVotes=v;R()}).catch(()=>{})}}
+const xCur=()=>X.l.find(g=>g.id===S.lg);
+const xBk=(g,b)=>(S.myVotes||[]).find(v=>v.ed&&v.l===g.id&&bkey(v)===bkey({l:g.id,a:b.a,b:b.b}));
+function xNew(){const id='x_'+S.me.uid.slice(0,6)+Date.now().toString(36),g={id,n:'Mi liga '+(X.l.length+1),c:'#7C3AED',c2:'#C084FC',logo:'',rounds:[{n:'Random',c:6},{n:'Deluxe',c:9}],jors:[{n:'Jornada 1',bats:[]}]};X.l.push(g);xReg(g);xSave();xOpen(id);S.mx.t='e'}
+function xOpen(id){S.lg=id;S.mx.t='v';go('lg')}
+function xVote(ji,bi){const j=xCur().jors[ji],b=j.bats[bi];S.libre=false;S.fmt='antigua';S.temp='2026';start({a:b.a,b:b.b,j:j.n,y:b.y||null})}
+function xSet(k,v,r){const g=xCur();g[k]=v;xReg(g);if(r)R()}
+function xRd(k,f,v){const g=xCur();if(f==null){if(k<0)g.rounds.push({n:'Ronda '+(g.rounds.length+1),c:6});else if(g.rounds.length>1)g.rounds.splice(k,1);return R()}g.rounds[k][f]=f==='c'?Math.max(1,Math.min(20,+v||1)):v;xReg(g)}
+function xJ(k,f,v){const g=xCur();if(f==null){if(k<0)g.jors.push({n:'Jornada '+(g.jors.length+1),bats:[]});else if(confirm('¿Quitar esta jornada?'))g.jors.splice(k,1);return R()}
+ const j=g.jors[k];if(f==='n')j.n=v;else j.bats=v.split('\n').map(s=>{const p=s.split('|'),m=p[0].split(/\s+vs\.?\s+/i);if(m.length<2)return null;return {a:m[0].trim(),b:m.slice(1).join(' vs ').trim(),y:ytParse(p[1]||'').join(',')}}).filter(b=>b&&b.a&&b.b)}
+async function xLogo(f){if(!f)return;try{xSet('logo',await imagenCuadrada(f,160),1)}catch(e){S.mx.msg='No se pudo leer la imagen.';R()}}
+function xDel(){const g=xCur();if(!g||!confirm('¿Eliminar "'+g.n+'"? Tus votos de esta liga se conservan en el perfil.'))return;X.l=X.l.filter(x=>x!==g);xSave();go('mle')}
+function mleV(){if(!canSb())return `<button class="back" onclick="go('home')">‹ Volver</button><div class="card">No tienes acceso al modo editor.</div>`;xInit();
+ const t=X.l.map(g=>{const l=LX.find(x=>x.i===g.id)||{i:g.id,n:g.n,t:'ED',c:g.c,tx:'#fff'};return `<button class="lt2" style="--c:${g.c};--c2:${g.c2};--tx2:#fff" onclick="xOpen('${g.id}')"><div class="lt2-h">${logo(l,44)}</div><b>${esc(g.n)}</b></button>`}).join('');
+ return `<button class="back" onclick="go('home')">‹ Ligas</button><h1 class="pg">🎨 Modo editor</h1><div class="card mu">Tu espacio aparte: crea ligas con logo, colores, rondas y batallas. No cambia la página y tus votos de aquí no suman a tu rango.</div>${t?`<div class="lgrid2">${t}</div>`:''}<button class="btn" style="margin-top:12px" onclick="xNew()">＋ Nueva liga</button>${S.mx.msg?`<div class="mu" style="text-align:center">${esc(S.mx.msg)}</div>`:''}`}
+function xVot(g){return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const v=xBk(g,b);return `<button class="bat" onclick="xVote(${ji},${bi})"><span class="side">${esc(b.a)}</span><span class="vs">${v?fmt(v.ta)+'–'+fmt(v.tb):'VS'}</span><span class="side r">${esc(b.b)}</span></button>`}).join('')||'<div class="card mu">Sin batallas. Añádelas en Editar.</div>'}`).join('')||'<div class="card mu">Aún no hay jornadas.</div>'}
+function xTab(g){const m={},add=n=>m[n]=m[n]||{n,pj:0,g:0,e:0,p:0,pt:0};
+ g.jors.forEach(j=>j.bats.forEach(b=>{const A=add(b.a),Z=add(b.b),v=xBk(g,b);if(!v)return;const o=outcomeOf(v);A.pj++;Z.pj++;if(o.w==='a'){A.g++;A.pt+=3;Z.p++}else if(o.w==='b'){Z.g++;Z.pt+=3;A.p++}else{A.e++;Z.e++;A.pt++;Z.pt++}}));
+ const r=Object.values(m).sort((x,y)=>y.pt-x.pt||y.g-x.g);
+ return r.length?`<div class="card pl-card"><div class="pgrid" style="grid-template-columns:24px minmax(90px,1fr) repeat(5,34px)"><span class="ph">#</span><span class="ph" style="text-align:left">MC</span>${['PJ','G','E','P','Pts'].map(h=>`<span class="ph">${h}</span>`).join('')}${r.map((x,i)=>`<span class="ph">${i+1}</span><span class="pname">${esc(x.n)}</span>${[x.pj,x.g,x.e,x.p,x.pt].map(n=>`<b style="text-align:center">${n}</b>`).join('')}`).join('')}</div></div><div class="mu" style="text-align:center">Victoria 3 · empate 1 · según tus votos.</div>`:'<div class="card mu">Añade batallas para ver la tabla.</div>'}
+function xEdit(g){const m=S.mx,col=(k,t)=>`<div style="flex:1"><label class="f">${t}</label><input type="color" value="${g[k]}" oninput="xSet('${k}',this.value)" style="height:44px;padding:4px"></div>`;
+ return `<div class="card"><label class="f">Nombre de la liga</label><input value="${esc(g.n)}" oninput="xSet('n',this.value)"><div class="row">${col('c','Color principal')}${col('c2','Color secundario')}</div><label class="f">Logo</label><input type="file" accept="image/*" onchange="xLogo(this.files[0])">${g.logo?`<button class="btn s sm" onclick="xSet('logo','',1)">Quitar logo</button>`:''}</div>
+<div class="sec"><span>Rondas</span><span>${g.rounds.length}</span></div><div class="card">${g.rounds.map((r,k)=>`<div class="row" style="gap:8px"><input value="${esc(r.n)}" oninput="xRd(${k},'n',this.value)" style="flex:1"><input type="number" min="1" max="20" value="${r.c}" oninput="xRd(${k},'c',this.value)" style="width:72px"><button class="ib" style="margin-bottom:10px" onclick="xRd(${k})" aria-label="Quitar">✕</button></div>`).join('')}<button class="btn s" onclick="xRd(-1)">＋ Ronda</button><div class="mu">El número son las casillas por MC en esa ronda.</div></div>
+<div class="sec"><span>Jornadas y batallas</span><span>${g.jors.length}</span></div>${g.jors.map((j,k)=>`<div class="card"><div class="row" style="gap:8px"><input value="${esc(j.n)}" oninput="xJ(${k},'n',this.value)" style="flex:1"><button class="ib" style="margin-bottom:10px" onclick="xJ(${k})" aria-label="Quitar">✕</button></div><textarea rows="4" placeholder="Una por línea: MC A vs MC B | link de YouTube (opcional)" oninput="xJ(${k},'b',this.value)">${esc(j.bats.map(b=>b.a+' vs '+b.b+(b.y?' | '+b.y.split(',').map(i=>'https://youtu.be/'+i).join(' '):'')).join('\n'))}</textarea></div>`).join('')}<button class="btn s" onclick="xJ(-1)">＋ Jornada</button>
+<button class="btn" onclick="xSave()" ${m.busy?'disabled':''}>Guardar liga</button><button class="btn s" style="color:#FF6B7A" onclick="xDel()">Eliminar liga</button>${m.msg?`<div class="mu" style="text-align:center">${esc(m.msg)}</div>`:''}`}
+function mlgV(){xInit();const g=xCur();if(!g)return `<button class="back" onclick="go('mle')">‹ Modo editor</button><div class="card">${X.uid?'Liga no encontrada.':'Cargando…'}</div>`;
+ const l=LX.find(x=>x.i===g.id)||{},T=S.mx.t;
+ return `<button class="back" onclick="go('mle')">‹ Modo editor</button><div class="banner" style="--c:${g.c};--c2:${g.c2}">${logo(l,56)}<div style="min-width:0"><span class="kicker">Modo editor</span><h1>${esc(g.n)}</h1><p>${g.jors.length} jornadas · ${g.rounds.length} rondas</p></div></div><div class="seg">${[['v','Votar'],['t','Tabla'],['e','Editar']].map(([k,n])=>`<button class="${T===k?'on':''}" onclick="S.mx.t='${k}';R()">${n}</button>`).join('')}</div>`+(T==='t'?xTab(g):T==='e'?xEdit(g):xVot(g))}
+/* Integración: separado del rango, notificaciones y perfil */
+const _riX=rankInfo;rankInfo=function(v){return _riX((v||[]).filter(x=>!x.ed))};
+const _nfX=notifyFriends;notifyFriends=function(v){if(v&&v.ed)return;return _nfX(v)};
+const _bvX=buildVote;buildVote=function(){const v=_bvX(),l=L.find(x=>x.i===S.lg);if(l&&isX(l.i)){v.ed=1;v.edn=l.n;v.edc=l.c;v.edc2=l.c2}return v};
+const _lfX=loadFor;loadFor=function(v){if(v==='lg'&&isX(S.lg))return;return _lfX.apply(this,arguments)};
+const _vlX=voteList;voteList=function(list,from){xStub(list);const h=_vlX(list,from);if(!Array.isArray(list)||!list.some(v=>v.ed))return h;const T='<button class="vrow"';
+ return h.split(T).map((s,k)=>{const v=k&&list[k-1];if(!v||!v.ed)return s;const c=v.edc||'#7C3AED';return s.replace(/<span class="pill[^"]*">[^<]*<\/span>/,`<span class="pill" style="background:${c}2e;color:${c};border-color:${c}80">✏️ Modo editor</span>`)}).join(T)};
+const _hX=VIEW.home;VIEW.home=function(){const h=_hX();if(!canSb())return h;const mk='<div class="sec"><span>Ligas</span>';return h.replace(mk,`<button class="card libre" onclick="go('mle')"><div class="row"><div class="lbi">🎨</div><div style="flex:1;min-width:0"><b style="font-size:16px">Modo editor</b><div class="mu">Crea tus propias ligas, aparte de la página.</div></div></div></button>`+mk)};
+const _lgX=VIEW.lg;VIEW.lg=()=>isX(S.lg)?mlgV():_lgX();VIEW.mle=mleV;
 
 async function init(){
  const q=new URLSearchParams(location.search);
