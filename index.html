@@ -1650,7 +1650,91 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 
 .imp,.impj{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
 .imp{margin-left:auto;padding:6px 11px;flex:0 0 auto}
-.impj{width:100%;padding:10px 12px;margin:2px 0 14px}
+.impj{width:100%;padding:10px 12px;margin:2px 0 14px}/* ===== Monedas, tienda, marcos y títulos ===== */
+.coin{display:inline-block;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF6BF,#FACC15 46%,#B45309 100%);box-shadow:inset 0 0 0 2px rgba(120,53,15,.55),0 0 8px rgba(250,204,21,.45);position:relative;flex:0 0 auto;vertical-align:-3px}
+.coin::after{content:'★';position:absolute;inset:0;display:grid;place-items:center;font-size:9px;color:#92400E;line-height:1;font-style:normal}
+.coin.bigc{width:64px;height:64px;animation:cspin 3.2s ease-in-out infinite}
+.coin.bigc::after{font-size:30px}
+@keyframes cspin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.28)}}
+.coinb{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px 0 9px;border-radius:999px;border:1px solid rgba(250,204,21,.6);background:linear-gradient(180deg,rgba(250,204,21,.24),rgba(250,204,21,.08));color:var(--tx);font:inherit;font-weight:900;font-size:14px;cursor:pointer;transition:transform .15s}
+.coinb:active{transform:scale(.94)}
+.coinb.bump{animation:cbump .8s ease}
+@keyframes cbump{30%{transform:scale(1.2);box-shadow:0 0 20px rgba(250,204,21,.9)}100%{transform:none}}
+@media (max-width:430px){.coinb{height:34px;padding:0 9px 0 7px;font-size:13px;gap:5px}.coinb .coin{width:16px;height:16px}.top .ib{width:34px;height:34px}.top{gap:6px}}
+.shp{display:grid;gap:14px}
+.shbal{position:relative;overflow:hidden;border-radius:22px;padding:18px;border:1px solid rgba(250,204,21,.5);background:radial-gradient(120% 150% at 0% 0%,rgba(250,204,21,.3),transparent 62%),var(--cd);display:flex;align-items:center;gap:16px}
+.shbal::after{content:'';position:absolute;top:0;bottom:0;width:30%;left:-50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.18),transparent);animation:ttsh 5s ease-in-out infinite}
+.shbal small{display:block;color:var(--mu);font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.shbal .n{display:block;font-size:40px;line-height:1.05;font-weight:900;letter-spacing:-1px}
+.shbal .sub{color:var(--mu);font-size:12px;margin-top:2px}
+.shhw{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:14px;padding:11px 14px;font:inherit;font-weight:800;font-size:13px;cursor:pointer}
+.shhw.on{border-color:rgba(250,204,21,.6)}
+.shhow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:-6px;animation:shin .3s both}
+.shr{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:12px;background:var(--cd);border:1px solid var(--bd);font-size:13px;font-weight:700}
+.shr span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shr b{color:#CA8A04;font-weight:900}
+.shall{flex:0 0 26px!important;text-align:center;font-size:18px}
+.shtabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 1px}
+.shtabs::-webkit-scrollbar{display:none}
+.shtabs button{flex:0 0 auto;border:1px solid var(--bd);background:var(--cd);color:var(--mu);border-radius:999px;padding:9px 16px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:transform .12s}
+.shtabs button:active{transform:scale(.95)}
+.shtabs button.on{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#111;border-color:transparent}
+.shg{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:760px){.shg{grid-template-columns:repeat(3,1fr)}}
+.shi{position:relative;display:flex;flex-direction:column;border-radius:20px;border:1px solid var(--bd);background:var(--cd);overflow:hidden;animation:shin .45s both;animation-delay:calc(var(--i,0)*70ms);transition:transform .18s,border-color .18s,box-shadow .18s}
+.shi:hover{transform:translateY(-3px);border-color:rgba(250,204,21,.65);box-shadow:0 10px 26px rgba(0,0,0,.25)}
+.shi.own{border-color:rgba(34,197,94,.5)}
+@keyframes shin{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.shpv{position:relative;min-height:116px;display:grid;place-items:center;padding:14px;background:radial-gradient(circle at 50% 30%,rgba(250,204,21,.18),transparent 70%),var(--cd2)}
+.shbd{padding:12px;display:flex;flex-direction:column;gap:7px;flex:1}
+.shbd b{font-size:14px;line-height:1.2}
+.shbd p{margin:0;font-size:12px;color:var(--mu);line-height:1.35;flex:1}
+.shbuy{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border:0;border-radius:12px;padding:10px;font:inherit;font-weight:900;font-size:14px;cursor:pointer;background:linear-gradient(180deg,#FDE047,#EAB308);color:#3b2a00;box-shadow:0 3px 0 #A16207;transition:transform .1s,box-shadow .1s}
+.shbuy:active{transform:translateY(2px);box-shadow:0 1px 0 #A16207}
+.shbuy.no{background:var(--cd2);color:var(--mu);box-shadow:none}
+.shbuy.own{background:rgba(34,197,94,.16);color:#16A34A;box-shadow:none}
+.shbuy.eq{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#111;box-shadow:none}
+.shbuy.big{padding:14px;font-size:16px}
+.shbuy:disabled{cursor:default}
+.shpr{height:6px;border-radius:9px;background:var(--cd2);overflow:hidden}
+.shpr i{display:block;height:100%;background:linear-gradient(90deg,#FACC15,#F59E0B);border-radius:9px;transition:width .6s}
+.shnote{font-size:11px;color:var(--mu);text-align:center}
+.shtag{position:absolute;top:8px;left:8px;z-index:2;font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:rgba(22,163,74,.9);color:#fff}
+.nvd{display:flex;gap:10px}
+.nvd i{width:26px;height:26px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c),0 0 22px var(--c);animation:nvp 2.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+@keyframes nvp{0%,100%{transform:scale(.85);opacity:.7}50%{transform:scale(1.12);opacity:1}}
+.wmv{display:grid;gap:4px;text-align:center}
+.wmv span{font-weight:900;font-size:20px;color:var(--mu);text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:#EF4444}
+.wmv em{font-style:normal;font-size:11px;font-weight:800;color:#16A34A;text-transform:uppercase;letter-spacing:.6px}
+.shmini{display:flex;align-items:center;gap:10px;width:100%;margin-bottom:12px;padding:11px 14px;border-radius:16px;border:1px solid rgba(250,204,21,.55);background:linear-gradient(90deg,rgba(250,204,21,.22),rgba(250,204,21,.06));color:var(--tx);font:inherit;font-size:14px;cursor:pointer;text-align:left}
+.shmini span{flex:1}.shmini em{font-style:normal;font-size:12px;font-weight:800;color:#CA8A04}
+.cgain{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;margin:0 0 12px;border:1px solid rgba(250,204,21,.6);background:linear-gradient(90deg,rgba(250,204,21,.24),rgba(250,204,21,.06));animation:cgp .6s cubic-bezier(.2,1.4,.4,1) both}
+.cgain b{font-size:20px;color:#CA8A04}
+@keyframes cgp{from{opacity:0;transform:scale(.8) translateY(10px)}to{opacity:1;transform:none}}
+.shsh{position:relative;overflow:hidden;text-align:center}
+.shsh .shpv{border-radius:18px;margin:8px 0 12px;min-height:130px}
+.shsc h3{margin:0 0 4px;font-size:20px}
+.shsc p{margin:0 0 12px;color:var(--mu);font-size:13px}
+.shcalc{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 14px;font-size:15px}
+.shcalc span{color:var(--mu)}.shcalc b{display:inline-flex;align-items:center;gap:5px}.shcalc b.neg{color:#EF4444}
+.cfx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.cfx i{position:absolute;top:34%;left:50%;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF6BF,#FACC15 50%,#B45309);animation:cfly 1.2s ease-out forwards}
+@keyframes cfly{from{transform:translate(-50%,-50%) scale(1);opacity:1}to{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(.4);opacity:0}}
+.ptt{display:inline-flex;align-items:center;gap:5px;margin:5px 0 3px;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:900;letter-spacing:.3px;background:rgba(10,8,2,.7);color:#FDE047;border:1px solid rgba(253,224,71,.65);position:relative;overflow:hidden;width:max-content;max-width:100%}
+.ptt::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:ttsh 3.2s ease-in-out infinite}
+@keyframes ttsh{0%,55%{left:-60%}100%{left:130%}}
+.fr-gold{animation:frGlow 2.6s ease-in-out infinite}
+@keyframes frGlow{0%,100%{box-shadow:0 0 0 2px #FFF3B0,0 0 0 3.5px #CA8A04,0 0 8px 2px rgba(250,204,21,.45)}50%{box-shadow:0 0 0 2px #FFF3B0,0 0 0 3.5px #EAB308,0 0 16px 5px rgba(250,204,21,.85)}}
+@property --fa{syntax:'<angle>';inherits:false;initial-value:0deg}
+.frw{position:relative;display:inline-flex;flex:0 0 auto;padding:5px;border-radius:50%;background:conic-gradient(from var(--fa),#FDE047,#B45309,#FFF3B0,#EAB308,#92400E,#FDE047);animation:frSpin 3.4s linear infinite;box-shadow:0 0 22px rgba(250,204,21,.55)}
+@keyframes frSpin{to{--fa:360deg}}
+.frw>.av{box-shadow:none!important;animation:none!important}
+.frw::before,.frw::after{content:'✦';position:absolute;z-index:2;color:#FFF3B0;font-size:15px;line-height:1;text-shadow:0 0 6px #FACC15,0 0 12px #F59E0B;animation:frTw 2.2s ease-in-out infinite;pointer-events:none}
+.frw::before{top:-5px;right:0}
+.frw::after{bottom:1px;left:-5px;animation-delay:1.1s;font-size:11px}
+@keyframes frTw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(45deg)}}
+@media (prefers-reduced-motion:reduce){.fr-gold,.frw,.coin.bigc,.nvd i,.shbal::after,.ptt::after{animation:none}}
+
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -1775,14 +1859,14 @@ const IC={bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d=
 function ico(n,s=20){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`}
 function logo(l,w){if(LOGO[l.i])return `<span style="display:inline-flex;flex:0 0 auto;background:#fff;border-radius:14px;padding:5px;box-shadow:0 6px 14px rgba(0,0,0,.28)"><img src="${LOGO[l.i]}" width="${w}" height="${Math.round(w*1.15)}" alt="${esc(l.n)}" style="display:block;object-fit:contain"></span>`;return `<div style="width:${w}px;height:${Math.round(w*1.15)}px;border-radius:12px;background:${l.c};display:flex;align-items:center;justify-content:center;color:${l.tx};font-weight:900">${l.t}</div>`}
 const av=(name,cls='')=>`<span class="av ${cls}">${esc(String(name||'?')[0].toUpperCase())}</span>`;
-function avU(u,cls=''){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.pf[u.uid].foto;if(!f&&u.foto===undefined)pfQueue(u.uid)}return f?`<img class="av ${cls}" src="${f}" alt="">`:`<span class="av ${cls}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`}
-function avX(uid,name,cls=''){const f=(S.me&&S.me.uid===uid&&S.me.foto)||(uid&&S.pf&&S.pf[uid]&&S.pf[uid].foto);if(f)return `<img class="av ${cls}" src="${f}" alt="">`;if(uid)pfQueue(uid);return av(name,cls)}
+function avU(u,cls=''){if(u&&u.uid&&S.pf&&!S.pf[u.uid]&&u.shop===undefined&&!(S.me&&S.me.uid===u.uid))pfQueue(u.uid);return avFr(u,cls,frOf(u))}
+function avX(uid,name,cls=''){const f=(S.me&&S.me.uid===uid&&S.me.foto)||(uid&&S.pf&&S.pf[uid]&&S.pf[uid].foto);if(uid)pfQueue(uid);const fr=frOf({uid});const g=fr&&/(^|\s)lg(\s|$)/.test(cls),c=`av ${cls}${fr&&!g?' fr-'+fr:''}`;const inner=f?`<img class="${c}" src="${f}" alt="">`:`<span class="${c}">${esc(String(name||'?')[0].toUpperCase())}</span>`;return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
 /* Caché de fotos de perfil: se piden una sola vez y luego se ven en todos los apartados */
 S.pf=S.pf||{};let _pfQ=new Set(),_pfT=null,_pfAll=0;
 function pfQueue(uid){if(!uid||!S.me||S.pf[uid]!==undefined)return;S.pf[uid]=null;_pfQ.add(uid);clearTimeout(_pfT);_pfT=setTimeout(pfFlush,120)}
 async function pfFlush(){const ids=[..._pfQ];_pfQ=new Set();if(!ids.length||!S.me)return;let ch=false;
- try{if(ids.length>3&&Date.now()-_pfAll>120000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'';S.pf[u.uid]={foto:f};if(f&&ids.includes(u.uid))ch=true})}}catch(e){}
- await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'';S.pf[id]={foto:f};if(f)ch=true}catch(e){S.pf[id]={foto:''}}}));
+ try{if(ids.length>3&&Date.now()-_pfAll>120000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
+ await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'',fr=(d&&d.shop&&d.shop.frame)||'';S.pf[id]={foto:f,fr};if(f||fr)ch=true}catch(e){S.pf[id]={foto:''}}}));
  if(ch)R()}
 /* Rango visible igual en todos lados: si el rp guardado de alguien es de otra versión, se recalcula con sus votos */
 S.rkc=S.rkc||{};let _rkQ=[],_rkRun=0,_rkT=null;
@@ -1790,7 +1874,79 @@ function rkQueue(uid){if(S.rkc[uid])return;S.rkc[uid]={n:null};_rkQ.push(uid);rk
 function rkPump(){while(_rkRun<5&&_rkQ.length){const uid=_rkQ.shift();_rkRun++;B.votesOfUser(uid).then(v=>{S.rkc[uid]={n:rankInfo(splitDups(v).keep).n,at:Date.now()}}).catch(()=>{S.rkc[uid]={n:null}}).finally(()=>{_rkRun--;clearTimeout(_rkT);_rkT=setTimeout(()=>{if(S.v==='search')ulRefresh();else if(S.v==='comunidad')R()},250);rkPump()})}}
 function rkN(x){if(S.me&&x.uid===S.me.uid){if(S.myVotes)return rankInfo(S.myVotes).n;return x.rv===RANK_V?(x.rp||0):(S.me.rp||0)}
  if(x.rv===RANK_V)return x.rp||0;const c=S.rkc[x.uid];if(c&&c.n!=null)return c.n;rkQueue(x.uid);return x.rp||0}
-const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',admin:'perfil',editor:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
+const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',tienda:'perfil',admin:'perfil',editor:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
+/* ===== Monedas y tienda =====
+   Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 50, Internacional 40, España 35 y las demás 30.
+   No cuentan Batalla libre ni Modo editor. Lo gastado y lo comprado se guarda en tu perfil (campo «shop»). */
+const COIN_L={ws:50,in:40,es:35};
+const SHOP=[
+ {id:'frame_gold',k:'frame',n:'Marco dorado',d:'Borde dorado animado en tu foto. Se ve en tu perfil, en comunidad y con tus amigos.',p:150,fr:'gold'},
+ {id:'title_estricto',k:'title',n:'Jurado estricto',d:'Un título que aparece debajo de tu nombre en tu perfil.',p:100,tt:'estricto'},
+ {id:'pack_neon',k:'pack',n:'Pack Neón',d:'4 colores neón nuevos para elegir en tu planilla de votación.',p:250},
+ {id:'nowm',k:'extra',n:'Imágenes sin marca',d:'Quita el texto «VotaFMS» de las imágenes de jornadas y tablas que compartes.',p:300}];
+const FRAME_IDS=['gold'];
+const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'}};
+const SHOP_TABS=[['all','Todo'],['frame','Marcos'],['title','Títulos'],['pack','Planilla'],['extra','Extras']];
+const NEON_C=['#22D3EE','#F472B6','#A3E635','#FB923C'];
+function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[],spent:0}}
+function shopOwns(id){const s=shopS();return Array.isArray(s.own)&&s.own.includes(id)}
+function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);return l?(COIN_L[v.l]||30):0}
+function coinsEarned(){const mv=S.myVotes;if(!mv)return S._ce||0;if(S._cev===mv)return S._ce;let t=0;try{splitDups(mv).keep.forEach(v=>{t+=coinOf(v)})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t}
+function coinBal(){return Math.max(0,coinsEarned()-(shopS().spent||0))}
+function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=sh.frame||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
+function ttOf(u){if(!u)return '';const sh=u.shop;const t=(sh&&typeof sh==='object')?(sh.title||''):'';return TITLES[t]?t:''}
+function ttH(u){const t=ttOf(u);return t?`<div class="ptt"><span>${TITLES[t].ic}</span>${esc(TITLES[t].t)}</div>`:''}
+function coinCount(from,to){S.coinShow=from;R();const t0=performance.now(),dur=800;
+ const step=t=>{const k=Math.min(1,(t-t0)/dur),v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));S.coinShow=k<1?v:null;document.querySelectorAll('.coinv').forEach(e=>{e.textContent=v});if(k<1)requestAnimationFrame(step)};
+ requestAnimationFrame(step);const b=document.getElementById('coinb');if(b){b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
+function shopTab(t){S.shopTab=t;go('tienda')}
+async function shopSave(nx,msg){const prev=S.me.shop;S.me={...S.me,shop:nx};R();try{await B.updateUser(S.me.uid,{shop:nx});return true}catch(e){S.me={...S.me,shop:prev};R();try{achFail(msg)}catch(_){}return false}}
+function shopOpen(id){S.shopSheet=id;S.shopDone=false;R()}
+function shopClose(){S.shopSheet=null;S.shopDone=false;R()}
+async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me||S.shopBusy)return;if(shopOwns(it.id))return shopClose();
+ const bal=coinBal();if(bal<it.p){try{achFail('Te faltan '+(it.p-bal)+' monedas.')}catch(e){}return}
+ S.shopBusy=true;const s=shopS(),nx={...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],spent:(s.spent||0)+it.p};
+ const ok=await shopSave(nx,'No se pudo completar la compra.');S.shopBusy=false;
+ if(ok){S.shopDone=true;coinCount(bal,coinBal())}}
+async function shopEq(kind,id){if(!S.me)return;const s=shopS();await shopSave({...s,[kind]:id},'No se pudo guardar el cambio.')}
+async function shopEqNow(){const it=SHOP.find(x=>x.id===S.shopSheet);S.shopSheet=null;S.shopDone=false;if(it&&it.k==='frame')await shopEq('frame',it.fr);else if(it&&it.k==='title')await shopEq('title',it.tt);else if(it&&it.k==='pack'){R();plOpen()}else R()}
+function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.pf[u.uid].foto;if(!f&&u.foto===undefined)pfQueue(u.uid)}
+ const g=fr&&/(^|\s)lg(\s|$)/.test(cls||''),c=`av ${cls||''}${fr&&!g?' fr-'+fr:''}`;
+ const inner=f?`<img class="${c}" src="${f}" alt="">`:`<span class="${c}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`;
+ return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
+function shopPv(it){
+ if(it.k==='frame')return `<div class="shpv">${avFr(S.me,'lg',it.fr)}</div>`;
+ if(it.k==='title')return `<div class="shpv"><div class="ptt"><span>${TITLES[it.tt].ic}</span>${esc(TITLES[it.tt].t)}</div></div>`;
+ if(it.k==='pack')return `<div class="shpv"><div class="nvd">${NEON_C.map((c,i)=>`<i style="--c:${c};--d:${i*.35}s"></i>`).join('')}</div></div>`;
+ return `<div class="shpv"><div class="wmv"><span>VotaFMS</span><em>sin marca</em></div></div>`}
+function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
+ if(own){
+  if(it.k==='frame')return s.frame===it.fr?`<button class="shbuy eq" onclick="shopEq('frame','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('frame','${it.fr}')">Equipar</button>`;
+  if(it.k==='title')return s.title===it.tt?`<button class="shbuy eq" onclick="shopEq('title','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('title','${it.tt}')">Equipar</button>`;
+  if(it.k==='pack')return `<button class="shbuy own" onclick="plOpen()">Elegir diseño</button>`;
+  return `<span class="shbuy own">✓ Activo</span>`}
+ const ok=bal>=it.p;
+ return `${ok?'':`<div class="shpr"><i style="width:${Math.min(100,Math.round(bal/it.p*100))}%"></i></div>`}<button class="shbuy${ok?'':' no'}" onclick="shopOpen('${it.id}')"><i class="coin"></i>${it.p}</button>${ok?'':`<div class="shnote">Te faltan ${it.p-bal}</div>`}`}
+function shopCard(it,i){const own=shopOwns(it.id);
+ return `<div class="shi${own?' own':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b><p>${esc(it.d)}</p>${shopBtn(it)}</div></div>`}
+function shopHowH(){const r=[['ws','World Series',50],['in','Internacional',40],['es','España',35]],lg=i=>L.find(x=>x.i===i);
+ return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+30</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez. No suman Batalla libre ni Modo editor.</div></div>`}
+function tiendaV(){
+ if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos y más.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
+ const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0,list=SHOP.filter(x=>tab==='all'||x.k===tab);
+ const tabs=SHOP_TABS.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.shopTab='${k}';R()">${t}</button>`).join('');
+ return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button>
+ <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div></div></div>
+ <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
+ <div class="shtabs">${tabs}</div>
+ <div class="shg">${list.map(shopCard).join('')}</div></div>`}
+function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
+function cgainH(){const g=S.coinGain||0;return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
+function shopSheetH(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it)return '';const bal=coinBal(),done=!!S.shopDone,ok=bal>=it.p;
+ const parts=done?Array.from({length:16},(_,i)=>{const a=i/16*Math.PI*2,r=70+(i%3)*28;return `<i style="--x:${Math.round(Math.cos(a)*r)}px;--y:${Math.round(Math.sin(a)*r)}px;animation-delay:${(i%4)*60}ms"></i>`}).join(''):'';
+ const act=done?(it.k==='extra'?`<button class="btn" style="margin:0" onclick="shopClose()">Listo</button>`:`<button class="btn" style="margin:0" onclick="shopEqNow()">${it.k==='pack'?'Elegir diseño':'Equipar ahora'}</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Más tarde</button>`)
+  :`<button class="shbuy big${ok?'':' no'}" ${ok?'onclick="shopBuy()"':'disabled'}>${ok?`Comprar por <i class="coin"></i>${it.p}`:`Te faltan ${it.p-bal} monedas`}</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Cancelar</button>`;
+ return `<div class="ov" onclick="shopClose()"><div class="sh shsh" onclick="event.stopPropagation()"><div class="cfx">${parts}</div>${shopPv(it)}<div class="shsc"><h3>${done?'¡Es tuyo! 🎉':esc(it.n)}</h3><p>${done?esc(it.n)+' ya está en tu cuenta.':esc(it.d)}</p>${done?'':`<div class="shcalc"><span>Saldo</span><b><i class="coin"></i>${bal}</b><span>→</span><b class="${ok?'':'neg'}"><i class="coin"></i>${bal-it.p}</b></div>`}${act}</div></div></div>`}
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
 const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
 function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i);return {a:(p[0]||'').trim(),b:(p[1]||'').trim(),sa:null,sb:null,j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||null,j:e.n+' · '+e.d}}
@@ -1800,6 +1956,7 @@ function go(v){S.difKb=false;S.difSheet=false;S.v=v;if(v==='lg')S.lgVotes=null;i
 async function loadFor(v){
  try{
   if(v==='perfil'&&S.me){S.myVotes=await cleanMine();await refreshFriends();R()}
+  else if(v==='tienda'&&S.me&&!S.myVotes){S.myVotes=await cleanMine();R()}
   else if(v==='admin'){S.adm=isAdmin()?await B.listComments():[];R()}
   else if(v==='comunidad'){const arr=await Promise.all(COMUN.map(id=>B.votesOfLeague(id)));S.comm5={};COMUN.forEach((id,i)=>S.comm5[id]=arr[i]);R()}
   else if(v==='lg'&&(LINEUP[S.lg]||SEASON_OPTS[S.lg])){const mine=S.me?await cleanMine():[];const tv=curSeason(S.lg);S.lgVotes=mine.filter(x=>x.l===S.lg&&(x.temp||'2026')===tv);if(tv!=='2026')S.links=await B.getLinks();R()}
@@ -2011,10 +2168,10 @@ function R(){
  }
  document.getElementById('top').innerHTML=topH();
  document.getElementById('nav').innerHTML=navH();
- document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.favPick?favPickSheet():'')+(S.iaHist?iaHistSheet():'')+(S.stkOpen?stkSheet():'')+(S.plSheet?plSheetH():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
+ document.getElementById('ov').innerHTML=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.favPick?favPickSheet():'')+(S.iaHist?iaHistSheet():'')+(S.stkOpen?stkSheet():'')+(S.plSheet?plSheetH():'')+(S.shopSheet?shopSheetH():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.rankUp?rankUpAnim():'');
  renderFloat();
 }
-function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
+function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div>${S.me?`<button class="coinb" id="coinb" onclick="go('tienda')" aria-label="Monedas: ir a la tienda"><i class="coin"></i><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b></button>`:''}${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
 function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],['comunidad','Comunidad','users'],['ia','IA',''],['search','Buscar','search'],['perfil','Perfil','user']];return items.map(([k,t,ic])=>`<button class="${nk()===k?'on':''}" onclick="go('${k}')" aria-label="${t}"${nk()===k?' aria-current="page"':''}><span class="ni">${ic?ico(ic,20):'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>'}</span><span class="nl">${t}</span></button>`).join('')}
 
 const mesCorto=dt=>{try{const d=new Date(dt+'T12:00:00');return {d:d.getDate(),m:d.toLocaleDateString('es',{month:'short'}).replace('.','').toUpperCase()}}catch(e){return {d:'',m:''}}};
@@ -2309,16 +2466,21 @@ const PL_D=[
  {id:'ambar',n:'Ámbar Premium',c:['#F59E0B','#FCD34D'],r:6,m:22,hx:'#FDE68A',h:'repeating-linear-gradient(135deg,rgba(255,255,255,.06) 0 2px,transparent 2px 8px),linear-gradient(90deg,#1C1917,#44403C)',fx:'fx-gold'},
  {id:'cristal',n:'Cristal',c:['#22D3EE','#A5F3FC'],r:14,m:24,h:'linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.04)),linear-gradient(90deg,#0E7490,#06B6D4)',fx:'fx-shine'},
  {id:'aurora',n:'Aurora',c:['#34D399','#A78BFA'],r:16,m:26,h:'linear-gradient(110deg,#059669,#6366F1,#DB2777,#059669)',fx:'fx-aur'},
- {id:'rey',n:'Rey del Freestyle',c:['#FACC15','#C084FC'],r:14,m:28,h:'linear-gradient(110deg,#6D28D9,#FACC15,#6D28D9)',fx:'fx-aur fx-shine fx-crown'}];
+ {id:'rey',n:'Rey del Freestyle',c:['#FACC15','#C084FC'],r:14,m:28,h:'linear-gradient(110deg,#6D28D9,#FACC15,#6D28D9)',fx:'fx-aur fx-shine fx-crown'},
+ {id:'nx-cian',n:'Neón Cian',s:'pack_neon',c:['#22D3EE','#A5F3FC'],r:12,m:22,h:'linear-gradient(90deg,#042F3A,#0E7490)',fx:'fx-glow'},
+ {id:'nx-rosa',n:'Neón Rosa',s:'pack_neon',c:['#F472B6','#FBCFE8'],r:12,m:22,h:'linear-gradient(90deg,#500724,#BE185D)',fx:'fx-glow'},
+ {id:'nx-lima',n:'Neón Lima',s:'pack_neon',c:['#A3E635','#ECFCCB'],r:12,m:22,h:'linear-gradient(90deg,#1A2E05,#4D7C0F)',hx:'#0b1400',fx:'fx-glow'},
+ {id:'nx-naranja',n:'Neón Naranja',s:'pack_neon',c:['#FB923C','#FED7AA'],r:12,m:22,h:'linear-gradient(90deg,#431407,#C2410C)',fx:'fx-glow'}];
+const plOk=(d,i)=>d.s?shopOwns(d.s):plLvl()>=i;
 const plLvl=()=>{let a=0,b=0;try{if(S.myVotes)a=rankInfo(S.myVotes).lvl}catch(e){}try{if(S.me&&S.me.rp>0)b=rankFromTotal(S.me.rp).lvl}catch(e){}return Math.max(a,b)};
 const plRankName=i=>RANKS[Math.floor(i/3)]+' '+(i%3+1);
 const plVars=d=>`--ac:${d.c[0]};--ac2:${d.c[1]};--plh:${d.h};--plr:${d.r}px;--plm:${d.m}%;--plx:${d.hx||'#fff'};${d.p?`--plp:${d.p};`:''}`;
 const plCls=d=>`pld pld-${d.id}${d.lh?' lh':''}${d.fx?' '+d.fx:''}`;
 function plSpec(){const id=S.me&&S.me.pl;if(!id)return {cls:'',style:''};
- const i=PL_D.findIndex(x=>x.id===id);if(i<0||plLvl()<i)return {cls:'',style:''};
+ const i=PL_D.findIndex(x=>x.id===id);if(i<0||!plOk(PL_D[i],i))return {cls:'',style:''};
  return {cls:plCls(PL_D[i]),style:plVars(PL_D[i])}}
 function plAttr(){const sp=plSpec();return sp.cls?` class="${sp.cls}" style="${sp.style}"`:''}
-function plBtnH(){if(!S.me)return '';const id=S.me.pl,i=PL_D.findIndex(x=>x.id===id),ok=i>=0&&plLvl()>=i;
+function plBtnH(){if(!S.me)return '';const id=S.me.pl,i=PL_D.findIndex(x=>x.id===id),ok=i>=0&&plOk(PL_D[i],i);
  return `<button class="btn s plbtn" onclick="plOpen()">🎨 <span>Diseño de planilla</span><em>${ok?esc(PL_D[i].n):'Base'}</em></button>`}
 function plOpen(){S.plSel=(S.me&&S.me.pl)||'';S.plSheet=true;R()}
 function plSelD(){const id=S.plSel==null?((S.me&&S.me.pl)||''):S.plSel;const i=id?PL_D.findIndex(x=>x.id===id):-1;return {i,d:i<0?null:PL_D[i]}}
@@ -2326,20 +2488,20 @@ function plPvH(){const l=curL(),[a1,a2]=accentOf(l),{d}=plSelD();
  const vars=d?plVars(d):`--ac:${a1};--ac2:${a2};--plh:linear-gradient(90deg,${a1},${a2});--plx:${l.tx||'#fff'}`;
  return `<div class="${d?plCls(d):'pld'}" style="${vars}"><div class="plv"><div class="plvh"><span>${esc(d?d.n:'Base')}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div>`}
 function plFoH(){const lvl=plLvl(),cur=(S.me&&S.me.pl)||'',{i,d}=plSelD(),id=d?d.id:'';
- const ok=!d||lvl>=i,on=cur===id;
- const st=d?(ok?(on?'En uso':'Desbloqueado'):'Se desbloquea en '+plRankName(i)):(on?'En uso':'Color de tu liga');
- return `<div class="plin"><b>${esc(d?d.n:'Base')}</b><em>${esc(st)}</em></div><button class="btn" style="margin:0"${ok&&!on?` onclick="setPl('${id}')"`:' disabled'}>${on?'En uso':(ok?'Usar este diseño':'Bloqueado')}</button>`}
+ const ok=!d||plOk(d,i),on=cur===id;
+ const st=d?(ok?(on?'En uso':'Desbloqueado'):(d.s?'Se compra en la tienda (Pack Neón)':'Se desbloquea en '+plRankName(i))):(on?'En uso':'Color de tu liga');
+ return `<div class="plin"><b>${esc(d?d.n:'Base')}</b><em>${esc(st)}</em></div><button class="btn" style="margin:0"${ok&&!on?` onclick="setPl('${id}')"`:(!ok&&d&&d.s?` onclick="S.plSheet=false;shopTab('pack')"`:' disabled')}>${on?'En uso':(ok?'Usar este diseño':(d&&d.s?'Ir a la tienda':'Bloqueado'))}</button>`}
 function plPick(id){S.plSel=id;const pv=document.getElementById('plpv'),fo=document.getElementById('plfo');if(!pv||!fo)return R();
  pv.innerHTML=plPvH();fo.innerHTML=plFoH();
  document.querySelectorAll('.pls').forEach(e=>e.classList.toggle('sel',e.dataset.id===id))}
 function plSheetH(){const l=curL(),[a1,a2]=accentOf(l),lvl=plLvl(),cur=(S.me&&S.me.pl)||'',sd=plSelD().d,sel=sd?sd.id:'';
- const dot=(d,i)=>{const ok=lvl>=i,on=cur===d.id;
+ const dot=(d,i)=>{const ok=plOk(d,i),on=cur===d.id;
   return `<button class="pls${sel===d.id?' sel':''}${ok?'':' lk'}" data-id="${d.id}" style="--ac:${d.c[0]};--ac2:${d.c[1]}" onclick="plPick('${d.id}')" aria-label="${esc(d.n)}">${ok?(on?'<u>\u2713</u>':''):'<u>\u{1F512}</u>'}</button>`};
  const base=`<button class="pls${sel?'':' sel'}" data-id="" style="--ac:${a1};--ac2:${a2};color:${l.tx||'#fff'}" onclick="plPick('')" aria-label="Base">${cur?'':'<u>\u2713</u>'}Base</button>`;
  return `<div class="ov" onclick="S.plSheet=false;R()"><div class="sh" onclick="event.stopPropagation()"><div class="plh2"><b>Diseño de planilla</b><button class="plx" onclick="S.plSheet=false;R()" aria-label="Cerrar">\u2715</button></div><div id="plpv">${plPvH()}</div><div class="plsw">${base}${PL_D.map(dot).join('')}</div><div id="plfo">${plFoH()}</div></div></div>`}
 function plQuickH(){return S.me?`<button class="tbtn plq" onclick="plOpen()" aria-label="Diseño de planilla">🎨</button>`:''}
 async function setPl(id){if(!S.me)return;
- if(id){const i=PL_D.findIndex(x=>x.id===id);if(i<0)return;if(plLvl()<i){try{achFail('Se desbloquea al llegar a '+plRankName(i)+'.')}catch(e){}return}}
+ if(id){const i=PL_D.findIndex(x=>x.id===id);if(i<0)return;if(!plOk(PL_D[i],i)){try{achFail(PL_D[i].s?'Cómpralo en la tienda.':'Se desbloquea al llegar a '+plRankName(i)+'.')}catch(e){}return}}
  const prev=S.me.pl||'';S.me={...S.me,pl:id};S.plSheet=false;R();
  try{await B.updateUser(S.me.uid,{pl:id})}catch(e){S.me={...S.me,pl:prev};R();try{achFail('No se pudo guardar el diseño.')}catch(_){}}}
 function roundV(){
@@ -2482,18 +2644,18 @@ function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{const nv=voteNorm(r
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
 async function pushVote2(v){
- let prevRank=null,newRank=null;
+ let prevRank=null,newRank=null;S.coinGain=0;
  v.uid=S.me.uid;v.u=S.me.u;v.key=ck(v.free?'libre':v.l,v.a,v.b);v.ts=Date.now();
  let c={n:0,wa:0,wb:0};try{c=summ(await B.votesKey(v.key))}catch(e){}
  const cw=c.wa>=c.wb?0:1,uw=(()=>{const o=outcomeOf(v);return o.w==null?-1:(o.w==='a'?0:1)})();
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
  try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
- notifyFriends(v);S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up)S.rankUp={from:prevRank,to:newRank};R();window.scrollTo(0,0);(async()=>{try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}})();
+ notifyFriends(v);S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up)S.rankUp={from:prevRank,to:newRank};R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}}catch(e){}})();
  try{S.comm=summ(await B.votesKey(v.key))}catch(e){S.comm={n:0,wa:0,wb:0,sa:0,sb:0}}
  R();
 }
 function resV(){const v=S.last;if(!v)return homeV();const c=S.comm;const tw=c?c.wa+c.wb:0;const pa=tw?Math.round(c.wa/tw*100):50;
- return `<div class="ok">${S.dupNote?esc(S.dupNote):'Voto guardado en tu perfil'}</div>
+ return `<div class="ok">${S.dupNote?esc(S.dupNote):'Voto guardado en tu perfil'}</div>${cgainH()}
  <div class="card"><b>Resultados de la comunidad</b>${c?`<div class="row" style="justify-content:space-between;margin-top:10px"><b style="color:var(--ac)">${esc(v.a)} ${tw?pa:'–'}%</b><b style="color:var(--b2)">${tw?100-pa:'–'}% ${esc(v.b)}</b></div><div class="bar"><i style="width:${pa}%"></i></div><div class="mu">${c.n} ${c.n===1?'voto':'votos'} en esta batalla</div>`:'<div class="mu" style="margin-top:8px">Cargando resultados…</div>'}</div>
  ${c&&c.n?`<div class="stats"><div class="stat"><big>${fmt(Math.round(c.sa/c.n*10)/10)}</big><span>Media de ${esc(v.a)}</span></div><div class="stat"><big>${fmt(Math.round(c.sb/c.n*10)/10)}</big><span>Media de ${esc(v.b)}</span></div></div>`:''}
  <div class="card" style="margin-top:12px"><b>Tu voto</b><div class="mu" style="margin-top:4px">${fmt(v.ta)} – ${fmt(v.tb)}${v.ra!=null?' · Réplica '+fmt(v.ra)+' – '+fmt(v.rb):''} · ${esc(v.msg||'')}</div></div>
@@ -2580,7 +2742,7 @@ function profileHead(u,isMe,uid){
  const fl=u.p?flagOf(u.p):'';
  const chips=[u.p?`<span class="pchip">${fl||'🌎'} ${esc(u.p)}</span>`:'',u.m?`<span class="pchip">🎤 ${esc(u.m)}</span>`:'',`<span class="pchip">📅 Desde ${esc(u.joined||'—')}</span>`].join('');
  const dz=dzOf(u);
- return `<div class="banner pbn${dz?' dz':''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div>${pMascotH(u)}</div>
+ return `<div class="banner pbn${dz?' dz':''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${ttH(u)}${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div>${pMascotH(u)}</div>
  <div class="card pinfo"><div class="pchips">${chips}</div>${uid?presLine(uid):''}${u.a?`<div class="pab"><div class="mu">Sobre mí</div>${esc(u.a)}</div>`:''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
@@ -2609,7 +2771,7 @@ function perfilV(){
  const tabs=`<div class="seg s4 pftabs">${T.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.pfTab='${k}';R()">${t}</button>`).join('')}</div>`;
  let body='';
  if(tab==='resumen'){
-  body=`${rankCardH(S.myVotes)}${statsCard(S.myVotes||[])}`}
+  body=`${shopMiniH()}${rankCardH(S.myVotes)}${statsCard(S.myVotes||[])}`}
  else if(tab==='editar'){
   body=`<div class="sec" style="margin-top:6px"><span>Información</span></div>
  <label class="btn s fotobtn" style="margin-bottom:12px">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
@@ -2619,6 +2781,7 @@ function perfilV(){
  <label class="f" style="margin-top:12px">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
  <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
  ${nameCardH()}
+ <button class="pfap" onclick="go('tienda')"><span><b>🪙 Marcos y títulos</b><em>Equipa lo que compraste en la tienda</em></span><i>›</i></button>
  <button class="pfap" onclick="S.pfAp=!S.pfAp;R()"><span><b>🎨 Apariencia</b><em>Colores de la app y diseño de tu tarjeta</em></span><i>${S.pfAp?'▴':'▾'}</i></button>
  ${S.pfAp?themeCardH()+designCardH():''}
  <button class="pfap" onclick="S.pfVz=!S.pfVz;R()"><span><b>♿ Accesibilidad</b><em>Lector de voz para baja visión</em></span><i>${S.pfVz?'▴':'▾'}</i></button>
@@ -2884,6 +3047,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-10T14:00:00-04:00'),text:'Nuevo: monedas y tienda. Ahora ganas monedas al votar batallas de liga (World Series 50, Internacional 40, España 35 y las demás 30; no cuentan Batalla libre ni Modo editor). Tus monedas salen arriba: tócalas para entrar a la tienda y canjearlas por el Marco dorado de perfil (animado), el título «Jurado estricto» debajo de tu nombre, el Pack Neón de colores para la planilla y las imágenes sin marca.'},
  {ts:Date.parse('2026-11-10T10:30:00-04:00'),text:'MC IA ahora crea imágenes: toca «Crear imagen» en MC IA y describe lo que quieres, o escríbele «dibuja…» / «genera una imagen de…». Cada usuario puede crear hasta 3 imágenes por día; el contador te muestra cuántas te quedan. Las imágenes se pueden guardar con el botón «Guardar».'},
  {ts:Date.parse('2026-11-10T02:00:00-04:00'),text:'Planilla de votación: ahora es más grande y los números se ven mejor. Además, en la planilla antigua puedes ocultar el puntaje total de cada ronda por separado (por ejemplo «Ocultar Easy Mode»): no verás lo que sacó cada MC en esa ronda, y el total general sigue visible. «Ocultar totales» ahora oculta solo la suma de todas las rondas, sin tocar los puntajes de cada ronda. Y con el teclado, si una casilla está sin votar y presionas Espacio, se pone automáticamente en 0,5.'},
  {ts:Date.parse('2026-11-09T12:00:00-04:00'),text:'Rediseño total con estilo calle: nuevo look de rap (cintas, sombras duras, tipografía de graffiti), Inicio reorganizado con las próximas jornadas arriba, barra inferior reordenada (Ligas, Calendario, Comunidad, IA, Buscar, Perfil) y perfil más limpio: ya no se muestran medallas favoritas, y las pestañas ahora son Resumen, Votos, Editar y Cuenta. Todas las funciones siguen igual.'},
@@ -4756,7 +4920,7 @@ async function toggleLike(uid){
  finally{S.likeBusy=false;setTimeout(()=>{S.likePop=null},600)}}
 function achFail(msg){const el=document.createElement('div');el.className='ach-toast';el.style.borderColor='#EF4444';el.innerHTML=`<div class="tm" style="background:#EF4444">⚠️</div><div><b style="font-size:13px;font-weight:700">${esc(msg)}</b></div>`;document.body.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4200)}
 
-const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV,duel:duelV};
+const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV,duel:duelV,tienda:tiendaV};
 /* ===== MODO EDITOR: rondas, colores y logos (solo administrador y quien tenga el permiso «Editor») ===== */
 const canEd=()=>!!(S.me&&S.admin);
 B.getCollabEd=async uid=>{const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'collabs',uid));return d.exists()&&!!d.data().ed}catch(e){return false}};
@@ -5168,7 +5332,7 @@ async function impDraw(sp){
    impTxt(x,q.pts,sx[0],cy,100,46,900,impMix(c2,'#ffffff',.25),'center',24);
    [q.w,q.l,fmt(Math.round(q.ptb*10)/10)].forEach((v,k)=>impTxt(x,v,sx[k+1],cy,100,38,700,'rgba(255,255,255,.92)','center',22))});
  }
- impTxt(x,'VotaFMS',W/2,H-44,CW,26,700,'rgba(255,255,255,.45)','center',16);
+ if(!shopOwns('nowm'))impTxt(x,'VotaFMS',W/2,H-44,CW,26,700,'rgba(255,255,255,.45)','center',16);
  return cv}
 async function impGo(k){const sp=IMGR[k];if(!sp)return;
  try{const cv=await impDraw(sp),bl=await new Promise(r=>cv.toBlob(r,'image/png'));if(!bl)throw new Error('blob');
