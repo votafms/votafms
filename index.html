@@ -1624,6 +1624,23 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
  .duw>.du-sec{break-after:avoid}
 }
 
+.vbar{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.vbar #fmtseg{flex:1;min-width:0}
+.vbar .seg{margin-bottom:0!important;padding:3px}
+.vbar .seg button{padding:8px 4px;font-size:11.5px;letter-spacing:0;min-width:0}
+.vgear{width:auto!important;flex:0 0 auto;margin:0!important;padding:10px 12px!important;font-size:12px;box-shadow:none!important}
+.vgear.on{border-color:var(--ac)!important}
+@media (max-width:640px){.vgear span{display:none}.vgear{padding:10px 14px!important;font-size:15px}.vbar .seg button{font-size:11.5px}}
+.vopts{display:grid;gap:8px;background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:10px;margin-bottom:10px}
+.vf{display:flex;align-items:center;gap:10px}
+.vf>span{font-size:12px;font-weight:800;color:var(--mu);white-space:nowrap}
+.vf .seg{flex:1;min-width:0;margin:0;padding:3px}
+.vf .seg button{padding:7px 4px;font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vw .difbar{padding:8px 10px}
+.vw .difbar b{font-size:12.5px}
+.vw .difbar span{font-size:11px}
+.vw .kbhint{margin:6px 8px 0}
+
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -1884,7 +1901,7 @@ function difBar(){if(S.editId||!S.bt)return '';
  else if(S.dif)hint='Si la diferencia es menor a '+fmt(S.dif)+', va a réplica.';
  else hint=pc?'Automática. Haz clic y escribe un número del 1 al 6.':'Automática. Toca para elegir de 1 a 6.';
  return `<div class="difbar${S.difKb?' kb':''}"><div class="difl"><b>Diferencia para que sea directa</b><span>${hint}</span></div><button class="difbtn" onclick="difOpen()" aria-label="Elegir diferencia">${val}</button></div>`}
-function difOpen(){if(isPC()){S.difKb=!S.difKb;S.selA=null;S.sheet=null;KBUF='';clearTimeout(KT)}else{S.difSheet=true}R()}
+function difOpen(){if(isPC()){S.difKb=!S.difKb;S.selA=null;S.selB=null;S.sheet=null;KBUF='';clearTimeout(KT)}else{S.difSheet=true}R()}
 function difSheetH(){const act=S.fmt==='actual';
  return `<div class="ov" onclick="S.difSheet=false;R()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;margin-bottom:6px"><b style="font-size:17px">Diferencia para que sea directa</b><span class="mu">${act?'1 a 6':'1 a 6 · con medio punto'}</span></div><div class="mu" style="font-size:13px;margin:0 0 14px">Si la diferencia entre los dos MCs es menor, va a réplica.</div><div class="pk">${difVals().map(v=>`<button class="${S.dif===v?'on':''}" onclick="setDif(${v})">${fmt(v)}</button>`).join('')}<button class="clr${S.dif?'':' on'}" style="grid-column:1/-1" onclick="setDif('')">Automática</button></div></div></div>`}
 function setDif(x){S.dif=x?+x:null;S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif;S.difSheet=false;if(S.rep==='skipped')S.rep=null;R()}
@@ -1904,7 +1921,7 @@ document.addEventListener('keydown',difKey);
 function fmtSeg(){const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
  const btn=(k,t)=>`<button class="${cur===k?'on':''}${lock&&cur!==k?' dis':''}" ${lock&&cur!==k?'disabled aria-disabled="true"':''} onclick="setFmt('${k}')">${t}</button>`;
  return `<div id="fmtseg"><div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
-function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;difNorm();S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;R()}
+function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;difNorm();S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;S.selB=null;R()}
 const isPC=()=>!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);
 let KBUF='',KT=null;
 function pickA(ri,m,idx){S.difKb=false;KBUF='';clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
@@ -1973,6 +1990,7 @@ function R(){
  const plan=document.getElementById('plan');
  if(vkey&&vkey===VKEY&&plan){
   plan.innerHTML=planHTML();{const sp=plSpec();plan.className=sp.cls;plan.style.cssText=sp.style}
+  const vb=document.getElementById('vbar');if(vb&&S.bt)vb.innerHTML=vbarH(S.bt,vytH());const ve=document.getElementById('vemp');if(ve&&S.bt)ve.textContent=(S.first||0)===1?S.bt.b:S.bt.a;
   const sg=document.getElementById('fmtseg');if(sg&&!S.editId)sg.outerHTML=fmtSeg();
  }else{
   document.getElementById('app').innerHTML=(VIEW[S.v]||homeV)();
@@ -2235,12 +2253,17 @@ function startScreenV(b,l){const f=S.first||0;const [a1,a2]=accentOf(l);
 function confirmFirst(){S.firstSet=true;R();window.scrollTo(0,0)}
 function startBat(ci,bi){const e=CAL[ci];const b=batOf(e,e.b[bi]);start({a:b.a,b:b.b,j:b.j,y:b.y||null})}
 function ytGo(){const m=(S.yt||'').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);if(!m){S.err='Ese link no parece de YouTube. Prueba con otro.';return R()}S.err='';start({a:S.na.trim()||'MC 1',b:S.nb.trim()||'MC 2',j:'Batalla por link',y:m[1]})}
-function start(b){const l=curL();S.bt=b;S.libre=!!b.libre;S.temp=b.temp||'2026';S.first=b.first||0;S.firstSet=false;S.editId=null;const exV=S.libre?null:(S.myVotes||[]).find(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:b.a,b:b.b}));if(exV&&!S.duelOn)return startEdit(exV);S.dif=(S.difMap||{})[S.lg+'|'+S.temp]||null;if((S.temp==='2024'||S.temp==='2025')&&!S.libre&&S.lg!=='in'&&!S.duelOn){S.fmt24=1;S.fmt='actual'}else if(S.fmt24){S.fmt24=0;S.fmt='antigua'}S.ri=0;S.pi=0;S.rep=null;S.rounds=fmtRounds(S.fmt||'antigua',l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.v='vote';R();window.scrollTo(0,0)}
+function start(b){const l=curL();S.bt=b;S.libre=!!b.libre;S.temp=b.temp||'2026';S.first=b.first||0;S.firstSet=false;S.editId=null;S.selB=null;const exV=S.libre?null:(S.myVotes||[]).find(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:b.a,b:b.b}));if(exV&&!S.duelOn)return startEdit(exV);S.dif=(S.difMap||{})[S.lg+'|'+S.temp]||null;if((S.temp==='2024'||S.temp==='2025')&&!S.libre&&S.lg!=='in'&&!S.duelOn){S.fmt24=1;S.fmt='actual'}else if(S.fmt24){S.fmt24=0;S.fmt='antigua'}S.ri=0;S.pi=0;S.rep=null;S.rounds=fmtRounds(S.fmt||'antigua',l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.v='vote';R();window.scrollTo(0,0)}
 function sumR(k,m){return sum(S.sc[k][m])}
 function tot(m){return S.rounds.reduce((a,_,k)=>a+sumR(k,m),0)}
 function mainTot(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?0:sumR(k,m)),0)}
 function counted(m){return mainTot(m)}
 
+function vytH(){const b=S.bt;if(!b)return '';const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:0,vcur=vids[vpi],vst=ytSt(b.y)[vpi]||0;
+ return vcur?`<a id="vpa" href="https://www.youtube.com/watch?v=${vcur}${vst?'&t='+vst+'s':''}" target="_blank" rel="noopener" class="btn s vchip" style="text-decoration:none">${ico('play',16)} <span>Abrir en YouTube</span></a>`:''}
+function vbarH(b,ytA){const op=S.vopt==null?isPC():S.vopt,f=S.first||0;
+ const fsel=`<div class="vf"><span>¿Quién empieza?</span><div class="seg"><button class="${f===0?'on':''}" onclick="setFirst(0)">${esc(b.a)}</button><button class="${f===1?'on':''}" onclick="setFirst(1)">${esc(b.b)}</button></div></div>`;
+ return `<div class="vbar">${S.editId?'':fmtSeg()}<button class="btn s vgear${op?' on':''}" onclick="S.vopt=${!op};R()" aria-expanded="${op}">⚙ <span>Opciones</span></button></div>${op?`<div class="vopts">${fsel}<div class="vchips">${plBtnH()}${S.float?'':`<button class="btn s vchip" onclick="openFloat()">⧉ <span>Planilla flotante</span></button>`}${ytA}</div></div>`:''}`}
 function voteV(){
  const b=S.bt,l=curL(),done=S.ri>=S.rounds.length;const [ac1,ac2]=accentOf(l);if(!S.firstSet)return startScreenV(b,l);
 const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:0,vcur=vids[vpi],vst=ytSt(b.y)[vpi]||0;
@@ -2249,9 +2272,9 @@ const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:
  const ytA=vcur?`<a id="vpa" href="https://www.youtube.com/watch?v=${vcur}${vst?'&t='+vst+'s':''}" target="_blank" rel="noopener" class="btn s vchip" style="text-decoration:none">${ico('play',16)} <span>Abrir en YouTube</span></a>`:'';
  return `<div class="lgwrap vw" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
  <div class="vgrid"><div class="vleft">
- <div class="card vmatch"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu vj">${esc(b.j||'')}</div></div>
+ <div class="card vmatch"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu vj">${esc(b.j||'')}${b.j?' · ':''}Empieza <b id="vemp">${esc((S.first||0)===1?b.b:b.a)}</b></div></div>
  ${media}</div>
- <div class="vright"><div class="vtools">${S.editId?'':fmtSeg()}<div class="vchips">${plBtnH()}${S.float?'':`<button class="btn s vchip" onclick="openFloat()">⧉ <span>Planilla flotante</span></button>`}${ytA}</div></div>
+ <div class="vright"><div id="vbar">${vbarH(b,ytA)}</div>
  ${linkAreaH(b)}<div id="plan"${plAttr()}>${planHTML()}</div></div></div></div>`;
 }
 /* ===== Diseños de planilla por rango (15): solo cambian cómo se ve la planilla, no los puntos =====
@@ -2312,14 +2335,14 @@ function roundV(){
  const head=`<div class="pgrid" style="${grid}"><span></span>${Array.from({length:part.c},(_,j)=>`<span class="ph">${j+1}</span>`).join('')}<span class="ph">Téc.</span><span class="ph">Flow</span><span class="ph">P.Esc</span><span class="ph">Tot.</span></div>`;
  const order=((i+(S.first||0))%2===0)?[0,1]:[1,0];
  const rows=order.map(m=>{const ps=sum(S.sc[S.ri][m].slice(off,off+vals));
-  return `<div class="pgrid" style="${grid};margin-top:6px"><span class="pname" style="color:${m?'var(--ac2)':'var(--ac)'}">${esc(m?S.bt.b:S.bt.a)}</span>${Array.from({length:vals},(_,j)=>{const idx=off+j,v=S.sc[S.ri][m][idx];return `<button class="cell ${j>=part.c?'crit ':''}${v==null?'empty':'set'}${m?' b':''}${(v===3||v===3.5)?' v3':v===4?' v4':''}" onclick="pick(${m},${idx})">${v==null?'–':fmt(v)}</button>`}).join('')}<div class="tot">${S.hideTot?'·':fmt(ps)}</div></div>`}).join('');
+  return `<div class="pgrid" style="${grid};margin-top:6px"><span class="pname" style="color:${m?'var(--ac2)':'var(--ac)'}">${esc(m?S.bt.b:S.bt.a)}</span>${Array.from({length:vals},(_,j)=>{const idx=off+j,v=S.sc[S.ri][m][idx];return `<button class="cell ${j>=part.c?'crit ':''}${v==null?'empty':'set'}${m?' b':''}${(v===3||v===3.5)?' v3':v===4?' v4':''}${bSel(m,idx)?' sel':''}" onclick="pick(${m},${idx})">${v==null?'–':fmt(v)}</button>`}).join('')}<div class="tot">${S.hideTot?'·':fmt(ps)}</div></div>`}).join('');
  const bar=`<div class="stepbar">${st.map((x,k)=>`<button class="sbtn ${k===i?'on':k<i?'done':''}" onclick="goStep(${k})"><span class="sdot">${k+1}</span><span class="slab">${esc(x.lab)}</span></button>`).join('')}</div>`;
  const foot=S.hideTot?`<div class="pl-foot"><span class="pl-lab" style="grid-column:1/4">TOTALES OCULTOS</span></div>`:`<div class="pl-foot"><span class="pl-lab">${cur.rep?'RÉPLICA':'TOTAL'}</span><div class="pl-tot" style="color:var(--ac)">${fmt(cur.rep?repTotM(0):mainTot(0))}<small>${esc(S.bt.a)}</small></div><div class="pl-tot" style="color:var(--ac2)">${fmt(cur.rep?repTotM(1):mainTot(1))}<small>${esc(S.bt.b)}</small></div></div>`;
  return `${bar}
  <div class="pl-card">
   <div class="pl-head"><div><div class="pl-kicker">Paso ${i+1} de ${n}${cur.rep?' · Réplica':''}</div><div class="pl-title">${esc(cur.lab)}</div></div>
   <span class="tbg">${plQuickH()}<button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></span></div>
-  ${difBar()}<div class="pl-scroll"><div class="pblock">${head}${rows}</div></div>
+  ${difBar()}${bHintH()}<div class="pl-scroll"><div class="pblock">${head}${rows}</div></div>
   ${foot}
  </div>
  <div class="row" style="gap:8px;margin-top:12px"><button class="btn s" style="margin:0" onclick="mv(-1)" ${i?'':'disabled'}>Anterior</button><button class="btn" style="margin:0" onclick="mv(1)">${i===n-1?'Ver resultado':'Siguiente'}</button></div>
@@ -2364,9 +2387,54 @@ function curStep(){return stepsList().findIndex(x=>x.ri===S.ri&&x.pi===S.pi)}
 function goStep(i){const st=stepsList();if(i>=st.length){S.ri=S.rounds.length;S.pi=0}else{i=Math.max(0,i);S.ri=st[i].ri;S.pi=st[i].pi}R();if(S.ri>=S.rounds.length){const pl=document.getElementById('plan');if(pl){const t=pl.getBoundingClientRect().top;if(t<0)window.scrollBy(0,t-10)}}}
 function mv(d){goStep(curStep()+d)}
 function maxAt(idx){let off=0;for(const part of S.rounds[S.ri].p){const vals=part.c+3;if(idx<off+vals)return part.max||4;off+=vals}return 4}
-function pick(m,idx){S.difKb=false;const cur=S.sc[S.ri][m][idx];S.sheet={m,idx,max:maxAt(idx),str:cur==null?'':fmtKey(cur)};S.kpe='';R()}
+function pick(m,idx){S.difKb=false;if(isPC()){KBUF='';clearTimeout(KT);KLAST=null;S.selB={ri:S.ri,m,idx};S.sheet=null;S.kpe='';return R()}const cur=S.sc[S.ri][m][idx];S.sheet={m,idx,max:maxAt(idx),str:cur==null?'':fmtKey(cur)};S.kpe='';R()}
 function setV(v){const h=S.sheet;S.sc[h.ri!=null?h.ri:S.ri][h.m][h.idx]=v;S.sheet=null;S.kpe='';R()}
 function closeSheet(){S.sheet=null;S.kpe='';R()}
+/* ===== Teclado de PC en la planilla antigua: 0 a 4 (o el máximo del paso), coma/punto/espacio = medio punto, flechas/Tab/Enter para moverte ===== */
+let KLAST=null;
+const bSel=(m,idx)=>{const c=bCur();return !!c&&c.m===m&&c.idx===idx};
+function bRange(){const rd=S.rounds&&S.rounds[S.ri],part=rd&&rd.p[S.pi];if(!part)return null;let off=0;for(let k=0;k<S.pi;k++)off+=rd.p[k].c+3;return {off,vals:part.c+3,part}}
+function bCur(){if(!isPC()||S.fmt==='actual'||!S.selB||!S.rounds||S.ri>=S.rounds.length)return null;const r=bRange(),c=S.selB;if(!r||c.ri!==S.ri||c.idx<r.off||c.idx>=r.off+r.vals)return null;return c}
+function bOrder(){const st=stepsList(),o=[];st.forEach((x,i)=>{const rd=S.rounds[x.ri],part=rd.p[x.pi];let off=0;for(let k=0;k<x.pi;k++)off+=rd.p[k].c+3;const vals=part.c+3,ms=((i+(S.first||0))%2===0)?[0,1]:[1,0];ms.forEach(m=>{for(let j=0;j<vals;j++)o.push({ri:x.ri,pi:x.pi,m,idx:off+j})})});return o}
+function bStep(c,d){const o=bOrder(),i=o.findIndex(x=>x.ri===c.ri&&x.m===c.m&&x.idx===c.idx);if(i<0)return c;return o[Math.max(0,Math.min(o.length-1,i+d))]}
+function bGo(c){if(!c)return;KBUF='';clearTimeout(KT);S.selB={ri:c.ri,m:c.m,idx:c.idx};if(c.pi!=null&&(c.ri!==S.ri||c.pi!==S.pi)){S.ri=c.ri;S.pi=c.pi}R()}
+function bOpenSheet(){const c=bCur();if(!c)return;const cur=S.sc[S.ri][c.m][c.idx];S.sheet={m:c.m,idx:c.idx,max:maxAt(c.idx),str:cur==null?'':fmtKey(cur)};S.selB=null;KLAST=null;S.kpe='';R()}
+function bHintH(){if(!isPC()||S.fmt==='actual')return '';const c=bCur(),r=bRange();const mx=c?maxAt(c.idx):(r&&r.part.max)||4;
+ return `<div class="kbhint">⌨ ${c?`Escribe de 0 a ${mx} · coma, punto o espacio = medio punto`:'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();bOpenSheet()">Abrir selector</a>`:''}</span></div>`}
+function bKey(e){
+ if(S.difKb||S.sheet||S.difSheet||S.plSheet)return;
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
+ if(S.v!=='vote'||S.fmt==='actual'||!S.sc||!S.rounds||S.ri>=S.rounds.length||S.auth||S.fb||S.delAsk||S.friendsOpen||S.ranksOpen||S.inboxOpen||S.rankUp||!isPC())return;
+ const k=e.key;let c=bCur();
+ const inStep=()=>bOrder().filter(x=>x.ri===S.ri&&x.pi===S.pi);
+ if(/^[0-9]$/.test(k)){
+  if(!c){const f=inStep().find(x=>S.sc[x.ri][x.m][x.idx]==null);if(!f)return;c=f;S.selB={ri:f.ri,m:f.m,idx:f.idx}}
+  e.preventDefault();KLAST=null;
+  if(KBUF&&k!=='0'){const nx=bStep(c,1);KBUF='';clearTimeout(KT);if(nx.idx!==c.idx||nx.m!==c.m||nx.ri!==c.ri){bGo(nx);c=nx}}
+  const mx=maxAt(c.idx);let buf=KBUF+k,n=Number(buf);
+  if(n>mx){buf=k;n=Number(buf);if(n>mx)return}
+  KBUF=buf;S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);
+  if(n>=1&&n*10<=mx){R()}
+  else{KBUF='';KLAST={ri:c.ri,m:c.m,idx:c.idx,mx};const nx=bStep(c,1);if(nx.idx===c.idx&&nx.m===c.m&&nx.ri===c.ri)R();else bGo(nx)}
+  return}
+ if(k===','||k==='.'||k===' '||k==='Spacebar'){
+  const tg=KLAST||(c?{ri:c.ri,m:c.m,idx:c.idx,mx:maxAt(c.idx)}:null);
+  if(!tg||!(S.sc[tg.ri]&&S.sc[tg.ri][tg.m]))return;
+  e.preventDefault();const v=S.sc[tg.ri][tg.m][tg.idx];if(v==null)return;
+  if(v%1===0){if(v<tg.mx)S.sc[tg.ri][tg.m][tg.idx]=v+0.5}else S.sc[tg.ri][tg.m][tg.idx]=v-0.5;
+  R();return}
+ if(!c){if(k==='ArrowRight'||k==='ArrowLeft'||k==='ArrowUp'||k==='ArrowDown'){const f=inStep()[0];if(f){e.preventDefault();bGo(f)}}return}
+ if(k==='Backspace'||k==='Delete'){e.preventDefault();KLAST=null;KBUF='';clearTimeout(KT);
+  if(S.sc[c.ri][c.m][c.idx]==null){const pv=bStep(c,-1);if(pv.idx!==c.idx||pv.m!==c.m||pv.ri!==c.ri){S.sc[pv.ri][pv.m][pv.idx]=null;bGo(pv);return}}
+  S.sc[c.ri][c.m][c.idx]=null;R();return}
+ if(k==='Escape'){e.preventDefault();KLAST=null;KBUF='';clearTimeout(KT);S.selB=null;R();return}
+ if(k==='Enter'||k==='ArrowRight'||(k==='Tab'&&!e.shiftKey)){e.preventDefault();KLAST=null;bGo(bStep(c,1));return}
+ if(k==='ArrowLeft'||(k==='Tab'&&e.shiftKey)){e.preventDefault();KLAST=null;bGo(bStep(c,-1));return}
+ if(k==='ArrowDown'||k==='ArrowUp'){e.preventDefault();KLAST=null;bGo({ri:c.ri,pi:S.pi,m:1-c.m,idx:c.idx});return}
+}
+document.addEventListener('keydown',bKey);
+
 function kpAdd(d){const h=S.sheet;let c=h.str||'';
  if(d==='10'){h.str='10';S.kpe='';return R()}
  if(d===','){if(c.includes(','))return R();c=(c===''?'0':c)+','}
