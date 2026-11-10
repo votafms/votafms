@@ -1648,6 +1648,9 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 .vw .difbar span{font-size:11px}
 .vw .kbhint{margin:6px 8px 0}
 
+.imp,.impj{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--bd);background:var(--cd2);color:var(--tx);border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.imp{margin-left:auto;padding:6px 11px;flex:0 0 auto}
+.impj{width:100%;padding:10px 12px;margin:2px 0 14px}
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -2100,9 +2103,9 @@ function tablaHTML(rows,l,o){
  const [a1,a2]=accentOf(l);
  const live=!(o&&o.noTags)&&l.i!=='in'&&rows.some(x=>x.pts>0);
  return `<div class="card" style="padding:12px 8px;overflow-x:auto;--ac:${a1};--ac2:${a2};border-color:color-mix(in srgb,var(--ac) 55%,transparent);background:linear-gradient(160deg,color-mix(in srgb,var(--ac) 18%,var(--cd)),var(--cd) 60%)">
- <div class="row" style="padding:0 6px 10px">${logo(l,34)}<b style="font-size:15px;color:var(--ac)">${esc(l.n)}${o&&o.title?' · '+esc(o.title):''}</b></div>
+ <div class="row" style="padding:0 6px 10px">${logo(l,34)}<b style="font-size:15px;color:var(--ac)">${esc(l.n)}${o&&o.title?' · '+esc(o.title):''}</b>${impBtn({k:'t',lg:l,title:(o&&o.title)||'',rows,live,last:(o&&o.last)||'PTB'},'Importar','imp')}</div>
  <div class="stbl">
- <div class="sth">Pos</div><div class="sth" style="text-align:left">Participante</div><div class="sth">Pts</div><div class="sth">G</div><div class="sth">P</div><div class="sth">PTB</div>
+ <div class="sth">Pos</div><div class="sth" style="text-align:left">Participante</div><div class="sth">Pts</div><div class="sth">G</div><div class="sth">P</div><div class="sth">${(o&&o.last)||'PTB'}</div>
  ${rows.map((r,i)=>{const n=rows.length,dn=live&&n>=5&&i>=n-2,ch=live&&i===0;
   const tag=ch?'<span class="stag champ"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zM6 7v1a2 2 0 0 0 2 2V7H6zm12 0h-2v3a2 2 0 0 0 2-2V7z"/></svg> Campeón</span>':dn?'<span class="stag desc"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg> Descenso</span>':'';const c=ch?' ch':'';
   return `<div class="std fc${i<3?' tp3':''}${dn?' dn':''}${c}">${i+1}</div><div class="std n${tag?' has-tag':''}${dn?' dn':''}${c}"><span class="nm">${esc(r.n)}</span>${tag}</div><div class="std b${dn?' dn':''}${c}">${r.pts}</div><div class="std${dn?' dn':''}${c}">${r.w}</div><div class="std${dn?' dn':''}${c}">${r.l}</div><div class="std${dn?' dn':''}${c}">${fmt(Math.round(r.ptb*10)/10)}</div>`}).join('')}
@@ -2135,7 +2138,7 @@ function lgv(){
  const groups=ents.map(({e,ci})=>{const bs=e.b||[];
   return `<div class="jgrp"><div class="jhd"><b>${esc(jLabel(e))}</b><span>${esc(e.d||'Fecha por confirmar')}</span></div>
   <div class="jpills"><span class="pill ${e.k==='next'?'next':e.k==='done'?'done':''}">${esc(e.st)}</span>${sedeOk(e)?` <span class="pill">📍 ${esc(e.s)}</span>`:''}</div>
-  ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}</div>`}).join('');
+  ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}${bs.length?impBtn({k:'j',lg:l,title:jLabel(e),sub:[e.d||'Fecha por confirmar',sedeOk(e)?e.s:''].filter(Boolean).join(' · '),items:bs.map(b=>{const x=batOf(e,b);return {a:x.a,b:x.b,sa:x.sa,sb:x.sb}})},'Importar jornada'):''}</div>`}).join('');
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}">
  <div class="lgside"><button class="back" onclick="go('home')">${ico('back',18)} Ligas</button>
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
@@ -2242,11 +2245,12 @@ function linkKey(lg,temp,a,b,x){return ((lg==='es'&&temp==='2017')?'2017|'+a+'|'
 function jorV(lg,season){const J=SEASON_JOR[lg+'|'+season]||[];
  const bh=(ji,bi,b)=>`<button class="bat" onclick="startSeasonBat('${lg}','${season}',${ji},${bi})"><span class="side">${esc(b[0])}</span><span class="vs">${b[2]==='apl'?'APL':b[2]===true?'EXH':'VS'}</span><span class="side r">${esc(b[1])}</span></button>${(S.myVotes||[]).some(v=>!v.free&&bkey(v)===bkey({l:lg,temp:season,a:b[0],b:b[1]}))?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`;
  return J.map((j,ji)=>{
+  const imp=j.b.length?impBtn({k:'j',lg:L.find(x=>x.i===lg)||curL(),title:j.lab||('Jornada '+j.n),sub:[seasonLabel(season,lg),j.fecha,j.ciudad].filter(Boolean).join(' · '),items:j.b.map(b=>({a:b[0],b:b[1],tag:b[2]==='apl'?'APL':b[2]===true?'EXH':''}))},'Importar jornada'):'';
   const head=`<div class="sec"><span>${esc(j.lab||('Jornada '+j.n))}</span><span>${esc(j.fecha||'')}</span></div>${j.ciudad?`<div class="mu" style="margin:-4px 2px 8px">${esc(j.ciudad)}</div>`:''}`;
   if(j.g&&GRP23[lg]&&season==='2023'){
    const part=(t,f)=>{const h=j.b.map((b,bi)=>f(b)?bh(ji,bi,b):'').join('');return h?`<div class="mu" style="margin:4px 2px 8px;font-weight:800">${t}</div>${h}`:''};
-   return head+part('Grupo A',b=>b[2]!==true&&b[2]!=='po'&&grpOf(lg,b)==='A')+part('Grupo B',b=>b[2]!==true&&b[2]!=='po'&&grpOf(lg,b)==='B')+part('Play-Off',b=>b[2]==='po')+part('Exhibición',b=>b[2]===true)}
-  return head+j.b.map((b,bi)=>bh(ji,bi,b)).join('')}).join('')}
+   return head+part('Grupo A',b=>b[2]!==true&&b[2]!=='po'&&grpOf(lg,b)==='A')+part('Grupo B',b=>b[2]!==true&&b[2]!=='po'&&grpOf(lg,b)==='B')+part('Play-Off',b=>b[2]==='po')+part('Exhibición',b=>b[2]===true)+imp}
+  return head+j.b.map((b,bi)=>bh(ji,bi,b)).join('')+imp}).join('')}
 const grpOf=(lg,b)=>{const g=GRP23[lg];return (g.A.includes(b[0])||g.A.includes(b[1]))?'A':'B'};
 function startSeasonBat(lg,season,ji,bi){const J=SEASON_JOR[lg+'|'+season],j=J[ji],b=j.b[bi];S.lg=lg;S.season=season;
  const tn=seasonLabel(season,lg);
@@ -5029,14 +5033,14 @@ function mleV(){if(!canSb())return `<button class="back" onclick="go('home')">�
  return `<div class="xed"><button class="back" onclick="go('home')">‹ Ligas</button><div class="du-hero"><div class="du-ico">🎨</div><div style="min-width:0"><h1 class="pg">Modo editor</h1><div class="du-sub">Tu espacio aparte: crea ligas con tu logo y colores. No cambia la página ni suma a tu rango.</div></div></div>${t?`<div class="sec"><span>Mis ligas</span><span>${X.l.length}</span></div><div class="lgrid2">${t}</div>`:''}${xShTiles()}<div class="sec"><span>Crear una liga nueva</span></div>${opt('auto','⚡','Liga automática','Añades participantes y la app arma las jornadas. Tú solo marcas quién ganó.')}${opt('manual','✍️','Liga manual','Escribes las batallas de cada jornada y las votas con planilla.')}${S.mx.msg?`<div class="mu" style="text-align:center">${esc(S.mx.msg)}</div>`:''}</div>`}
 function xResPick(g,ji,bi,b,r){const op=[[3,0],[2,1],[1,1],[1,2],[0,3]],cur=r?r.a+'-'+r.b:'',nm=(x,y)=>x>y?`+${x} ${esc(b.a)} · ${y} ${esc(b.b)}`:y>x?`+${y} ${esc(b.b)} · ${x} ${esc(b.a)}`:`Empate · 1 ${esc(b.a)} · 1 ${esc(b.b)}`;
  return `<div class="card" style="margin:-2px 0 10px"><div class="mu" style="margin-bottom:10px">¿Quién ganó?</div>${op.map(([x,y])=>`<button class="xro${cur===x+'-'+y?' on':''}" onclick="xRes(${ji},${bi},${x},${y})"><b>${x}–${y}</b><span>${nm(x,y)}</span></button>`).join('')}${r?`<button class="xro rm" onclick="xRes(${ji},${bi},null)">Quitar resultado</button>`:''}</div>`}
-function xVotA(g){return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.filter(b=>xRs(g,b)).length}/${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const r=xRs(g,b),k=ji+'-'+bi;return `<button class="bat" onclick="xOpenRes('${k}')"><span class="side">${esc(b.a)}</span><span class="vs">${r?r.a+'–'+r.b:'VS'}</span><span class="side r">${esc(b.b)}</span></button>${S.mx.o===k?xResPick(g,ji,bi,b,r):''}`}).join('')||'<div class="card mu">Sin batallas en esta jornada.</div>'}`).join('')||'<div class="card mu">Aún no hay jornadas. Ve a Editar, añade participantes y pulsa «Generar jornadas».</div>'}
-function xVot(g){if(xAuto(g))return xVotA(g);return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const v=xBk(g,b);return `<button class="bat" onclick="xVote(${ji},${bi})"><span class="side">${esc(b.a)}</span><span class="vs">${v?fmt(v.ta)+'–'+fmt(v.tb):'VS'}</span><span class="side r">${esc(b.b)}</span></button>`}).join('')||'<div class="card mu">Sin batallas. Añádelas en Editar.</div>'}`).join('')||'<div class="card mu">Aún no hay jornadas.</div>'}
+function xVotA(g){return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.filter(b=>xRs(g,b)).length}/${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const r=xRs(g,b),k=ji+'-'+bi;return `<button class="bat" onclick="xOpenRes('${k}')"><span class="side">${esc(b.a)}</span><span class="vs">${r?r.a+'–'+r.b:'VS'}</span><span class="side r">${esc(b.b)}</span></button>${S.mx.o===k?xResPick(g,ji,bi,b,r):''}`}).join('')||'<div class="card mu">Sin batallas en esta jornada.</div>'}${xImpJ(g,j)}`).join('')||'<div class="card mu">Aún no hay jornadas. Ve a Editar, añade participantes y pulsa «Generar jornadas».</div>'}
+function xVot(g){if(xAuto(g))return xVotA(g);return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const v=xBk(g,b);return `<button class="bat" onclick="xVote(${ji},${bi})"><span class="side">${esc(b.a)}</span><span class="vs">${v?fmt(v.ta)+'–'+fmt(v.tb):'VS'}</span><span class="side r">${esc(b.b)}</span></button>`}).join('')||'<div class="card mu">Sin batallas. Añádelas en Editar.</div>'}${xImpJ(g,j)}`).join('')||'<div class="card mu">Aún no hay jornadas.</div>'}
 const xTb=g=>xAuto(g)||g.tabla!==false;
 function xTabOn(v){const g=xCur();g.tabla=!!v;if(!v&&S.mx.t==='t')S.mx.t='e';xReg(g);R()}
 function xTabA(g){const m={},add=n=>m[n]=m[n]||{n,pts:0,w:0,l:0,ptb:0};(g.parts||[]).forEach(add);
  g.jors.forEach(j=>j.bats.forEach(b=>{const r=xRs(g,b);if(!r)return;const A=add(b.a),Z=add(b.b);A.pts+=r.a;Z.pts+=r.b;if(r.a>r.b){A.w++;Z.l++}else if(r.b>r.a){Z.w++;A.l++}else{A.ptb++;Z.ptb++}}));
  const rows=Object.values(m).sort((x,y)=>y.pts-x.pts||y.w-x.w||x.n.localeCompare(y.n));
- return rows.length?tablaHTML(rows,LX.find(x=>x.i===g.id),{noTags:true}).replace('>PTB</div>','>E</div>')+'<div class="mu" style="text-align:center">Gana 3-0 = 3 pts · gana 2-1 = 2 pts (el rival suma 1) · empate 1-1 · G ganadas, P perdidas, E empates.</div>':'<div class="card mu">Añade participantes para ver la tabla.</div>'}
+ return rows.length?tablaHTML(rows,LX.find(x=>x.i===g.id),{noTags:true,last:'E'})+'<div class="mu" style="text-align:center">Gana 3-0 = 3 pts · gana 2-1 = 2 pts (el rival suma 1) · empate 1-1 · G ganadas, P perdidas, E empates.</div>':'<div class="card mu">Añade participantes para ver la tabla.</div>'}
 function xTab(g){if(xAuto(g))return xTabA(g);const m={},add=n=>m[n]=m[n]||{n,pts:0,w:0,l:0,ptb:0};
  g.jors.forEach(j=>j.bats.forEach(b=>{const A=add(b.a),Z=add(b.b),v=xBk(g,b);if(!v)return;const o=outcomeOf(v);A.ptb+=v.ta||0;Z.ptb+=v.tb||0;if(o.w==='a'){A.w++;A.pts+=3;Z.l++}else if(o.w==='b'){Z.w++;Z.pts+=3;A.l++}else{A.pts++;Z.pts++}}));
  const r=Object.values(m).sort((x,y)=>y.pts-x.pts||y.w-x.w||y.ptb-x.ptb);
@@ -5103,6 +5107,73 @@ const _goV=go;go=function(){const r=_goV.apply(this,arguments);if(vzOn())setTime
 function vzSet(k,v){VZ.s(k,v);R();if(k==='vz')vzSay(v?'Lector de voz activado. Toca una vez para escuchar y dos veces para activar.':'Lector de voz desactivado.');else if(k==='vzr')vzSay('Velocidad cambiada.')}
 function vzPanelH(){const on=vzOn(),r=vzRate(),sg=(a,b,n1,n2)=>`<div class="seg" style="margin:0 0 10px"><button class="${a?'on':''}" onclick="${n1[1]}">${n1[0]}</button>${n2?`<button class="${a?'':'on'}" onclick="${n2[1]}">${n2[0]}</button>`:''}</div>`;
  return `<div class="card"><b>♿ Lector de voz</b><div class="mu" style="margin:4px 0 10px">Lee en voz alta lo que tocas y dónde estás, como TalkBack. Se guarda solo en este dispositivo.</div>${sg(on,0,['Activado',"vzSet('vz',1)"],['Desactivado',"vzSet('vz',0)"])}<label class="f">Para activar un botón</label>${sg(vz2(),0,['Doble toque',"vzSet('vz2',1)"],['Un toque',"vzSet('vz2',0)"])}<label class="f">Velocidad de la voz</label><div class="seg" style="margin:0"><button class="${r<1?'on':''}" onclick="vzSet('vzr',0.8)">Lenta</button><button class="${r==1?'on':''}" onclick="vzSet('vzr',1)">Normal</button><button class="${r>1?'on':''}" onclick="vzSet('vzr',1.3)">Rápida</button></div><button class="btn s sm" style="margin-top:10px" onclick="vzSay('Así suena la voz del lector.')">▶ Probar voz</button></div>`}
+
+
+/* ===== Importar jornadas y tablas como imagen (PNG) ===== */
+const IMGR={};let IMGN=0;
+function impReg(sp){const k='i'+(++IMGN);IMGR[k]=sp;delete IMGR['i'+(IMGN-300)];return k}
+const IMP_ICO='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>';
+function impBtn(sp,txt,cls){return `<button class="${cls||'impj'}" onclick="impGo('${impReg(sp)}')">${IMP_ICO}${txt}</button>`}
+function xImpJ(g,j){if(!j.bats.length)return '';const A=xAuto(g),l=LX.find(x=>x.i===g.id)||{i:g.id,n:g.n,c:g.c,c2:g.c2,t:'ED'};
+ return impBtn({k:'j',lg:l,title:j.n,items:j.bats.map(b=>{if(A){const r=xRs(g,b);return {a:b.a,b:b.b,sa:r?r.a:null,sb:r?r.b:null}}const v=xBk(g,b);return {a:b.a,b:b.b,sa:v?v.ta:null,sb:v?v.tb:null}})},'Importar jornada')}
+const impSlug=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'imagen';
+const impRgb=h=>{h=String(h||'').replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return /^[0-9a-f]{6}$/i.test(h)?[0,2,4].map(i=>parseInt(h.substr(i,2),16)):[124,58,237]};
+const impMix=(a,b,t)=>{const A=impRgb(a),B=impRgb(b);return '#'+A.map((v,i)=>Math.round(v*(1-t)+B[i]*t).toString(16).padStart(2,'0')).join('')};
+const impA=(h,a)=>{const c=impRgb(h);return `rgba(${c[0]},${c[1]},${c[2]},${a})`};
+const impLum=h=>{const c=impRgb(h);return (0.299*c[0]+0.587*c[1]+0.114*c[2])/255};
+function impImg(src){return new Promise(r=>{if(!src)return r(null);const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src})}
+function impRR(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
+const IMP_F='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+function impTxt(x,t,X,Y,maxW,size,wt,col,al,min){t=String(t==null?'':t);let s=size;x.font=`${wt} ${s}px ${IMP_F}`;const lo=min||20;while(x.measureText(t).width>maxW&&s>lo){s-=2;x.font=`${wt} ${s}px ${IMP_F}`}
+ if(x.measureText(t).width>maxW){while(t.length>1&&x.measureText(t+'…').width>maxW)t=t.slice(0,-1);t+='…'}
+ x.fillStyle=col;x.textAlign=al||'left';x.textBaseline='middle';x.fillText(t,X,Y)}
+async function impDraw(sp){
+ const W=1080,P=56,CW=W-P*2,lg=sp.lg||{},c1=lg.c||'#7C3AED',c2=lg.c2||c1,isT=sp.k==='t',n=(isT?sp.rows:sp.items).length;
+ const TOP=292,RH=isT?92:128,HH=64,PD=20,cardH=PD*2+HH+n*92,H=TOP+(isT?cardH:n*128-16)+96;
+ const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+ const dk='#0A0B12',g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,impMix(c1,dk,.78));g.addColorStop(1,dk);x.fillStyle=g;x.fillRect(0,0,W,H);
+ let r=x.createRadialGradient(W,0,0,W,0,760);r.addColorStop(0,impA(c2,.30));r.addColorStop(1,impA(c2,0));x.fillStyle=r;x.fillRect(0,0,W,H);
+ r=x.createRadialGradient(0,H,0,0,H,820);r.addColorStop(0,impA(c1,.26));r.addColorStop(1,impA(c1,0));x.fillStyle=r;x.fillRect(0,0,W,H);
+ /* cabecera */
+ const im=await impImg(LOGO[lg.i]),LS=168;
+ x.save();x.shadowColor='rgba(0,0,0,.4)';x.shadowBlur=24;x.shadowOffsetY=8;
+ if(im){impRR(x,P,P,LS,LS,34);x.fillStyle='#fff';x.fill();x.restore();const k=Math.min((LS-28)/im.width,(LS-28)/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,P+(LS-w)/2,P+(LS-h)/2,w,h)}
+ else{const lgd=x.createLinearGradient(P,P,P+LS,P+LS);lgd.addColorStop(0,c1);lgd.addColorStop(1,c2);impRR(x,P,P,LS,LS,34);x.fillStyle=lgd;x.fill();x.restore();impTxt(x,lg.t||String(lg.n||'?').slice(0,2).toUpperCase(),P+LS/2,P+LS/2,LS-24,64,900,impLum(c1)>.7?'#111':'#fff','center',24)}
+ const tx=P+LS+36,tw=W-P-tx,sub=isT?(sp.title||''):(sp.sub||''),hasS=!!sub;
+ impTxt(x,lg.n||'',tx,hasS?P+34:P+46,tw,34,800,impMix(c2,'#ffffff',.4),'left',22);
+ impTxt(x,isT?'Tabla de posiciones':sp.title,tx,hasS?P+110:P+122,tw,isT?64:78,900,'#fff','left',34);
+ if(hasS)impTxt(x,sub,tx,P+160,tw,32,600,'rgba(255,255,255,.66)','left',20);
+ const bar=x.createLinearGradient(P,0,P+CW,0);bar.addColorStop(0,c1);bar.addColorStop(1,c2);impRR(x,P,252,CW,6,3);x.fillStyle=bar;x.fill();
+ if(!isT){
+  sp.items.forEach((it,i)=>{const y=TOP+i*128,cx=W/2,cw=178,sc=it.sa!=null&&it.sb!=null;
+   impRR(x,P,y,CW,112,30);x.fillStyle='rgba(255,255,255,.07)';x.fill();x.lineWidth=2;x.strokeStyle='rgba(255,255,255,.12)';x.stroke();
+   impRR(x,cx-cw/2,y+20,cw,72,36);
+   if(sc){const cg=x.createLinearGradient(cx-cw/2,0,cx+cw/2,0);cg.addColorStop(0,c1);cg.addColorStop(1,c2);x.fillStyle=cg}else x.fillStyle='rgba(255,255,255,.10)';x.fill();
+   impTxt(x,sc?fmt(it.sa)+' – '+fmt(it.sb):(it.tag||'VS'),cx,y+57,cw-24,sc?42:30,900,sc?(impLum(impMix(c1,c2,.5))>.72?'#111':'#fff'):'rgba(255,255,255,.7)','center',20);
+   const sw=(CW-cw)/2-48,wa=sc&&it.sa>it.sb,wb=sc&&it.sb>it.sa,ca=sc?(wa||it.sa===it.sb?'#fff':'rgba(255,255,255,.5)'):'#fff',cb=sc?(wb||it.sa===it.sb?'#fff':'rgba(255,255,255,.5)'):'#fff';
+   impTxt(x,it.a,cx-cw/2-26,y+57,sw,40,800,ca,'right',22);impTxt(x,it.b,cx+cw/2+26,y+57,sw,40,800,cb,'left',22)});
+ }else{
+  const rows=sp.rows,live=!!sp.live;
+  impRR(x,P,TOP,CW,cardH,34);x.fillStyle='rgba(255,255,255,.06)';x.fill();x.lineWidth=2;x.strokeStyle='rgba(255,255,255,.12)';x.stroke();
+  const hy=TOP+PD+HH/2,sx=[636,740,844,948],nx=P+126,nw=572-nx,hc='rgba(255,255,255,.55)';
+  impTxt(x,'Pos',P+62,hy,90,26,700,hc,'center');impTxt(x,'Participante',nx,hy,nw,26,700,hc,'left');['Pts','G','P',sp.last||'PTB'].forEach((t,i)=>impTxt(x,t,sx[i],hy,100,26,700,hc,'center'));
+  rows.forEach((q,i)=>{const y=TOP+PD+HH+i*92,cy=y+46,ch=live&&i===0,dn=live&&n>=5&&i>=n-2;
+   impRR(x,P+12,y+4,CW-24,84,22);x.fillStyle=ch?'rgba(250,204,21,.16)':dn?'rgba(239,68,68,.15)':(i%2?'rgba(255,255,255,.0)':'rgba(255,255,255,.04)');x.fill();
+   if(ch||dn){x.lineWidth=2;x.strokeStyle=ch?'rgba(250,204,21,.5)':'rgba(239,68,68,.45)';x.stroke()}
+   if(i<3){const pg=x.createLinearGradient(P+38,cy-24,P+86,cy+24);pg.addColorStop(0,c1);pg.addColorStop(1,c2);x.beginPath();x.arc(P+62,cy,25,0,Math.PI*2);x.fillStyle=pg;x.fill();impTxt(x,i+1,P+62,cy+1,40,28,900,impLum(impMix(c1,c2,.5))>.72?'#111':'#fff','center',18)}
+   else impTxt(x,i+1,P+62,cy,60,30,800,'rgba(255,255,255,.7)','center',18);
+   const tag=ch?'CAMPEÓN':dn?'DESCENSO':'';
+   impTxt(x,q.n,nx,tag?cy-12:cy,nw,36,800,'#fff','left',20);
+   if(tag)impTxt(x,tag,nx,cy+22,nw,20,800,ch?'#FACC15':'#F87171','left',14);
+   impTxt(x,q.pts,sx[0],cy,100,46,900,impMix(c2,'#ffffff',.25),'center',24);
+   [q.w,q.l,fmt(Math.round(q.ptb*10)/10)].forEach((v,k)=>impTxt(x,v,sx[k+1],cy,100,38,700,'rgba(255,255,255,.92)','center',22))});
+ }
+ impTxt(x,'VotaFMS',W/2,H-44,CW,26,700,'rgba(255,255,255,.45)','center',16);
+ return cv}
+async function impGo(k){const sp=IMGR[k];if(!sp)return;
+ try{const cv=await impDraw(sp),bl=await new Promise(r=>cv.toBlob(r,'image/png'));if(!bl)throw new Error('blob');
+  const u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=impSlug((sp.lg&&sp.lg.n||'')+' '+(sp.k==='t'?'tabla '+(sp.title||''):sp.title))+'.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+ catch(e){alert('No se pudo crear la imagen. Inténtalo de nuevo.')}}
 
 async function init(){
  const q=new URLSearchParams(location.search);
