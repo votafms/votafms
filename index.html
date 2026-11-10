@@ -1579,6 +1579,51 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 .sec.cl .chv{transform:rotate(-90deg)}
 .sec.cl{border-bottom:2px dashed rgba(var(--acr),.45);padding-bottom:10px;margin-bottom:6px}
 .cgrp.cl{display:none}
+/* ===== Rediseño de votación y duelos: más aire, mismas opciones ===== */
+.vw .back{margin:0 0 6px}
+.vgrid{display:block}
+.vmatch{padding:10px 12px;margin-bottom:10px}
+.vmatch .match{margin-bottom:0;gap:6px}
+.vmatch .match .pl{flex-direction:row;justify-content:center;gap:8px;font-size:13.5px}
+.vmatch .av.lg{width:42px;height:42px;font-size:18px;border-width:2px}
+.vj{text-align:center;margin-top:6px;font-size:12px;line-height:1.3}
+.vw .video{margin-bottom:10px;border-radius:16px}
+.vw .steps{padding:0 0 8px}
+.vtools{margin-bottom:10px}
+.vtools .seg{margin-bottom:8px!important;padding:3px}
+.vtools .seg button{padding:8px 6px;font-size:13px}
+.vchips{display:flex;flex-wrap:wrap;gap:6px}
+.vchips .btn{width:auto;flex:1 1 calc(50% - 3px);min-width:0;margin:0;padding:9px 8px;font-size:12px;letter-spacing:.2px;white-space:nowrap;box-shadow:none;justify-content:center}
+.vchips .plbtn{flex:1 1 100%;justify-content:space-between}
+.vw .pl-head{padding:12px 14px 10px}
+.vw .stepbar{padding:2px 2px 10px}
+.vw .pl-card .difbar{margin:8px 12px 0}
+.duw .du-hero{padding:12px;margin-bottom:10px;gap:12px}
+.duw .du-ico{width:44px;height:44px;font-size:22px;border-radius:14px}
+.duw .du-act{padding:13px 14px;margin-bottom:9px}
+.duw .du-sec{margin:14px 2px 6px}
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+ .vleft .video{max-width:560px;margin-left:auto;margin-right:auto}
+ .vmatch{padding:14px 18px}
+ .vmatch .match .pl{font-size:16px;gap:12px}
+ .vmatch .av.lg{width:56px;height:56px;font-size:24px}
+ .vw .video{border-radius:20px}
+ .vw .steps{padding:0 0 10px}
+ .vchips .plbtn{flex:1 1 100%}
+ body[data-v="duel"] #app{max-width:1060px}
+}
+@media (min-width:1380px) and (hover:hover) and (pointer:fine){
+ .vgrid{display:grid;grid-template-columns:minmax(0,1fr) 580px;gap:22px;align-items:start}
+ .vleft{position:sticky;top:76px}
+ .vleft .video{max-width:none;margin-bottom:0}
+}
+@media (min-width:1100px) and (hover:hover) and (pointer:fine){
+ .duw{column-count:2;column-gap:26px}
+ .duw>.back,.duw>.du-hero,.duw>.du-acts{column-span:all}
+ .duw>.card,.duw>.du-act,.duw>.seg,.duw>.lpick,.duw>.du-hint,.duw>.du-vs{break-inside:avoid}
+ .duw>.du-sec{break-after:avoid}
+}
+
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -2200,10 +2245,14 @@ function voteV(){
  const b=S.bt,l=curL(),done=S.ri>=S.rounds.length;const [ac1,ac2]=accentOf(l);if(!S.firstSet)return startScreenV(b,l);
 const vids=ytIds(b.y),vpi=(S.vpart&&S.vpart.y===b.y&&vids[S.vpart.i])?S.vpart.i:0,vcur=vids[vpi],vst=ytSt(b.y)[vpi]||0;
  const vparts=vids.length>1?`<div class="steps" id="vpt">${vids.map((_,k)=>`<button class="stp${k===vpi?' on':''}" onclick="setVPart(${k})">Parte ${k+1}</button>`).join('')}</div>`:'';
- const media=vcur?`${vparts}<div class="video"><iframe id="vpf" src="https://www.youtube-nocookie.com/embed/${vcur}${ytQ(b.y,vpi)}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><a id="vpa" href="https://www.youtube.com/watch?v=${vcur}${vst?'&t='+vst+'s':''}" target="_blank" rel="noopener" class="btn s" style="text-decoration:none;margin-bottom:14px">${ico('play',18)} Abrir en YouTube</a>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
- return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
- <div class="card"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu" style="text-align:center;margin-top:10px">${esc(b.j||'')}</div></div>
- ${linkAreaH(b)}${S.editId?'':fmtSeg()}${plBtnH()}${S.float?'':`<button class="btn s" style="margin:0 0 12px" onclick="openFloat()">Sacar planilla flotante</button>`}${media}<div id="plan"${plAttr()}>${planHTML()}</div></div>`;
+ const media=vcur?`${vparts}<div class="video"><iframe id="vpf" src="https://www.youtube-nocookie.com/embed/${vcur}${ytQ(b.y,vpi)}" title="Video de la batalla" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`:`<div class="video"><div style="text-align:center">${ico('play',44)}<div class="mu" style="margin-top:8px">Video de la batalla</div></div></div>`;
+ const ytA=vcur?`<a id="vpa" href="https://www.youtube.com/watch?v=${vcur}${vst?'&t='+vst+'s':''}" target="_blank" rel="noopener" class="btn s vchip" style="text-decoration:none">${ico('play',16)} <span>Abrir en YouTube</span></a>`:'';
+ return `<div class="lgwrap vw" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}"><button class="back" onclick="go('${S.libre?'libre':'lg'}')">${ico('back',18)} ${S.libre?'Batalla libre':esc(l.n)}</button>
+ <div class="vgrid"><div class="vleft">
+ <div class="card vmatch"><div class="match"><div class="pl">${av(b.a,'lg')}<span class="n" style="color:var(--ac)">${esc(b.a)}</span></div><span class="vs">VS</span><div class="pl">${av(b.b,'lg')}<span class="n" style="color:var(--b2)">${esc(b.b)}</span></div></div><div class="mu vj">${esc(b.j||'')}</div></div>
+ ${media}</div>
+ <div class="vright"><div class="vtools">${S.editId?'':fmtSeg()}<div class="vchips">${plBtnH()}${S.float?'':`<button class="btn s vchip" onclick="openFloat()">⧉ <span>Planilla flotante</span></button>`}${ytA}</div></div>
+ ${linkAreaH(b)}<div id="plan"${plAttr()}>${planHTML()}</div></div></div></div>`;
 }
 /* ===== Diseños de planilla por rango (15): solo cambian cómo se ve la planilla, no los puntos =====
    El diseño número i se desbloquea al llegar al nivel de rango i (0 = Underground 1 ... 14 = Elite 3).
@@ -4202,7 +4251,8 @@ function duBarH(){const D=S.dul;if(!D||!D.live||!D.d||!S.me)return '';const d=D.
  return `<div class="dub"><div class="row" style="justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><b>⚔️ Duelo · ${esc(D.code)}</b></div><button class="btn s sm" style="width:auto;margin:0" onclick="duLeave()">Salir</button></div><div class="du-bt">${esc(d.a)}<em>VS</em>${esc(d.b)}</div><div class="du-meta"><span class="pill">Batalla ${d.rd||1}</span><span class="pill ${liga?'next':''}">${liga?'Liga':'Libre'}</span>${host?'<span class="pill next">Anfitrión</span>':''}<span class="du-st wt">${who}</span>${duVoiceChip()}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="dut" style="margin:0;width:auto;flex:1" onclick="duChatToggle()">💬 Chat${duUnread()?' · '+duUnread()+' nuevo'+(duUnread()>1?'s':''):''}</button><button class="dut" style="margin:0;width:auto;flex:1" onclick="duRoom()">🏠 Sala</button></div>${note}${fid&&!(d.st==='done'&&!host)?`<label class="dusw"><input type="checkbox" ${on?'checked':''} onchange="duShare(this.checked)"> Permitir que @${esc(fn)} vea mi votación</label>`:''}${fOn?`<button class="dut" onclick="S.dul.open=${op?'false':'true'};duRender()">${op?'Ocultar':'Ver'} votación de @${esc(fn)}</button>${op?(pv?`<div class="duf">${tbl}</div>`:'<div class="mu" style="font-size:12px;margin:6px 0 0">Aún no puntúa…</div>'):''}`:''}</div>`}
 function duRender(){const el=document.getElementById('dubar');if(el)el.innerHTML=duBarH()}
 /* --- Pantallas: menú, crear sala, unirse, sala de espera --- */
-function duelV(){const D=S.dul,c=S.duc||{},v=S.duv||'menu',bk='<button class="back" onclick="go(\'home\')">‹ Volver</button>',msg=S.dum?`<div class="mu" style="margin:8px 0">${esc(S.dum)}</div>`:'';
+function duelV(){return `<div class="duw">${duelV0()}</div>`}
+function duelV0(){const D=S.dul,c=S.duc||{},v=S.duv||'menu',bk='<button class="back" onclick="go(\'home\')">‹ Volver</button>',msg=S.dum?`<div class="mu" style="margin:8px 0">${esc(S.dum)}</div>`:'';
  const duPill=d=>`<span class="pill ${d.mode==='liga'?'next':''}">${d.mode==='liga'?'Batalla de liga · cuenta para rangos':'Batalla libre · no cuenta para rangos'}</span>`,
   duVs=(x,y)=>`<div class="du-vs"><b>${esc(x)}</b><em>VS</em><b>${esc(y)}</b></div>`,
   duHero=(i,t,sb)=>`<div class="du-hero"><div class="du-ico">${i}</div><div style="min-width:0"><h1 class="pg">${t}</h1>${sb?`<div class="du-sub">${sb}</div>`:''}</div></div>`,
