@@ -917,6 +917,7 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .iaprev{position:absolute;left:8px;right:8px;bottom:calc(100% + 8px);display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:16px;background:var(--cd);border:1px solid var(--bd);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;font-weight:700}
 .iaprev img{width:44px;height:44px;border-radius:10px;object-fit:cover}.iaprev span{flex:1;min-width:0}
 .iaprev button{width:30px;height:30px;border-radius:50%;border:0;background:var(--cd2);color:var(--tx);cursor:pointer;font-weight:800}
+.iagw{margin:0 0 8px}.iagi{display:block;width:100%;max-width:280px;border-radius:14px;border:1px solid var(--bd)}.iagd{display:inline-block;margin-top:6px;font-size:12px;font-weight:800;color:var(--ac);text-decoration:none}
 .iaim{display:block;max-width:150px;max-height:150px;border-radius:12px;margin:0 0 6px;object-fit:cover}
 /* MC IA: historial */
 .iahb{padding:8px 11px}
@@ -2879,6 +2880,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-10T10:30:00-04:00'),text:'MC IA ahora crea imágenes: toca «Crear imagen» en MC IA y describe lo que quieres, o escríbele «dibuja…» / «genera una imagen de…». Cada usuario puede crear hasta 3 imágenes por día; el contador te muestra cuántas te quedan. Las imágenes se pueden guardar con el botón «Guardar».'},
  {ts:Date.parse('2026-11-10T02:00:00-04:00'),text:'Planilla de votación: ahora es más grande y los números se ven mejor. Además, en la planilla antigua puedes ocultar el puntaje total de cada ronda por separado (por ejemplo «Ocultar Easy Mode»): no verás lo que sacó cada MC en esa ronda, y el total general sigue visible. «Ocultar totales» ahora oculta solo la suma de todas las rondas, sin tocar los puntajes de cada ronda. Y con el teclado, si una casilla está sin votar y presionas Espacio, se pone automáticamente en 0,5.'},
  {ts:Date.parse('2026-11-09T12:00:00-04:00'),text:'Rediseño total con estilo calle: nuevo look de rap (cintas, sombras duras, tipografía de graffiti), Inicio reorganizado con las próximas jornadas arriba, barra inferior reordenada (Ligas, Calendario, Comunidad, IA, Buscar, Perfil) y perfil más limpio: ya no se muestran medallas favoritas, y las pestañas ahora son Resumen, Votos, Editar y Cuenta. Todas las funciones siguen igual.'},
  {ts:Date.parse('2026-11-09T11:00:00-04:00'),text:'Modo editor: ahora puedes compartir tus ligas con tus amigos. En tu liga toca «Compartir liga con amigos», elige a quién (solo salen los que tienes agregados) y por defecto solo podrán verla. Si quieres, activa «Dar permiso de editar» a cada amigo para que también pueda modificarla. Las ligas que te compartan aparecen en Ligas, en «Compartidas conmigo».'},
@@ -3560,7 +3562,7 @@ Sobre la app VotaFMS:
 - Logros: hay 40. Desbloquean colores para la app y diseños de rap para la tarjeta de tu perfil (solo cambian la tarjeta).
 - Perfil: foto, MC favorito, biografía, color, ID de usuario de 9 números. Puedes buscar usuarios, agregar amigos, dar likes y ver quién está en línea. Entre amigos hay chat con el botón "Enviar mensaje" en su perfil.
 - Racha diaria: un micrófono en llamas cuenta los días seguidos que entras. Cada 10 días de racha ganas 1 oportunidad por si faltas un día.
-- Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones. MC IA (tú) tiene un botón Entrenar para practicar rimas y un micrófono para dictar por voz.
+- Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones. MC IA (tú) tiene un botón Entrenar para practicar rimas y un micrófono para dictar por voz. También puedes crear imágenes: hasta 3 por día por usuario, con el botón «Crear imagen» o pidiendo «dibuja…» o «genera una imagen de…».
 Próximas jornadas registradas en la app:
 ${prox||'- (sin datos)'}
 
@@ -3844,6 +3846,64 @@ iaV=function(){let h=_iaV1();try{if(!S.me)return h;const mode=iaModeCur();
  const chips=`<div class="iamodes" role="group" aria-label="Estilo de la IA"><span>Estilo</span>${IA_MODES.map(m=>`<button class="${m.id===mode?'on':''}" onclick="iaSetMode('${m.id}')">${m.ic} ${m.n}</button>`).join('')}</div>`;
  const prev=S.iaImg?`<div class="iaprev"><img src="${S.iaImg.th}" alt=""><span>Imagen lista para enviar</span><button onclick="iaImgClear()" aria-label="Quitar imagen">✕</button></div>`:'';
  h=h.replace('<div id="iamsgs"',chips+'<div id="iamsgs"').replace('<div class="iabar">','<div class="iabar">'+prev+'<input type="file" id="iaf" accept="image/*" hidden onchange="iaImgPick(this.files[0])"><button class="iaatt" onclick="iaPickImg()" aria-label="Adjuntar imagen">🖼️</button>')}catch(e){}return h};
+
+/* ===== MC IA: crea imágenes (3 por día por usuario; el admin no tiene límite) ===== */
+const IA_IMG_MAX=3;
+const IA_IMG_MODELS=['gemini-2.5-flash-image','gemini-3.1-flash-image-preview'];let _iaImi=0;
+S.iaImgMode=false;
+function iaImgLeft(){if(!S.me)return 0;if(isAdmin())return 99;const used=S.me.imgD===dkey()?(+S.me.imgN||0):0;return Math.max(0,IA_IMG_MAX-used)}
+function iaImgWants(t){const n=String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+ return /\b(dibuja|dibujame|genera|generame|crea|creame|haz|hazme|pinta|pintame|disena|disename|quiero)\b.{0,30}\b(una?\s+)?(imagen|imagenes|foto|ilustracion|dibujo|logo|portada|poster|cartel|avatar|wallpaper|fondo de pantalla)\b/.test(n)}
+function iaImgToggle(){S.iaImgMode=!S.iaImgMode;R();setTimeout(()=>{const i=document.getElementById('iain');if(i)i.focus()},0)}
+function iaImgShrink(b64,mime){return new Promise(res=>{const im=new Image();im.onload=()=>{try{const k=Math.min(1,512/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))}catch(e){res('data:'+mime+';base64,'+b64)}};im.onerror=()=>res('data:'+mime+';base64,'+b64);im.src='data:'+mime+';base64,'+b64})}
+async function iaImgGen(text){
+ if(!S.me){openAuth('in');return}
+ text=String(text||'').trim().slice(0,500);if(!text||S.ia.busy)return;
+ if(Date.now()-S.ia.last<3000){achFail('Dame unos segundos entre mensajes 😅');return}
+ if(!iaImgLeft()){achFail('Ya usaste tus '+IA_IMG_MAX+' imágenes de hoy. Mañana tienes otras '+IA_IMG_MAX+' 🎨');return}
+ S.ia.last=Date.now();S.iaDraft='';S.iaImgMode=false;const inp=document.getElementById('iain');if(inp){inp.value='';iaGrow(inp)}
+ iaPush('user','🎨 '+text);S.ia.busy=true;R();
+ let out=null,err=null;
+ try{
+  const {ai,aim}=await iaGetAI();
+  const prompt='Crea una imagen: '+text+'. Estilo cuidado y atractivo; si encaja, con aire de cultura hip hop y freestyle. No incluyas texto largo dentro de la imagen.';
+  for(let k=0;k<IA_IMG_MODELS.length&&!out;k++){
+   const i=(_iaImi+k)%IA_IMG_MODELS.length;
+   try{
+    const model=aim.getGenerativeModel(ai,{model:IA_IMG_MODELS[i],generationConfig:{responseModalities:[aim.ResponseModality.TEXT,aim.ResponseModality.IMAGE]}});
+    const res=await Promise.race([model.generateContent(prompt),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),60000))]);
+    const parts=(res.response.inlineDataParts&&res.response.inlineDataParts())||[];
+    if(!parts.length)throw new Error('blocked');
+    out=parts[0].inlineData;_iaImi=i
+   }catch(e){err=e;if(!/404|no longer available|not found|not supported/i.test(String(e&&e.message||e)))break}
+  }
+ }catch(e){err=e}
+ if(out){
+  const url=await iaImgShrink(out.data,out.mimeType||'image/png');
+  const left0=iaImgLeft();
+  if(!isAdmin()){const n=(S.me.imgD===dkey()?(+S.me.imgN||0):0)+1;S.me={...S.me,imgD:dkey(),imgN:n};try{B.updateUser(S.me.uid,{imgD:dkey(),imgN:n}).catch(()=>{})}catch(e){}}
+  const left=iaImgLeft();
+  iaPush('model',isAdmin()?'🎨 Aquí tienes tu imagen.':'🎨 Aquí tienes tu imagen. Te quedan '+left+' hoy.');
+  try{const m=S.ia.msgs[S.ia.msgs.length-1];m.gi=url;iaSave()}catch(e){}
+ }else{
+  const m=String(err&&err.message||err||'');console.error('IA imagen',err);
+  iaPush('model',m==='blocked'?'No pude crear esa imagen (la IA la rechazó). Prueba con otra descripción 🙏':/\b429\b|quota|RESOURCE_EXHAUSTED|too many requests/i.test(m)?'Hay muchas personas usando la IA ahora mismo. Intenta de nuevo en un minuto 🙏':m==='timeout'?'La imagen tardó demasiado. Intenta otra vez.':'No pude crear la imagen: '+m.replace(/\s+/g,' ').slice(0,200))
+ }
+ S.ia.busy=false;iaRefresh();try{R()}catch(e){}}
+const _iaSend2=iaSend;
+iaSend=async function(t,train){
+ if(!S.me)return _iaSend2(t,train);
+ const inp=document.getElementById('iain'),txt=String(t||(inp?inp.value:S.iaDraft)||'').trim();
+ if(!train&&txt&&!S.iaImg&&(S.iaImgMode||iaImgWants(txt)))return iaImgGen(txt);
+ return _iaSend2(t,train)};
+const _iaMsgsH2=iaMsgsH;
+iaMsgsH=function(){let h=_iaMsgsH2();try{const ms=S.ia.msgs.filter(m=>m.r==='model');let i=0;
+ h=h.replace(/<div class="iab m">/g,()=>{const m=ms[i++];return '<div class="iab m">'+(m&&m.gi?`<div class="iagw"><img class="iagi" src="${m.gi}" alt="Imagen creada por MC IA"><a class="iagd" href="${m.gi}" download="mc-ia.jpg">⬇ Guardar</a></div>`:'')})}catch(e){}return h};
+const _iaVg=iaV;
+iaV=function(){let h=_iaVg();try{if(!S.me)return h;
+ const lf=iaImgLeft(),tag=isAdmin()?'∞':lf+'/'+IA_IMG_MAX;
+ h=h.replace('<div id="iamsgs"',`<div class="iamodes"><span>Imágenes</span><button class="${S.iaImgMode?'on':''}" onclick="iaImgToggle()">🎨 Crear imagen · ${tag} hoy</button></div><div id="iamsgs"`);
+ if(S.iaImgMode)h=h.replace('placeholder="Escribe tu pregunta…"','placeholder="Describe la imagen que quieres…"')}catch(e){}return h};
 
 /* ===== MC IA: historial de conversaciones (guardado en este dispositivo; envuelve iaSave/iaReset/iaLoad/iaV) ===== */
 const iaHKey=()=>'vfms_iah_'+(S.me?S.me.uid:'x'),iaCKey=()=>'vfms_iac_'+(S.me?S.me.uid:'x');
