@@ -602,6 +602,12 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .cmenu button{border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:12.5px;cursor:pointer}
 .cmenu button.dg{color:#F87171;border-color:rgba(248,113,113,.4)}
 .pftabs{margin:4px 0 14px}
+.prst{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin:8px 0 2px;padding:7px 12px;border:1px solid var(--bd);border-radius:999px;background:var(--bg2);color:var(--mu);font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.prst i{flex:0 0 auto;width:32px;height:18px;border-radius:999px;background:var(--cd2);border:1px solid var(--bd);position:relative;transition:.15s}
+.prst i:after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--mu);transition:.15s}
+.prst.on{color:var(--tx);border-color:var(--ac)}
+.prst.on i{background:var(--ac);border-color:var(--ac)}
+.prst.on i:after{left:16px;background:#fff}
 .pftabs button{white-space:nowrap}
 @keyframes stkhd{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
 @keyframes stkhop{0%,6%,100%{transform:translateY(0) scale(1,1)}10%{transform:translateY(0) scale(1.08,.9)}22%{transform:translateY(-16px) scale(.95,1.08)}34%{transform:translateY(0) scale(1.08,.92)}42%{transform:translateY(-4px) scale(.98,1.03)}50%{transform:translateY(0) scale(1,1)}}
@@ -1741,7 +1747,7 @@ const B={
  async addNotif(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'notifs'),c)},
  async getAvisos(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'avisos'),fm.limit(50)));return q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)},
  async deleteUserDoc(uid,u){const fm=FB.fm;try{await fm.deleteDoc(fm.doc(FB.db,'presence',uid))}catch(e){}await fm.deleteDoc(fm.doc(FB.db,'users',uid));await fm.deleteDoc(fm.doc(FB.db,'usernames',u))},
- async beat(uid,on){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'presence',uid),{t:Date.now(),on:!!on})},
+ async beat(uid,on){const fm=FB.fm;const hid=!!(S.me&&S.me.uid===uid&&S.me.hidePres);await fm.setDoc(fm.doc(FB.db,'presence',uid),hid?{t:Date.now(),on:!!on,hid:true}:{t:Date.now(),on:!!on})},
  async getPres(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'presence',uid));return d.exists()?d.data():null}catch(e){return null}},
  async listPres(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'presence'));const m={};q.docs.forEach(d=>{m[d.id]=d.data()});return m},
  async listFriendDocs(uid){const fm=FB.fm;const [a,b]=await Promise.all([fm.getDocs(fm.query(fm.collection(FB.db,'friends'),fm.where('from','==',uid))),fm.getDocs(fm.query(fm.collection(FB.db,'friends'),fm.where('to','==',uid)))]);const out=[];a.docs.concat(b.docs).forEach(d=>{if(!out.find(x=>x.id===d.id))out.push({id:d.id,...d.data()})});return out},
@@ -1824,8 +1830,11 @@ function lastSeenTxt(t){const d=new Date(t),n=new Date();const hm=d.toLocaleTime
  if(new Date(n-864e5).toDateString()===d.toDateString())return 'Última vez conectado ayer a las '+hm;
  return 'Última vez conectado el '+d.toLocaleDateString('es',{day:'2-digit',month:'2-digit'})+' a las '+hm}
 function presInfo(uid){if(!S.me||S.me.uid===uid||!(isAdmin()||isFriend(uid))||S.pres===undefined||S.pres===null)return null;
- const p=S.pres[uid];if(!p)return {on:false,txt:'Sin conexión registrada todavía'};
+ const p=S.pres[uid];if(p&&p.hid&&!isAdmin())return null;if(!p)return {on:false,txt:'Sin conexión registrada todavía'};
  const on=!!p.on&&Date.now()-p.t<PRES_TTL;return {on,txt:on?'Activo ahora':lastSeenTxt(p.t)}}
+async function togglePres(){if(!S.me)return;const nv=!S.me.hidePres,prev=!!S.me.hidePres;S.me={...S.me,hidePres:nv};R();
+ try{await B.updateUser(S.me.uid,{hidePres:nv});await B.beat(S.me.uid,document.visibilityState==='visible')}catch(e){S.me={...S.me,hidePres:prev};R()}}
+function presToggleH(){const h=!!(S.me&&S.me.hidePres);return `<button class="prst${h?' on':''}" onclick="togglePres()" role="switch" aria-checked="${h}"><span>Ocultar estado de actividad</span><i></i></button>`}
 function presLine(uid){const i=presInfo(uid);return i?`<span class="pst${i.on?' on':''}">${esc(i.txt)}</span>`:''}
 function withDot(uid,html){const i=presInfo(uid);return i&&i.on?`<span class="avw">${html}<span class="pdot"></span></span>`:html}
 async function refreshFriends(){if(!S.me)return;try{S.fr=await B.listFriendDocs(S.me.uid)}catch(e){}}
@@ -2619,7 +2628,7 @@ function perfilV(){
  <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
  <div class="sec"><span>Zona de peligro</span></div>
  <button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
- return `<div class="pfgrid"><div class="pfside">${profileHead(m,true)}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div></div><div class="pfmain"><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div></div>`}
+ return `<div class="pfgrid"><div class="pfside">${profileHead(m,true)}${presToggleH()}<div class="sec"><span>Mis estadísticas</span></div>${pfQuickH()}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div></div><div class="pfmain"><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div></div>`}
 /* ===== Perfil: cabecera rápida, medallas favoritas y compartir ===== */
 const pfFav=u=>Array.isArray(u&&u.favAch)?u.favAch.filter(id=>ACH.some(a=>a.id===id)).slice(0,3):[];
 function pfQuickH(){const m=S.me,r=rankInfo(S.myVotes||[]),st=(m.st&&m.st.n)||0;
