@@ -1652,7 +1652,7 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 .imp{margin-left:auto;padding:6px 11px;flex:0 0 auto}
 .impj{width:100%;padding:10px 12px;margin:2px 0 14px}/* ===== Monedas, tienda, marcos y títulos ===== */
 .coin{display:inline-block;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF6BF,#FACC15 46%,#B45309 100%);box-shadow:inset 0 0 0 2px rgba(120,53,15,.55),0 0 8px rgba(250,204,21,.45);position:relative;flex:0 0 auto;vertical-align:-3px}
-.coin::after{content:'★';position:absolute;inset:0;display:grid;place-items:center;font-size:9px;color:#92400E;line-height:1;font-style:normal}
+.coin::after{content:'';position:absolute;inset:0;display:grid;place-items:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='2' width='6' height='12' rx='3'/%3E%3Cpath d='M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:10px 10px}
 .coin.bigc{width:64px;height:64px;animation:cspin 3.2s ease-in-out infinite}
 .coin.bigc::after{font-size:30px}
 @keyframes cspin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.28)}}
@@ -1733,6 +1733,8 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 .frw::before{top:-5px;right:0}
 .frw::after{bottom:1px;left:-5px;animation-delay:1.1s;font-size:11px}
 @keyframes frTw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(45deg)}}
+.frw-purple{background:conic-gradient(from var(--fa,0deg),#A855F7,#6B21A8,#E9D5FF,#7C3AED,#4C1D95,#A855F7);box-shadow:0 0 22px rgba(168,85,247,.55)}
+.frw-purple::before,.frw-purple::after{color:#E9D5FF;text-shadow:0 0 6px #A855F7,0 0 12px #7C3AED}
 @media (prefers-reduced-motion:reduce){.fr-gold,.frw,.coin.bigc,.nvd i,.shbal::after,.ptt::after{animation:none}}
 
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
@@ -1881,11 +1883,13 @@ const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'ca
 const COIN_L={ws:50,in:40,es:35};
 const SHOP=[
  {id:'frame_gold',k:'frame',n:'Marco dorado',d:'Borde dorado animado en tu foto. Se ve en tu perfil, en comunidad y con tus amigos.',p:150,fr:'gold'},
+ {id:'frame_purple',k:'frame',n:'Marco morado',d:'Borde morado brillante en tu foto de perfil. Muéstrate con estilo en la comunidad.',p:120,fr:'purple'},
  {id:'title_estricto',k:'title',n:'Jurado estricto',d:'Un título que aparece debajo de tu nombre en tu perfil.',p:100,tt:'estricto'},
+ {id:'title_duelista',k:'title',n:'Duelista',d:'El título de quien no le teme a ningún rival. Aparece debajo de tu nombre en tu perfil.',p:130,tt:'duelista'},
  {id:'pack_neon',k:'pack',n:'Pack Neón',d:'4 colores neón nuevos para elegir en tu planilla de votación.',p:250},
  {id:'nowm',k:'extra',n:'Imágenes sin marca',d:'Quita el texto «VotaFMS» de las imágenes de jornadas y tablas que compartes.',p:300}];
-const FRAME_IDS=['gold'];
-const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'}};
+const FRAME_IDS=['gold','purple'];
+const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'},duelista:{t:'Duelista',ic:'⚔️'}};
 const SHOP_TABS=[['all','Todo'],['frame','Marcos'],['title','Títulos'],['pack','Planilla'],['extra','Extras']];
 const NEON_C=['#22D3EE','#F472B6','#A3E635','#FB923C'];
 function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[],spent:0}}
@@ -3258,10 +3262,33 @@ function adminV(){
  if(!isAdmin())return `<div class="card">No tienes acceso a este panel.</div><button class="btn s" onclick="go('perfil')">Volver</button>`;
  const list=S.adm;
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button><h1 class="pg">Panel de administrador</h1>
+ <div class="sec"><span>Monedas</span></div>
+ <div class="card"><div class="mu" style="margin:0 0 10px;font-size:13px">Los usuarios nuevos empiezan con 0 monedas y las ganan votando batallas de liga. Con este botón puedes resetear el contador de monedas gastadas de todos los usuarios (excepto linexs17) a 0, para que partan de cero.</div><button class="btn s" onclick="adminResetCoins()" style="margin-bottom:6px">🎤 Resetear monedas de todos los usuarios</button>${S.admCoinMsg?`<div class="mu" style="font-size:13px;margin-top:4px">${esc(S.admCoinMsg)}</div>`:''}</div>
  <div class="sec"><span>Comentarios de usuarios</span><span>${list?list.length:'…'}</span></div>
  ${list===null?'<div class="mu" style="text-align:center;padding:20px">Cargando…</div>':list.length?list.map(c=>`<div class="card"><div class="row" style="margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(c.u||'anónimo')}</b><span class="mu">${esc(c.d||'')}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(c.t||'')}</div><button class="btn s sm" style="color:#FF6B7A;margin-top:12px" onclick="adminDel('${esc(c.id)}')">Eliminar</button></div>`).join(''):'<div class="card mu" style="text-align:center">Aún no hay comentarios.</div>'}
  <button class="btn s" onclick="go('admin')">Actualizar</button>`}
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
+
+/* ===== Admin: resetear monedas de usuarios no-admin ===== */
+async function adminResetCoins(){
+ if(!isAdmin())return;
+ if(!confirm('¿Resetear las monedas gastadas de todos los usuarios (excepto linexs17) a 0? Sus compras quedarán sin pagar pero mantendrán sus ítems.'))return;
+ S.admCoinMsg='Cargando usuarios…';R();
+ try{
+  const us=await B.listUsers();
+  const toReset=us.filter(u=>u.u&&u.u.toLowerCase()!=='linexs17'&&u.shop&&typeof u.shop==='object'&&((u.shop.spent||0)>0));
+  S.admCoinMsg=`Reseteando ${toReset.length} usuarios…`;R();
+  let done=0,fail=0;
+  for(const u of toReset){
+   try{
+    const nx={...u.shop,spent:0};
+    await B.updateUser(u.uid,{shop:nx});
+    done++;
+   }catch(e){fail++}
+  }
+  S.admCoinMsg=`✓ Listo. Reseteados: ${done}${fail?' · Fallaron: '+fail:''}.`;
+ }catch(e){S.admCoinMsg='Error: '+(e&&e.message||'desconocido');}
+ R()}
 
 /* ===== Logros ===== */
 const ACH_N=40;
@@ -4465,15 +4492,15 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
 /* Panel de administrador ordenado en pestañas (solo agrupa lo que ya existe) */
-const ADM_TABS=[['cal','Calendario'],['vid','Videos'],['col','Equipo'],['com','Comentarios']];
+const ADM_TABS=[['cal','Calendario'],['vid','Videos'],['col','Equipo'],['com','Comentarios'],['coins','Monedas']];
 function admTab(k){S.admTab=k;R()}
 const _adminV6=adminV;
 adminV=function(){const h=_adminV6();if(!isAdmin())return h;
- const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[]};let cur=null;
- const kind=s=>/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
- kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col')return}}if(cur===null)head.push(k);else g[cur].push(k)});
+ const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[]};let cur=null;
+ const kind=s=>/monedas/i.test(s)?'coins':/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
+ kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col'||m==='coins')return}}if(cur===null)head.push(k);else g[cur].push(k)});
  const tab=ADM_TABS.some(x=>x[0]===S.admTab)?S.admTab:'cal';
- const bar=`<div class="seg s4">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')">${x[1]}</button>`).join('')}</div>`;
+ const bar=`<div class="seg" style="overflow-x:auto">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')" style="font-size:11px;padding:8px 6px">${x[1]}</button>`).join('')}</div>`;
  return head.map(k=>k.outerHTML).join('')+bar+g[tab].map(k=>k.outerHTML).join('')};
 const _calV=calV;
 calV=function(){return _calV()+((S.me&&!S.admin&&S.collabCal)?calEditV():'')};
