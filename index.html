@@ -1742,6 +1742,78 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 .frw-purple::before,.frw-purple::after{color:#E9D5FF;text-shadow:0 0 6px #A855F7,0 0 12px #7C3AED}
 @media (prefers-reduced-motion:reduce){.fr-gold,.frw,.coin.bigc,.nvd i,.shbal::after,.ptt::after{animation:none}}
 
+
+/* ===== POLISH-VISUAL: capa de mejoras gráficas (solo apariencia, sin tocar funciones) ===== */
+:root{--ease:cubic-bezier(.22,.8,.3,1);--spring:cubic-bezier(.34,1.35,.64,1);--hi:inset 0 1px 0 rgba(255,255,255,.07)}
+html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
+body{-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent}
+::selection{background:rgba(var(--acr),.38);color:#fff}
+*{scrollbar-width:thin;scrollbar-color:rgba(var(--acr),.45) transparent}
+:focus-visible{outline:2px solid var(--ac2);outline-offset:2px;border-radius:8px}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none}
+h1,h2,h3,.hero p,.pl-title{text-wrap:balance}
+.mu,.card p,.shsc p{text-wrap:pretty}
+.n,.tot,.cell,.pl-tot b,.coinv,.stkc-n b,.stk-n b,.rkx-st b{font-variant-numeric:tabular-nums}
+img,video{image-rendering:auto}
+img.av{object-fit:cover}
+
+/* Transiciones más suaves y naturales (misma duración en todo) */
+.btn,.ib,.av,.seg button,.thm,.dzt,.pls,.shbuy,.pfap,.imp,.impj,.coinb,.shmini,.stkt,.fi,.fz{transition:transform .2s var(--ease),background-color .25s ease,border-color .25s ease,opacity .2s ease}
+.cell{transition:transform .14s var(--ease),background-color .2s ease,border-color .2s ease,scale .14s var(--ease)}
+.cell:active{scale:.93}
+.card,.shi,.vrow,.bat{transition:translate .25s var(--ease),border-color .25s ease}
+.lt2{transition:transform .3s var(--spring),translate .25s var(--ease)}
+.sw,.sw i{transition:background-color .25s ease,transform .3s var(--spring),border-color .25s ease}
+.bar i,.rkx-bar i,.shpr i,.axbar i{transition:width .6s var(--ease)}
+.nav button{transition:transform .18s var(--ease),background-color .25s ease,color .2s ease}
+.sec .chv{transition:transform .28s var(--spring)}
+
+/* Efectos al pasar el mouse (solo en PC, no en pantallas táctiles) */
+@media (hover:hover) and (pointer:fine){
+ .btn:hover{translate:0 -1px;filter:brightness(1.06)}
+ .btn:active{translate:0 0}
+ .btn.s:hover{filter:brightness(1.12)}
+ .ib:hover,.coinb:hover,.shmini:hover{translate:0 -1px;filter:brightness(1.12)}
+ .lt2:hover{translate:0 -4px}
+ .card:hover{translate:0 -1px}
+ .shi:hover{translate:0 -3px}
+ .vrow:hover,.bat:hover{translate:0 -1px}
+ .seg button:hover:not(.on){background-color:rgba(var(--acr),.1)}
+ .nav button:hover:not(.on){background-color:rgba(var(--acr),.1)}
+ .thm:hover,.dzt:hover,.fi:hover{filter:brightness(1.1)}
+ .pfap:hover{translate:0 -1px;filter:brightness(1.08)}
+}
+
+/* Profundidad: luz sutil arriba y sombra en capas (conserva el estilo calle) */
+.card{box-shadow:var(--hd),var(--hi)!important}
+.hero{box-shadow:6px 6px 0 var(--ac),0 22px 44px rgba(var(--acr),.18)!important}
+.nav{box-shadow:0 0 0 2px var(--ac),6px 6px 0 rgba(0,0,0,.7),0 18px 40px rgba(0,0,0,.35)!important}
+.btn:not(.s){box-shadow:var(--hd),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.12)!important}
+.btn:active{box-shadow:1px 1px 0 #000!important}
+.lt2{box-shadow:5px 5px 0 var(--ac),0 14px 26px rgba(0,0,0,.28)!important}
+.pl-card,.lgctl,.vopts{box-shadow:0 14px 34px rgba(0,0,0,.34),var(--hi)}
+.av{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--ac),0 4px 14px rgba(var(--acr),.4)}
+
+/* Hojas y ventanas: entrada con movimiento natural */
+.ov{background:rgba(3,6,14,.58);animation:fi .28s ease both}
+.sh{border-top:1px solid rgba(var(--acr),.28);box-shadow:0 -24px 60px rgba(0,0,0,.5),0 -1px 0 rgba(255,255,255,.05);animation:su2 .4s var(--ease) both}
+@keyframes su2{from{transform:translateY(46px);opacity:0}to{transform:none;opacity:1}}
+.rankup-box,.dpop{animation-timing-function:var(--ease)}
+
+/* Cambio de pantalla: aparición suave (solo opacidad, no mueve nada) */
+@keyframes vin{from{opacity:0}to{opacity:1}}
+#app.vt>*{animation:vin .32s var(--ease) both}
+#app.vt>*:nth-child(2){animation-delay:.03s}
+#app.vt>*:nth-child(3){animation-delay:.06s}
+#app.vt>*:nth-child(4){animation-delay:.09s}
+#app.vt>*:nth-child(n+5){animation-delay:.12s}
+
+/* Moneda: brillo metálico más natural */
+.coin{background:radial-gradient(circle at 34% 26%,#FFFBD6 0,#FDE047 24%,#FACC15 50%,#CA8A04 82%,#92400E 100%);box-shadow:inset 0 0 0 2px rgba(120,53,15,.55),inset 0 2px 2px rgba(255,255,255,.55),inset 0 -2px 3px rgba(120,53,15,.4),0 1px 3px rgba(0,0,0,.35),0 0 8px rgba(250,204,21,.4)}
+
+/* Imágenes y vídeos con esquinas y sombra suaves */
+.video,.vw .video{box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.shpv,.dzp,.dzv{box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -5422,6 +5494,10 @@ function collapseSecs(){
  })}
 const _Rcs=R;R=function(){const r=_Rcs.apply(this,arguments);try{collapseSecs()}catch(e){}return r};
 
+</script><script>
+/* Aparición suave al cambiar de pantalla (solo visual) */
+(function(){var last=null,tm=null;function mark(){var v=document.body.getAttribute('data-v');if(v===last)return;var first=last===null;last=v;if(first)return;var a=document.getElementById('app');if(!a)return;a.classList.remove('vt');void a.offsetWidth;a.classList.add('vt');clearTimeout(tm);tm=setTimeout(function(){a.classList.remove('vt')},480)}
+try{new MutationObserver(mark).observe(document.body,{attributes:true,attributeFilter:['data-v']})}catch(e){}})();
 </script></body></html>
 
 
