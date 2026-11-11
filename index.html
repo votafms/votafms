@@ -2030,7 +2030,7 @@ html.a-hc .mu{font-weight:600}
 html.a-font{--dsp:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 html.a-font body{letter-spacing:.2px}
 html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!important;box-shadow:0 0 0 6px #000!important}
-</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"><style>.video{position:relative}.vblk{position:absolute;inset:0;z-index:3;cursor:not-allowed}.duch-m small{display:block;margin-bottom:2px}</style></head>
 <body>
 <header class="top" id="top"></header>
 <main id="app"></main>
@@ -2497,10 +2497,10 @@ function fmtRounds(f,l){if(f==='actual')return [ACTR];if(S.libre)return RF.libre
 function szOf(rd){return rd.act?(rd.rep?(rd.six?6:1):ACT.length):sz(rd)}
 function bodyV(){if(S.fmt==='actual')return actualV();return S.ri>=S.rounds.length?summaryV():roundV()}
 function hasScores(){return (S.sc||[]).some(rd=>rd.some(side=>side.some(v=>v!=null)))}
-function difVals(){const a=[];if(S.fmt==='actual'){for(let i=1;i<=6;i++)a.push(i)}else{for(let i=2;i<=12;i++)a.push(i/2)}return a}
-function difNorm(){if(S.dif&&S.fmt==='actual'&&S.dif%1){S.dif=Math.max(1,Math.floor(S.dif));S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif}}
+function difVals(){const a=[];if(S.fmt==='actual'&&!S.hf){for(let i=1;i<=6;i++)a.push(i)}else{for(let i=2;i<=12;i++)a.push(i/2)}return a}
+function difNorm(){if(S.dif&&S.fmt==='actual'&&!S.hf&&S.dif%1){S.dif=Math.max(1,Math.floor(S.dif));S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif}}
 function difBar(){if(S.editId||!S.bt)return '';
- const pc=isPC(),act=S.fmt==='actual';
+ const pc=isPC(),act=S.fmt==='actual'&&!S.hf;
  const val=S.difKb&&!S.dif?'…':(S.dif?fmt(S.dif):'Auto');
  let hint;
  if(S.difKb)hint='Escribe un número del 1 al 6'+(act?'':' · Espacio suma ,5')+' · Retroceso = automática · Enter para terminar';
@@ -2508,7 +2508,7 @@ function difBar(){if(S.editId||!S.bt)return '';
  else hint=pc?'Automática. Haz clic y escribe un número del 1 al 6.':'Automática. Toca para elegir de 1 a 6.';
  return `<div class="difbar${S.difKb?' kb':''}"><div class="difl"><b>Diferencia para que sea directa</b><span>${hint}</span></div><button class="difbtn" onclick="difOpen()" aria-label="Elegir diferencia">${val}</button></div>`}
 function difOpen(){if(isPC()){S.difKb=!S.difKb;S.selA=null;S.selB=null;S.sheet=null;KBUF='';clearTimeout(KT)}else{S.difSheet=true}R()}
-function difSheetH(){const act=S.fmt==='actual';
+function difSheetH(){const act=S.fmt==='actual'&&!S.hf;
  return `<div class="ov" onclick="S.difSheet=false;R()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;margin-bottom:6px"><b style="font-size:17px">Diferencia para que sea directa</b><span class="mu">${act?'1 a 6':'1 a 6 · con medio punto'}</span></div><div class="mu" style="font-size:13px;margin:0 0 14px">Si la diferencia entre los dos MCs es menor, va a réplica.</div><div class="pk">${difVals().map(v=>`<button class="${S.dif===v?'on':''}" onclick="setDif(${v})">${fmt(v)}</button>`).join('')}<button class="clr${S.dif?'':' on'}" style="grid-column:1/-1" onclick="setDif('')">Automática</button></div></div></div>`}
 function setDif(x){S.dif=x?+x:null;S.difMap=S.difMap||{};S.difMap[S.lg+'|'+S.temp]=S.dif;S.difSheet=false;if(S.rep==='skipped')S.rep=null;R()}
 function difKey(e){
@@ -2516,7 +2516,7 @@ function difKey(e){
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  const t=e.target;if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable))return;
  if(S.v!=='vote'||S.auth||S.fb||S.delAsk||S.friendsOpen||S.ranksOpen||S.inboxOpen||S.cfgOpen||S.rankUp)return;
- const k=e.key,act=S.fmt==='actual';
+ const k=e.key,act=S.fmt==='actual'&&!S.hf;
  if(/^[1-6]$/.test(k)){e.preventDefault();setDif(+k);return}
  if(k===' '||k==='Spacebar'){e.preventDefault();if(act||!S.dif)return;
   if(S.dif%1===0){if(S.dif<6)setDif(S.dif+0.5)}else setDif(S.dif-0.5);return}
@@ -2524,17 +2524,17 @@ function difKey(e){
  if(k==='Enter'||k==='Escape'||k==='Tab'){e.preventDefault();S.difKb=false;R();return}
 }
 document.addEventListener('keydown',difKey);
-function fmtSeg(){const cur=S.fmt==='actual'?'actual':'antigua',lock=hasScores();
+function fmtSeg(){const cur=S.fmt==='actual'?(S.hf?'actual5':'actual'):'antigua',lock=hasScores();
  const btn=(k,t)=>`<button class="${cur===k?'on':''}${lock&&cur!==k?' dis':''}" ${lock&&cur!==k?'disabled aria-disabled="true"':''} onclick="setFmt('${k}')">${t}</button>`;
- return `<div id="fmtseg"><div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
-function setFmt(f){if(S.fmt===f||hasScores())return;VKEY=null;const l=curL();S.fmt=f;difNorm();S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;S.selB=null;R()}
+ return `<div id="fmtseg"><div class="seg" style="margin-bottom:${lock?6:12}px">${btn('antigua','Planilla antigua')}${btn('actual','Planilla actual')}${btn('actual5','Planilla actual 0,5')}</div>${lock?'<div class="mu" style="margin:0 4px 12px;font-size:12px">Ya empezaste a puntuar con esta planilla, por lo que no se puede cambiar a la otra en esta votación.</div>':''}</div>`}
+function setFmt(f){const hf=f==='actual5'?1:0;if(hf)f='actual';if((S.fmt===f&&!!S.hf===!!hf)||hasScores())return;VKEY=null;const l=curL();S.fmt=f;S.hf=hf;difNorm();S.rounds=fmtRounds(f,l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.ri=0;S.pi=0;S.rep=null;S.sheet=null;S.selA=null;S.selB=null;R()}
 const isPC=()=>!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);
-let KBUF='',KT=null;
-function pickA(ri,m,idx){S.difKb=false;KBUF='';clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
+let KBUF='',KT=null,HP=false;
+function pickA(ri,m,idx){S.difKb=false;KBUF='';HP=false;clearTimeout(KT);if(isPC()){S.selA={ri,m,idx};S.sheet=null;S.kpe='';return R()}S.sheet={m,idx,ri};S.kpe='';R()}
 const maxA=c=>c.ri===1?repMaxA():ACT[c.idx].max;
 function aOrder(){const o=[];ACT.forEach((x,i)=>{o.push({ri:0,m:0,idx:i},{ri:0,m:1,idx:i})});if(S.rep==='voted'){for(let i=0;i<repN();i++)o.push({ri:1,m:0,idx:i},{ri:1,m:1,idx:i})}return o}
 function aCur(){if(S.sheet&&S.sheet.ri!=null)return {ri:S.sheet.ri,m:S.sheet.m,idx:S.sheet.idx};return S.selA||null}
-function aGo(c){KBUF='';clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.kpe=''}else{S.selA={ri:c.ri,m:c.m,idx:c.idx}}R()}
+function aGo(c){KBUF='';HP=false;clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.kpe=''}else{S.selA={ri:c.ri,m:c.m,idx:c.idx}}R()}
 function aStep(c,d){const o=aOrder(),i=o.findIndex(x=>x.ri===c.ri&&x.m===c.m&&x.idx===c.idx);if(i<0)return c;return o[Math.max(0,Math.min(o.length-1,i+d))]}
 function aVert(c,d){const o=aOrder(),n=o.find(x=>x.m===c.m&&((x.ri===c.ri&&x.idx===c.idx+d)||(d>0&&c.ri===0&&c.idx===ACT.length-1&&x.ri===1)||(d<0&&c.ri===1&&c.idx===0&&x.ri===0&&x.idx===ACT.length-1)));return n||c}
 function aOpenSheet(){const c=S.selA;if(!c)return;S.sheet={m:c.m,idx:c.idx,ri:c.ri};S.selA=null;S.kpe='';R()}
@@ -2548,15 +2548,17 @@ function aKey(e){
  if(/^[0-9]$/.test(k)){
   if(!c){const first=aOrder().find(x=>S.sc[x.ri]&&S.sc[x.ri][x.m][x.idx]==null);if(!first)return;c=first;S.selA=first}
   e.preventDefault();
- if(KBUF&&k!=='0'){const nx=aStep(c,1);KBUF='';clearTimeout(KT);if(nx.ri!==c.ri||nx.m!==c.m||nx.idx!==c.idx){aGo(nx);c=nx}}
+ if((KBUF&&k!=='0')||(HP&&!KBUF)){HP=false;const nx=aStep(c,1);KBUF='';clearTimeout(KT);if(nx.ri!==c.ri||nx.m!==c.m||nx.idx!==c.idx){aGo(nx);c=nx}}
  const mx=maxA(c);let buf=KBUF+k,n=Number(buf);
   if(n>mx){buf=k;n=Number(buf);if(n>mx)return}
   KBUF=buf;S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);
   if(n>=1&&n*10<=mx){R()}
-  else{KBUF='';const nx=aStep(c,1);const same=nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx;if(same){R()}else{aGo(nx)}}
+  else if(S.hf&&n+.5<=mx){KBUF='';HP=true;R()}
+  else{KBUF='';HP=false;const nx=aStep(c,1);const same=nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx;if(same){R()}else{aGo(nx)}}
   return}
  if(!c)return;
- if(k==='Backspace'||k==='Delete'){e.preventDefault();KBUF='';clearTimeout(KT);S.sc[c.ri][c.m][c.idx]=null;R();return}
+ if(S.hf&&(k===','||k==='.'||k===' ')){e.preventDefault();const cv=S.sc[c.ri][c.m][c.idx];if(cv==null)S.sc[c.ri][c.m][c.idx]=0.5;else if(cv%1===0&&cv+.5<=maxA(c))S.sc[c.ri][c.m][c.idx]=cv+.5;else return;KBUF='';HP=false;const nx=aStep(c,1);if(nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx)R();else aGo(nx);return}
+ if(k==='Backspace'||k==='Delete'){e.preventDefault();KBUF='';HP=false;clearTimeout(KT);S.sc[c.ri][c.m][c.idx]=null;R();return}
  if(k==='Escape'){e.preventDefault();KBUF='';clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet=null;S.kpe=''}else S.selA=null;R();return}
  if(k==='Enter'||k==='ArrowRight'||(k==='Tab'&&!e.shiftKey)){e.preventDefault();aGo(aStep(c,1));return}
  if(k==='ArrowLeft'||(k==='Tab'&&e.shiftKey)){e.preventDefault();aGo(aStep(c,-1));return}
@@ -2564,7 +2566,7 @@ function aKey(e){
  if(k==='ArrowUp'){e.preventDefault();aGo(aVert(c,-1));return}
 }
 document.addEventListener('keydown',aKey);
-function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c&&KBUF==='1'?'Escribe 0 para poner 10, o Enter para dejar 1.':c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
+function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c&&KBUF==='1'?'Escribe 0 para poner 10, o Enter para dejar 1.':c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${S.hf?' · Coma, punto o espacio = medio punto':''}${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
 function votarReplicaA(){if(S.rep==='voted')return;S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;S.selA=null;R()}
 function quitarReplicaA(){const k=S.rounds.findIndex(r=>r.rep);if(k>=0){S.rounds.splice(k,1);S.sc.splice(k,1)}S.rep=null;S.selA=null;S.sheet=null;S.ri=0;R()}
 function actRowsV(v){const nm=Array.isArray(v.al)?v.al:null,n=nm?nm.length:Math.min(ACT.length,v.sc[0].a.length),rows=[];for(let i=0;i<n;i++)rows.push({r:(nm&&nm[i])||(ACT[i]&&ACT[i].k)||('Ronda '+(i+1)),ta:v.sc[0].a[i],tb:v.sc[0].b[i]});if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
@@ -2572,21 +2574,21 @@ function actualV(){
  difNorm();const l=curL(),c1=S.sc[0][0],c2=S.sc[0][1];
  const complete=c1.every(x=>x!=null)&&c2.every(x=>x!=null);
  const ma=sum(c1),mb=sum(c2),tie=complete&&(S.dif?Math.abs(ma-mb)<S.dif:ma===mb);
- const cell=(ri,m,idx)=>{const v=S.sc[ri][m][idx];const sl=S.selA&&S.selA.ri===ri&&S.selA.m===m&&S.selA.idx===idx;return `<button class="cell ${v==null?'empty':'set'}${m?' b':''}${sl?' sel':''}" onclick="pickA(${ri},${m},${idx})">${v==null?'–':v}</button>`};
+ const cell=(ri,m,idx)=>{const v=S.sc[ri][m][idx];const sl=S.selA&&S.selA.ri===ri&&S.selA.m===m&&S.selA.idx===idx;return `<button class="cell ${v==null?'empty':'set'}${m?' b':''}${sl?' sel':''}" onclick="pickA(${ri},${m},${idx})">${v==null?'–':fmt(v)}</button>`};
  const rows=ACT.map((x,i)=>`<div class="arow"><span class="alab">${x.k}</span>${cell(0,0,i)}${cell(0,1,i)}</div>`).join('');
- const totRow=`<div class="arow atot"><span class="alab">TOTAL</span><div class="tot">${S.hideTot?'·':ma}</div><div class="tot">${S.hideTot?'·':mb}</div></div>`;
+ const totRow=`<div class="arow atot"><span class="alab">TOTAL</span><div class="tot">${S.hideTot?'·':fmt(ma)}</div><div class="tot">${S.hideTot?'·':fmt(mb)}</div></div>`;
  const nR=S.rep==='voted'&&S.sc[1]?S.sc[1][0].length:0;
  const rA=nR?sum(S.sc[1][0]):0,rB=nR?sum(S.sc[1][1]):0;
- const repRows=nR===1?`<div class="arow"><span class="alab">RÉPLICA</span>${cell(1,0,0)}${cell(1,1,0)}</div>`:Array.from({length:nR},(_,i)=>`<div class="arow"><span class="alab">PATRÓN ${i+1}</span>${cell(1,0,i)}${cell(1,1,i)}</div>`).join('')+`<div class="arow atot"><span class="alab">TOT. RÉPLICA</span><div class="tot">${S.hideTot?'·':rA}</div><div class="tot">${S.hideTot?'·':rB}</div></div>`;
+ const repRows=nR===1?`<div class="arow"><span class="alab">RÉPLICA</span>${cell(1,0,0)}${cell(1,1,0)}</div>`:Array.from({length:nR},(_,i)=>`<div class="arow"><span class="alab">PATRÓN ${i+1}</span>${cell(1,0,i)}${cell(1,1,i)}</div>`).join('')+`<div class="arow atot"><span class="alab">TOT. RÉPLICA</span><div class="tot">${S.hideTot?'·':fmt(rA)}</div><div class="tot">${S.hideTot?'·':fmt(rB)}</div></div>`;
  const rep=nR?`<div class="pbt" style="margin:14px 0 6px">Réplica · ${nR===1?'0 a 10':nR+' patrones, 0 a '+repMaxA()+' cada uno'}</div>${repRows}`:'';
  const repOk=S.rep!=='voted'||(S.sc[1]&&S.sc[1][0].every(x=>x!=null)&&S.sc[1][1].every(x=>x!=null));
  const canSave=complete&&(S.rep==='voted'||!tie||S.rep==='skipped');
- const prompt=tie&&!S.rep?`<div class="card" style="text-align:center;margin-top:12px"><b>${ma===mb?'Empate':'Diferencia de '+fmt(Math.abs(ma-mb))} ${ma} – ${mb}</b><div class="mu" style="margin:6px 0 12px">${ma===mb?'Como los dos sacaron el mismo puntaje, la réplica decide el ganador. Si no la juegas, queda empate.':'La diferencia es menor a '+S.dif+', así que la réplica decide el ganador. Si no la juegas, se cuenta por los puntos.'}</div><button class="btn" onclick="votarReplicaA()">Jugar réplica</button><button class="btn s" onclick="omitirReplica()">No jugar réplica</button></div>`:'';
+ const prompt=tie&&!S.rep?`<div class="card" style="text-align:center;margin-top:12px"><b>${ma===mb?'Empate':'Diferencia de '+fmt(Math.abs(ma-mb))} ${fmt(ma)} – ${fmt(mb)}</b><div class="mu" style="margin:6px 0 12px">${ma===mb?'Como los dos sacaron el mismo puntaje, la réplica decide el ganador. Si no la juegas, queda empate.':'La diferencia es menor a '+fmt(S.dif)+', así que la réplica decide el ganador. Si no la juegas, se cuenta por los puntos.'}</div><button class="btn" onclick="votarReplicaA()">Jugar réplica</button><button class="btn s" onclick="omitirReplica()">No jugar réplica</button></div>`:'';
  const note=!complete?`<div class="mu" style="text-align:center;margin:10px 0">Completa las ${ACT.length} casillas de cada MC para continuar.</div>`:(S.rep==='voted'&&!repOk?`<div class="mu" style="text-align:center;margin:10px 0">La réplica está incompleta: si guardas así, no se tomará en cuenta.</div>`:'');
  return `<div class="pl-card"><div class="pl-head"><div style="display:flex;align-items:center;gap:10px">${logo(l,44)}<div><div class="pl-kicker">${esc(l.n)}</div><div class="pl-title">Planilla actual</div></div></div>
  <span class="tbg">${plQuickH()}<button class="tbtn" onclick="S.hideTot=!S.hideTot;R()">${S.hideTot?'Mostrar totales':'Ocultar totales'}</button></span></div>
  ${difBar()}<div class="pl-scroll"><div class="apl"><div class="arow ahead"><span class="alab"></span><span class="ah" style="color:var(--ac)">${esc(S.bt.a)}</span><span class="ah" style="color:var(--ac2)">${esc(S.bt.b)}</span></div>${rows}${totRow}${rep}</div></div></div>
- ${kbHint()}${note}${prompt}${(tie&&!S.rep)?'':repToggleH('A')}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>`;
+ ${kbHint()}${note}${prompt}${(tie&&!S.rep)?'':repToggleH('A')}<button class="btn" style="margin-top:12px" ${canSave?'':'disabled'} onclick="saveVote()">Guardar mi voto</button>${(S.duelOn||S.editId||!hasScores())?'':'<button class="btn s" onclick="saveDraft()">⏸ Guardar y seguir después</button>'}${S.drOn?'<button class="btn s" onclick="drDiscard()">Descartar y empezar de cero</button>':''}`;
 }
 let VKEY=null;
 function R(){
@@ -2860,7 +2862,7 @@ function startScreenV(b,l){const f=S.first||0;const [a1,a2]=accentOf(l);
 function confirmFirst(){S.firstSet=true;R();window.scrollTo(0,0)}
 function startBat(ci,bi){const e=CAL[ci];const b=batOf(e,e.b[bi]);start({a:b.a,b:b.b,j:b.j,y:b.y||null})}
 function ytGo(){const m=(S.yt||'').match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);if(!m){S.err='Ese link no parece de YouTube. Prueba con otro.';return R()}S.err='';start({a:S.na.trim()||'MC 1',b:S.nb.trim()||'MC 2',j:'Batalla por link',y:m[1]})}
-function start(b){const l=curL();S.bt=b;S.libre=!!b.libre;S.temp=b.temp||'2026';S.first=b.first||0;S.firstSet=false;S.editId=null;S.selB=null;const exV=S.libre?null:(S.myVotes||[]).find(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:b.a,b:b.b}));if(exV&&!S.duelOn)return startEdit(exV);S.dif=(S.difMap||{})[S.lg+'|'+S.temp]||null;if((S.temp==='2024'||S.temp==='2025')&&!S.libre&&S.lg!=='in'&&!S.duelOn){S.fmt24=1;S.fmt='actual'}else if(S.fmt24){S.fmt24=0;S.fmt='antigua'}S.ri=0;S.pi=0;S.rep=null;S.rounds=fmtRounds(S.fmt||'antigua',l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.v='vote';R();window.scrollTo(0,0)}
+function start(b){const l=curL();S.bt=b;S.libre=!!b.libre;S.hf=(S.duelOn&&S.dul&&S.dul.d&&S.dul.d.hf)?1:0;S.temp=b.temp||'2026';S.first=b.first||0;S.firstSet=false;S.editId=null;S.selB=null;const exV=S.libre?null:(S.myVotes||[]).find(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:b.a,b:b.b}));if(exV&&!S.duelOn)return startEdit(exV);S.dif=(S.difMap||{})[S.lg+'|'+S.temp]||null;if((S.temp==='2024'||S.temp==='2025')&&!S.libre&&S.lg!=='in'&&!S.duelOn){S.fmt24=1;S.fmt='actual'}else if(S.fmt24){S.fmt24=0;S.fmt='antigua'}S.ri=0;S.pi=0;S.rep=null;S.rounds=fmtRounds(S.fmt||'antigua',l);S.sc=S.rounds.map(rd=>[Array(szOf(rd)).fill(null),Array(szOf(rd)).fill(null)]);S.v='vote';R();window.scrollTo(0,0)}
 function sumR(k,m){return sum(S.sc[k][m])}
 function tot(m){return S.rounds.reduce((a,_,k)=>a+sumR(k,m),0)}
 function mainTot(m){return S.rounds.reduce((a,rd,k)=>a+(rd.rep?0:sumR(k,m)),0)}
@@ -3066,16 +3068,16 @@ function kpOk(){const str=(S.sheet.str||'').trim();if(str===''){return setV(null
  setV(v)}
 function sheetH(){const h=S.sheet;
  let vals=[];
- if(h.ri!=null){const max=h.ri===1?repMaxA():ACT[h.idx].max;for(let i=0;i<=max;i++)vals.push(i)}
+ if(h.ri!=null){const max=h.ri===1?repMaxA():ACT[h.idx].max;const st=S.hf?2:1;for(let i=0;i<=max*st;i++)vals.push(i/st)}
  else{const mx=h.max||4;for(let i=0;i<=mx*2;i++)vals.push(i/2)}
  const title=h.m?S.bt.b:S.bt.a;
  const lab=h.ri!=null?(h.ri===1?(repN()>1?'Réplica · Patrón '+(h.idx+1):'Réplica'):ACT[h.idx].k):'';
- const range=h.ri!=null?`0 a ${h.ri===1?repMaxA():ACT[h.idx].max}`:`De 0 a ${h.max||4}, con medio punto`;
+ const range=h.ri!=null?`0 a ${h.ri===1?repMaxA():ACT[h.idx].max}${S.hf?', con medio punto':''}`:`De 0 a ${h.max||4}, con medio punto`;
  return `<div class="ov" onclick="closeSheet()"><div class="sh" onclick="event.stopPropagation()"><div class="row" style="justify-content:space-between;margin-bottom:14px"><b style="font-size:17px">${esc(title)}${lab?' · '+lab:''}</b><span class="mu">${range}</span></div><div class="pk">${vals.map(v=>`<button onclick="setV(${v})">${fmt(v)}</button>`).join('')}<button class="clr" onclick="setV(null)">Borrar</button></div></div></div>`}
 function buildVote(){const act=S.fmt==='actual';const a=mainTot(0),b=mainTot(1);
  const useRep=repDone();
  const rows=S.rounds.map((r,k)=>({r:r.n,ta:sumR(k,0),tb:sumR(k,1),rep:!!r.rep})).filter(r=>useRep||!r.rep);
- const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:useRep?'voted':(S.rep==='voted'?'none':(S.rep||'none')),fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,dif:S.dif||null,sc:S.sc.filter((_,k)=>useRep||!(S.rounds[k]&&S.rounds[k].rep)).map(p=>({a:p[0],b:p[1]}))};if(useRep){bv.ra=repTotM(0);bv.rb=repTotM(1)}if(act)bv.al=ACT.map(x=>x.k);return bv}
+ const bv={l:S.lg,a:S.bt.a,b:S.bt.b,ta:a,tb:b,rows,date:today(),free:!!S.libre,j:S.bt.j||'',y:S.bt.y||null,rep:useRep?'voted':(S.rep==='voted'?'none':(S.rep||'none')),fmt:act?'actual':'antigua',temp:S.temp||'2026',first:S.first||0,dif:S.dif||null,sc:S.sc.filter((_,k)=>useRep||!(S.rounds[k]&&S.rounds[k].rep)).map(p=>({a:p[0],b:p[1]}))};if(useRep){bv.ra=repTotM(0);bv.rb=repTotM(1)}if(act)bv.al=ACT.map(x=>x.k);if(act&&S.hf)bv.hf=1;return bv}
 function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{const nv=voteNorm(r),o=outcomeOf(r);sa+=nv.ta;sb+=nv.tb;if(o.w==='a')wa++;else if(o.w==='b')wb++});return {n:rows.length,wa,wb,sa,sb}}
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
@@ -3452,7 +3454,7 @@ function startEdit(v){
  const l=L.find(x=>x.i===v.l)||L[0];
  S.lg=v.l;S.libre=!!v.free;S.temp=v.temp||'2026';S.first=v.first||0;S.firstSet=true;
  S.bt={a:v.a,b:v.b,j:v.j||(v.free?'Batalla libre':l.n+' · '+v.date),y:v.y||null,libre:!!v.free};
- S.fmt=v.fmt==='actual'?'actual':'antigua';S.rounds=fmtRounds(S.fmt,l);if(v.rep==='voted')S.rounds.push(S.fmt==='actual'?((v.sc[1]&&v.sc[1].a&&v.sc[1].a.length===1)?REPA:REPA6):REP);
+ S.fmt=v.fmt==='actual'?'actual':'antigua';S.hf=(v.fmt==='actual'&&v.hf)?1:0;S.rounds=fmtRounds(S.fmt,l);if(v.rep==='voted')S.rounds.push(S.fmt==='actual'?((v.sc[1]&&v.sc[1].a&&v.sc[1].a.length===1)?REPA:REPA6):REP);
  S.dif=v.dif||null;S.rep=v.rep==='voted'?'voted':(v.rep==='skipped'?'skipped':null);
  S.sc=migrateSc(v);
  S.ri=0;S.pi=0;S.editId=v.id;S.v='vote';R();window.scrollTo(0,0);
@@ -3484,6 +3486,7 @@ async function deleteAccount(){
 
 const AVISOS=[
  {ts:Date.parse('2026-11-11T17:45:00-04:00'),text:'Mejoras de rendimiento ⚡: la app va más fluida y carga más rápido. Ya no se repinta la barra de arriba ni el menú de abajo cuando no cambian, lo que está fuera de pantalla deja de animarse, las brasas de fondo van a 30 FPS y los escudos de las ligas pesan mucho menos. Todo se ve igual y no se quitó ninguna función. Si aún se te traba, en Ajustes (la tuerca) puedes bajar los FPS o desactivar animaciones y brillos.'},
+ {ts:Date.parse('2026-11-11T17:30:00-04:00'),text:'Duelos y planillas ⚔️: ahora una sala admite hasta 7 jugadores y solo el anfitrión controla el video (pausar, reanudar y adelantar); los demás lo ven sincronizado. Nueva planilla actual con 0,5: igual que la actual (Random, Ida, Vuelta, Acapella y Deluxe) pero con medios puntos, de 0 a 10 (Acapella de 0 a 4); la eliges junto a Planilla antigua y Planilla actual, también al crear un duelo. En el chat del duelo ahora se ve bien el nombre de quien escribe, con un color para cada persona. Y en la planilla actual ya puedes tocar ⏸ Guardar y seguir después para dejar la votación a medias: la retomas desde Inicio o abriendo esa batalla.'},
  {ts:Date.parse('2026-11-11T16:30:00-04:00'),text:'Duelos más grandes ⚔️: ahora una sala admite hasta 5 jugadores (el anfitrión y 4 más), por invitación de amigos o con el código. Además, cuando varios compañeros activan «Permitir que los demás vean mi votación», puedes pasar de una votación a otra con las flechas ‹ › en la barra del duelo, para que no se acumulen. La voz por ahora sigue siendo solo para duelos de 2 personas.'},
  {ts:Date.parse('2026-11-11T08:30:00-04:00'),text:'Nuevo: sonidos y monedas más vistosas 🔊🪙. Ahora la app suena al votar (sello y campanita), al ganar monedas (las monedas salen volando hasta tu contador y suena una por una), al comprar en la tienda, al subir de rango, al desbloquear logros y cuando te llega un aviso o una invitación a duelo. En Ajustes (la tuerca) puedes apagar los sonidos, subir o bajar el volumen y quitar la vibración.'},
  {ts:Date.parse('2026-11-11T07:00:00-04:00'),text:'Nuevo: Ajustes ⚙️. Toca la tuerca de arriba (junto a tus monedas) y encontrarás: «Desactivar animaciones y brillos» para quitar los efectos y dejar la app como era antes (en ese modo va a 25 FPS); una barra de FPS (30, 45 o 60) para que las animaciones sigan pero menos fluidas y con menos gasto de batería; y el apartado de Accesibilidad con texto grande, alto contraste, letra más legible y resaltar la selección del teclado.'},
@@ -4982,7 +4985,7 @@ setInterval(()=>{const el=document.getElementById('cdn');if(el)el.textContent=cd
 const duRef=c=>FB.fm.doc(FB.db,'duels',c);
 const DUC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 /* Sala de hasta 5 jugadores: el anfitrión + los demás en d.pl ({uid:{n,t}}); guest/gu se mantiene con el primer invitado por compatibilidad */
-const DU_MAX=5;
+const DU_MAX=7;
 function duPlayers(d){if(!d)return [];const a=[{uid:d.host,n:d.hu,host:true}],seen=new Set([d.host]),pl=d.pl||{};
  Object.keys(pl).filter(u=>pl[u]&&pl[u].n&&!seen.has(u)).sort((x,y)=>(pl[x].t||0)-(pl[y].t||0)).forEach(u=>{seen.add(u);a.push({uid:u,n:pl[u].n})});
  if(d.guest&&!seen.has(d.guest))a.push({uid:d.guest,n:d.gu||''});return a}
@@ -4993,7 +4996,7 @@ const duSty='width:100%;margin:0 0 8px;padding:12px;border-radius:14px;backgroun
 /* Planillas antiguas que puede elegir el anfitrión (cada una usa las rondas de esa temporada) */
 const DU_TP=[['auto','La de la batalla'],['2026','Temporada 2026'],['2025','Temporada 2024 / 2025'],['2023','Temporada 2023'],['2021','Temporada 2021 / 2022'],['2020','Temporada 2020'],['2018','Temporada 2018 / 2019'],['2017','Temporada 2017'],['in','FMS Internacional'],['libre','Batalla libre']];
 const DU_RF={'2017':'t17','2018':'t18','2020':'t20','2021':'t21','2023':'t23','2025':'t25','in':'in','libre':'libre'};
-function duTpName(d){if(d.fmt==='actual')return 'Planilla actual';const t=DU_TP.find(x=>x[0]===(d.tp||'auto'));return 'Planilla antigua'+(t&&t[0]!=='auto'?' · '+t[1]:'')}
+function duTpName(d){if(d.fmt==='actual')return 'Planilla actual'+(d.hf?' 0,5':'');const t=DU_TP.find(x=>x[0]===(d.tp||'auto'));return 'Planilla antigua'+(t&&t[0]!=='auto'?' · '+t[1]:'')}
 function duCard(){return `<button class="card libre" onclick="duOpen()"><div class="row"><div class="lbi">🤝</div><div style="flex:1;min-width:0"><b style="font-size:16px">Duelo con amigo</b><div class="mu">Vota la misma batalla en vivo con un código.</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu)"')}</div></button>`}
 function duOpen(){if(!S.me)return openAuth('create');if(!FB){S.msgP='Sin conexión con el servidor. Recarga la página.';return R()}S.duc=S.duc||{mode:'liga',lg:'es',temp:'',ji:'',bi:'',a:'',b:'',y:'',fmt:'actual',tp:'auto',sel:null,code:''};S.duv=S.dul?'lobby':'menu';B.getLinks().then(l=>{S.links=l}).catch(()=>{});go('duel')}
 function duSeasons(lg){const k=Object.keys(SEASON_JOR).filter(x=>x.startsWith(lg+'|')).map(x=>x.split('|')[1]);if(CAL.some(e=>e.i===lg&&(e.b||[]).length))k.push('2026');return [...new Set(k)].sort().reverse()}
@@ -5007,7 +5010,7 @@ async function duCreate(){const c=S.duc,fm=FB.fm;let a,b,y,j;S.dum='';
  if(c.mode==='libre'){a=c.a.trim();b=c.b.trim();y=ytParse(c.y).join(',');j='Batalla libre'}
  else{if(!c.sel){S.dum='Elige la batalla.';return R()}a=c.sel.a;b=c.sel.b;y=ytParse(c.y).join(',')||c.sel.y||'';const jn=(duJors(c.lg,c.temp)[+c.ji]||{}).n||'';j=c.temp==='2026'?jn:L.find(x=>x.i===c.lg).n+' · '+seasonLabel(c.temp)+(jn?' · '+jn:'')}
  if(!a||!b){S.dum='Escribe los dos MCs.';return R()}
- const code=duCode(),d={host:S.me.uid,hu:S.me.u,guest:null,gu:'',pl:{},lg:c.mode==='libre'?(S.duCol||'es'):c.lg,a,b,y,j,mode:c.mode,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt,tp:c.fmt==='actual'?'auto':(c.tp||'auto'),st:'wait',rd:1,sv:{},sh:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0},ts:Date.now()};
+ const code=duCode(),d={host:S.me.uid,hu:S.me.u,guest:null,gu:'',pl:{},lg:c.mode==='libre'?(S.duCol||'es'):c.lg,a,b,y,j,mode:c.mode,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt==='actual5'?'actual':c.fmt,hf:c.fmt==='actual5'?1:0,tp:(c.fmt==='actual'||c.fmt==='actual5')?'auto':(c.tp||'auto'),st:'wait',rd:1,sv:{},sh:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0},ts:Date.now()};
  try{await fm.setDoc(duRef(code),d);duSub(code,'host')}catch(e){S.dum='No se pudo crear la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
 async function duJoin(){const fm=FB.fm,code=String(S.duc.code||'').trim().toUpperCase();S.dum='';if(code.length!==6){S.dum='El código tiene 6 caracteres.';return R()}
  try{const sn=await fm.getDoc(duRef(code));if(!sn.exists()){S.dum='No existe ninguna sala con ese código.';return R()}const d=sn.data();
@@ -5035,7 +5038,7 @@ async function duShare(v){const D=S.dul;if(!D)return;D.sig='';try{await FB.fm.up
 /* --- Video sincronizado: pausar, reanudar, adelantar y cambiar de parte afectan a los dos --- */
 const duCmd=(f,a)=>{const el=document.getElementById('vpf');if(el&&el.contentWindow)el.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:a||[]}),'*')};
 const duPart=()=>{const b=S.bt;if(!b)return 0;const ids=ytIds(b.y);return (S.vpart&&S.vpart.y===b.y&&ids[S.vpart.i])?S.vpart.i:0};
-function duPub(st,t,x){const D=S.dul;if(!D||!S.me)return;D.ls=st==='play'?1:2;FB.fm.updateDoc(duRef(D.code),{vid:{st,t:Math.round((t||0)*10)/10,by:S.me.uid,n:Date.now(),ts:Date.now(),part:duPart(),...(x||{})}}).catch(()=>{})}
+function duPub(st,t,x){const D=S.dul;if(!D||!S.me||D.role!=='host')return;D.ls=st==='play'?1:2;FB.fm.updateDoc(duRef(D.code),{vid:{st,t:Math.round((t||0)*10)/10,by:S.me.uid,n:Date.now(),ts:Date.now(),part:duPart(),...(x||{})}}).catch(()=>{})}
 function duApply(v){const D=S.dul;if(!document.getElementById('vpf'))return;
  if(v.part!=null&&v.part!==duPart()){D.rem=1;try{_setVPart2(v.part)}finally{D.rem=0}D.got=0;D.ls=null;D.mute=Date.now()+2500;return}
  D.mute=Date.now()+1500;D.ls=v.st==='play'?1:2;
@@ -5093,14 +5096,14 @@ ${d.mode==='liga'?'':`<div class="du-sec">Tu color de planilla · ${esc((L.find(
 ${c.mode==='liga'&&c.sel?`<div class="card" style="border-color:rgba(var(--acr),.5)">${duVs(c.sel.a,c.sel.b)}</div>`:''}
 <div class="card">${c.mode==='liga'?`<div class="du-lab">Liga</div><select onchange="duF('lg',this.value)" style="${duSty}">${L.map(l=>o(l.i,l.n,c.lg)).join('')}</select><div class="du-lab">Temporada</div><select onchange="duF('temp',this.value)" style="${duSty}">${o('','Temporada…',c.temp)}${ss.map(t=>o(t,seasonLabel(t),c.temp)).join('')}</select><div class="du-lab">Jornada</div><select onchange="duF('ji',this.value)" style="${duSty}" ${c.temp?'':'disabled'}>${o('','Jornada…',c.ji)}${js.map((j,i)=>o(i,j.n,c.ji)).join('')}</select><div class="du-lab">Batalla</div><select onchange="duF('bi',this.value)" style="${duSty};margin-bottom:0" ${c.ji!==''?'':'disabled'}>${o('','Batalla…',c.bi)}${bs.map((b,i)=>o(i,b.a+' vs '+b.b,c.bi)).join('')}</select>`:`<div class="du-lab">MC 1</div><input placeholder="MC 1" value="${esc(c.a)}" oninput="S.duc.a=this.value"><div class="du-lab">MC 2</div><input placeholder="MC 2" value="${esc(c.b)}" oninput="S.duc.b=this.value" style="margin-bottom:0">`}</div>
 <div class="du-sec"><i>3</i>Video</div><div class="card"><input placeholder="Link de YouTube${c.sel&&c.sel.y?' (opcional, ya tiene video)':''}" value="${esc(c.y)}" oninput="S.duc.y=this.value" style="margin-bottom:0"></div>
-<div class="du-sec"><i>4</i>Planilla</div><div class="card"><div class="seg" style="margin-bottom:${c.fmt==='antigua'?'10px':'0'}">${fg('actual','Actual')}${fg('antigua','Antigua')}</div>${c.fmt==='antigua'?`<select onchange="duF('tp',this.value)" style="${duSty};margin-bottom:0">${tps.map(t=>o(t[0],t[1],c.tp||'auto')).join('')}</select>`:''}</div>
+<div class="du-sec"><i>4</i>Planilla</div><div class="card"><div class="seg" style="margin-bottom:${c.fmt==='antigua'?'10px':'0'}">${fg('actual','Actual')}${fg('actual5','Actual 0,5')}${fg('antigua','Antigua')}</div>${c.fmt==='antigua'?`<select onchange="duF('tp',this.value)" style="${duSty};margin-bottom:0">${tps.map(t=>o(t[0],t[1],c.tp||'auto')).join('')}</select>`:''}</div>
 <div class="du-acts"><button class="btn" onclick="duCreate()">${c.inv?'Crear sala e invitar':'Crear sala'}</button>${c.inv?'<div class=\"du-note\">Al crearla podrás elegir a qué amigo invitar.</div>':''}${msg}</div>`}
  if(v==='join')return `${bk}${duHero('🔑','Unirme a una sala','Escribe el código de 6 caracteres que te pasó tu amigo.')}<div class="card"><input placeholder="Código de 6 caracteres" value="${esc(c.code)}" maxlength="6" autocapitalize="characters" autocomplete="off" oninput="S.duc.code=this.value.toUpperCase()" style="text-align:center;letter-spacing:6px;font-size:22px;font-weight:800"><button class="btn" style="margin-bottom:0" onclick="duJoin()">Entrar al duelo</button></div>${msg}`;
- return `${bk}${duHero('⚔️','Duelo con amigo','Voten la misma batalla a la vez (hasta 5 jugadores) y comparen en tiempo real.')}
+ return `${bk}${duHero('⚔️','Duelo con amigo','Voten la misma batalla a la vez (hasta 7 jugadores) y comparen en tiempo real.')}
 ${diPausedH()}<button class="du-act main" onclick="duInvStart()"><span class="du-ico">👥</span><span><b>Invitar a un amigo</b><span class="t">Sin código: a tu amigo le sale un aviso arriba, esté donde esté.</span></span><span class="go">›</span></button>
 <button class="du-act" onclick="S.duc.inv=0;S.duv='create';R()"><span class="du-ico">➕</span><span><b>Crear una sala con código</b><span class="t">Para quien no tengas agregado: le pasas el código y entra.</span></span><span class="go">›</span></button>
 <button class="du-act" onclick="S.duv='join';R()"><span class="du-ico">🔑</span><span><b>Tengo un código</b><span class="t">Entra a la sala que creó tu amigo.</span></span><span class="go">›</span></button>
-<div class="du-sec">Cómo funciona</div><div class="card du-steps"><div class="du-step"><i>1</i><span>El anfitrión crea la sala e invita a sus amigos (hasta 5 jugadores), o comparte el código con quien no sea su amigo.</span></div><div class="du-step"><i>2</i><span>Todos votan la misma batalla, con chat y votación visible si lo permiten (puedes cambiar entre las votaciones con flechas).</span></div><div class="du-step"><i>3</i><span>Al terminar, el anfitrión elige la siguiente batalla sin salir de la sala.</span></div></div>${msg}`}
+<div class="du-sec">Cómo funciona</div><div class="card du-steps"><div class="du-step"><i>1</i><span>El anfitrión crea la sala e invita a sus amigos (hasta 7 jugadores), o comparte el código con quien no sea su amigo.</span></div><div class="du-step"><i>2</i><span>Todos votan la misma batalla, con chat y votación visible si lo permiten (puedes cambiar entre las votaciones con flechas).</span></div><div class="du-step"><i>3</i><span>Al terminar, el anfitrión elige la siguiente batalla sin salir de la sala.</span></div></div>${msg}`}
 /* --- Enganches con la votación existente (solo actúan dentro de un duelo) --- */
 const duOn=()=>!!(S.duelOn&&S.dul&&S.dul.live);
 const _voteV2=voteV;voteV=function(){if(!duOn())return _voteV2();return '<div id="dubar"></div>'+_voteV2().replace(/<button class="back" onclick="go\('(?:libre|lg)'\)">[\s\S]*?<\/button>/,'<button class="back" onclick="duLeave()">'+ico('back',18)+' Salir del duelo</button>')};
@@ -5109,7 +5112,7 @@ const _resV2=resV;resV=function(){if(!duOn())return _resV2();const D=S.dul;D.sav
 const _setFmt2=setFmt;setFmt=function(f){if(S.duelOn)return;return _setFmt2(f)};
 const _fmtSeg2=fmtSeg;fmtSeg=function(){return S.duelOn?'':_fmtSeg2()};
 const _linkAreaH2=linkAreaH;linkAreaH=function(b){return S.duelOn?'':_linkAreaH2(b)};
-const _setVPart2=setVPart;setVPart=function(i){_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
+const _setVPart2=setVPart;setVPart=function(i){if(duOn()&&S.dul.role!=='host'&&!S.dul.rem)return;_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
 const _fmtRounds2=fmtRounds;fmtRounds=function(f,l){const D=S.dul,d=D&&D.d;if(!S.duelOn||!d)return _fmtRounds2(f,l);
  if(f==='actual')return [ACTR];
  const tp=d.tp||'auto';if(DU_RF[tp])return RF[DU_RF[tp]].slice();
@@ -5199,10 +5202,10 @@ function duChatSync(){const D=S.dul,vis=!!(D&&D.d&&D.d.st!=='done'&&S.me&&(S.v==
  const lastTs=last?last.ts||0:0;if(open)D.chatSeen=lastTs;else if(D.chatSeen==null)D.chatSeen=0;
  const un=open?0:ms.filter(m=>m.uid!==me&&(m.ts||0)>D.chatSeen).length,bd=el.querySelector('#duchn');bd.hidden=!un;bd.textContent=un>9?'9+':un;
  el.querySelector('#duchp').hidden=!open;
- if(last&&last.id!==D.chatLastId){const first=D.chatLastId===undefined;D.chatLastId=last.id;if(!open&&!first&&last.uid!==me){const pv=el.querySelector('#duchv');pv.textContent='@'+(last.n||'')+': '+last.t;pv.hidden=false;clearTimeout(D.chatPvT);D.chatPvT=setTimeout(()=>{pv.hidden=true},5000)}}
+ if(last&&last.id!==D.chatLastId){const first=D.chatLastId===undefined;D.chatLastId=last.id;if(!open&&!first&&last.uid!==me){const pv=el.querySelector('#duchv');pv.innerHTML='<b style="display:block;font-size:12px;color:'+duC(last.uid)+'">@'+esc(last.n||'')+'</b>'+esc(last.t);pv.hidden=false;clearTimeout(D.chatPvT);D.chatPvT=setTimeout(()=>{pv.hidden=true},5000)}}
  if(open)el.querySelector('#duchv').hidden=true;
  if(sig!==D.chatSig){D.chatSig=sig;if(open){const l=el.querySelector('#duchl'),near=l.scrollHeight-l.scrollTop-l.clientHeight<80||!l.children.length;
-  l.innerHTML=ms.length?ms.map(m=>`<div class="duch-m${m.uid===me?' me':''}">${m.uid===me?'':`<small>@${esc(m.n||'')}</small>`}${esc(m.t)}</div>`).join(''):'<div class="duch-e">Aquí puedes comentar la batalla con tu amigo.<br>El chat se borra al cerrar la sala.</div>';
+  l.innerHTML=ms.length?ms.map(m=>`<div class="duch-m${m.uid===me?' me':''}">${m.uid===me?'':`<small style="color:${duC(m.uid)};font-weight:800;font-size:12px">@${esc(m.n||'')}</small>`}${esc(m.t)}</div>`).join(''):'<div class="duch-e">Aquí puedes comentar la batalla con tu amigo.<br>El chat se borra al cerrar la sala.</div>';
   if(near||(last&&last.uid===me))l.scrollTop=l.scrollHeight}}}
 async function duChatSend(){const D=S.dul,inp=document.getElementById('duchi');if(!D||!D.d||!S.me||!inp)return;const t=inp.value.trim().slice(0,200);if(!t)return;const now=Date.now();if(now-(D.chatSent||0)<600)return;D.chatSent=now;inp.value='';
  const me=S.me.uid,keep=((D.d.ch||{})[me]||[]).slice(-59),m={id:now.toString(36)+Math.random().toString(36).slice(2,5),t,ts:now,n:S.me.u},arr=[...keep,m];
@@ -5220,7 +5223,7 @@ function duBuild(){const c=S.duc;let a,b,y,j;S.dum='';
  if(c.mode==='libre'){a=c.a.trim();b=c.b.trim();y=ytParse(c.y).join(',');j='Batalla libre'}
  else{if(!c.sel){S.dum='Elige la batalla.';return null}a=c.sel.a;b=c.sel.b;y=ytParse(c.y).join(',')||c.sel.y||'';const jn=(duJors(c.lg,c.temp)[+c.ji]||{}).n||'';j=c.temp==='2026'?jn:L.find(x=>x.i===c.lg).n+' · '+seasonLabel(c.temp)+(jn?' · '+jn:'')}
  if(!a||!b){S.dum='Escribe los dos MCs.';return null}
- return {a,b,y,j,mode:c.mode,lg:c.mode==='libre'?(S.duCol||'es'):c.lg,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt,tp:c.fmt==='actual'?'auto':(c.tp||'auto')}}
+ return {a,b,y,j,mode:c.mode,lg:c.mode==='libre'?(S.duCol||'es'):c.lg,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt==='actual5'?'actual':c.fmt,hf:c.fmt==='actual5'?1:0,tp:(c.fmt==='actual'||c.fmt==='actual5')?'auto':(c.tp||'auto')}}
 async function duNextGo(){const D=S.dul;if(!D||D.role!=='host'||!D.d)return;const x=duBuild();if(!x)return R();const d=D.d,rd=d.rd||1;
  {const miss=duPlayers(d).filter(x=>x.uid!==d.host&&!(d.sv&&d.sv[x.uid]===rd));if(miss.length&&!confirm(miss.map(x=>'@'+x.n).join(', ')+(miss.length>1?' todavía no guardaron su voto':' todavía no guardó su voto')+'. ¿Pasar a la siguiente batalla igualmente?'))return}
  try{await FB.fm.updateDoc(duRef(D.code),{...x,rd:rd+1,st:'live',sv:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0}});S.duv='room'}catch(e){S.dum='No se pudo cambiar de batalla. Intenta otra vez.';R()}}
@@ -5932,6 +5935,30 @@ D.addEventListener('pointerup',function(e){var d=dn;dn=null;if(!d)return;
  var el=t.closest('button,a,[onclick],[role="button"],summary,label');if(!el)return;
  burst(e.clientX,e.clientY,!!el.closest('.kpg,.pk,.cell,.seg,.shtabs,.steps,.stepbar,.nav'))},{passive:true,capture:true});
 }catch(e){}})();
+
+/* ===== Duelo: video solo del anfitrión · planilla 0,5 · borradores · nombres en el chat ===== */
+function duC(u){let h=0;for(const c of String(u))h=(h*31+c.charCodeAt(0))>>>0;return 'hsl('+(h%360)+',80%,62%)'}
+const _vytH0=vytH;vytH=function(){let h=_vytH0.apply(this,arguments);try{if(duOn()&&S.dul.role!=='host'){h=h.replace('allowfullscreen></iframe></div>','allowfullscreen></iframe><div class="vblk"></div></div>')+'<div class="mu" style="font-size:12px;margin:-4px 0 10px">🔒 Solo el anfitrión controla el video.</div>'}}catch(e){}return h};
+const drId=k=>String(k).replace(/[^a-z0-9|]/gi,'_').slice(0,120);
+const drKeyNow=()=>bkey({free:!!S.libre,l:S.lg,temp:S.temp,a:S.bt.a,b:S.bt.b});
+function drToast(t){try{const el=document.createElement('div');el.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:99999;background:var(--cd);color:var(--tx);border:1px solid var(--ac);border-radius:14px;padding:10px 16px;font:700 13px/1.3 inherit;box-shadow:var(--sh);max-width:86vw;text-align:center';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),3800)}catch(e){}}
+function drMap(){if(!S.me)return {};if(!S.dr||S.dr.uid!==S.me.uid){let m={};try{m=JSON.parse(localStorage.getItem('vfms_dr_'+S.me.uid)||'{}')||{}}catch(e){}S.dr={uid:S.me.uid,m,sync:0};drSync()}return S.dr.m}
+async function drSync(){const D=S.dr;if(!D||D.sync||!FB||!S.me)return;D.sync=1;try{const fm=FB.fm,sn=await fm.getDoc(fm.doc(FB.db,'users',D.uid)),r=(sn.exists()&&sn.data().drafts)||{};let ch=false;Object.keys(r).forEach(k=>{if(r[k]&&(!D.m[k]||(r[k].ts||0)>(D.m[k].ts||0))){D.m[k]=r[k];ch=true}});if(ch){drStore(true);R()}}catch(e){}}
+function drStore(localOnly){const D=S.dr;if(!D)return;try{localStorage.setItem('vfms_dr_'+D.uid,JSON.stringify(D.m))}catch(e){}if(localOnly)return;try{FB.fm.updateDoc(FB.fm.doc(FB.db,'users',D.uid),{drafts:D.m}).catch(()=>{})}catch(e){}}
+const drList=()=>Object.values(drMap()).sort((x,y)=>(y.ts||0)-(x.ts||0));
+function saveDraft(){if(!S.me)return openAuth('create');if(!S.bt||S.fmt!=='actual'||!hasScores()||S.duelOn)return;const m=drMap(),k=drKeyNow();
+ m[drId(k)]={k,l:S.lg,free:!!S.libre,temp:S.temp||'2026',a:S.bt.a,b:S.bt.b,j:S.bt.j||'',y:S.bt.y||null,sc:JSON.stringify(S.sc),rep:S.rep||null,hf:S.hf?1:0,dif:S.dif||null,first:S.first||0,ts:Date.now()};
+ drStore();S.drOn=false;drToast('Votación guardada a medias ⏸ Retómala desde Inicio o abriendo esa batalla');go('home')}
+function drApply(){S.drOn=false;if(S.v!=='vote'||S.editId||S.duelOn||!S.me||!S.bt)return;const k=drKeyNow(),d=drMap()[drId(k)];if(!d||d.k!==k)return;
+ let sc;try{sc=JSON.parse(d.sc)}catch(e){return}if(!Array.isArray(sc)||!sc[0])return;
+ S.fmt='actual';S.hf=d.hf?1:0;S.rounds=fmtRounds('actual',curL());if(d.rep==='voted'&&sc[1]&&sc[1][0])S.rounds.push(sc[1][0].length===1?REPA:REPA6);
+ S.sc=sc;S.rep=d.rep||null;S.dif=d.dif||S.dif;S.first=d.first||0;S.firstSet=true;S.ri=0;S.pi=0;S.sheet=null;S.selA=null;S.drOn=true;VKEY=null;R();drToast('Retomaste tu votación guardada ▶')}
+function drDiscard(){if(!confirm('¿Descartar lo que llevabas y empezar de cero?'))return;const m=drMap();delete m[drId(drKeyNow())];drStore();S.drOn=false;start(S.bt)}
+function drResume(i){const d=drList()[i];if(!d)return;S.lg=d.l;S.err='';start({a:d.a,b:d.b,j:d.j,y:d.y,libre:!!d.free,temp:d.temp,first:d.first})}
+const _start0=start;start=function(b){_start0(b);try{drApply()}catch(e){}};
+const _pv0=pushVote;pushVote=async function(v){await _pv0(v);try{if(S.last===v){const m=drMap(),i=drId(bkey(v));if(m[i]){delete m[i];drStore()}}}catch(e){}};
+const _rm0=refreshMine;refreshMine=async function(){await _rm0.apply(this,arguments);try{S.dr=null;drMap()}catch(e){}};
+const _homeV5=homeV;homeV=function(){let h=_homeV5();try{const ks=S.me?drList():[];if(ks.length){const mk='<div class="sec"><span>Ligas</span>',card=(d,i)=>{const l=L.find(x=>x.i===d.l);let sc=[];try{sc=JSON.parse(d.sc)}catch(e){}const t=sc[0]?sc[0][0].concat(sc[0][1]):[],fl=t.filter(x=>x!=null).length;return `<button class="card nxr" onclick="drResume(${i})">${l?logo(l,40):''}<span style="flex:1;min-width:0;text-align:left"><b style="display:block">${esc(d.a)} vs ${esc(d.b)}</b><span class="mu" style="font-size:12.5px">${d.free?'Batalla libre':esc(l?l.n:'')} · ${fl} de ${t.length} casillas</span></span><span class="nxc">›</span></button>`},blk='<div class="sec"><span>⏸ Votaciones a medias</span><span>'+ks.length+'</span></div><div class="nxl hs">'+ks.map(card).join('')+'</div>';h=h.includes(mk)?h.replace(mk,blk+mk):blk+h}}catch(e){}return h};
 </script>
 </body></html>
 
