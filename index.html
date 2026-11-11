@@ -1652,9 +1652,14 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 .imp{margin-left:auto;padding:6px 11px;flex:0 0 auto}
 .impj{width:100%;padding:10px 12px;margin:2px 0 14px}/* ===== Monedas, tienda, marcos y títulos ===== */
 .coin{display:inline-block;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF6BF,#FACC15 46%,#B45309 100%);box-shadow:inset 0 0 0 2px rgba(120,53,15,.55),0 0 8px rgba(250,204,21,.45);position:relative;flex:0 0 auto;vertical-align:-3px}
-.coin::after{content:'';position:absolute;inset:0;display:grid;place-items:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='2' width='6' height='12' rx='3'/%3E%3Cpath d='M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:10px 10px}
+.coin::after{content:'';position:absolute;inset:0;display:grid;place-items:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2392400E' stroke-width='2.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='9' y='2' width='6' height='12' rx='3'/%3E%3Cpath d='M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:70% 70%}
 .coin.bigc{width:64px;height:64px;animation:cspin 3.2s ease-in-out infinite}
 .coin.bigc::after{font-size:30px}
+@media (min-width:761px){.coinb{height:42px;font-size:15px;padding:0 15px 0 10px;gap:7px}.coinb .coin{width:26px;height:26px}.shmini .coin{width:24px;height:24px}}
+.tsw{width:64px;height:64px;border-radius:50%;box-shadow:0 0 0 4px var(--bd),0 6px 16px rgba(0,0,0,.35)}
+.dzv{position:relative;width:100%;height:92px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,var(--c),var(--c2))}.dzv svg{position:absolute;inset:0;width:100%;height:100%}
+.shpv .plv{width:100%}.shpv .plvh{padding:9px 12px;font-size:13px}.shpv .plvb{padding:10px 12px 4px;gap:4px}.shpv .plvb i{height:20px}.shpv .plvt{padding:4px 12px 10px}.shpv .plvt b{height:20px}
+.shsec{margin:18px 0 10px}.shsec:first-of-type{margin-top:14px}
 @keyframes cspin{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.28)}}
 .coinb{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px 0 9px;border-radius:999px;border:1px solid rgba(250,204,21,.6);background:linear-gradient(180deg,rgba(250,204,21,.24),rgba(250,204,21,.08));color:var(--tx);font:inherit;font-weight:900;font-size:14px;cursor:pointer;transition:transform .15s}
 .coinb:active{transform:scale(.94)}
@@ -1790,7 +1795,7 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow});
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow,sv:(d.shop&&typeof d.shop==='object'&&d.shop.v>=2)?1:0});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -1802,7 +1807,7 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){S.me={uid,...prof};S.admin=false;S.collab=false;S.collabCal=false;try{B.getCollabCal(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabCal){S.collabCal=v;R()}})}catch(e){}try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
+function setMe(uid,prof){{const _mg=shopMigrate(uid,prof);if(_mg)prof={...prof,..._mg}}S.me={uid,...prof};S.admin=false;S.collab=false;S.collabCal=false;try{B.getCollabCal(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabCal){S.collabCal=v;R()}})}catch(e){}try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
@@ -1867,8 +1872,8 @@ function avX(uid,name,cls=''){const f=(S.me&&S.me.uid===uid&&S.me.foto)||(uid&&S
 S.pf=S.pf||{};let _pfQ=new Set(),_pfT=null,_pfAll=0;
 function pfQueue(uid){if(!uid||!S.me||S.pf[uid]!==undefined)return;S.pf[uid]=null;_pfQ.add(uid);clearTimeout(_pfT);_pfT=setTimeout(pfFlush,120)}
 async function pfFlush(){const ids=[..._pfQ];_pfQ=new Set();if(!ids.length||!S.me)return;let ch=false;
- try{if(ids.length>3&&Date.now()-_pfAll>120000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
- await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'',fr=(d&&d.shop&&d.shop.frame)||'';S.pf[id]={foto:f,fr};if(f||fr)ch=true}catch(e){S.pf[id]={foto:''}}}));
+ try{if(ids.length>3&&Date.now()-_pfAll>120000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.v>=2&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
+ await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'',fr=(d&&d.shop&&d.shop.v>=2&&d.shop.frame)||'';S.pf[id]={foto:f,fr};if(f||fr)ch=true}catch(e){S.pf[id]={foto:''}}}));
  if(ch)R()}
 /* Rango visible igual en todos lados: si el rp guardado de alguien es de otra versión, se recalcula con sus votos */
 S.rkc=S.rkc||{};let _rkQ=[],_rkRun=0,_rkT=null;
@@ -1881,24 +1886,42 @@ const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'ca
    Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 50, Internacional 40, España 35 y las demás 30.
    No cuentan Batalla libre ni Modo editor. Lo gastado y lo comprado se guarda en tu perfil (campo «shop»). */
 const COIN_L={ws:50,in:40,es:35};
-const SHOP=[
- {id:'frame_gold',k:'frame',n:'Marco dorado',d:'Borde dorado animado en tu foto. Se ve en tu perfil, en comunidad y con tus amigos.',p:150,fr:'gold'},
+const SHOP_BASE=[
  {id:'frame_purple',k:'frame',n:'Marco morado',d:'Borde morado brillante en tu foto de perfil. Muéstrate con estilo en la comunidad.',p:120,fr:'purple'},
+ {id:'frame_gold',k:'frame',n:'Marco dorado',d:'Borde dorado animado en tu foto. Se ve en tu perfil, en comunidad y con tus amigos.',p:150,fr:'gold'},
  {id:'title_estricto',k:'title',n:'Jurado estricto',d:'Un título que aparece debajo de tu nombre en tu perfil.',p:100,tt:'estricto'},
  {id:'title_duelista',k:'title',n:'Duelista',d:'El título de quien no le teme a ningún rival. Aparece debajo de tu nombre en tu perfil.',p:130,tt:'duelista'},
- {id:'pack_neon',k:'pack',n:'Pack Neón',d:'4 colores neón nuevos para elegir en tu planilla de votación.',p:250},
  {id:'nowm',k:'extra',n:'Imágenes sin marca',d:'Quita el texto «VotaFMS» de las imágenes de jornadas y tablas que compartes.',p:300}];
+/* Precios (en monedas) de colores, tarjetas y planillas: más bonito/animado = más caro. Cambia aquí cualquier precio. */
+const SHOP_PRICE={
+ th_pe:80,th_cl:80,th_ar:100,th_mx:100,th_ca:120,th_es:140,th_in:170,th_ws:200,
+ dz_mic:150,dz_vinyl:170,dz_spray:190,dz_boombox:210,dz_beats:230,dz_cypher:250,dz_fire:300,dz_crown:400,
+ pl_asfalto:60,pl_cemento:80,pl_barrio:100,'pl_nx-cian':120,'pl_nx-rosa':120,'pl_nx-lima':120,'pl_nx-naranja':120,pl_cypher:120,pl_plata:130,pl_neon:140,pl_vinilo:150,pl_graffiti:160,pl_sunset:180,pl_escenario:200,pl_oro:260,pl_ambar:280,pl_cristal:300,pl_aurora:340,pl_rey:450};
+let _shopAll=null;
+function shopAll(){if(_shopAll)return _shopAll;const a=[...SHOP_BASE],P=(id,d)=>SHOP_PRICE[id]||d;
+ THEMES.filter(t=>t.id!=='co').forEach(t=>a.push({id:'th_'+t.id,k:'color',n:t.n,d:'Cambia el color de toda la app. Los demás ven tu tarjeta de perfil con este color.',p:P('th_'+t.id,100),th:t.id}));
+ DESIGNS.forEach(d=>a.push({id:'dz_'+d.id,k:'card',n:d.n,d:'Diseño de rap solo para tu tarjeta de perfil: no cambia los colores de la app.',p:P('dz_'+d.id,200),dz:d.id}));
+ PL_D.forEach(d=>a.push({id:'pl_'+d.id,k:'pack',n:d.n,d:'Diseño para tu planilla de votación. Solo cambia cómo se ve, no tus puntos.',p:P('pl_'+d.id,150),pl:d.id}));
+ _shopAll=a;return a}
+const SHOP={find:f=>shopAll().find(f),filter:f=>shopAll().filter(f)};
+const shopP=id=>{const it=SHOP.find(x=>x.id===id);return it?it.p:0};
+function sv2(u){return !!(u&&((u.shop&&typeof u.shop==='object'&&u.shop.v>=2)||u.sv===1))}
+/* Reset de la tienda (v2): quita colores, diseños, planillas, atuendos, marcos y títulos. linexs17 conserva su saldo actual. */
+function shopPatch(prof){const adm=String((prof&&prof.u)||'').toLowerCase()==='linexs17',old=prof&&prof.shop&&typeof prof.shop==='object'?prof.shop:null;
+ return {shop:{own:[],spent:adm&&old?(old.spent||0):0,v:2},tema:'',dz:'',pl:'',fit:[]}}
+function shopMigrate(uid,prof){if(prof&&prof.shop&&typeof prof.shop==='object'&&prof.shop.v>=2)return null;const pt=shopPatch(prof);try{B.updateUser(uid,pt).catch(()=>{})}catch(e){}return pt}
 const FRAME_IDS=['gold','purple'];
 const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'},duelista:{t:'Duelista',ic:'⚔️'}};
-const SHOP_TABS=[['all','Todo'],['frame','Marcos'],['title','Títulos'],['pack','Planilla'],['extra','Extras']];
+const SHOP_TABS=[['all','Todo'],['frame','Marcos'],['title','Títulos'],['color','Colores'],['card','Tarjetas'],['pack','Planillas'],['extra','Extras']];
+const SHOP_ORD=['frame','title','color','card','pack','extra'],SHOP_NM={frame:'Marcos de perfil',title:'Títulos',color:'Colores de la app',card:'Diseños de tarjeta',pack:'Diseños de planilla',extra:'Extras'};
 const NEON_C=['#22D3EE','#F472B6','#A3E635','#FB923C'];
 function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[],spent:0}}
 function shopOwns(id){const s=shopS();return Array.isArray(s.own)&&s.own.includes(id)}
 function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);return l?(COIN_L[v.l]||30):0}
 function coinsEarned(){const mv=S.myVotes;if(!mv)return S._ce||0;if(S._cev===mv)return S._ce;let t=0;try{splitDups(mv).keep.forEach(v=>{t+=coinOf(v)})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t}
 function coinBal(){return Math.max(0,coinsEarned()-(shopS().spent||0))}
-function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=sh.frame||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
-function ttOf(u){if(!u)return '';const sh=u.shop;const t=(sh&&typeof sh==='object')?(sh.title||''):'';return TITLES[t]?t:''}
+function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=(sh.v>=2&&sh.frame)||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
+function ttOf(u){if(!u)return '';const sh=u.shop;const t=(sh&&typeof sh==='object'&&sh.v>=2)?(sh.title||''):'';return TITLES[t]?t:''}
 function ttH(u){const t=ttOf(u);return t?`<div class="ptt"><span>${TITLES[t].ic}</span>${esc(TITLES[t].t)}</div>`:''}
 function coinCount(from,to){S.coinShow=from;R();const t0=performance.now(),dur=800;
  const step=t=>{const k=Math.min(1,(t-t0)/dur),v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));S.coinShow=k<1?v:null;document.querySelectorAll('.coinv').forEach(e=>{e.textContent=v});if(k<1)requestAnimationFrame(step)};
@@ -1913,7 +1936,7 @@ async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me
  const ok=await shopSave(nx,'No se pudo completar la compra.');S.shopBusy=false;
  if(ok){S.shopDone=true;coinCount(bal,coinBal())}}
 async function shopEq(kind,id){if(!S.me)return;const s=shopS();await shopSave({...s,[kind]:id},'No se pudo guardar el cambio.')}
-async function shopEqNow(){const it=SHOP.find(x=>x.id===S.shopSheet);S.shopSheet=null;S.shopDone=false;if(it&&it.k==='frame')await shopEq('frame',it.fr);else if(it&&it.k==='title')await shopEq('title',it.tt);else if(it&&it.k==='pack'){R();plOpen()}else R()}
+async function shopEqNow(){const it=SHOP.find(x=>x.id===S.shopSheet);S.shopSheet=null;S.shopDone=false;if(it&&it.k==='frame')await shopEq('frame',it.fr);else if(it&&it.k==='title')await shopEq('title',it.tt);else if(it&&it.k==='color')await setTema(it.th);else if(it&&it.k==='card')await setDiseno(it.dz);else if(it&&it.k==='pack')await setPl(it.pl);else R()}
 function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.pf[u.uid].foto;if(!f&&u.foto===undefined)pfQueue(u.uid)}
  const g=fr&&/(^|\s)lg(\s|$)/.test(cls||''),c=`av ${cls||''}${fr&&!g?' fr-'+fr:''}`;
  const inner=f?`<img class="${c}" src="${f}" alt="">`:`<span class="${c}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`;
@@ -1921,13 +1944,17 @@ function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.
 function shopPv(it){
  if(it.k==='frame')return `<div class="shpv">${avFr(S.me,'lg',it.fr)}</div>`;
  if(it.k==='title')return `<div class="shpv"><div class="ptt"><span>${TITLES[it.tt].ic}</span>${esc(TITLES[it.tt].t)}</div></div>`;
- if(it.k==='pack')return `<div class="shpv"><div class="nvd">${NEON_C.map((c,i)=>`<i style="--c:${c};--d:${i*.35}s"></i>`).join('')}</div></div>`;
+ if(it.k==='color'){const t=THEMES.find(x=>x.id===it.th);return `<div class="shpv"><i class="tsw" style="background:linear-gradient(135deg,${t.c},${t.c2})"></i></div>`}
+ if(it.k==='card'){const d=DESIGNS.find(x=>x.id===it.dz);return `<div class="shpv"><div class="dzv" style="--c:${d.c};--c2:${d.c2}">${d.art}</div></div>`}
+ if(it.k==='pack'){const d=PL_D.find(x=>x.id===it.pl);return `<div class="shpv"><div class="${plCls(d)}" style="${plVars(d)}"><div class="plv"><div class="plvh"><span>${esc(d.n)}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div></div>`}
  return `<div class="shpv"><div class="wmv"><span>VotaFMS</span><em>sin marca</em></div></div>`}
 function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
  if(own){
   if(it.k==='frame')return s.frame===it.fr?`<button class="shbuy eq" onclick="shopEq('frame','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('frame','${it.fr}')">Equipar</button>`;
   if(it.k==='title')return s.title===it.tt?`<button class="shbuy eq" onclick="shopEq('title','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('title','${it.tt}')">Equipar</button>`;
-  if(it.k==='pack')return `<button class="shbuy own" onclick="plOpen()">Elegir diseño</button>`;
+  if(it.k==='color')return S.me.tema===it.th?`<button class="shbuy eq" onclick="setTema('co')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="setTema('${it.th}')">Usar</button>`;
+  if(it.k==='card')return S.me.dz===it.dz?`<button class="shbuy eq" onclick="setDiseno('')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="setDiseno('${it.dz}')">Usar</button>`;
+  if(it.k==='pack')return S.me.pl===it.pl?`<button class="shbuy eq" onclick="setPl('')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="setPl('${it.pl}')">Usar</button>`;
   return `<span class="shbuy own">✓ Activo</span>`}
  const ok=bal>=it.p;
  return `${ok?'':`<div class="shpr"><i style="width:${Math.min(100,Math.round(bal/it.p*100))}%"></i></div>`}<button class="shbuy${ok?'':' no'}" onclick="shopOpen('${it.id}')"><i class="coin"></i>${it.p}</button>${ok?'':`<div class="shnote">Te faltan ${it.p-bal}</div>`}`}
@@ -1936,19 +1963,20 @@ function shopCard(it,i){const own=shopOwns(it.id);
 function shopHowH(){const r=[['ws','World Series',50],['in','Internacional',40],['es','España',35]],lg=i=>L.find(x=>x.i===i);
  return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+30</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez. No suman Batalla libre ni Modo editor.</div></div>`}
 function tiendaV(){
- if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos y más.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
- const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0,list=SHOP.filter(x=>tab==='all'||x.k===tab);
+ if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
+ const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
  const tabs=SHOP_TABS.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.shopTab='${k}';R()">${t}</button>`).join('');
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button>
  <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div></div></div>
  <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
  <div class="shtabs">${tabs}</div>
- <div class="shg">${list.map(shopCard).join('')}</div></div>`}
+ ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="sec shsec"><span>${SHOP_NM[k]}</span><span>${ow}/${l.length} · de menor a mayor precio</span></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
+ <button class="pfap" onclick="S.stkOpen=true;S.stkTierSel=null;R()"><span><b>🔥 Atuendos de la mascota</b><em>Se desbloquean con días de racha, no con monedas</em></span><i>›</i></button></div>`}
 function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
 function cgainH(){const g=S.coinGain||0;return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
 function shopSheetH(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it)return '';const bal=coinBal(),done=!!S.shopDone,ok=bal>=it.p;
  const parts=done?Array.from({length:16},(_,i)=>{const a=i/16*Math.PI*2,r=70+(i%3)*28;return `<i style="--x:${Math.round(Math.cos(a)*r)}px;--y:${Math.round(Math.sin(a)*r)}px;animation-delay:${(i%4)*60}ms"></i>`}).join(''):'';
- const act=done?(it.k==='extra'?`<button class="btn" style="margin:0" onclick="shopClose()">Listo</button>`:`<button class="btn" style="margin:0" onclick="shopEqNow()">${it.k==='pack'?'Elegir diseño':'Equipar ahora'}</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Más tarde</button>`)
+ const act=done?(it.k==='extra'?`<button class="btn" style="margin:0" onclick="shopClose()">Listo</button>`:`<button class="btn" style="margin:0" onclick="shopEqNow()">Equipar ahora</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Más tarde</button>`)
   :`<button class="shbuy big${ok?'':' no'}" ${ok?'onclick="shopBuy()"':'disabled'}>${ok?`Comprar por <i class="coin"></i>${it.p}`:`Te faltan ${it.p-bal} monedas`}</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Cancelar</button>`;
  return `<div class="ov" onclick="shopClose()"><div class="sh shsh" onclick="event.stopPropagation()"><div class="cfx">${parts}</div>${shopPv(it)}<div class="shsc"><h3>${done?'¡Es tuyo! 🎉':esc(it.n)}</h3><p>${done?esc(it.n)+' ya está en tu cuenta.':esc(it.d)}</p>${done?'':`<div class="shcalc"><span>Saldo</span><b><i class="coin"></i>${bal}</b><span>→</span><b class="${ok?'':'neg'}"><i class="coin"></i>${bal-it.p}</b></div>`}${act}</div></div></div>`}
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
@@ -2471,11 +2499,11 @@ const PL_D=[
  {id:'cristal',n:'Cristal',c:['#22D3EE','#A5F3FC'],r:14,m:24,h:'linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.04)),linear-gradient(90deg,#0E7490,#06B6D4)',fx:'fx-shine'},
  {id:'aurora',n:'Aurora',c:['#34D399','#A78BFA'],r:16,m:26,h:'linear-gradient(110deg,#059669,#6366F1,#DB2777,#059669)',fx:'fx-aur'},
  {id:'rey',n:'Rey del Freestyle',c:['#FACC15','#C084FC'],r:14,m:28,h:'linear-gradient(110deg,#6D28D9,#FACC15,#6D28D9)',fx:'fx-aur fx-shine fx-crown'},
- {id:'nx-cian',n:'Neón Cian',s:'pack_neon',c:['#22D3EE','#A5F3FC'],r:12,m:22,h:'linear-gradient(90deg,#042F3A,#0E7490)',fx:'fx-glow'},
- {id:'nx-rosa',n:'Neón Rosa',s:'pack_neon',c:['#F472B6','#FBCFE8'],r:12,m:22,h:'linear-gradient(90deg,#500724,#BE185D)',fx:'fx-glow'},
- {id:'nx-lima',n:'Neón Lima',s:'pack_neon',c:['#A3E635','#ECFCCB'],r:12,m:22,h:'linear-gradient(90deg,#1A2E05,#4D7C0F)',hx:'#0b1400',fx:'fx-glow'},
- {id:'nx-naranja',n:'Neón Naranja',s:'pack_neon',c:['#FB923C','#FED7AA'],r:12,m:22,h:'linear-gradient(90deg,#431407,#C2410C)',fx:'fx-glow'}];
-const plOk=(d,i)=>d.s?shopOwns(d.s):plLvl()>=i;
+ {id:'nx-cian',n:'Neón Cian',c:['#22D3EE','#A5F3FC'],r:12,m:22,h:'linear-gradient(90deg,#042F3A,#0E7490)',fx:'fx-glow'},
+ {id:'nx-rosa',n:'Neón Rosa',c:['#F472B6','#FBCFE8'],r:12,m:22,h:'linear-gradient(90deg,#500724,#BE185D)',fx:'fx-glow'},
+ {id:'nx-lima',n:'Neón Lima',c:['#A3E635','#ECFCCB'],r:12,m:22,h:'linear-gradient(90deg,#1A2E05,#4D7C0F)',hx:'#0b1400',fx:'fx-glow'},
+ {id:'nx-naranja',n:'Neón Naranja',c:['#FB923C','#FED7AA'],r:12,m:22,h:'linear-gradient(90deg,#431407,#C2410C)',fx:'fx-glow'}];
+const plOk=(d,i)=>shopOwns('pl_'+d.id);
 const plLvl=()=>{let a=0,b=0;try{if(S.myVotes)a=rankInfo(S.myVotes).lvl}catch(e){}try{if(S.me&&S.me.rp>0)b=rankFromTotal(S.me.rp).lvl}catch(e){}return Math.max(a,b)};
 const plRankName=i=>RANKS[Math.floor(i/3)]+' '+(i%3+1);
 const plVars=d=>`--ac:${d.c[0]};--ac2:${d.c[1]};--plh:${d.h};--plr:${d.r}px;--plm:${d.m}%;--plx:${d.hx||'#fff'};${d.p?`--plp:${d.p};`:''}`;
@@ -2491,10 +2519,10 @@ function plSelD(){const id=S.plSel==null?((S.me&&S.me.pl)||''):S.plSel;const i=i
 function plPvH(){const l=curL(),[a1,a2]=accentOf(l),{d}=plSelD();
  const vars=d?plVars(d):`--ac:${a1};--ac2:${a2};--plh:linear-gradient(90deg,${a1},${a2});--plx:${l.tx||'#fff'}`;
  return `<div class="${d?plCls(d):'pld'}" style="${vars}"><div class="plv"><div class="plvh"><span>${esc(d?d.n:'Base')}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div>`}
-function plFoH(){const lvl=plLvl(),cur=(S.me&&S.me.pl)||'',{i,d}=plSelD(),id=d?d.id:'';
- const ok=!d||plOk(d,i),on=cur===id;
- const st=d?(ok?(on?'En uso':'Desbloqueado'):(d.s?'Se compra en la tienda (Pack Neón)':'Se desbloquea en '+plRankName(i))):(on?'En uso':'Color de tu liga');
- return `<div class="plin"><b>${esc(d?d.n:'Base')}</b><em>${esc(st)}</em></div><button class="btn" style="margin:0"${ok&&!on?` onclick="setPl('${id}')"`:(!ok&&d&&d.s?` onclick="S.plSheet=false;shopTab('pack')"`:' disabled')}>${on?'En uso':(ok?'Usar este diseño':(d&&d.s?'Ir a la tienda':'Bloqueado'))}</button>`}
+function plFoH(){const cur=(S.me&&S.me.pl)||'',{i,d}=plSelD(),id=d?d.id:'';
+ const ok=!d||plOk(d,i),on=cur===id,pr=d?shopP('pl_'+d.id):0;
+ const st=d?(ok?(on?'En uso':'Tuyo'):'Se compra en la tienda · '+pr+' monedas'):(on?'En uso':'Color de tu liga');
+ return `<div class="plin"><b>${esc(d?d.n:'Base')}</b><em>${esc(st)}</em></div><button class="btn" style="margin:0"${ok&&!on?` onclick="setPl('${id}')"`:(!ok&&d?` onclick="S.plSheet=false;shopTab('pack')"`:' disabled')}>${on?'En uso':(ok?'Usar este diseño':'Ir a la tienda · 🪙 '+pr)}</button>`}
 function plPick(id){S.plSel=id;const pv=document.getElementById('plpv'),fo=document.getElementById('plfo');if(!pv||!fo)return R();
  pv.innerHTML=plPvH();fo.innerHTML=plFoH();
  document.querySelectorAll('.pls').forEach(e=>e.classList.toggle('sel',e.dataset.id===id))}
@@ -2505,7 +2533,7 @@ function plSheetH(){const l=curL(),[a1,a2]=accentOf(l),lvl=plLvl(),cur=(S.me&&S.
  return `<div class="ov" onclick="S.plSheet=false;R()"><div class="sh" onclick="event.stopPropagation()"><div class="plh2"><b>Diseño de planilla</b><button class="plx" onclick="S.plSheet=false;R()" aria-label="Cerrar">\u2715</button></div><div id="plpv">${plPvH()}</div><div class="plsw">${base}${PL_D.map(dot).join('')}</div><div id="plfo">${plFoH()}</div></div></div>`}
 function plQuickH(){return S.me?`<button class="tbtn plq" onclick="plOpen()" aria-label="Diseño de planilla">🎨</button>`:''}
 async function setPl(id){if(!S.me)return;
- if(id){const i=PL_D.findIndex(x=>x.id===id);if(i<0)return;if(!plOk(PL_D[i],i)){try{achFail(PL_D[i].s?'Cómpralo en la tienda.':'Se desbloquea al llegar a '+plRankName(i)+'.')}catch(e){}return}}
+ if(id){const i=PL_D.findIndex(x=>x.id===id);if(i<0)return;if(!plOk(PL_D[i],i)){S.plSheet=false;shopTab('pack');return}}
  const prev=S.me.pl||'';S.me={...S.me,pl:id};S.plSheet=false;R();
  try{await B.updateUser(S.me.uid,{pl:id})}catch(e){S.me={...S.me,pl:prev};R();try{achFail('No se pudo guardar el diseño.')}catch(_){}}}
 function roundV(){
@@ -2785,8 +2813,8 @@ function perfilV(){
  <label class="f" style="margin-top:12px">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
  <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
  ${nameCardH()}
- <button class="pfap" onclick="go('tienda')"><span><b>🪙 Marcos y títulos</b><em>Equipa lo que compraste en la tienda</em></span><i>›</i></button>
- <button class="pfap" onclick="S.pfAp=!S.pfAp;R()"><span><b>🎨 Apariencia</b><em>Colores de la app y diseño de tu tarjeta</em></span><i>${S.pfAp?'▴':'▾'}</i></button>
+ <button class="pfap" onclick="go('tienda')"><span><b>🪙 Tienda</b><em>Colores, diseños, planillas, marcos y títulos con monedas</em></span><i>›</i></button>
+ <button class="pfap" onclick="S.pfAp=!S.pfAp;R()"><span><b>🎨 Apariencia</b><em>Equipa tus colores y diseños de tarjeta</em></span><i>${S.pfAp?'▴':'▾'}</i></button>
  ${S.pfAp?themeCardH()+designCardH():''}
  <button class="pfap" onclick="S.pfVz=!S.pfVz;R()"><span><b>♿ Accesibilidad</b><em>Lector de voz para baja visión</em></span><i>${S.pfVz?'▴':'▾'}</i></button>
  ${S.pfVz?vzPanelH():''}`}
@@ -3051,6 +3079,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-10T20:00:00-04:00'),text:'Gran cambio: reset de la tienda. Ahora todos los colores de la app, diseños de tarjeta de perfil, diseños de planilla, marcos y títulos se compran en la tienda con monedas (están ordenados por categoría, del más barato al más caro). Todos empezamos de cero con la apariencia base y a los usuarios se les devolvieron sus monedas gastadas. Los atuendos de la mascota ya no dependen de logros: se desbloquean según tus días de racha (de 3 hasta 100 días). Los logros y los rangos se mantienen, pero por ahora no desbloquean nada.'},
  {ts:Date.parse('2026-11-10T14:00:00-04:00'),text:'Nuevo: monedas y tienda. Ahora ganas monedas al votar batallas de liga (World Series 50, Internacional 40, España 35 y las demás 30; no cuentan Batalla libre ni Modo editor). Tus monedas salen arriba: tócalas para entrar a la tienda y canjearlas por el Marco dorado de perfil (animado), el título «Jurado estricto» debajo de tu nombre, el Pack Neón de colores para la planilla y las imágenes sin marca.'},
  {ts:Date.parse('2026-11-10T10:30:00-04:00'),text:'MC IA ahora crea imágenes: toca «Crear imagen» en MC IA y describe lo que quieres, o escríbele «dibuja…» / «genera una imagen de…». Cada usuario puede crear hasta 3 imágenes por día; el contador te muestra cuántas te quedan. Las imágenes se pueden guardar con el botón «Guardar».'},
  {ts:Date.parse('2026-11-10T02:00:00-04:00'),text:'Planilla de votación: ahora es más grande y los números se ven mejor. Además, en la planilla antigua puedes ocultar el puntaje total de cada ronda por separado (por ejemplo «Ocultar Easy Mode»): no verás lo que sacó cada MC en esa ronda, y el total general sigue visible. «Ocultar totales» ahora oculta solo la suma de todas las rondas, sin tocar los puntajes de cada ronda. Y con el teclado, si una casilla está sin votar y presionas Espacio, se pone automáticamente en 0,5.'},
@@ -3241,7 +3270,7 @@ function ranksSheet(){const r=rankInfo(S.myVotes||[]);
  const tiers=RANKS.map((nm,t)=>{
   const first=t*3===0?0:RANK_TH[t*3-1],last=t===4?null:RANK_TH[t*3+2];
   const cur=r.t===t,done=r.t>t;let got=0;
-  const lv=[0,1,2].map(k=>{const i=t*3+k,need=i===0?0:RANK_TH[i-1],ok=r.n>=need,now=r.lvl===i,d=(typeof PL_D!=='undefined')?PL_D[i]:null;if(ok)got++;
+  const lv=[0,1,2].map(k=>{const i=t*3+k,need=i===0?0:RANK_TH[i-1],ok=r.n>=need,now=r.lvl===i,d=null;if(ok)got++;
    return `<div class="rkx-l${now?' now':''}${ok?' ok':''}"><i class="rkx-d" style="${d&&ok?'background:'+d.h:''}">${ok?(now?'★':'✓'):'🔒'}</i><b>Nivel ${k+1}</b><small>${fm(need)} pts</small>${d?`<span>${esc(d.n)}</span>`:''}</div>`}).join('');
   return `<div class="rkx-t${cur?' cur':''}${r.t<t?' lock':''}" style="--tc:${rcol(t)};--i:${t};--g:${Math.max(got-1,0)*33.4}%"><div class="rkx-th">${rankBadge(t,46)}<div class="rkx-tn"><b>${nm}</b><span>${last===null?'Desde '+fm(first)+' pts':fm(first)+' – '+fm(last)+' pts'}</span></div><em>${done?'✓ Completado':cur?'● En curso':'🔒'}</em></div><div class="rkx-lv">${lv}</div></div>`}).join('');
  const lvl=r.lvl+1;
@@ -3262,31 +3291,27 @@ function adminV(){
  if(!isAdmin())return `<div class="card">No tienes acceso a este panel.</div><button class="btn s" onclick="go('perfil')">Volver</button>`;
  const list=S.adm;
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button><h1 class="pg">Panel de administrador</h1>
- <div class="sec"><span>Monedas</span></div>
- <div class="card"><div class="mu" style="margin:0 0 10px;font-size:13px">Los usuarios nuevos empiezan con 0 monedas y las ganan votando batallas de liga. Con este botón puedes resetear el contador de monedas gastadas de todos los usuarios (excepto linexs17) a 0, para que partan de cero.</div><button class="btn s" onclick="adminResetCoins()" style="margin-bottom:6px">🎤 Resetear monedas de todos los usuarios</button>${S.admCoinMsg?`<div class="mu" style="font-size:13px;margin-top:4px">${esc(S.admCoinMsg)}</div>`:''}</div>
+ <div class="sec"><span>Monedas y tienda</span></div>
+<div class="card"><div class="mu" style="margin:0 0 10px;font-size:13px">Reset de la tienda: quita a todos los usuarios sus colores de app, diseños de tarjeta y planilla, atuendos, marcos y títulos. A los usuarios normales se les devuelven sus monedas gastadas; linexs17 conserva exactamente el saldo que tiene. Los usuarios que ya entraron a la app se resetean solos al iniciar sesión; este botón resetea a todos los demás de una vez.</div><button class="btn s" onclick="adminResetShop()" style="margin-bottom:6px">🎤 Resetear tienda de todos los usuarios</button>${S.admCoinMsg?`<div class="mu" style="font-size:13px;margin-top:4px">${esc(S.admCoinMsg)}</div>`:''}</div>
  <div class="sec"><span>Comentarios de usuarios</span><span>${list?list.length:'…'}</span></div>
  ${list===null?'<div class="mu" style="text-align:center;padding:20px">Cargando…</div>':list.length?list.map(c=>`<div class="card"><div class="row" style="margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(c.u||'anónimo')}</b><span class="mu">${esc(c.d||'')}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(c.t||'')}</div><button class="btn s sm" style="color:#FF6B7A;margin-top:12px" onclick="adminDel('${esc(c.id)}')">Eliminar</button></div>`).join(''):'<div class="card mu" style="text-align:center">Aún no hay comentarios.</div>'}
  <button class="btn s" onclick="go('admin')">Actualizar</button>`}
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
 
-/* ===== Admin: resetear monedas de usuarios no-admin ===== */
-async function adminResetCoins(){
+/* ===== Admin: reset de tienda de todos los usuarios ===== */
+async function adminResetShop(){
  if(!isAdmin())return;
- if(!confirm('¿Resetear las monedas gastadas de todos los usuarios (excepto linexs17) a 0? Sus compras quedarán sin pagar pero mantendrán sus ítems.'))return;
+ if(!confirm('¿Resetear la tienda de TODOS los usuarios? Se quitan colores, diseños de tarjeta y planilla, atuendos, marcos y títulos. Los usuarios normales recuperan sus monedas gastadas y linexs17 conserva su saldo actual.'))return;
  S.admCoinMsg='Cargando usuarios…';R();
  try{
   const us=await B.listUsers();
-  const toReset=us.filter(u=>u.u&&u.u.toLowerCase()!=='linexs17'&&u.shop&&typeof u.shop==='object'&&((u.shop.spent||0)>0));
-  S.admCoinMsg=`Reseteando ${toReset.length} usuarios…`;R();
+  const todo=us.filter(u=>u.uid&&!(u.shop&&typeof u.shop==='object'&&u.shop.v>=2));
+  S.admCoinMsg=`Reseteando ${todo.length} usuarios…`;R();
   let done=0,fail=0;
-  for(const u of toReset){
-   try{
-    const nx={...u.shop,spent:0};
-    await B.updateUser(u.uid,{shop:nx});
-    done++;
-   }catch(e){fail++}
+  for(const u of todo){
+   try{await B.updateUser(u.uid,shopPatch(u));done++}catch(e){fail++}
   }
-  S.admCoinMsg=`✓ Listo. Reseteados: ${done}${fail?' · Fallaron: '+fail:''}.`;
+  S.admCoinMsg=`✓ Listo. Reseteados: ${done}${fail?' · Fallaron: '+fail:''}${todo.length?'':' (todos ya estaban reseteados)'}.`;
  }catch(e){S.admCoinMsg='Error: '+(e&&e.message||'desconocido');}
  R()}
 
@@ -3439,7 +3464,7 @@ function achSheet(){
  const left=ACH_N-n;
  return `<div class="ov" onclick="closeAch()"><div class="sh ach-sh" onclick="event.stopPropagation()">
  <div class="axh"><div class="ach-ring"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="8"/><circle cx="42" cy="42" r="36" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*n/ACH_N} ${C}" transform="rotate(-90 42 42)"/></svg><b>${n}<small>de ${ACH_N}</small></b></div>
- <div class="axht"><h2>Tus logros</h2><p>${left>0?`Te faltan <b>${left}</b> para completarlos todos.`:'¡Los completaste todos!'}</p><span>Cada logro desbloquea colores, diseños y atuendos.</span></div></div>
+ <div class="axht"><h2>Tus logros</h2><p>${left>0?`Te faltan <b>${left}</b> para completarlos todos.`:'¡Los completaste todos!'}</p><span>Por ahora los logros son solo para coleccionar.</span></div></div>
  ${S.me?'':`<div class="card" style="margin:12px 0 0;text-align:center"><b>Crea tu cuenta</b><div class="mu" style="margin:4px 0 10px">Inicia sesión para ir guardando tus logros.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.achOpen=false;openAuth('create')">Crear cuenta</button></div>`}
  ${colorTeaser(n)}<div class="ach-seg"><button class="${tab==='all'?'on':''}" onclick="S.achTab='all';R()">Todos ${ACH_N}</button><button class="${tab==='got'?'on':''}" onclick="S.achTab='got';R()">Logrados ${n}</button><button class="${tab==='lock'?'on':''}" onclick="S.achTab='lock';R()">Pendientes ${left}</button></div>
  ${nearH}${sections}${empty}
@@ -3510,12 +3535,13 @@ const THEMES=[
  {id:'in',n:'FMS Internacional',c:'#111113',c2:'#52525B',ac:'#FACC15',ac2:'#FEF08A',tint:'#9CA3AF',need:19},
  {id:'ws',n:'FMS World Series',c:'#7C3AED',c2:'#C084FC',ac:'#8B5CF6',ac2:'#C4B5FD',need:24}
 ];
-const themeOf=u=>THEMES.find(t=>t.id===(u&&u.tema))||THEMES[0];
+const themeOf=u=>{const t=u&&sv2(u)&&THEMES.find(x=>x.id===u.tema);if(!t)return THEMES[0];if(S.me&&u.uid&&u.uid===S.me.uid&&!themeOk(t))return THEMES[0];return t};
+const themeOk=t=>t.id==='co'||shopOwns('th_'+t.id);
 const _hx=h=>{h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.substr(i,2),16))};
 const _mix=(a,b,p)=>{const A=_hx(a),B=_hx(b);return '#'+A.map((v,i)=>Math.round(v*p+B[i]*(1-p)).toString(16).padStart(2,'0')).join('')};
 let _THM=null;
 function applyTheme(){
- const id=S.me&&S.me.tema&&THEMES.some(t=>t.id===S.me.tema)?S.me.tema:'co';
+ const id=S.me?themeOf(S.me).id:'co';
  if(id===_THM)return;_THM=id;
  let el=document.getElementById('thm');if(!el){el=document.createElement('style');el.id='thm';document.head.appendChild(el)}
  if(id==='co'){el.textContent='';return}
@@ -3523,14 +3549,13 @@ function applyTheme(){
  const dark=`--bg:${_mix(tn,k,.04)};--bg2:${_mix(tn,k,.07)};--cd:${_mix(tn,k,.10)};--cd2:${_mix(tn,k,.14)};--navbg:${_mix(tn,k,.04)};`;
  el.textContent=`:root{--ac:${t.ac};--ac2:${t.ac2};--acr:${r};--acr2:${r2};--bd:rgba(${r},.16);${dark}}`}
 const themeStyle=u=>{const t=themeOf(u);return `--c:${t.c};--c2:${t.c2}`};
-function colorTeaser(n){const nx=THEMES.find(t=>t.need>n);
- return `<div class="thm-tz">🎨 ${nx?`Próximo color de la app: <b>${esc(nx.n)}</b> · te faltan <b>${nx.need-n}</b> logro${nx.need-n===1?'':'s'}`:'Tienes todos los colores de la app disponibles'}</div>`}
-function themeCardH(){if(!S.me)return '';const n=achCount(),cur=themeOf(S.me).id;
- return `<div class="card"><b>Color de la app</b><div class="mu" style="margin:4px 0 12px">Cambia el color de toda la app. Se desbloquean con logros (tienes ${n}). Los demás verán tu tarjeta de perfil con este color.</div><div class="thm-g">${THEMES.map(t=>{const ok=n>=t.need;return `<button class="thm${cur===t.id?' on':''}${ok?'':' lk'}" onclick="setTema('${t.id}')" aria-label="${esc(t.n)}"><i style="background:linear-gradient(135deg,${t.c},${t.c2})">${ok?(cur===t.id?'✓':''):'🔒'}</i><span>${esc(t.n.replace('FMS ',''))}</span><em>${ok?(t.need?'Desbloqueado':'Base'):t.need+' logros'}</em></button>`}).join('')}</div></div>`}
+function colorTeaser(n){return ''}
+function themeCardH(){if(!S.me)return '';const cur=themeOf(S.me).id;
+ return `<div class="card"><b>Color de la app</b><div class="mu" style="margin:4px 0 12px">Cambia el color de toda la app. Los colores se compran en la tienda con monedas. Los demás verán tu tarjeta de perfil con este color.</div><div class="thm-g">${THEMES.map(t=>{const ok=themeOk(t);return `<button class="thm${cur===t.id?' on':''}${ok?'':' lk'}" onclick="setTema('${t.id}')" aria-label="${esc(t.n)}"><i style="background:linear-gradient(135deg,${t.c},${t.c2})">${ok?(cur===t.id?'✓':''):'🔒'}</i><span>${esc(t.n.replace('FMS ',''))}</span><em>${ok?(t.id==='co'?'Base':'Tuyo'):'🪙 '+shopP('th_'+t.id)}</em></button>`}).join('')}</div></div>`}
 async function setTema(id){const t=THEMES.find(x=>x.id===id);if(!t||!S.me)return;
- const n=achCount();if(n<t.need){achFail('Te faltan '+(t.need-n)+' logros para desbloquear '+t.n+'.');return}
- const prev=S.me.tema;S.me={...S.me,tema:id};R();
- try{await B.updateUser(S.me.uid,{tema:id});syncAch()}catch(e){S.me={...S.me,tema:prev};R();achFail('No se pudo guardar el color.')}}
+ if(!themeOk(t)){shopTab('color');return}
+ const prev=S.me.tema;S.me={...S.me,tema:id==='co'?'':id};R();
+ try{await B.updateUser(S.me.uid,{tema:id==='co'?'':id});syncAch()}catch(e){S.me={...S.me,tema:prev};R();achFail('No se pudo guardar el color.')}}
 
 /* ===== Diseños de tarjeta de rap (solo cambian la tarjeta de perfil, no la app) ===== */
 const _sv=b=>`<svg viewBox="0 0 300 130" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${b}</svg>`;
@@ -3544,13 +3569,13 @@ const DESIGNS=[
  {id:'fire',n:'Fuego del Freestyle',c:'#F97316',c2:'#7F1D1D',need:25,art:_sv(`<path d="M246 6c8 26 38 38 36 74-1 26-18 46-40 46-24 0-42-16-40-40 1-22 18-30 22-48 6 10 10 4 22-32z" fill="#FDBA74" opacity=".9"/><path d="M248 46c6 18 24 26 22 50-1 16-12 26-24 26-14 0-24-10-22-26 1-14 12-20 14-34 6 8 8 2 10-16z" fill="#FDE047"/><path d="M200 70c5 12 16 16 14 34-1 10-8 16-16 16-9 0-15-7-14-17 1-10 8-14 9-24 4 5 6 1 7-9z" fill="#FB923C" opacity=".85"/><path d="M290 80c4 8 10 12 8 24-1 8-6 12-12 12" fill="none" stroke="#FDBA74" stroke-width="4" stroke-linecap="round" opacity=".6"/>`)},
  {id:'crown',n:'Rey del Freestyle',c:'#FACC15',c2:'#92400E',need:30,art:_sv(`<g fill="#FEF3C7" opacity=".8"><path d="M170 30l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><path d="M176 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M138 62l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g><path d="M196 100l-6-56 32 24 24-40 24 40 32-24-6 56z" fill="#FEF08A" stroke="#FDE047" stroke-width="3" stroke-linejoin="round"/><rect x="196" y="100" width="100" height="14" rx="5" fill="#FDE047" stroke="#CA8A04" stroke-width="2"/><circle cx="190" cy="44" r="7" fill="#EF4444"/><circle cx="246" cy="26" r="7" fill="#3B82F6"/><circle cx="302" cy="44" r="7" fill="#22C55E"/><circle cx="246" cy="86" r="6" fill="#EF4444"/>`)}
 ];
-const dzOf=u=>{const id=u&&u.dz;return id?DESIGNS.find(d=>d.id===id)||null:null};
-function designCardH(){if(!S.me)return '';const n=achCount(),cur=S.me.dz||'';
- const tile=d=>{const ok=n>=d.need,on=cur===d.id;return `<button class="dzt${on?' on':''}" onclick="setDiseno('${d.id}')" aria-label="${esc(d.n)}"><div class="dzp" style="--c:${d.c};--c2:${d.c2}">${d.art}${ok?(on?'<u>✓</u>':''):'<u>🔒</u>'}</div><span>${esc(d.n)}</span><em>${ok?(on?'En uso':'Desbloqueado'):d.need+' logros'}</em></button>`};
+const dzOf=u=>{const id=u&&sv2(u)&&u.dz;const d=id?DESIGNS.find(x=>x.id===id)||null:null;if(d&&S.me&&u.uid&&u.uid===S.me.uid&&!shopOwns('dz_'+d.id))return null;return d};
+function designCardH(){if(!S.me)return '';const cur=S.me.dz||'';
+ const tile=d=>{const ok=shopOwns('dz_'+d.id),on=cur===d.id;return `<button class="dzt${on?' on':''}" onclick="setDiseno('${d.id}')" aria-label="${esc(d.n)}"><div class="dzp" style="--c:${d.c};--c2:${d.c2}">${d.art}${ok?(on?'<u>✓</u>':''):'<u>🔒</u>'}</div><span>${esc(d.n)}</span><em>${ok?(on?'En uso':'Tuyo'):'🪙 '+shopP('dz_'+d.id)}</em></button>`};
  const none=`<button class="dzt${cur?'':' on'}" onclick="setDiseno('')"><div class="dzp" style="--c:var(--ac);--c2:var(--ac2)">${cur?'':'<u>✓</u>'}</div><span>Sin diseño</span><em>Color de tu app</em></button>`;
- return `<div class="card"><b>Diseño de tarjeta</b><div class="mu" style="margin:4px 0 12px">Diseños de rap solo para tu tarjeta de perfil: no cambian los colores de la app. Se desbloquean con logros (tienes ${n}).</div><div class="dz-g">${none}${DESIGNS.map(tile).join('')}</div></div>`}
+ return `<div class="card"><b>Diseño de tarjeta</b><div class="mu" style="margin:4px 0 12px">Diseños de rap solo para tu tarjeta de perfil: no cambian los colores de la app. Se compran en la tienda con monedas.</div><div class="dz-g">${none}${DESIGNS.map(tile).join('')}</div></div>`}
 async function setDiseno(id){if(!S.me)return;const d=id?DESIGNS.find(x=>x.id===id):null;if(id&&!d)return;
- const n=achCount();if(d&&n<d.need){achFail('Te faltan '+(d.need-n)+' logros para desbloquear '+d.n+'.');return}
+ if(d&&!shopOwns('dz_'+d.id)){shopTab('card');return}
  const prev=S.me.dz||'';S.me={...S.me,dz:id};R();
  try{await B.updateUser(S.me.uid,{dz:id})}catch(e){S.me={...S.me,dz:prev};R();achFail('No se pudo guardar el diseño.')}}
 
@@ -3641,25 +3666,25 @@ const STK_T=[
  {min:60,n:'Llama verde',f:['#22C55E','#BBF7D0'],s:1.24},
  {min:100,n:'Llama dorada',f:['#FACC15','#FFFFFF'],s:1.32}];
 function stkTier(n){let i=0;STK_T.forEach((t,k)=>{if(n>=t.min)i=k});return {...STK_T[i],i,next:STK_T[i+1]||null}}
-/* ===== Atuendos de la mascota (se desbloquean con logros: cambia "need" para pedir más o menos) =====
+/* ===== Atuendos de la mascota (se desbloquean con días de racha: cambia "need" para pedir más o menos días) =====
    slot: solo puede haber un atuendo por zona (head = cabeza, eyes = ojos, ears = orejas).
    Para añadir uno nuevo: agrégalo aquí y dibújalo en STK_ART con el mismo id. */
 const OUTFITS=[
- {id:'gorra',n:'Gorra Roja',ic:'🧢',slot:'head',need:2},
- {id:'gafas',n:'Gafas de Sol',ic:'🕶️',slot:'eyes',need:4},
+ {id:'gorra',n:'Gorra Roja',ic:'🧢',slot:'head',need:3},
+ {id:'gafas',n:'Gafas de Sol',ic:'🕶️',slot:'eyes',need:5},
  {id:'audi',n:'Audífonos',ic:'🎧',slot:'ears',need:7},
  {id:'corona',n:'Corona de Oro',ic:'👑',slot:'head',need:10},
- {id:'cadena',n:'Cadena de Oro',ic:'🔗',slot:'neck',need:12},
- {id:'neon',n:'Lentes Neón',ic:'🥽',slot:'eyes',need:14},
- {id:'bandana',n:'Bandana de Calle',ic:'🏴',slot:'head',need:16},
- {id:'halo',n:'Halo Celestial',ic:'😇',slot:'head',need:18},
- {id:'capa',n:'Capa de Campeón',ic:'🦸',slot:'back',need:21},
- {id:'audioro',n:'Audífonos de Oro',ic:'🎶',slot:'ears',need:23},
- {id:'aura',n:'Aura de Leyenda',ic:'✨',slot:'aura',need:26},
- {id:'alas',n:'Alas de Llama',ic:'🪽',slot:'back',need:28},
- {id:'diamante',n:'Collar de Diamante',ic:'💎',slot:'neck',need:31},
- {id:'cristal',n:'Corona de Cristal',ic:'🔮',slot:'head',need:35},
- {id:'arco',n:'Aura Arcoíris',ic:'🌈',slot:'aura',need:40}];
+ {id:'cadena',n:'Cadena de Oro',ic:'🔗',slot:'neck',need:14},
+ {id:'neon',n:'Lentes Neón',ic:'🥽',slot:'eyes',need:17},
+ {id:'bandana',n:'Bandana de Calle',ic:'🏴',slot:'head',need:21},
+ {id:'halo',n:'Halo Celestial',ic:'😇',slot:'head',need:25},
+ {id:'capa',n:'Capa de Campeón',ic:'🦸',slot:'back',need:30},
+ {id:'audioro',n:'Audífonos de Oro',ic:'🎶',slot:'ears',need:35},
+ {id:'aura',n:'Aura de Leyenda',ic:'✨',slot:'aura',need:40},
+ {id:'alas',n:'Alas de Llama',ic:'🪽',slot:'back',need:50},
+ {id:'diamante',n:'Collar de Diamante',ic:'💎',slot:'neck',need:60},
+ {id:'cristal',n:'Corona de Cristal',ic:'🔮',slot:'head',need:75},
+ {id:'arco',n:'Aura Arcoíris',ic:'🌈',slot:'aura',need:100}];
 const STK_ART={
  gorra:`<path d="M36 76C36 50 52 44 70 44S104 50 104 76Z" fill="#EF4444" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><path d="M70 44C62 56 62 66 64 76" fill="none" stroke="#7F1D1D" stroke-opacity=".35" stroke-width="2"/><path d="M90 74Q114 69 120 80Q104 85 86 78Z" fill="#B91C1C" stroke="#7F1D1D" stroke-width="2.5" stroke-linejoin="round"/><circle cx="70" cy="44" r="3.5" fill="#FCA5A5" stroke="#7F1D1D" stroke-width="2"/><path d="M48 58Q56 50 66 49" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>`,
  gafas:`<path d="M45 82L36 79M95 82L104 79" stroke="#111827" stroke-width="3" stroke-linecap="round"/><rect x="44" y="75" width="23" height="17" rx="7" fill="#111827"/><rect x="73" y="75" width="23" height="17" rx="7" fill="#111827"/><path d="M67 82h6" stroke="#111827" stroke-width="3.2"/><path d="M48 79l7-1M77 79l7-1" stroke="#fff" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/>`,
@@ -3694,13 +3719,14 @@ function stkMini(){
  const sub=!S.me?'Crea tu cuenta y enciende tu racha':S.stkSaved?'¡Usaste tu oportunidad! Tu racha sigue viva':S.stkLost?'Perdiste tu racha de '+S.stkLost+' días. ¡Empieza otra!':st.ch?'🛡️ Oportunidad lista':'🛡️ Oportunidad a los '+nxt+' días';
  return `<button class="card stkc${on?'':' off'}" style="--f1:${f[0]};--f2:${f[1]}" onclick="S.stkOpen=true;S.stkTierSel=null;R()" aria-label="Racha diaria: ${n} días"><div class="mm">${stkSvg(n,on,S.me&&S.me.fit)}</div><div style="flex:1;min-width:0"><div class="stkc-n"><b>${n}</b><span>${n===1?'día':'días'} de racha</span></div><div class="stk-d" style="justify-content:flex-start;margin:6px 0 5px">${dots}</div><div class="stkc-s">${sub}</div></div>${ico('back',18).replace('<svg','<svg style="transform:rotate(180deg);color:var(--mu);flex:0 0 auto"')}</button>`}
 const FIT_Z=[{k:'head',n:'Cabeza',ic:'👑'},{k:'eyes',n:'Ojos',ic:'🕶️'},{k:'ears',n:'Orejas',ic:'🎧'},{k:'neck',n:'Cuello',ic:'🔗'},{k:'back',n:'Espalda',ic:'🦸'},{k:'aura',n:'Aura',ic:'✨'}];
-function stkFitH(){const nA=achCount(),cur=Array.isArray(S.me&&S.me.fit)?S.me.fit:[],z=S.fitZone||'head',un=OUTFITS.filter(o=>nA>=o.need).length,nx=OUTFITS.filter(o=>nA<o.need).sort((a,b)=>a.need-b.need)[0];
+function stkDays(){const st=(S.me&&S.me.st)||{};return Math.max(st.n||0,st.best||0)}
+function stkFitH(){const nA=stkDays(),cur=Array.isArray(S.me&&S.me.fit)?S.me.fit:[],z=S.fitZone||'head',un=OUTFITS.filter(o=>nA>=o.need).length,nx=OUTFITS.filter(o=>nA<o.need).sort((a,b)=>a.need-b.need)[0];
  const chips=FIT_Z.map(q=>{const w=OUTFITS.some(o=>o.slot===q.k&&cur.includes(o.id));return `<button class="fz${q.k===z?' on':''}" onclick="S.fitZone='${q.k}';R()"><i>${q.ic}</i>${q.n}${w?'<u></u>':''}</button>`}).join('');
- const tile=o=>{const ok=nA>=o.need,on=cur.includes(o.id);return `<button class="fi${on?' on':''}${ok?'':' lk'}" onclick="stkToggleFit('${o.id}')" aria-label="${esc(o.n)}"><i>${ok?o.ic:'🔒'}</i><b>${esc(o.n)}</b><em>${ok?(on?'✓ Puesto':'Poner'):o.need+' logros'}</em></button>`};
+ const tile=o=>{const ok=nA>=o.need,on=cur.includes(o.id);return `<button class="fi${on?' on':''}${ok?'':' lk'}" onclick="stkToggleFit('${o.id}')" aria-label="${esc(o.n)}"><i>${ok?o.ic:'🔒'}</i><b>${esc(o.n)}</b><em>${ok?(on?'✓ Puesto':'Poner'):o.need+' días'}</em></button>`};
  const eq=cur.map(id=>OUTFITS.find(o=>o.id===id)).filter(Boolean);
- return `<div class="sec"><span>Atuendos de tu mascota</span><span>${un}/${OUTFITS.length}</span></div><div class="card" style="--f1:${stkTier((S.me.st&&S.me.st.n)||0).f[0]}"><div class="fe">${eq.length?'<span>Puesto:</span>'+eq.map(o=>`<b>${o.ic} ${esc(o.n)}</b>`).join(''):'<span>Aún no llevas ningún atuendo</span>'}</div><div class="fzs">${chips}</div><div class="fg3">${OUTFITS.filter(o=>o.slot===z).map(tile).join('')}</div><div class="fh">Tienes ${nA} ${nA===1?'logro':'logros'} · uno por zona${nx?`<br>Siguiente: ${nx.ic} ${esc(nx.n)} (te faltan ${nx.need-nA})`:''}</div></div>`}
+ return `<div class="sec"><span>Atuendos de tu mascota</span><span>${un}/${OUTFITS.length}</span></div><div class="card" style="--f1:${stkTier((S.me.st&&S.me.st.n)||0).f[0]}"><div class="fe">${eq.length?'<span>Puesto:</span>'+eq.map(o=>`<b>${o.ic} ${esc(o.n)}</b>`).join(''):'<span>Aún no llevas ningún atuendo</span>'}</div><div class="fzs">${chips}</div><div class="fg3">${OUTFITS.filter(o=>o.slot===z).map(tile).join('')}</div><div class="fh">Tu mejor racha: ${nA} ${nA===1?'día':'días'} · uno por zona${nx?`<br>Siguiente: ${nx.ic} ${esc(nx.n)} (te faltan ${nx.need-nA} ${nx.need-nA===1?'día':'días'} de racha)`:''}</div></div>`}
 async function stkToggleFit(id){if(!S.me)return;const o=OUTFITS.find(x=>x.id===id);if(!o)return;
- const n=achCount();if(n<o.need){achFail('Te faltan '+(o.need-n)+' logros para desbloquear '+o.n+'.');return}
+ const n=stkDays();if(n<o.need){achFail('Te faltan '+(o.need-n)+' días de racha para desbloquear '+o.n+'.');return}
  const prev=Array.isArray(S.me.fit)?S.me.fit:[];
  const nx=prev.includes(id)?prev.filter(x=>x!==id):[...prev.filter(x=>{const q=OUTFITS.find(y=>y.id===x);return q&&q.slot!==o.slot}),id];
  S.me={...S.me,fit:nx};R();
@@ -3721,7 +3747,7 @@ async function stkToggleShow(){if(!S.me)return;const prev=!!S.me.stkShow,nx=!pre
 function pMascotH(u){if(!u||!u.stkShow)return '';const st=u.st||{},n=st.n||0;if(!(n>0))return '';
  let alive=false;try{const g=st.last?dgap(st.last,dkey()):9;alive=g<=1||(g===2&&(st.ch||0)>0)}catch(e){}
  const f=stkTier(n).f;
- return `<div class="pmas" style="--f1:${f[0]};--f2:${f[1]}">${stkSvg(n,alive,u.fit)}<span class="pmn">${alive?'🔥 '+n:'💤 '+n}</span></div>`}
+ return `<div class="pmas" style="--f1:${f[0]};--f2:${f[1]}">${stkSvg(n,alive,sv2(u)?u.fit:[])}<span class="pmn">${alive?'🔥 '+n:'💤 '+n}</span></div>`}
 function stkSheet(){return `<div class="ov" onclick="S.stkOpen=false;R()"><div class="sh" onclick="event.stopPropagation()">${streakH()}<button class="btn s" style="margin:14px 0 0" onclick="S.stkOpen=false;R()">Cerrar</button></div></div>`}
 
 function streakH(){
@@ -3754,7 +3780,7 @@ Sobre la app VotaFMS:
 - Votar: eliges una liga y una batalla y puntúas ronda por ronda con casillas de 0 a 10 en pasos de medio punto. Hay réplica de 6 casillas por MC y la opción "Diferencia para que sea directa". También hay votación libre pegando el link de YouTube de cualquier batalla. Puedes guardar y editar tus votos.
 - Cada liga muestra una tabla con solo tus votos. En Comunidad está el ranking global de rangos.
 - Rangos: subes ganando puntos al votar. Hay 5 niveles (Underground, Regional, Semi, Profesional y Elite), cada uno con 3 subniveles.
-- Logros: hay 40. Desbloquean colores para la app y diseños de rap para la tarjeta de tu perfil (solo cambian la tarjeta).
+- Logros: hay 40 (por ahora son solo para coleccionar). Los colores de la app, los diseños de tarjeta y de planilla, los marcos y los títulos se compran en la Tienda con monedas, que se ganan votando batallas de liga. Los atuendos de la mascota se desbloquean con días de racha.
 - Perfil: foto, MC favorito, biografía, color, ID de usuario de 9 números. Puedes buscar usuarios, agregar amigos, dar likes y ver quién está en línea. Entre amigos hay chat con el botón "Enviar mensaje" en su perfil.
 - Racha diaria: un micrófono en llamas cuenta los días seguidos que entras. Cada 10 días de racha ganas 1 oportunidad por si faltas un día.
 - Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones. MC IA (tú) tiene un botón Entrenar para practicar rimas y un micrófono para dictar por voz. También puedes crear imágenes: hasta 3 por día por usuario, con el botón «Crear imagen» o pidiendo «dibuja…» o «genera una imagen de…».
@@ -3928,7 +3954,7 @@ function iaMyCtx(names){
  const fnames=fr.map(f=>names[f.from===me.uid?f.to:f.from]).filter(Boolean).slice(0,40);
  const st=me.st||{},lk=S.likeCache&&S.likeCache[me.uid]?S.likeCache[me.uid].n:0;
  const th=themeOf(me),dz=dzOf(me);
- const ths=THEMES.filter(t=>done.length>=t.need).map(t=>t.n),ds=DESIGNS.filter(d=>done.length>=d.need).map(d=>d.n);
+ const _ow=id=>!!(me.shop&&Array.isArray(me.shop.own)&&me.shop.own.includes(id)),ths=THEMES.filter(t=>t.id==='co'||_ow('th_'+t.id)).map(t=>t.n),ds=DESIGNS.filter(d=>_ow('dz_'+d.id)).map(d=>d.n);
  return `DATOS EN VIVO DEL USUARIO QUE TE ESCRIBE (son reales y actuales; úsalos para responder con precisión y no inventes nada fuera de ellos):
 - Usuario: ${me.u} · ID ${fmtPid(pid(me.uid))} · País: ${me.p||'sin indicar'} · MC favorito: ${me.m||'sin indicar'} · Miembro desde: ${me.joined||'—'}
 - Biografía: ${String(me.a||'').trim()||'(vacía)'}
