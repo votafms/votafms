@@ -1987,6 +1987,14 @@ html::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 .cfgfv{font-size:13px;font-weight:800;color:var(--ac2);white-space:nowrap}
 .cfgbox{padding:10px 0;border-top:1px dashed var(--bd)}
 @media (max-width:430px){.top{padding-left:10px;padding-right:10px;gap:4px}.top .brand{gap:6px;font-size:15px}.top .brand svg{width:30px;height:30px}.top .ib{width:32px;height:32px;flex:none}.top .coinb,.top .avbtn{flex:none}.top .brand{min-width:0;flex:0 1 auto}.top .brand b{overflow:hidden;white-space:nowrap}}
+
+/* Efecto moderno al ganar monedas */
+.cfxl{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden}
+.cfxl .cfxc{position:absolute;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;will-change:transform,opacity}
+.cfxb{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;padding:8px 18px 8px 10px;border-radius:999px;background:linear-gradient(180deg,#FDE047,#EAB308);color:#1A1300;font:800 24px/1 var(--dsp);letter-spacing:.5px;box-shadow:0 10px 30px rgba(250,204,21,.55),inset 0 1px 0 rgba(255,255,255,.7);white-space:nowrap}
+.cfxb .coin{width:28px;height:28px}
+.cfxr{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:3px solid #FDE047;box-shadow:0 0 18px rgba(250,204,21,.9)}
+.cfgvv{font-size:13px;font-weight:800;color:var(--ac2);white-space:nowrap}
 /* Sin animaciones ni brillos: la app como era antes */
 html.noanim *,html.noanim *::before,html.noanim *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 html.noanim body::before,html.noanim::before,html.noanim::after,html.noanim .btn:not(.s)::before,html.noanim .btn:not(.s)::after,html.noanim .hero::before,html.noanim .bar i::after,html.noanim .banner::before,html.noanim .lt2::before,html.noanim .shbal::after,html.noanim .ptt::after,html.noanim #fxb,html.noanim #fxt{display:none!important}
@@ -2018,9 +2026,9 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
 /* Ajustes de la app: sin animaciones/brillos, límite de FPS y accesibilidad (se guardan en este dispositivo) */
 (function(){
  var H=document.documentElement,D=document,KEY='vfms_cfg';
- var C={noAnim:false,fps:60,big:false,hc:false,font:false,focus:false};
+ var C={noAnim:false,fps:60,big:false,hc:false,font:false,focus:false,sound:true,vol:70,haptic:true};
  try{var o=JSON.parse(localStorage.getItem(KEY)||'{}');for(var k in C)if(k in o)C[k]=o[k]}catch(e){}
- if([30,45,60].indexOf(C.fps)<0)C.fps=60;
+ if([30,45,60].indexOf(C.fps)<0)C.fps=60;if(typeof C.vol!=='number'||C.vol<0||C.vol>100)C.vol=70;
  window.VCFG=C;
  function eff(){return C.noAnim?25:C.fps}
  window.vcfgEff=eff;
@@ -2052,8 +2060,36 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
   T('noanim',C.noAnim);T('a-big',C.big);T('a-hc',C.hc);T('a-font',C.font);T('a-focus',C.focus);
   if(C.noAnim||C.fps>=60)resume();else if(!sv)sv=window.requestAnimationFrame(stepA);
   try{D.dispatchEvent(new Event('vcfg'))}catch(e){}}
- window.vcfgSet=function(k,v){C[k]=v;try{localStorage.setItem(KEY,JSON.stringify(C))}catch(e){}apply()};
+ window.vcfgSet=function(k,v){C[k]=v;try{localStorage.setItem(KEY,JSON.stringify(C))}catch(e){}apply();try{window.SFX.sync()}catch(e){}};
  apply();
+
+ /* ===== Sonidos (sintetizados con Web Audio: no hay archivos que cargar) ===== */
+ var AC=null,MG=null,LT={};
+ function volv(){var v=(C.vol==null?70:C.vol)/100;return v*v*.9}
+ function actx(){if(AC)return AC;var A=window.AudioContext||window.webkitAudioContext;if(!A)return null;
+  try{AC=new A();var cp=AC.createDynamicsCompressor();MG=AC.createGain();MG.gain.value=volv();MG.connect(cp);cp.connect(AC.destination)}catch(e){AC=null}return AC}
+ function unlock(){if(C.sound===false)return;var a=actx();if(a&&a.state==='suspended'){try{a.resume()}catch(e){}}}
+ ['pointerdown','touchstart','keydown'].forEach(function(e){D.addEventListener(e,unlock,{capture:true,passive:true})});
+ function ok(n,gap){if(C.sound===false||D.hidden)return false;var t=performance.now();if(LT[n]&&t-LT[n]<(gap||0))return false;LT[n]=t;var a=actx();if(!a)return false;if(a.state==='suspended'){try{a.resume()}catch(e){}}return true}
+ function tone(f,t,d,ty,g,f2){var a=AC,o=a.createOscillator(),e=a.createGain(),t0=a.currentTime+Math.max(0,t);o.type=ty||'sine';o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+  e.gain.setValueAtTime(.0001,t0);e.gain.exponentialRampToValueAtTime(g,t0+.008);e.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(e);e.connect(MG);o.start(t0);o.stop(t0+d+.03)}
+ function buzz(p){if(C.haptic===false)return;try{if(navigator.vibrate)navigator.vibrate(p)}catch(e){}}
+ window.SFX={
+  sync:function(){if(MG)MG.gain.value=volv()},
+  tap:function(){if(!ok('tap',45))return;tone(560,0,.05,'triangle',.07,420)},
+  toggle:function(on){if(!ok('tg',60))return;if(on){tone(660,0,.07,'sine',.12);tone(990,.06,.1,'sine',.1)}else{tone(520,0,.07,'sine',.1);tone(330,.06,.1,'sine',.08)}buzz(8)},
+  vote:function(){if(!ok('vote',200))return;tone(110,0,.16,'sine',.35,55);tone(330,.05,.1,'triangle',.08);tone(523,.14,.14,'triangle',.12);tone(784,.24,.3,'sine',.13);buzz(18)},
+  coin:function(){if(!ok('coin',150))return;tone(1319,0,.4,'sine',.16);tone(1976,.07,.5,'sine',.14);tone(2637,.07,.3,'triangle',.05);buzz(12)},
+  hit:function(k){if(!ok('hit',30))return;var f=880*Math.pow(2,(k||0)*1);tone(f,0,.11,'triangle',.1);tone(f*1.5,0,.07,'sine',.05)},
+  done:function(){if(!ok('done',200))return;[1047,1319,1568,2093].forEach(function(f,i){tone(f,i*.06,.35,'sine',.1)});tone(2093,.24,.6,'triangle',.05);buzz([15,40,25])},
+  spend:function(){if(!ok('spend',200))return;tone(880,0,.08,'triangle',.12);tone(660,.07,.1,'triangle',.12);tone(440,.14,.2,'sine',.14);tone(1760,0,.05,'sine',.05);buzz(15)},
+  rankup:function(d){if(!ok('rank',400))return;d=d||0;[523,659,784,1047].forEach(function(f,i){tone(f,d+i*.12,.22,'square',.05);tone(f,d+i*.12,.28,'triangle',.11)});[523,659,784,1047].forEach(function(f){tone(f,d+.5,.9,'triangle',.07)});buzz([30,50,30,50,60])},
+  ach:function(){if(!ok('ach',300))return;tone(880,0,.4,'sine',.14);tone(1319,.1,.6,'sine',.12);tone(1760,.2,.7,'sine',.07);buzz([20,40,20])},
+  notif:function(){if(!ok('notif',500))return;tone(1175,0,.2,'sine',.14);tone(1568,.1,.3,'sine',.11);buzz(25)},
+  error:function(){if(!ok('err',400))return;tone(220,0,.14,'sawtooth',.08,180);tone(165,.13,.2,'sawtooth',.08,130);buzz([40,40,40])}
+ };
+ /* Sonido suave al tocar botones y tarjetas */
+ D.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var b=t.closest('button,a[href],[role="button"],.cell,.lt2,.shi,.card[onclick],.bat[onclick]');if(!b||b.disabled||b.closest('.sw,.cfgr'))return;window.SFX.tap()},true);
 })();
 </script>
 <script>
@@ -2231,9 +2267,42 @@ function coinBal(){return Math.max(0,coinsEarned()-(shopS().spent||0))}
 function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=(sh.v>=2&&sh.frame)||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
 function ttOf(u){if(!u)return '';const sh=u.shop;const t=(sh&&typeof sh==='object'&&sh.v>=2)?(sh.title||''):'';return TITLES[t]?t:''}
 function ttH(u){const t=ttOf(u);return t?`<div class="ptt"><span>${TITLES[t].ic}</span>${esc(TITLES[t].t)}</div>`:''}
-function coinCount(from,to){S.coinShow=from;R();const t0=performance.now(),dur=800;
+function coinTween(from,to,dur){S.coinShow=from;const t0=performance.now();
  const step=t=>{const k=Math.min(1,(t-t0)/dur),v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));S.coinShow=k<1?v:null;document.querySelectorAll('.coinv').forEach(e=>{e.textContent=v});if(k<1)requestAnimationFrame(step)};
  requestAnimationFrame(step);const b=document.getElementById('coinb');if(b){b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
+function coinCount(from,to){S.coinShow=from;R();const gain=to-from,C=window.VCFG||{};
+ if(gain<=0){try{SFX.spend()}catch(e){}return coinTween(from,to,800)}
+ if(C.noAnim||document.hidden||!document.body.animate){try{SFX.coin()}catch(e){}return coinTween(from,to,400)}
+ coinFx(from,to,gain)}
+/* Monedas que salen volando hasta tu contador, con sonido en cada moneda que llega */
+function coinFx(from,to,gain){
+ const tg=document.getElementById('coinb'),tr=tg?tg.getBoundingClientRect():{left:innerWidth-90,top:24,width:50,height:30};
+ const ex=tr.left+tr.width*.32,ey=tr.top+tr.height/2;
+ let sx=innerWidth/2,sy=innerHeight*.5;const src=document.querySelector('.cgain .coin,.shbal .coin');
+ if(src){const r=src.getBoundingClientRect();if(r.width&&r.top>70&&r.bottom<innerHeight-40){sx=r.left+r.width/2;sy=r.top+r.height/2}}
+ const n=Math.max(6,Math.min(16,Math.round(gain/3))),L=document.createElement('div');L.className='cfxl';document.body.appendChild(L);
+ const bd=document.createElement('div');bd.className='cfxb';bd.style.left=sx+'px';bd.style.top=sy+'px';bd.innerHTML='<i class="coin"></i>+'+gain;L.appendChild(bd);
+ bd.animate([{opacity:0,transform:'translate(-50%,-50%) scale(.3)'},{opacity:1,transform:'translate(-50%,-50%) scale(1.18)',offset:.2},{opacity:1,transform:'translate(-50%,-62%) scale(1)',offset:.7},{opacity:0,transform:'translate(-50%,-160%) scale(.9)'}],{duration:1600,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});
+ try{SFX.coin()}catch(e){}
+ let landed=0,fin=false;
+ const setV=v=>{S.coinShow=v;document.querySelectorAll('.coinv').forEach(e=>{e.textContent=v})};
+ const end=()=>{if(fin)return;fin=true;S.coinShow=null;const v=coinBal();document.querySelectorAll('.coinv').forEach(e=>{e.textContent=v});setTimeout(()=>L.remove(),900)};
+ setTimeout(end,4500);
+ for(let i=0;i<n;i++){
+  const ang=Math.random()*6.283,rad=50+Math.random()*(60+Math.min(gain,60)),mx=Math.cos(ang)*rad,my=Math.sin(ang)*rad-30,rot=(Math.random()<.5?-1:1)*(180+Math.random()*360);
+  const c=document.createElement('i');c.className='coin cfxc';L.appendChild(c);
+  const a=c.animate([
+   {transform:`translate(${sx}px,${sy}px) scale(.2) rotate(0deg)`,opacity:0,easing:'cubic-bezier(.15,.85,.3,1)'},
+   {transform:`translate(${sx+mx}px,${sy+my}px) scale(1.15) rotate(${rot*.4}deg)`,opacity:1,offset:.3,easing:'cubic-bezier(.55,0,.9,.45)'},
+   {transform:`translate(${ex}px,${ey}px) scale(.5) rotate(${rot}deg)`,opacity:1,offset:.92},
+   {transform:`translate(${ex}px,${ey}px) scale(.2) rotate(${rot}deg)`,opacity:0}],{duration:1250,delay:120+i*55,fill:'both'});
+  a.onfinish=()=>{c.remove();landed++;const k=landed/n;setV(landed>=n?to:from+Math.round(gain*k));try{SFX.hit(k)}catch(e){}
+   const t=document.getElementById('coinb');if(t)t.animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:200,easing:'ease-out'});
+   if(landed>=n){try{SFX.done()}catch(e){}
+    const rg=document.createElement('i');rg.className='cfxr';rg.style.left=ex+'px';rg.style.top=ey+'px';L.appendChild(rg);
+    rg.animate([{transform:'scale(1)',opacity:.95},{transform:'scale(5)',opacity:0}],{duration:650,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});
+    if(t){t.classList.remove('bump');void t.offsetWidth;t.classList.add('bump')}end()}};
+ }}
 function shopTab(t){S.shopTab=t;go('tienda')}
 async function shopSave(nx,msg){const prev=S.me.shop;S.me={...S.me,shop:nx};R();try{await B.updateUser(S.me.uid,{shop:nx});return true}catch(e){S.me={...S.me,shop:prev};R();try{achFail(msg)}catch(_){}return false}}
 function shopOpen(id){S.shopSheet=id;S.shopDone=false;R()}
@@ -2990,7 +3059,7 @@ async function pushVote2(v){
  const cw=c.wa>=c.wb?0:1,uw=(()=>{const o=outcomeOf(v);return o.w==null?-1:(o.w==='a'?0:1)})();
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
  try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
- notifyFriends(v);S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up)S.rankUp={from:prevRank,to:newRank};R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}}catch(e){}})();
+ notifyFriends(v);try{SFX.vote()}catch(e){}S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}}catch(e){}})();
  try{S.comm=summ(await B.votesKey(v.key))}catch(e){S.comm={n:0,wa:0,wb:0,sa:0,sb:0}}
  R();
 }
@@ -3387,6 +3456,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-11T08:30:00-04:00'),text:'Nuevo: sonidos y monedas más vistosas 🔊🪙. Ahora la app suena al votar (sello y campanita), al ganar monedas (las monedas salen volando hasta tu contador y suena una por una), al comprar en la tienda, al subir de rango, al desbloquear logros y cuando te llega un aviso o una invitación a duelo. En Ajustes (la tuerca) puedes apagar los sonidos, subir o bajar el volumen y quitar la vibración.'},
  {ts:Date.parse('2026-11-11T07:00:00-04:00'),text:'Nuevo: Ajustes ⚙️. Toca la tuerca de arriba (junto a tus monedas) y encontrarás: «Desactivar animaciones y brillos» para quitar los efectos y dejar la app como era antes (en ese modo va a 25 FPS); una barra de FPS (30, 45 o 60) para que las animaciones sigan pero menos fluidas y con menos gasto de batería; y el apartado de Accesibilidad con texto grande, alto contraste, letra más legible y resaltar la selección del teclado.'},
  {ts:Date.parse('2026-11-10T20:00:00-04:00'),text:'Gran cambio: reset de la tienda. Ahora todos los colores de la app, diseños de tarjeta de perfil, diseños de planilla, marcos y títulos se compran en la tienda con monedas (están ordenados por categoría, del más barato al más caro). Todos empezamos de cero con la apariencia base y a los usuarios se les devolvieron sus monedas gastadas. Los atuendos de la mascota ya no dependen de logros: se desbloquean según tus días de racha (de 3 hasta 100 días). Los logros y los rangos se mantienen, pero por ahora no desbloquean nada.'},
  {ts:Date.parse('2026-11-10T14:00:00-04:00'),text:'Nuevo: monedas y tienda. Ahora ganas monedas al votar batallas de liga (World Series 50, Internacional 40, España 35 y las demás 30; no cuentan Batalla libre ni Modo editor). Tus monedas salen arriba: tócalas para entrar a la tienda y canjearlas por el Marco dorado de perfil (animado), el título «Jurado estricto» debajo de tu nombre, el Pack Neón de colores para la planilla y las imágenes sin marca.'},
@@ -3467,11 +3537,12 @@ function watchInbox(){
  if(!S.me||!FB){if(_inboxUnsub){try{_inboxUnsub()}catch(e){}}_inboxUnsub=null;_inboxUid=null;return}
  if(_inboxUid===S.me.uid&&_inboxUnsub)return;
  if(_inboxUnsub){try{_inboxUnsub()}catch(e){}}
- const fm=FB.fm;_inboxUid=S.me.uid;
+ const fm=FB.fm;_inboxUid=S.me.uid;S._nuPrev=null;
  try{_inboxUnsub=fm.onSnapshot(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',S.me.uid),fm.limit(100)),snap=>{
   if(!S.me)return;
   const n=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.type!=='duelinv').sort((a,b)=>(b.ts||0)-(a.ts||0));
   const a=avisosVisibles();S.inbox={notifs:n,avisos:a};const vis=S.me.avisosVistos||0;
+  {const _nu=n.filter(x=>!x.read).length;if(S._nuPrev!=null&&_nu>S._nuPrev){try{SFX.notif()}catch(e){}}S._nuPrev=_nu}
   S.unread=n.filter(x=>!x.read).length+a.filter(x=>x.ts>vis).length;
   const t=document.getElementById('top');if(t)t.innerHTML=topH();
   if(S.inboxOpen&&!S.auth&&!S.fb&&!S.sheet)R()
@@ -3515,8 +3586,9 @@ const CFG_FPS=[30,45,60];
 function openCfg(){S.cfgOpen=true;R()}
 function closeCfg(){S.cfgOpen=false;R()}
 function cfgFpsTxt(){const C=window.VCFG;return C.noAnim?'25 FPS · modo sin animaciones':C.fps+' FPS'}
-function cfgSync(){const C=window.VCFG,r=document.getElementById('cfgfps'),v=document.getElementById('cfgfv');if(r){r.disabled=!!C.noAnim;r.value=String(Math.max(0,CFG_FPS.indexOf(C.fps)))}if(v)v.textContent=cfgFpsTxt()}
-function cfgTog(k){const C=window.VCFG;window.vcfgSet(k,!C[k]);const b=document.querySelector('[data-cfg="'+k+'"]');if(b){b.classList.toggle('on',!!C[k]);b.setAttribute('aria-checked',C[k]?'true':'false')}cfgSync()}
+function cfgVol(v){window.vcfgSet('vol',+v);const e=document.getElementById('cfgvv');if(e)e.textContent=v+'%'}
+function cfgSync(){const C=window.VCFG,r=document.getElementById('cfgfps'),v=document.getElementById('cfgfv'),vs=document.getElementById('cfgvol');if(vs)vs.disabled=C.sound===false;if(r){r.disabled=!!C.noAnim;r.value=String(Math.max(0,CFG_FPS.indexOf(C.fps)))}if(v)v.textContent=cfgFpsTxt()}
+function cfgTog(k){const C=window.VCFG;window.vcfgSet(k,!C[k]);try{SFX.toggle(!!C[k])}catch(e){}const b=document.querySelector('[data-cfg="'+k+'"]');if(b){b.classList.toggle('on',!!C[k]);b.setAttribute('aria-checked',C[k]?'true':'false')}cfgSync()}
 function cfgFps(i){window.vcfgSet('fps',CFG_FPS[+i]||60);cfgSync()}
 function cfgRow(k,t,d){const C=window.VCFG;return `<div class="frow" style="align-items:center;gap:12px"><div style="flex:1;min-width:0"><b>${t}</b><div class="mu" style="margin-top:2px;line-height:1.35">${d}</div></div><button class="sw${C[k]?' on':''}" data-cfg="${k}" role="switch" aria-checked="${C[k]?'true':'false'}" aria-label="${t}" onclick="cfgTog('${k}')"><i></i></button></div>`}
 function cfgSheet(){const C=window.VCFG,fi=Math.max(0,CFG_FPS.indexOf(C.fps));
@@ -3526,6 +3598,11 @@ function cfgSheet(){const C=window.VCFG,fi=Math.max(0,CFG_FPS.indexOf(C.fps));
  <div class="cfgbox"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b>Velocidad de animaciones (FPS)</b><span class="cfgfv" id="cfgfv">${cfgFpsTxt()}</span></div>
  <div class="mu" style="margin-top:2px;line-height:1.35">Más FPS = más fluidas. Menos FPS = las animaciones siguen, pero menos fluidas (y gasta menos batería).</div>
  <input type="range" class="cfgr" id="cfgfps" min="0" max="2" step="1" value="${fi}" ${C.noAnim?'disabled':''} oninput="cfgFps(this.value)" onchange="cfgFps(this.value)" aria-label="FPS máximos"><div class="cfgt"><span>30</span><span>45</span><span>60</span></div></div>
+ <div class="cfgs">Sonido y vibración</div>
+ ${cfgRow('sound','Sonidos','Efectos al votar, ganar monedas, comprar, subir de rango, logros y avisos.')}
+ <div class="cfgbox"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b>Volumen</b><span class="cfgvv" id="cfgvv">${C.vol}%</span></div>
+ <input type="range" class="cfgr" id="cfgvol" min="0" max="100" step="5" value="${C.vol}" ${C.sound===false?'disabled':''} oninput="cfgVol(this.value)" onchange="try{SFX.hit(.5)}catch(e){}" aria-label="Volumen"></div>
+ ${cfgRow('haptic','Vibración','Una vibración corta en el celular al ganar monedas, votar o subir de rango.')}
  <div class="cfgs">Accesibilidad</div>
  ${cfgRow('big','Texto grande','Agranda la app un poco para leer mejor.')}
  ${cfgRow('hc','Alto contraste','Textos y bordes más marcados; quita el grano de la pantalla.')}
@@ -3802,7 +3879,7 @@ function achSheet(){
  <div class="ach-note">Toca una medalla para ver qué debes hacer 🎙️</div>
  ${det}<button class="btn s" style="margin:14px 0 0" onclick="closeAch()">Cerrar</button></div></div>`}
 function achToast(items){
- if(!items.length)return;
+ if(!items.length)return;try{SFX.ach()}catch(e){}
  const old=document.getElementById('achtoast');if(old)old.remove();
  const one=items.length===1?items[0]:null;
  const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';
@@ -5032,7 +5109,7 @@ function diEl(){let w=document.getElementById('diw');if(!w){w=document.createEle
 function diHide(){const w=document.getElementById('diw');if(w)w.classList.remove('on');clearTimeout(S.diT);S.diCur=null;setTimeout(diNext,450)}
 function diNext(){if(S.diCur||!S.diQ.length||!S.me)return;const x=S.diQ.shift();
  if(Date.now()>=x.exp-800||S.dul||diBlockLeft()>0){diDel(x.id);return diNext()}
- S.diCur=x;const w=diEl(),left=Math.max(1000,x.exp-Date.now());
+ S.diCur=x;try{SFX.notif()}catch(e){}const w=diEl(),left=Math.max(1000,x.exp-Date.now());
  w.innerHTML=`<div class="dib"><div class="dibr"><span class="dit">⚔️</span><div class="dim"><b>${esc(x.fromName||'Un amigo')}</b> te está invitando a duelo</div><button class="dia ok" onclick="diAccept()" aria-label="Aceptar">✓</button><button class="dia no" onclick="diReject()" aria-label="Rechazar">✕</button></div><label class="dik"><input type="checkbox" onchange="diBlockNow(this)"> Rechazar invitaciones por 4 minutos</label><i class="dip" style="animation-duration:${left}ms"></i></div>`;
  requestAnimationFrame(()=>requestAnimationFrame(()=>w.classList.add('on')));
  clearTimeout(S.diT);S.diT=setTimeout(diReject,left)}
@@ -5302,7 +5379,7 @@ async function toggleLike(uid){
   if(was)await B.delLike(S.me.uid,uid);else{await B.setLike(S.me.uid,uid);S.likeGiven=true;syncAch()}
  }catch(e){S.likeCache[uid]=c;S.likePop=null;R();achFail('No se pudo guardar el like. Revisa las reglas de Firestore (colección likes).')}
  finally{S.likeBusy=false;setTimeout(()=>{S.likePop=null},600)}}
-function achFail(msg){const el=document.createElement('div');el.className='ach-toast';el.style.borderColor='#EF4444';el.innerHTML=`<div class="tm" style="background:#EF4444">⚠️</div><div><b style="font-size:13px;font-weight:700">${esc(msg)}</b></div>`;document.body.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4200)}
+function achFail(msg){try{SFX.error()}catch(e){}const el=document.createElement('div');el.className='ach-toast';el.style.borderColor='#EF4444';el.innerHTML=`<div class="tm" style="background:#EF4444">⚠️</div><div><b style="font-size:13px;font-weight:700">${esc(msg)}</b></div>`;document.body.appendChild(el);setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4200)}
 
 const VIEW={ia:iaV,admin:adminV,comunidad:comunidadV,libre:libreV,home:homeV,lg:lgv,vote:voteV,res:resV,cal:calV,search:searchV,user:userV,vd:vdV,perfil:perfilV,duel:duelV,tienda:tiendaV};
 /* ===== MODO EDITOR: rondas, colores y logos (solo administrador y quien tenga el permiso «Editor») ===== */
