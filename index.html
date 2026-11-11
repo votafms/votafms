@@ -238,7 +238,7 @@ img.av{object-fit:cover}
 .nav button.on .ni{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#fff;box-shadow:0 8px 18px rgba(var(--acr),.35)}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 @keyframes su{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){*{animation:none!important;transition:none!important}}
 .err{color:#FF6B7A}
 .btn:disabled{opacity:.6}
 .or{display:flex;align-items:center;gap:10px;color:var(--mu);font-size:12px;margin:6px 0 12px}
@@ -530,9 +530,9 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .stkc-n span{font-size:14px;font-weight:800}
 .stkc-s{font-size:12px;color:var(--mu);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stkc .stk-d i{width:12px}
-@media (prefers-reduced-motion:reduce){.stkc .mm svg{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.stkc .mm svg{animation:none}}
 .stk-ch.on{border-style:solid;border-color:color-mix(in srgb,var(--f1) 55%,transparent);color:var(--tx);background:color-mix(in srgb,var(--f1) 14%,transparent)}
-@media (prefers-reduced-motion:reduce){.stk-m svg,.stk-f,.stk-e{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.stk-m svg,.stk-f,.stk-e{animation:none}}
 .nav button{font-size:10.5px;padding:4px 2px}
 .iah{display:flex;align-items:center;gap:12px;padding:12px 14px}
 .iaav{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,var(--ac),var(--ac2));flex:0 0 auto}
@@ -556,11 +556,11 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .cb.m{align-self:flex-start;background:var(--cd2);border:1px solid var(--bd);border-bottom-left-radius:5px}
 .cb.u{align-self:flex-end;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;border-bottom-right-radius:5px}
 .cdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#EF4444;margin-left:5px;vertical-align:middle}
-@media (prefers-reduced-motion:reduce){.iadots i{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.iadots i{animation:none}}
 .iamic{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cd2);color:var(--tx);cursor:pointer}
 .iamic.on{background:#EF4444;color:#fff;animation:iamp 1.2s infinite}
 @keyframes iamp{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
-@media (prefers-reduced-motion:reduce){.iamic.on{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.iamic.on{animation:none}}
 .thm-tz{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--bd);border-radius:14px;font-size:12.5px;color:var(--mu);line-height:1.4}
 .thm-tz b{color:var(--tx)}
 .thm-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -642,7 +642,7 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .fi.lk{opacity:.55}
 .fh{margin-top:12px;font-size:12px;color:var(--mu);text-align:center;line-height:1.5}
 /* La mascota se anima siempre, aunque el teléfono tenga "reducir animaciones" (la regla global las apaga) */
-@media (prefers-reduced-motion:reduce){
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){
  .stk-m svg,.stkc .mm svg{animation:stkbob 2.6s ease-in-out infinite!important}
  .stk-f{animation:stkfl .9s ease-in-out infinite!important}.stk-f.b{animation-duration:.7s!important}
  .stk-e{animation:stkbl 4s infinite!important}
@@ -894,8 +894,8 @@ button.stkc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
 .stk-wr{transform-box:fill-box;transform-origin:0% 100%;animation:stkwr 1.2s ease-in-out infinite}
 .stk-wv{animation:stkwv 1.2s ease-in-out infinite}
 .stk-rot{transform-box:fill-box;transform-origin:center;animation:stkrot 14s linear infinite}
-@media (prefers-reduced-motion:reduce){.stk-pul{animation:stkpul 1.8s ease-in-out infinite!important}.stk-hv{animation:stkhv 2.4s ease-in-out infinite!important}.stk-rb{animation:stkrb 5s linear infinite!important}.stk-wl{animation:stkwl 1.2s ease-in-out infinite!important}.stk-wr{animation:stkwr 1.2s ease-in-out infinite!important}.stk-wv{animation:stkwv 1.2s ease-in-out infinite!important}.stk-rot{animation:stkrot 14s linear infinite!important}}
-@media (prefers-reduced-motion:reduce){.stk-sw1{animation:stksw 2.8s ease-in-out infinite!important}.stk-gl{animation:stkgl 3.2s ease-in-out infinite!important}.stk-tail{animation:stktl 1.6s ease-in-out infinite!important}.stk-cape{animation:stkcp 2.2s ease-in-out infinite!important}.stk-sp{animation:stksp 2.8s ease-in-out infinite!important}.stk-gw{animation:stkgw 3s ease-in-out infinite!important}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.stk-pul{animation:stkpul 1.8s ease-in-out infinite!important}.stk-hv{animation:stkhv 2.4s ease-in-out infinite!important}.stk-rb{animation:stkrb 5s linear infinite!important}.stk-wl{animation:stkwl 1.2s ease-in-out infinite!important}.stk-wr{animation:stkwr 1.2s ease-in-out infinite!important}.stk-wv{animation:stkwv 1.2s ease-in-out infinite!important}.stk-rot{animation:stkrot 14s linear infinite!important}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.stk-sw1{animation:stksw 2.8s ease-in-out infinite!important}.stk-gl{animation:stkgl 3.2s ease-in-out infinite!important}.stk-tail{animation:stktl 1.6s ease-in-out infinite!important}.stk-cape{animation:stkcp 2.2s ease-in-out infinite!important}.stk-sp{animation:stksp 2.8s ease-in-out infinite!important}.stk-gw{animation:stkgw 3s ease-in-out infinite!important}}
 /* ===== Perfil: cabecera rápida, medallas favoritas, apariencia ===== */
 .pfq{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
 .pfq button{display:flex;align-items:center;gap:8px;padding:10px;border-radius:16px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);cursor:pointer;font-family:inherit;text-align:left;min-width:0;box-shadow:var(--sh)}
@@ -1381,7 +1381,7 @@ body[data-v="comunidad"] .toplist{gap:10px}
 .sb-p i.a{background:var(--sbA)}.sb-p i.b{background:var(--sbB)}.sb-p i.t{background:var(--mu)}
 .sb-v.bump{animation:sbb .32s ease}
 @keyframes sbb{50%{transform:scale(1.22)}}
-@media (prefers-reduced-motion:reduce){.sb-bar u{transition:none}.sb-v.bump{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.sb-bar u{transition:none}.sb-v.bump{animation:none}}
 @media (min-width:1100px) and (hover:hover) and (pointer:fine){.sb{top:72px}}
 
 /* ===== Voz del duelo ===== */
@@ -1740,7 +1740,7 @@ input,textarea,select{border-radius:10px!important;border:2px solid rgba(var(--a
 @keyframes frTw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(45deg)}}
 .frw-purple{background:conic-gradient(from var(--fa,0deg),#A855F7,#6B21A8,#E9D5FF,#7C3AED,#4C1D95,#A855F7);box-shadow:0 0 22px rgba(168,85,247,.55)}
 .frw-purple::before,.frw-purple::after{color:#E9D5FF;text-shadow:0 0 6px #A855F7,0 0 12px #7C3AED}
-@media (prefers-reduced-motion:reduce){.fr-gold,.frw,.coin.bigc,.nvd i,.shbal::after,.ptt::after{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){.fr-gold,.frw,.coin.bigc,.nvd i,.shbal::after,.ptt::after{animation:none}}
 
 
 /* ===== POLISH-VISUAL: capa de mejoras gráficas (solo apariencia, sin tocar funciones) ===== */
@@ -1898,7 +1898,85 @@ body.vt .lgrid2>.lt2{animation:popin .6s var(--spring) backwards,bob 5.2s ease-i
  body::before{inset:-15%}
  @keyframes rise{from{opacity:0;translate:0 24px;scale:.97}to{opacity:1;translate:0 0;scale:1}}
 }
-@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+@media (prefers-reduced-motion:reduce) and (min-width:99999px){body::before{animation:none}}
+
+/* ===== POLISH-3: ESCENARIO FMS — gráficos y animaciones MUY notables (solo apariencia; no se toca ninguna función) ===== */
+:root{--vig:rgba(0,0,0,.36);--bs:min(140vmax,1300px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--vig:rgba(15,23,42,.07)}}
+
+/* Entradas más exageradas (las animaciones ya no se apagan con "reducir animaciones") */
+@keyframes rise{from{opacity:0;translate:0 48px;scale:.93}60%{opacity:1}to{opacity:1;translate:0 0;scale:1}}
+@keyframes popin{0%{opacity:0;scale:.4;rotate:-10deg}62%{opacity:1;scale:1.1;rotate:2deg}100%{opacity:1;scale:1;rotate:0deg}}
+@keyframes reveal{from{opacity:0;translate:0 64px;scale:.92}to{opacity:1;translate:0 0;scale:1}}
+
+/* Luces de escenario: rayos de tu color que giran despacio detrás de todo */
+@keyframes beams{to{transform:rotate(360deg)}}
+html::before{content:"";position:fixed;left:50%;top:34%;width:var(--bs);height:var(--bs);margin:calc(var(--bs)/-2) 0 0 calc(var(--bs)/-2);z-index:-2;pointer-events:none;will-change:transform;
+ background:conic-gradient(from 0deg,transparent 0deg 14deg,rgba(var(--acr),.34) 20deg,transparent 27deg 100deg,rgba(var(--acr2),.26) 107deg,transparent 114deg 190deg,rgba(var(--acr),.30) 197deg,transparent 204deg 275deg,rgba(var(--acr2),.24) 282deg,transparent 289deg 360deg);
+ -webkit-mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 22%,transparent 50%);mask-image:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 22%,transparent 50%);
+ animation:beams 44s linear infinite}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"])::before{opacity:.45}}
+
+/* Grano de película + viñeta: da profundidad y aspecto natural */
+html::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+ background:radial-gradient(ellipse 125% 92% at 50% 45%,transparent 56%,var(--vig) 100%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .8 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+ background-size:100% 100%,200px 200px}
+
+/* Cinta de peligro del encabezado: avanza sin parar */
+@keyframes tape{from{background-position:0 0}to{background-position:28.2843px 0}}
+.top::after{background-size:28.2843px 6px;animation:tape 1.1s linear infinite}
+@keyframes brandglow{0%,100%{filter:drop-shadow(0 0 0 rgba(var(--acr),0))}50%{filter:drop-shadow(0 0 11px rgba(var(--acr),.9))}}
+.brand b{animation:brandglow 2.8s ease-in-out infinite}
+
+/* Hero: rayas que corren + foco de luz que gira */
+@keyframes stripes{from{background-position:0 0,0 0}to{background-position:45.2548px 0,0 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero{background-size:45.2548px 45.2548px,100% 100%!important;animation:stripes 7s linear infinite}
+.hero:after{width:340px!important;height:340px!important;right:-120px!important;top:-160px!important;border-radius:50%;pointer-events:none;
+ background:conic-gradient(from 0deg,rgba(255,255,255,0) 0deg,rgba(255,255,255,.34) 30deg,rgba(255,255,255,0) 64deg 180deg,rgba(255,255,255,.24) 215deg,rgba(255,255,255,0) 250deg 360deg)!important;
+ animation:spin 9s linear infinite}
+
+/* Banners de liga y mosaicos: brillo que los cruza */
+@keyframes sheenT{0%,55%{transform:translateX(-170%) skewX(-18deg)}100%{transform:translateX(430%) skewX(-18deg)}}
+.banner::before,.lt2::before{content:"";position:absolute;top:0;bottom:0;left:0;width:36%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.3),transparent);transform:translateX(-170%) skewX(-18deg);animation:sheenT 5.5s ease-in-out 1.2s infinite}
+.lt2::before{width:42%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent)}
+.lgrid2>.lt2:nth-child(2n)::before{animation-delay:2.4s}
+.lgrid2>.lt2:nth-child(3n)::before{animation-delay:3.6s}
+.lgrid2>.lt2:nth-child(5n)::before{animation-delay:.6s}
+
+/* Tarjetas con más profundidad y un halo suave de tu color */
+.card{box-shadow:var(--hd),inset 0 1px 0 rgba(255,255,255,.1),0 0 0 1px rgba(var(--acr),.1),0 20px 44px rgba(var(--acr),.1)!important}
+.ccard,.shi,.vrow,.bat{box-shadow:0 12px 28px rgba(0,0,0,.34),0 0 0 1px rgba(var(--acr),.08),inset 0 1px 0 rgba(255,255,255,.07)}
+
+/* Botones principales: luz interior que respira */
+@keyframes btnlit{0%,100%{opacity:.12}50%{opacity:.85}}
+.btn:not(.s)::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:radial-gradient(120% 150% at 50% 135%,rgba(255,255,255,.6),transparent 58%);animation:btnlit 2.8s ease-in-out infinite}
+.btn:disabled::after{animation:none;opacity:0}
+
+/* Barras de progreso con brillo y relieve */
+.bar{box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.bar i,.shpr i,.rank-bar-fill{box-shadow:0 0 12px rgba(var(--acr),.75)}
+
+/* Navegación: el icono activo late */
+@keyframes navico{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.12)}}
+.nav button.on .ni{animation:navico 2.4s ease-in-out infinite}
+
+/* Monedas con destello, etiqueta "en vivo" con punto que late */
+.coin{filter:drop-shadow(0 0 5px rgba(250,204,21,.8))}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 currentColor;opacity:1}70%{box-shadow:0 0 0 7px transparent;opacity:.55}100%{box-shadow:0 0 0 0 transparent;opacity:1}}
+.pill.next::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:livepulse 1.5s ease-out infinite}
+
+/* Títulos y cifras con luz propia */
+.hero h1,h1.pg{text-shadow:3px 3px 0 rgba(0,0,0,.28),0 0 22px rgba(var(--acr),.35)}
+.stat big,.shbal .n,.stk-n b{filter:drop-shadow(0 0 8px rgba(var(--acr),.55))}
+
+/* PC: efectos extra al pasar el mouse */
+@media (hover:hover) and (pointer:fine){
+ .card:hover{box-shadow:var(--hd),inset 0 1px 0 rgba(255,255,255,.14),0 0 0 1px rgba(var(--acr),.55),0 26px 56px rgba(var(--acr),.28)!important}
+ .lt2:hover::before{animation-duration:1.2s}
+ .bat:hover,.vrow:hover,.ccard:hover{box-shadow:0 18px 40px rgba(var(--acr),.28),0 0 0 1px rgba(var(--acr),.6)}
+}
+@media (max-width:700px){html::before{--bs:min(170vmax,1100px)}}
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"></head>
 <body>
 <header class="top" id="top"></header>
@@ -5583,7 +5661,61 @@ const _Rcs=R;R=function(){const r=_Rcs.apply(this,arguments);try{collapseSecs()}
 /* Animación de entrada al cambiar de pantalla (solo visual) */
 (function(){var last=null,tm=null;function mark(){var v=document.body.getAttribute('data-v');if(v===last)return;var first=last===null;last=v;var b=document.body;b.classList.remove('vt');void b.offsetWidth;b.classList.add('vt');clearTimeout(tm);tm=setTimeout(function(){b.classList.remove('vt')},first?1500:1400)}
 try{new MutationObserver(mark).observe(document.body,{attributes:true,attributeFilter:['data-v']})}catch(e){}})();
-</script></body></html>
+</script><script>
+/* ===== POLISH-3 (solo visual): brasas flotantes + chispas al tocar. No toca ninguna función de la app ===== */
+(function(){try{
+var D=document,W=window,H=D.documentElement;if(!D.body)return;
+function mq(q){try{return !!(W.matchMedia&&W.matchMedia(q).matches)}catch(e){return false}}
+function light(){return mq('(prefers-color-scheme: light)')&&H.getAttribute('data-theme')!=='dark'}
+var mobile=!mq('(hover:hover) and (pointer:fine)');
+function mkc(id,z){var c=D.createElement('canvas');c.id=id;c.setAttribute('aria-hidden','true');c.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:'+z;D.body.appendChild(c);return c}
+function rgbVar(n,d){var v=(getComputedStyle(H).getPropertyValue(n)||'').trim();return /^\d+\s*,\s*\d+\s*,\s*\d+$/.test(v)?v.replace(/\s/g,''):d}
+function sprite(rgb,sz){var c=D.createElement('canvas');c.width=c.height=sz;var x=c.getContext('2d'),g=x.createRadialGradient(sz/2,sz/2,0,sz/2,sz/2,sz/2);g.addColorStop(0,'rgba('+rgb+',1)');g.addColorStop(.28,'rgba('+rgb+',.55)');g.addColorStop(1,'rgba('+rgb+',0)');x.fillStyle=g;x.fillRect(0,0,sz,sz);return c}
+
+/* ---- Brasas que suben por detrás de la app ---- */
+var cv=mkc('fxb',-1),cx=cv.getContext('2d'),w=1,h=1,N=mobile?40:84,P=[],sp=[],lastCol='',lastC=0,t0=0,raf=0;
+function size(){w=cv.width=Math.max(1,W.innerWidth);h=cv.height=Math.max(1,W.innerHeight)}
+function cols(){var a=rgbVar('--acr','234,179,8'),b=rgbVar('--acr2','250,204,21'),k=a+'|'+b;if(k!==lastCol){lastCol=k;sp=[sprite(a,64),sprite(b,64),sprite('255,244,200',64)]}}
+function spawn(p,init){var r=Math.random();p.x=Math.random()*w;p.y=init?Math.random()*h:h+30+Math.random()*80;p.s=10+Math.random()*(mobile?24:30);p.vy=14+Math.random()*36;p.sw=Math.random()*6.283;p.sa=8+Math.random()*24;p.sf=.4+Math.random()*.9;p.k=r<.55?0:(r<.9?1:2);p.a=.35+Math.random()*.55;p.tw=Math.random()*6.283}
+function frame(t){raf=0;if(D.hidden)return;
+ var dt=Math.min(.05,((t-t0)/1000)||.016);t0=t;if(t-lastC>1500){lastC=t;cols()}
+ cx.clearRect(0,0,w,h);var L=light();cx.globalCompositeOperation=L?'source-over':'lighter';var k=L?.55:1,ts=t/1000;
+ for(var i=0;i<P.length;i++){var p=P[i];p.y-=p.vy*dt;p.x+=Math.sin(ts*p.sf+p.sw)*p.sa*dt;if(p.y<-40)spawn(p,false);
+  var edge=Math.max(0,Math.min(1,Math.min((h-p.y)/80,p.y/160))),al=p.a*(.62+.38*Math.sin(ts*2+p.tw))*edge*k;if(al<=.01)continue;
+  cx.globalAlpha=al;cx.drawImage(sp[p.k],p.x-p.s/2,p.y-p.s/2,p.s,p.s)}
+ cx.globalAlpha=1;raf=requestAnimationFrame(frame)}
+function start(){if(raf||D.hidden)return;t0=performance.now();raf=requestAnimationFrame(frame)}
+size();cols();for(var i=0;i<N;i++){var q={};spawn(q,true);P.push(q)}
+var rt=0;W.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(size,150)});
+D.addEventListener('visibilitychange',function(){if(!D.hidden)start()});
+start();
+
+/* ---- Chispas y onda al tocar un botón o tarjeta ---- */
+var tc=null,tx=null,tw=0,th=0,tp=[],rings=[],tr=false,tl=0;
+function tsize(){tw=tc.width=Math.max(1,W.innerWidth);th=tc.height=Math.max(1,W.innerHeight)}
+function tloop(t){var dt=Math.min(.05,((t-tl)/1000)||.016);tl=t;tx.clearRect(0,0,tw,th);
+ tx.globalCompositeOperation=light()?'source-over':'lighter';var i,p;
+ for(i=rings.length-1;i>=0;i--){p=rings[i];p.t+=dt;var q=p.t/.5;if(q>=1){rings.splice(i,1);continue}
+  var e=1-Math.pow(1-q,3);tx.beginPath();tx.arc(p.x,p.y,p.max*e,0,6.283);tx.lineWidth=.8+3*(1-q);tx.strokeStyle='rgba('+p.c+','+(.9*(1-q))+')';tx.stroke()}
+ for(i=tp.length-1;i>=0;i--){p=tp[i];p.life+=dt;if(p.life>=p.max){tp.splice(i,1);continue}
+  p.vy+=520*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;var f=1-p.life/p.max;tx.beginPath();tx.arc(p.x,p.y,p.s*(.4+.6*f),0,6.283);tx.fillStyle='rgba('+p.c+','+f+')';tx.fill()}
+ if(!rings.length&&!tp.length){tx.clearRect(0,0,tw,th);tr=false;return}
+ requestAnimationFrame(tloop)}
+function burst(x,y,small){if(!tc){tc=mkc('fxt',90);tx=tc.getContext('2d');W.addEventListener('resize',function(){if(tc)tsize()})}
+ var a=rgbVar('--acr','234,179,8'),b=rgbVar('--acr2','250,204,21');
+ rings.push({x:x,y:y,t:0,c:b,max:small?34:64});
+ if(!small){for(var i=0;i<16;i++){var g=Math.random()*6.283,v=90+Math.random()*190;tp.push({x:x,y:y,vx:Math.cos(g)*v,vy:Math.sin(g)*v-60,life:0,max:.45+Math.random()*.35,c:(i%3?a:'255,244,200'),s:1.6+Math.random()*2.6})}}
+ if(!tr){tr=true;tsize();tl=performance.now();requestAnimationFrame(tloop)}}
+var dn=null;
+D.addEventListener('pointerdown',function(e){dn={x:e.clientX,y:e.clientY,t:Date.now()}},{passive:true,capture:true});
+D.addEventListener('pointerup',function(e){var d=dn;dn=null;if(!d)return;
+ if(Math.abs(e.clientX-d.x)>12||Math.abs(e.clientY-d.y)>12||Date.now()-d.t>600)return;
+ var t=e.target;if(!t||!t.closest||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))return;
+ var el=t.closest('button,a,[onclick],[role="button"],summary,label');if(!el)return;
+ burst(e.clientX,e.clientY,!!el.closest('.kpg,.pk,.cell,.seg,.shtabs,.steps,.stepbar,.nav'))},{passive:true,capture:true});
+}catch(e){}})();
+</script>
+</body></html>
 
 
 
