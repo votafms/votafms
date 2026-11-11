@@ -1995,6 +1995,17 @@ html::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 .cfxb .coin{width:28px;height:28px}
 .cfxr{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:3px solid #FDE047;box-shadow:0 0 18px rgba(250,204,21,.9)}
 .cfgvv{font-size:13px;font-weight:800;color:var(--ac2);white-space:nowrap}
+
+/* Duelo de hasta 5: selector de votaciones con flechas */
+.duvh{display:flex;align-items:center;gap:8px;margin:10px 0 4px}
+.duvn{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--bd);background:var(--cd2);color:var(--tx);font-size:24px;font-weight:800;line-height:1;cursor:pointer;padding:0}
+.duvn:disabled{opacity:.3;cursor:default}
+.duvt{flex:1;min-width:0;text-align:center}
+.duvt b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duvt small{color:var(--mu);font-size:11px}
+.duvd{display:flex;justify-content:center;gap:6px;margin:0 0 6px}
+.duvd i{width:7px;height:7px;border-radius:50%;background:var(--bd)}
+.duvd i.on{background:var(--ac);width:18px;border-radius:99px}
 /* Sin animaciones ni brillos: la app como era antes */
 html.noanim *,html.noanim *::before,html.noanim *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 html.noanim body::before,html.noanim::before,html.noanim::after,html.noanim .btn:not(.s)::before,html.noanim .btn:not(.s)::after,html.noanim .hero::before,html.noanim .bar i::after,html.noanim .banner::before,html.noanim .lt2::before,html.noanim .shbal::after,html.noanim .ptt::after,html.noanim #fxb,html.noanim #fxt{display:none!important}
@@ -3456,6 +3467,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-11T16:30:00-04:00'),text:'Duelos más grandes ⚔️: ahora una sala admite hasta 5 jugadores (el anfitrión y 4 más), por invitación de amigos o con el código. Además, cuando varios compañeros activan «Permitir que los demás vean mi votación», puedes pasar de una votación a otra con las flechas ‹ › en la barra del duelo, para que no se acumulen. La voz por ahora sigue siendo solo para duelos de 2 personas.'},
  {ts:Date.parse('2026-11-11T08:30:00-04:00'),text:'Nuevo: sonidos y monedas más vistosas 🔊🪙. Ahora la app suena al votar (sello y campanita), al ganar monedas (las monedas salen volando hasta tu contador y suena una por una), al comprar en la tienda, al subir de rango, al desbloquear logros y cuando te llega un aviso o una invitación a duelo. En Ajustes (la tuerca) puedes apagar los sonidos, subir o bajar el volumen y quitar la vibración.'},
  {ts:Date.parse('2026-11-11T07:00:00-04:00'),text:'Nuevo: Ajustes ⚙️. Toca la tuerca de arriba (junto a tus monedas) y encontrarás: «Desactivar animaciones y brillos» para quitar los efectos y dejar la app como era antes (en ese modo va a 25 FPS); una barra de FPS (30, 45 o 60) para que las animaciones sigan pero menos fluidas y con menos gasto de batería; y el apartado de Accesibilidad con texto grande, alto contraste, letra más legible y resaltar la selección del teclado.'},
  {ts:Date.parse('2026-11-10T20:00:00-04:00'),text:'Gran cambio: reset de la tienda. Ahora todos los colores de la app, diseños de tarjeta de perfil, diseños de planilla, marcos y títulos se compran en la tienda con monedas (están ordenados por categoría, del más barato al más caro). Todos empezamos de cero con la apariencia base y a los usuarios se les devolvieron sus monedas gastadas. Los atuendos de la mascota ya no dependen de logros: se desbloquean según tus días de racha (de 3 hasta 100 días). Los logros y los rangos se mantienen, pero por ahora no desbloquean nada.'},
@@ -4952,6 +4964,13 @@ setInterval(()=>{const el=document.getElementById('cdn');if(el)el.textContent=cd
 /* ===== Duelo con amigo: sala con código, mismo video sincronizado y votación en tiempo real ===== */
 const duRef=c=>FB.fm.doc(FB.db,'duels',c);
 const DUC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+/* Sala de hasta 5 jugadores: el anfitrión + los demás en d.pl ({uid:{n,t}}); guest/gu se mantiene con el primer invitado por compatibilidad */
+const DU_MAX=5;
+function duPlayers(d){if(!d)return [];const a=[{uid:d.host,n:d.hu,host:true}],seen=new Set([d.host]),pl=d.pl||{};
+ Object.keys(pl).filter(u=>pl[u]&&pl[u].n&&!seen.has(u)).sort((x,y)=>(pl[x].t||0)-(pl[y].t||0)).forEach(u=>{seen.add(u);a.push({uid:u,n:pl[u].n})});
+ if(d.guest&&!seen.has(d.guest))a.push({uid:d.guest,n:d.gu||''});return a}
+function vcOther(){const d=S.dul&&S.dul.d,me=S.me&&S.me.uid;if(!d||!me)return null;const o=duPlayers(d).filter(p=>p.uid!==me);return o.length===1?o[0]:null}
+function duView(dir){const D=S.dul;if(!D||!D.d||!S.me)return;const sh=duPlayers(D.d).filter(p=>p.uid!==S.me.uid&&D.d.sh&&D.d.sh[p.uid]);if(!sh.length)return;let i=sh.findIndex(p=>p.uid===D.viewUid);if(i<0)i=0;i=(i+dir+sh.length)%sh.length;D.viewUid=sh[i].uid;D.open=true;duRender()}
 const duCode=()=>Array.from({length:6},()=>DUC[Math.floor(Math.random()*DUC.length)]).join('');
 const duSty='width:100%;margin:0 0 8px;padding:12px;border-radius:14px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit';
 /* Planillas antiguas que puede elegir el anfitrión (cada una usa las rondas de esa temporada) */
@@ -4971,14 +4990,18 @@ async function duCreate(){const c=S.duc,fm=FB.fm;let a,b,y,j;S.dum='';
  if(c.mode==='libre'){a=c.a.trim();b=c.b.trim();y=ytParse(c.y).join(',');j='Batalla libre'}
  else{if(!c.sel){S.dum='Elige la batalla.';return R()}a=c.sel.a;b=c.sel.b;y=ytParse(c.y).join(',')||c.sel.y||'';const jn=(duJors(c.lg,c.temp)[+c.ji]||{}).n||'';j=c.temp==='2026'?jn:L.find(x=>x.i===c.lg).n+' · '+seasonLabel(c.temp)+(jn?' · '+jn:'')}
  if(!a||!b){S.dum='Escribe los dos MCs.';return R()}
- const code=duCode(),d={host:S.me.uid,hu:S.me.u,guest:null,gu:'',lg:c.mode==='libre'?(S.duCol||'es'):c.lg,a,b,y,j,mode:c.mode,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt,tp:c.fmt==='actual'?'auto':(c.tp||'auto'),st:'wait',rd:1,sv:{},sh:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0},ts:Date.now()};
+ const code=duCode(),d={host:S.me.uid,hu:S.me.u,guest:null,gu:'',pl:{},lg:c.mode==='libre'?(S.duCol||'es'):c.lg,a,b,y,j,mode:c.mode,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt,tp:c.fmt==='actual'?'auto':(c.tp||'auto'),st:'wait',rd:1,sv:{},sh:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0},ts:Date.now()};
  try{await fm.setDoc(duRef(code),d);duSub(code,'host')}catch(e){S.dum='No se pudo crear la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
 async function duJoin(){const fm=FB.fm,code=String(S.duc.code||'').trim().toUpperCase();S.dum='';if(code.length!==6){S.dum='El código tiene 6 caracteres.';return R()}
  try{const sn=await fm.getDoc(duRef(code));if(!sn.exists()){S.dum='No existe ninguna sala con ese código.';return R()}const d=sn.data();
   if(d.st==='done'){S.dum='Esa sala ya se cerró.';return R()}
   if(d.host===S.me.uid)return duSub(code,'host');
-  if(d.guest&&d.guest!==S.me.uid){S.dum='Esa sala ya está completa.';return R()}
-  if(d.guest!==S.me.uid)await fm.updateDoc(duRef(code),{guest:S.me.uid,gu:S.me.u});duSub(code,'guest')}
+  {const pls=duPlayers(d),me=S.me.uid;
+   if(!pls.some(x=>x.uid===me)){
+    if(pls.length>=DU_MAX){S.dum='Esa sala ya está completa (máximo '+DU_MAX+' jugadores).';return R()}
+    const up={['pl.'+me]:{n:S.me.u,t:Date.now()}};if(!d.guest){up.guest=me;up.gu=S.me.u}
+    await fm.updateDoc(duRef(code),up)}
+   duSub(code,'guest')}}
  catch(e){S.dum='No se pudo entrar a la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
 function duSub(code,role){duStop();S.dul={code,role,d:null,mute:0,lastN:0,ls:null,t:0,lt:0,lts:0,el:null,got:0,live:false,sig:'',open:true,rem:0,saved:0};S.duv='lobby';S.v='duel';
  S.dul.unsub=FB.fm.onSnapshot(duRef(code),sn=>{const D=S.dul;if(!D||D.code!==code)return;if(!sn.exists())return duEnd('La sala ya no existe.');const d=sn.data();D.d=d;
@@ -4990,7 +5013,7 @@ function duGo(d){const liga=d.mode==='liga'&&L.some(x=>x.i===d.lg);S.dul.live=tr
 async function duStart(){try{await FB.fm.updateDoc(duRef(S.dul.code),{st:'live'})}catch(e){S.dum='No se pudo empezar.';R()}}
 function duStop(){const D=S.dul;if(D&&D.unsub)try{D.unsub()}catch(e){}}
 function duEnd(msg){duStop();S.dul=null;S.duelOn=false;S.duv='menu';S.dum=msg||'';S.v='duel';R()}
-async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir del duelo?'))return;const me=S.me.uid;try{await FB.fm.updateDoc(duRef(D.code),D.role==='host'?{st:'done'}:{guest:null,gu:'',['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null})}catch(e){}duEnd('')}
+async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir del duelo?'))return;const me=S.me.uid;try{const up=D.role==='host'?{st:'done'}:{['pl.'+me]:null,['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null};if(D.role!=='host'&&D.d&&D.d.guest===me){up.guest=null;up.gu=''}await FB.fm.updateDoc(duRef(D.code),up)}catch(e){}duEnd('')}
 async function duShare(v){const D=S.dul;if(!D)return;D.sig='';try{await FB.fm.updateDoc(duRef(D.code),{['sh.'+S.me.uid]:!!v,['pv.'+S.me.uid]:null})}catch(e){}}
 /* --- Video sincronizado: pausar, reanudar, adelantar y cambiar de parte afectan a los dos --- */
 const duCmd=(f,a)=>{const el=document.getElementById('vpf');if(el&&el.contentWindow)el.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:a||[]}),'*')};
@@ -5016,10 +5039,13 @@ function duPv(){const rows=[];
  else S.rounds.forEach((r,k)=>rows.push({n:String(r.n),ta:sumR(k,0),tb:sumR(k,1),ok:S.sc[k][0].some(x=>x!=null)||S.sc[k][1].some(x=>x!=null),rep:!!r.rep}));
  return {ta:mainTot(0),tb:mainTot(1),rows}}
 setInterval(()=>{const D=S.dul;if(!D||!D.live||!D.d||!S.me||!S.rounds||!S.sc||!(D.d.sh&&D.d.sh[S.me.uid]))return;let pv;try{pv=duPv()}catch(e){return}const sg=JSON.stringify(pv);if(sg===D.sig)return;D.sig=sg;FB.fm.updateDoc(duRef(D.code),{['pv.'+S.me.uid]:pv}).catch(()=>{})},1500);
-function duBarH(){const D=S.dul;if(!D||!D.live||!D.d||!S.me)return '';const d=D.d,me=S.me.uid,host=d.host===me,fid=host?d.guest:d.host,fn=host?d.gu:d.hu,on=!!(d.sh&&d.sh[me]),fOn=!!(fid&&d.sh&&d.sh[fid]),pv=(fOn&&d.pv&&d.pv[fid])||null,op=D.open!==false,num=v=>v==null?'–':fmt(v);
+function duBarH(){const D=S.dul;if(!D||!D.live||!D.d||!S.me)return '';const d=D.d,me=S.me.uid,host=d.host===me,pls=duPlayers(d),others=pls.filter(p=>p.uid!==me),on=!!(d.sh&&d.sh[me]),op=D.open!==false,num=v=>v==null?'–':fmt(v);
+ const sharers=others.filter(p=>d.sh&&d.sh[p.uid]);let cur=sharers.find(p=>p.uid===D.viewUid)||sharers[0]||null;if(cur)D.viewUid=cur.uid;
+ const idx=cur?sharers.indexOf(cur):-1,pv=(cur&&d.pv&&d.pv[cur.uid])||null,multi=sharers.length>1;
  const tbl=pv?`<div class="dur dh"><span></span><b>${esc(d.a)}</b><b>${esc(d.b)}</b></div>`+(pv.rows||[]).map(r=>`<div class="dur"><span>${esc(r.n)}</span><b>${r.ok===false?'–':num(r.ta)}</b><b>${r.ok===false?'–':num(r.tb)}</b></div>`).join('')+`<div class="dur dt"><span>Total</span><b>${num(pv.ta)}</b><b>${num(pv.tb)}</b></div>`:'';
- const who=d.st==='done'&&!host?'El anfitrión salió del duelo':(fid?'con @'+esc(fn):'Tu amigo salió del duelo');const liga=d.mode==='liga',dup=liga&&!D.saved&&S.bt&&(S.myVotes||[]).some(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:S.bt.a,b:S.bt.b})),note=dup?'<div class="mu" style="font-size:12px;margin:8px 0 0">Ya votaste esta batalla de liga: al guardar se actualizará tu voto.</div>':'';
- return `<div class="dub"><div class="row" style="justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><b>⚔️ Duelo · ${esc(D.code)}</b></div><button class="btn s sm" style="width:auto;margin:0" onclick="duLeave()">Salir</button></div><div class="du-bt">${esc(d.a)}<em>VS</em>${esc(d.b)}</div><div class="du-meta"><span class="pill">Batalla ${d.rd||1}</span><span class="pill ${liga?'next':''}">${liga?'Liga':'Libre'}</span>${host?'<span class="pill next">Anfitrión</span>':''}<span class="du-st wt">${who}</span>${duVoiceChip()}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="dut" style="margin:0;width:auto;flex:1" onclick="duChatToggle()">💬 Chat${duUnread()?' · '+duUnread()+' nuevo'+(duUnread()>1?'s':''):''}</button><button class="dut" style="margin:0;width:auto;flex:1" onclick="duRoom()">🏠 Sala</button></div>${note}${fid&&!(d.st==='done'&&!host)?`<label class="dusw"><input type="checkbox" ${on?'checked':''} onchange="duShare(this.checked)"> Permitir que @${esc(fn)} vea mi votación</label>`:''}${fOn?`<button class="dut" onclick="S.dul.open=${op?'false':'true'};duRender()">${op?'Ocultar':'Ver'} votación de @${esc(fn)}</button>${op?(pv?`<div class="duf">${tbl}</div>`:'<div class="mu" style="font-size:12px;margin:6px 0 0">Aún no puntúa…</div>'):''}`:''}</div>`}
+ const who=d.st==='done'&&!host?'El anfitrión salió del duelo':(others.length?'con '+others.map(p=>'@'+esc(p.n)).join(', '):'Estás solo en la sala');const liga=d.mode==='liga',dup=liga&&!D.saved&&S.bt&&(S.myVotes||[]).some(x=>!x.free&&bkey(x)===bkey({l:S.lg,temp:S.temp,a:S.bt.a,b:S.bt.b})),note=dup?'<div class="mu" style="font-size:12px;margin:8px 0 0">Ya votaste esta batalla de liga: al guardar se actualizará tu voto.</div>':'';
+ const nav=cur?`<div class="duvh"><button class="duvn" onclick="duView(-1)" ${multi?'':'disabled'} aria-label="Votación anterior">‹</button><div class="duvt"><b>Votación de @${esc(cur.n)}</b><small>${idx+1} de ${sharers.length}${multi?' · cambia con las flechas':''}</small></div><button class="duvn" onclick="duView(1)" ${multi?'':'disabled'} aria-label="Votación siguiente">›</button></div>${multi?`<div class="duvd">${sharers.map((x,k)=>`<i class="${k===idx?'on':''}"></i>`).join('')}</div>`:''}`:'';
+ return `<div class="dub"><div class="row" style="justify-content:space-between;gap:8px;align-items:center"><div style="min-width:0"><b>⚔️ Duelo · ${esc(D.code)}</b></div><button class="btn s sm" style="width:auto;margin:0" onclick="duLeave()">Salir</button></div><div class="du-bt">${esc(d.a)}<em>VS</em>${esc(d.b)}</div><div class="du-meta"><span class="pill">Batalla ${d.rd||1}</span><span class="pill ${liga?'next':''}">${liga?'Liga':'Libre'}</span><span class="pill">👥 ${pls.length}/${DU_MAX}</span>${host?'<span class="pill next">Anfitrión</span>':''}<span class="du-st wt">${who}</span>${duVoiceChip()}</div><div style="display:flex;gap:8px;margin-top:10px"><button class="dut" style="margin:0;width:auto;flex:1" onclick="duChatToggle()">💬 Chat${duUnread()?' · '+duUnread()+' nuevo'+(duUnread()>1?'s':''):''}</button><button class="dut" style="margin:0;width:auto;flex:1" onclick="duRoom()">🏠 Sala</button></div>${note}${others.length&&!(d.st==='done'&&!host)?`<label class="dusw"><input type="checkbox" ${on?'checked':''} onchange="duShare(this.checked)"> Permitir que ${others.length>1?'los demás vean':'@'+esc(others[0].n)+' vea'} mi votación</label>`:''}${sharers.length?`<button class="dut" onclick="S.dul.open=${op?'false':'true'};duRender()">${op?'Ocultar':'Ver'} ${multi?'votaciones de los demás':'votación de @'+esc(cur.n)}</button>${op?nav+(pv?`<div class="duf">${tbl}</div>`:'<div class="mu" style="font-size:12px;margin:6px 0 0">Aún no puntúa…</div>'):''}`:''}</div>`}
 function duRender(){const el=document.getElementById('dubar');if(el)el.innerHTML=duBarH()}
 /* --- Pantallas: menú, crear sala, unirse, sala de espera --- */
 function duelV(){return `<div class="duw">${duelV0()}</div>`}
@@ -5031,17 +5057,17 @@ function duelV0(){const D=S.dul,c=S.duc||{},v=S.duv||'menu',bk='<button class="b
  if(D&&D.live){const d=D.d||{},host=D.role==='host',rd=d.rd||1,vt=u=>d.sv&&d.sv[u]===rd?'<span class="du-st ok">✓ Ya votó</span>':'<span class="du-st wt">Votando…</span>';
   return `${bk}${duHero('🏟️','Sala de duelo · '+esc(D.code),'Batalla '+rd+' · '+(host?'Eres el anfitrión':'Invitado de @'+esc(d.hu)))}
 <div class="du-sec">Batalla actual</div><div class="card">${duVs(d.a,d.b)}<div class="du-jt">${esc(d.j||'')}</div><div class="du-meta">${duPill(d)}</div></div>
-<div class="du-sec">Jugadores</div><div class="card" style="padding:6px 16px">${duPl(d.host,d.hu,'Anfitrión',vt(d.host))}${d.guest?duPl(d.guest,d.gu,'',vt(d.guest)):'<div class="du-pl"><div class="n" style="color:var(--mu)">Tu amigo salió de la sala.</div></div>'}</div>
+<div class="du-sec">Jugadores · ${duPlayers(d).length}/${DU_MAX}</div><div class="card" style="padding:6px 16px">${duPlayers(d).map(p=>duPl(p.uid,p.n,p.host?'Anfitrión':'',vt(p.uid))).join('')}${duPlayers(d).length<2?'<div class="du-pl"><div class="n" style="color:var(--mu)">Todos salieron de la sala.</div></div>':''}</div>
 <div class="du-acts"><button class="btn" onclick="go('${D.saved?'res':'vote'}')">${D.saved?'Ver mi resultado':'Volver a la votación'}</button>
 ${host?`<button class="btn s" onclick="duNextOpen()">Elegir siguiente batalla</button>`:`<div class="du-note">${D.saved?'Esperando a que @'+esc(d.hu)+' elija la siguiente batalla…':'Cuando termines de votar, @'+esc(d.hu)+' elegirá la siguiente batalla.'}</div>`}
 <button class="btn s" onclick="duLeave()">Salir del duelo</button></div>`}
  if(D&&D.d){const d=D.d,host=D.role==='host',col=L.some(x=>x.i===S.duCol)?S.duCol:d.lg;
-  return `${bk}${duHero('🚪','Sala de duelo',host?'Comparte el código y empieza cuando tu amigo entre.':'Ya estás dentro. Espera a que el anfitrión empiece.')}
+  return `${bk}${duHero('🚪','Sala de duelo',host?'Comparte el código o invita amigos (hasta '+DU_MAX+' jugadores) y empieza cuando estén listos.':'Ya estás dentro. Espera a que el anfitrión empiece.')}
 ${diPanel()}<div class="card du-code"><div class="mu" style="margin:0">${host?'Código de la sala · para quien no sea tu amigo':'Código de la sala'}</div><div class="ducode">${esc(D.code)}</div><button class="btn s sm" onclick="navigator.clipboard&&navigator.clipboard.writeText('${esc(D.code)}');this.textContent='Copiado ✓'">Copiar código</button></div>
 <div class="du-sec">Batalla</div><div class="card">${duVs(d.a,d.b)}<div class="du-jt">${esc(d.j||'')}</div><div class="du-jt" style="margin-top:2px">${duTpName(d)}${d.y?'':' · sin video'}</div><div class="du-meta">${duPill(d)}</div></div>
-<div class="du-sec">Jugadores</div><div class="card" style="padding:6px 16px">${duPl(d.host,d.hu,'Anfitrión','<span class="du-st ok">✓ Listo</span>')}${d.guest?duPl(d.guest,d.gu,'','<span class="du-st ok">✓ Listo</span>'):'<div class="du-pl"><div class="du-ico" style="width:34px;height:34px;font-size:16px;border-radius:50%">⏳</div><div class="n" style="color:var(--mu)">Esperando a tu amigo…</div><span class="du-st wt">…</span></div>'}</div>
+<div class="du-sec">Jugadores · ${duPlayers(d).length}/${DU_MAX}</div><div class="card" style="padding:6px 16px">${duPlayers(d).map(p=>duPl(p.uid,p.n,p.host?'Anfitrión':'','<span class="du-st ok">✓ Listo</span>')).join('')}${duPlayers(d).length<DU_MAX?'<div class="du-pl"><div class="du-ico" style="width:34px;height:34px;font-size:16px;border-radius:50%">⏳</div><div class="n" style="color:var(--mu)">'+(duPlayers(d).length<2?'Esperando jugadores…':'Pueden entrar hasta '+(DU_MAX-duPlayers(d).length)+' más')+'</div><span class="du-st wt">…</span></div>':''}</div>
 ${d.mode==='liga'?'':`<div class="du-sec">Tu color de planilla · ${esc((L.find(x=>x.i===col)||{n:''}).n)}</div><div class="lpick">${L.map(l=>`<button class="${col===l.i?'on':''}" onclick="duCol('${l.i}')">${logo(l,34)}<span>${esc(l.n.replace('FMS ',''))}</span></button>`).join('')}</div>`}
-<div class="du-acts">${host?`<button class="btn" ${d.guest?'':'disabled'} onclick="duStart()">Empezar duelo</button>`:`<div class="du-note">Esperando a que @${esc(d.hu)} empiece…</div>`}<button class="btn s" onclick="duLeave()">Salir de la sala</button>${msg}</div>`}
+<div class="du-acts">${host?`<button class="btn" ${duPlayers(d).length>1?'':'disabled'} onclick="duStart()">Empezar duelo${duPlayers(d).length>1?' · '+duPlayers(d).length+' jugadores':''}</button>`:`<div class="du-note">Esperando a que @${esc(d.hu)} empiece…</div>`}<button class="btn s" onclick="duLeave()">Salir de la sala</button>${msg}</div>`}
  if(v==='create'){const lgs=c.lg,ss=duSeasons(lgs),js=c.temp?duJors(lgs,c.temp):[],bs=(js[+c.ji]||{bs:[]}).bs,o=(val,t,s)=>`<option value="${esc(val)}" ${String(val)===String(s)?'selected':''}>${esc(t)}</option>`,sg=(k,t)=>`<button class="${c.mode===k?'on':''}" onclick="duF('mode','${k}')">${t}</button>`,fg=(k,t)=>`<button class="${c.fmt===k?'on':''}" onclick="duF('fmt','${k}')">${t}</button>`,tps=DU_TP.filter(t=>!(c.mode==='libre'&&t[0]==='libre'));
   return `${bk}${duHero('🛠️','Crear sala','Elige el tipo de batalla, el video y la planilla.')}
 <div class="du-sec"><i>1</i>Tipo de batalla</div><div class="seg" style="margin-bottom:8px">${sg('liga','Batalla de liga')}${sg('libre','Batalla libre')}</div>
@@ -5053,11 +5079,11 @@ ${c.mode==='liga'&&c.sel?`<div class="card" style="border-color:rgba(var(--acr),
 <div class="du-sec"><i>4</i>Planilla</div><div class="card"><div class="seg" style="margin-bottom:${c.fmt==='antigua'?'10px':'0'}">${fg('actual','Actual')}${fg('antigua','Antigua')}</div>${c.fmt==='antigua'?`<select onchange="duF('tp',this.value)" style="${duSty};margin-bottom:0">${tps.map(t=>o(t[0],t[1],c.tp||'auto')).join('')}</select>`:''}</div>
 <div class="du-acts"><button class="btn" onclick="duCreate()">${c.inv?'Crear sala e invitar':'Crear sala'}</button>${c.inv?'<div class=\"du-note\">Al crearla podrás elegir a qué amigo invitar.</div>':''}${msg}</div>`}
  if(v==='join')return `${bk}${duHero('🔑','Unirme a una sala','Escribe el código de 6 caracteres que te pasó tu amigo.')}<div class="card"><input placeholder="Código de 6 caracteres" value="${esc(c.code)}" maxlength="6" autocapitalize="characters" autocomplete="off" oninput="S.duc.code=this.value.toUpperCase()" style="text-align:center;letter-spacing:6px;font-size:22px;font-weight:800"><button class="btn" style="margin-bottom:0" onclick="duJoin()">Entrar al duelo</button></div>${msg}`;
- return `${bk}${duHero('⚔️','Duelo con amigo','Voten la misma batalla a la vez y comparen en tiempo real.')}
+ return `${bk}${duHero('⚔️','Duelo con amigo','Voten la misma batalla a la vez (hasta 5 jugadores) y comparen en tiempo real.')}
 ${diPausedH()}<button class="du-act main" onclick="duInvStart()"><span class="du-ico">👥</span><span><b>Invitar a un amigo</b><span class="t">Sin código: a tu amigo le sale un aviso arriba, esté donde esté.</span></span><span class="go">›</span></button>
 <button class="du-act" onclick="S.duc.inv=0;S.duv='create';R()"><span class="du-ico">➕</span><span><b>Crear una sala con código</b><span class="t">Para quien no tengas agregado: le pasas el código y entra.</span></span><span class="go">›</span></button>
 <button class="du-act" onclick="S.duv='join';R()"><span class="du-ico">🔑</span><span><b>Tengo un código</b><span class="t">Entra a la sala que creó tu amigo.</span></span><span class="go">›</span></button>
-<div class="du-sec">Cómo funciona</div><div class="card du-steps"><div class="du-step"><i>1</i><span>El anfitrión crea la sala e invita a un amigo (o comparte el código con quien no sea su amigo).</span></div><div class="du-step"><i>2</i><span>Los dos votan la misma batalla, con chat y votación visible si lo permiten.</span></div><div class="du-step"><i>3</i><span>Al terminar, el anfitrión elige la siguiente batalla sin salir de la sala.</span></div></div>${msg}`}
+<div class="du-sec">Cómo funciona</div><div class="card du-steps"><div class="du-step"><i>1</i><span>El anfitrión crea la sala e invita a sus amigos (hasta 5 jugadores), o comparte el código con quien no sea su amigo.</span></div><div class="du-step"><i>2</i><span>Todos votan la misma batalla, con chat y votación visible si lo permiten (puedes cambiar entre las votaciones con flechas).</span></div><div class="du-step"><i>3</i><span>Al terminar, el anfitrión elige la siguiente batalla sin salir de la sala.</span></div></div>${msg}`}
 /* --- Enganches con la votación existente (solo actúan dentro de un duelo) --- */
 const duOn=()=>!!(S.duelOn&&S.dul&&S.dul.live);
 const _voteV2=voteV;voteV=function(){if(!duOn())return _voteV2();return '<div id="dubar"></div>'+_voteV2().replace(/<button class="back" onclick="go\('(?:libre|lg)'\)">[\s\S]*?<\/button>/,'<button class="back" onclick="duLeave()">'+ico('back',18)+' Salir del duelo</button>')};
@@ -5088,16 +5114,17 @@ function diClearBlock(){S.diBlk=0;try{localStorage.removeItem(diBlockKey())}catc
 function diPausedH(){const l=diBlockLeft();if(!l)return '';return `<div class="dipp"><span>🔕 Invitaciones pausadas · ${Math.ceil(l/60000)} min</span><button class="fbtn" onclick="diClearBlock()">Reactivar</button></div>`}
 function duInvStart(){if(!S.duc)S.duc={mode:'liga',lg:'es',temp:'',ji:'',bi:'',a:'',b:'',y:'',fmt:'actual',tp:'auto',sel:null,code:''};S.duc.inv=1;S.duv='create';R()}
 /* Quien invita: panel dentro de la sala de espera */
-function diPanel(){const D=S.dul;if(!D||D.live||D.role!=='host'||!D.d||D.d.guest||!S.me)return '';
+function diPanel(){const D=S.dul;if(!D||D.live||D.role!=='host'||!D.d||duPlayers(D.d).length>=DU_MAX||!S.me)return '';
  const me=S.me.uid,now=Date.now();
- const acc=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName});
+ const inRoom=new Set(duPlayers(D.d).map(x=>x.uid));
+ const acc=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName}).filter(o=>!inRoom.has(o.uid));
  const on=o=>{const i=presInfo(o.uid);return i&&i.on?1:0};
  acc.sort((a,b)=>on(b)-on(a)||String(a.u).localeCompare(String(b.u)));
  const rows=acc.length?acc.map(o=>{const sent=(S.diSent[o.uid]||0)>now;
   return `<div class="frow"><span style="display:flex;align-items:center;gap:8px;min-width:0">${withDot(o.uid,avX(o.uid,o.u))}<span style="text-align:left;min-width:0">@${esc(o.u)}${presLine(o.uid)}</span></span><button class="fbtn${sent?' sent':''}" ${sent?'disabled':''} onclick="diInvite('${esc(o.uid)}')">${sent?'Invitación enviada…':'Invitar'}</button></div>`}).join('')
   :'<div class="mu">Todavía no tienes amigos agregados. Pásale el código a quien quieras que entre.</div>';
  return `<div class="du-sec">Invitar a un amigo</div><div class="card" style="padding:6px 16px;max-height:270px;overflow:auto">${rows}</div><div class="mu" style="font-size:12px;margin:-2px 2px 12px">A tu amigo le sale un aviso arriba por 10 segundos, sin código.</div>`}
-async function diInvite(uid){const D=S.dul;if(!D||D.role!=='host'||!D.d||D.d.guest||!S.me)return;
+async function diInvite(uid){const D=S.dul;if(!D||D.role!=='host'||!D.d||duPlayers(D.d).length>=DU_MAX||!S.me)return;
  if(!isFriend(uid)){S.dum='Solo puedes invitar a tus amigos.';return R()}
  const now=Date.now();if((S.diSent[uid]||0)>now)return;
  S.diSent[uid]=now+DI_TTL+1000;S.dum='';R();
@@ -5178,7 +5205,7 @@ function duBuild(){const c=S.duc;let a,b,y,j;S.dum='';
  if(!a||!b){S.dum='Escribe los dos MCs.';return null}
  return {a,b,y,j,mode:c.mode,lg:c.mode==='libre'?(S.duCol||'es'):c.lg,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt,tp:c.fmt==='actual'?'auto':(c.tp||'auto')}}
 async function duNextGo(){const D=S.dul;if(!D||D.role!=='host'||!D.d)return;const x=duBuild();if(!x)return R();const d=D.d,rd=d.rd||1;
- if(d.guest&&!(d.sv&&d.sv[d.guest]===rd)&&!confirm('@'+d.gu+' todavía no guardó su voto. ¿Pasar a la siguiente batalla igualmente?'))return;
+ {const miss=duPlayers(d).filter(x=>x.uid!==d.host&&!(d.sv&&d.sv[x.uid]===rd));if(miss.length&&!confirm(miss.map(x=>'@'+x.n).join(', ')+(miss.length>1?' todavía no guardaron su voto':' todavía no guardó su voto')+'. ¿Pasar a la siguiente batalla igualmente?'))return}
  try{await FB.fm.updateDoc(duRef(D.code),{...x,rd:rd+1,st:'live',sv:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0}});S.duv='room'}catch(e){S.dum='No se pudo cambiar de batalla. Intenta otra vez.';R()}}
 {const _duelV3=duelV;duelV=function(){const D=S.dul;
  if(D&&D.live&&S.duv==='next'&&D.role==='host'){S.dul=null;S.duv='create';let h;try{h=_duelV3()}finally{S.dul=D;S.duv='next'}
@@ -5239,10 +5266,10 @@ function vcNewPc(sid){vcClosePc();const pc=new RTCPeerConnection({iceServers:DU_
 function vcRestart(){if(!V.joined)return;vcClosePc();V.sid=null;V.peerT=0;duVoiceSync()}
 async function vcFlushIce(){if(!V.out.length||!S.me)return;const c=V.out.splice(0),me=S.me.uid,au=FB.fm.arrayUnion;
  const val=au?au(...c):[...(((vcDoc()||{}).ice||{})[me]||[]),...c];await vcPub({['ice.'+me]:val})}
-function vcDrainIce(){const d=vcDoc();if(!V.pc||!d||!S.me||!V.pc.remoteDescription)return;const me=S.me.uid,o=d.host===me?d.guest:d.host,arr=(d.ice&&d.ice[o])||[];
+function vcDrainIce(){const d=vcDoc();if(!V.pc||!d||!S.me||!V.pc.remoteDescription)return;const ot=vcOther(),arr=(ot&&d.ice&&d.ice[ot.uid])||[];
  while(V.iceN<arr.length){const c=arr[V.iceN++];try{V.pc.addIceCandidate(JSON.parse(c)).catch(()=>{})}catch(e){}}}
 async function duVoiceSync(){const D=S.dul,d=D&&D.d;if(!V.joined||!d||!S.me||V.busy)return;
- const me=S.me.uid,isHost=d.host===me,other=isHost?d.guest:d.host;if(!other){if(V.pc){vcClosePc();V.sid=null;V.st=''}return}
+ const me=S.me.uid,isHost=d.host===me,ot=vcOther(),other=ot&&ot.uid;if(!other){if(V.pc){vcClosePc();V.sid=null;V.st=''}return}
  const pv=d.vc&&d.vc[other],rtc=d.rtc||{};
  if(!pv||!pv.on){if(V.pc){vcClosePc();V.sid=null;V.st='';V.peerT=0;voiceUI()}return}
  if(isHost){
@@ -5263,14 +5290,14 @@ function voiceTap(){if(V.audio)V.audio.play().then(()=>{V.needTap=false;voiceUI(
 function voiceStop(silent){const was=V.joined;vcClosePc();if(V.stream){V.stream.getTracks().forEach(t=>t.stop());V.stream=null}
  V.joined=false;V.mic=false;V.st='';V.sid=null;V.peerT=0;V.needTap=false;V.busy=false;
  if(was&&!silent)vcPub({['vc.'+vcMe()]:{on:false,mic:false,t:Date.now()}});voiceUI();try{duRender()}catch(e){}}
-function vcFriendLine(){const d=vcDoc(),me=S.me&&S.me.uid;if(!d||!me)return '';const o=d.host===me?d.guest:d.host,fn=d.host===me?d.gu:d.hu;
- if(!o)return 'Tu amigo no está en la sala.';const pv=d.vc&&d.vc[o];if(!pv||!pv.on)return '@'+esc(fn)+' aún no activa la voz.';
+function vcFriendLine(){const d=vcDoc(),me=S.me&&S.me.uid;if(!d||!me)return '';const ot=vcOther(),o=ot&&ot.uid,fn=ot?ot.n:'';
+ if(duPlayers(d).length>2)return 'La voz por ahora solo funciona en duelos de 2 personas.';if(!o)return 'Tu amigo no está en la sala.';const pv=d.vc&&d.vc[o];if(!pv||!pv.on)return '@'+esc(fn)+' aún no activa la voz.';
  if(V.st!=='conectado')return V.st==='reconectando'?'⏳ Reconectando…':'⏳ Conectando con @'+esc(fn)+'…';
  return pv.mic?(V.speaking?'🎙️ @'+esc(fn)+' está hablando':'🎙️ @'+esc(fn)+' tiene el micro encendido'):'🔇 @'+esc(fn)+' tiene el micro apagado'}
 function duVoiceChip(){if(!V||!V.joined)return '';return `<span class="du-st ${V.mic?'mic':'wt'}">${V.mic?'🔴 Tu micro: ENCENDIDO':'🎙️ Tu micro: apagado'}</span>`}
 function voiceUI(){const el=document.getElementById('duch');if(!el)return;const box=el.querySelector('#duchvc');if(!box)return;
- const d=vcDoc(),me=S.me&&S.me.uid,fn=d?(d.host===me?d.gu:d.hu):'',o=d?(d.host===me?d.guest:d.host):null,pv=o&&d.vc&&d.vc[o];let h;
- if(!V.joined)h=`<button class="duv-join" onclick="voiceJoin()">🎙️ Activar voz${fn?' con @'+esc(fn):''}</button>${V.err?`<div class="duv-err">${esc(V.err)}</div>`:`<div class="duv-sub">Tu micrófono empieza apagado. Usa audífonos para evitar eco.${pv&&pv.on?' @'+esc(fn)+' ya está en la voz.':''}</div>`}`;
+ const d=vcDoc(),me=S.me&&S.me.uid,ot=d?vcOther():null,fn=ot?ot.n:'',o=ot?ot.uid:null,multi=!!d&&duPlayers(d).length>2,pv=o&&d.vc&&d.vc[o];let h;
+ if(!V.joined&&multi)h='<div class="duv-sub">La voz por ahora solo funciona en duelos de 2 personas.</div>';else if(!V.joined)h=`<button class="duv-join" onclick="voiceJoin()">🎙️ Activar voz${fn?' con @'+esc(fn):''}</button>${V.err?`<div class="duv-err">${esc(V.err)}</div>`:`<div class="duv-sub">Tu micrófono empieza apagado. Usa audífonos para evitar eco.${pv&&pv.on?' @'+esc(fn)+' ya está en la voz.':''}</div>`}`;
  else h=`<div class="duv-row"><button class="duv-mic${V.mic?' on':''}" onclick="voiceMic()">${V.mic?'🔴 Micrófono ENCENDIDO':'🎙️ Micrófono apagado'}</button><button class="duv-sp${V.spk?'':' off'}" onclick="voiceSpk()" aria-label="Sonido">${V.spk?'🔊':'🔇'}</button><button class="duv-x" onclick="voiceStop()">Salir</button></div><div class="duv-st">${vcFriendLine()}</div>${V.needTap?'<button class="duv-join" onclick="voiceTap()">Toca aquí para activar el audio</button>':''}${V.err?`<div class="duv-err">${esc(V.err)}</div>`:''}`;
  if(box.dataset.h!==h){box.innerHTML=h;box.dataset.h=h}
  const mb=el.querySelector('#duchm');if(mb){mb.hidden=!V.joined;mb.className='duch-mb'+(V.mic?' on':'');mb.textContent=V.mic?'🔴':'🎙️';mb.setAttribute('aria-label',V.mic?'Apagar micrófono':'Encender micrófono')}}
