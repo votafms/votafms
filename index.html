@@ -2030,7 +2030,7 @@ html.a-hc .mu{font-weight:600}
 html.a-font{--dsp:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 html.a-font body{letter-spacing:.2px}
 html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!important;box-shadow:0 0 0 6px #000!important}
-</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"><style>.video{position:relative}.vblk{position:absolute;inset:0;z-index:3;cursor:not-allowed}.duch-m small{display:block;margin-bottom:2px}</style></head>
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap"><style>.video{position:relative}.vblk{position:absolute;inset:0;z-index:3;cursor:not-allowed}.duch-m small{display:block;margin-bottom:2px}</style><style>.duspk{position:fixed;top:calc(env(safe-area-inset-top,0px) + 72px);left:50%;transform:translateX(-50%);z-index:900;display:flex;gap:12px;padding:8px 14px;border-radius:18px;background:color-mix(in srgb,var(--cd) 88%,transparent);border:1px solid var(--bd);backdrop-filter:blur(8px);max-width:94vw;overflow:hidden;pointer-events:none}.duspk[hidden]{display:none}.dsp{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:46px;transition:transform .2s}.dsp b{font-size:11px;font-weight:800;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsa{display:block;border-radius:50%;padding:2px;border:2px solid transparent;transition:all .2s}.dsa .av{width:42px;height:42px;font-size:17px}.dsp.off .dsa{opacity:.5;filter:grayscale(.6)}.dsp.on{transform:scale(1.12)}.dsp.on .dsa{border-color:var(--c);animation:dspp 1s ease-in-out infinite}@keyframes dspp{0%{box-shadow:0 0 0 0 var(--c)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}</style></head>
 <body>
 <header class="top" id="top"></header>
 <main id="app"></main>
@@ -3486,7 +3486,7 @@ async function deleteAccount(){
 
 const AVISOS=[
  {ts:Date.parse('2026-11-11T17:45:00-04:00'),text:'Mejoras de rendimiento ⚡: la app va más fluida y carga más rápido. Ya no se repinta la barra de arriba ni el menú de abajo cuando no cambian, lo que está fuera de pantalla deja de animarse, las brasas de fondo van a 30 FPS y los escudos de las ligas pesan mucho menos. Todo se ve igual y no se quitó ninguna función. Si aún se te traba, en Ajustes (la tuerca) puedes bajar los FPS o desactivar animaciones y brillos.'},
- {ts:Date.parse('2026-11-11T17:30:00-04:00'),text:'Duelos y planillas ⚔️: ahora una sala admite hasta 7 jugadores y solo el anfitrión controla el video (pausar, reanudar y adelantar); los demás lo ven sincronizado. Nueva planilla actual con 0,5: igual que la actual (Random, Ida, Vuelta, Acapella y Deluxe) pero con medios puntos, de 0 a 10 (Acapella de 0 a 4); la eliges junto a Planilla antigua y Planilla actual, también al crear un duelo. En el chat del duelo ahora se ve bien el nombre de quien escribe, con un color para cada persona. Y en la planilla actual ya puedes tocar ⏸ Guardar y seguir después para dejar la votación a medias: la retomas desde Inicio o abriendo esa batalla.'},
+ {ts:Date.parse('2026-11-11T17:30:00-04:00'),text:'Duelos y planillas ⚔️: ahora una sala admite hasta 7 jugadores y el anfitrión lleva el video (pausa, reanuda y adelanta a todos); durante la votación cada quien puede mover el suyo. La voz ahora funciona con varios jugadores y se ve quién habla con su foto. Nueva planilla actual con 0,5: igual que la actual (Random, Ida, Vuelta, Acapella y Deluxe) pero con medios puntos, de 0 a 10 (Acapella de 0 a 4); la eliges junto a Planilla antigua y Planilla actual, también al crear un duelo. En el chat del duelo ahora se ve bien el nombre de quien escribe, con un color para cada persona. Y en la planilla actual ya puedes tocar ⏸ Guardar y seguir después para dejar la votación a medias: la retomas desde Inicio o abriendo esa batalla.'},
  {ts:Date.parse('2026-11-11T16:30:00-04:00'),text:'Duelos más grandes ⚔️: ahora una sala admite hasta 5 jugadores (el anfitrión y 4 más), por invitación de amigos o con el código. Además, cuando varios compañeros activan «Permitir que los demás vean mi votación», puedes pasar de una votación a otra con las flechas ‹ › en la barra del duelo, para que no se acumulen. La voz por ahora sigue siendo solo para duelos de 2 personas.'},
  {ts:Date.parse('2026-11-11T08:30:00-04:00'),text:'Nuevo: sonidos y monedas más vistosas 🔊🪙. Ahora la app suena al votar (sello y campanita), al ganar monedas (las monedas salen volando hasta tu contador y suena una por una), al comprar en la tienda, al subir de rango, al desbloquear logros y cuando te llega un aviso o una invitación a duelo. En Ajustes (la tuerca) puedes apagar los sonidos, subir o bajar el volumen y quitar la vibración.'},
  {ts:Date.parse('2026-11-11T07:00:00-04:00'),text:'Nuevo: Ajustes ⚙️. Toca la tuerca de arriba (junto a tus monedas) y encontrarás: «Desactivar animaciones y brillos» para quitar los efectos y dejar la app como era antes (en ese modo va a 25 FPS); una barra de FPS (30, 45 o 60) para que las animaciones sigan pero menos fluidas y con menos gasto de batería; y el apartado de Accesibilidad con texto grande, alto contraste, letra más legible y resaltar la selección del teclado.'},
@@ -5039,16 +5039,16 @@ async function duShare(v){const D=S.dul;if(!D)return;D.sig='';try{await FB.fm.up
 const duCmd=(f,a)=>{const el=document.getElementById('vpf');if(el&&el.contentWindow)el.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:a||[]}),'*')};
 const duPart=()=>{const b=S.bt;if(!b)return 0;const ids=ytIds(b.y);return (S.vpart&&S.vpart.y===b.y&&ids[S.vpart.i])?S.vpart.i:0};
 function duPub(st,t,x){const D=S.dul;if(!D||!S.me||D.role!=='host')return;D.ls=st==='play'?1:2;FB.fm.updateDoc(duRef(D.code),{vid:{st,t:Math.round((t||0)*10)/10,by:S.me.uid,n:Date.now(),ts:Date.now(),part:duPart(),...(x||{})}}).catch(()=>{})}
-function duApply(v){const D=S.dul;if(!document.getElementById('vpf'))return;
+function duApply(v){const D=S.dul;if(!document.getElementById('vpf'))return;if(v.hb){if(D.detach)return}else D.detach=false;
  if(v.part!=null&&v.part!==duPart()){D.rem=1;try{_setVPart2(v.part)}finally{D.rem=0}D.got=0;D.ls=null;D.mute=Date.now()+2500;return}
  D.mute=Date.now()+1500;D.ls=v.st==='play'?1:2;
  if(Math.abs((D.t||0)-v.t)>(v.st==='play'?1.2:0.6))duCmd('seekTo',[v.t+(v.st==='play'?0.4:0),true]);
  duCmd(v.st==='play'?'playVideo':'pauseVideo')}
-function duState(st){const D=S.dul;if(!D||Date.now()<D.mute||(st!==1&&st!==2)||st===D.ls)return;duPub(st===1?'play':'pause',D.t)}
+function duState(st){const D=S.dul;if(!D||Date.now()<D.mute||(st!==1&&st!==2)||st===D.ls)return;if(D.role!=='host'){D.detach=true;D.ls=st;return}duPub(st===1?'play':'pause',D.t)}
 window.addEventListener('message',ev=>{const D=S.dul,el=document.getElementById('vpf');if(!D||!D.live||!el||ev.source!==el.contentWindow)return;let m;try{m=JSON.parse(ev.data)}catch(e){return}D.got=1;
  if(m.event==='infoDelivery'&&m.info){const i=m.info;
   if(typeof i.currentTime==='number'){const now=Date.now(),c=i.currentTime;
-   if(D.lts&&now>=D.mute&&D.ls){const e=D.ls===1?D.lt+(now-D.lts)/1000:D.lt;if(Math.abs(c-e)>(D.ls===1?3:1.5))duPub(D.ls===1?'play':'pause',c)}
+   if(D.lts&&now>=D.mute&&D.ls){const e=D.ls===1?D.lt+(now-D.lts)/1000:D.lt;if(Math.abs(c-e)>(D.ls===1?3:1.5)){if(D.role==='host')duPub(D.ls===1?'play':'pause',c);else D.detach=true}}
    D.t=c;D.lt=c;D.lts=now}
   if(typeof i.playerState==='number')duState(i.playerState)}else if(m.event==='onStateChange')duState(m.info)});
 setInterval(()=>{const D=S.dul;if(!D||!D.live)return;const el=document.getElementById('vpf');if(!el||!el.contentWindow)return;if(el!==D.el){D.el=el;D.got=0}if(!D.got)el.contentWindow.postMessage(JSON.stringify({event:'listening',id:1,channel:'widget'}),'*')},1000);
@@ -5112,7 +5112,7 @@ const _resV2=resV;resV=function(){if(!duOn())return _resV2();const D=S.dul;D.sav
 const _setFmt2=setFmt;setFmt=function(f){if(S.duelOn)return;return _setFmt2(f)};
 const _fmtSeg2=fmtSeg;fmtSeg=function(){return S.duelOn?'':_fmtSeg2()};
 const _linkAreaH2=linkAreaH;linkAreaH=function(b){return S.duelOn?'':_linkAreaH2(b)};
-const _setVPart2=setVPart;setVPart=function(i){if(duOn()&&S.dul.role!=='host'&&!S.dul.rem)return;_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
+const _setVPart2=setVPart;setVPart=function(i){_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){if(D.role!=='host')D.detach=true;D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
 const _fmtRounds2=fmtRounds;fmtRounds=function(f,l){const D=S.dul,d=D&&D.d;if(!S.duelOn||!d)return _fmtRounds2(f,l);
  if(f==='actual')return [ACTR];
  const tp=d.tp||'auto';if(DU_RF[tp])return RF[DU_RF[tp]].slice();
@@ -5938,7 +5938,7 @@ D.addEventListener('pointerup',function(e){var d=dn;dn=null;if(!d)return;
 
 /* ===== Duelo: video solo del anfitrión · planilla 0,5 · borradores · nombres en el chat ===== */
 function duC(u){let h=0;for(const c of String(u))h=(h*31+c.charCodeAt(0))>>>0;return 'hsl('+(h%360)+',80%,62%)'}
-const _vytH0=vytH;vytH=function(){let h=_vytH0.apply(this,arguments);try{if(duOn()&&S.dul.role!=='host'){h=h.replace('allowfullscreen></iframe></div>','allowfullscreen></iframe><div class="vblk"></div></div>')+'<div class="mu" style="font-size:12px;margin:-4px 0 10px">🔒 Solo el anfitrión controla el video.</div>'}}catch(e){}return h};
+const _vytH0=vytH;vytH=function(){let h=_vytH0.apply(this,arguments);try{if(duOn()&&S.dul.role!=='host'){h+='<div class="mu" style="font-size:12px;margin:-4px 0 10px">🎬 El anfitrión lleva el video. Si lo mueves tú, dejas de seguirlo hasta que él lo vuelva a usar.</div>'}}catch(e){}return h};
 const drId=k=>String(k).replace(/[^a-z0-9|]/gi,'_').slice(0,120);
 const drKeyNow=()=>bkey({free:!!S.libre,l:S.lg,temp:S.temp,a:S.bt.a,b:S.bt.b});
 function drToast(t){try{const el=document.createElement('div');el.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:99999;background:var(--cd);color:var(--tx);border:1px solid var(--ac);border-radius:14px;padding:10px 16px;font:700 13px/1.3 inherit;box-shadow:var(--sh);max-width:86vw;text-align:center';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),3800)}catch(e){}}
@@ -5959,6 +5959,61 @@ const _start0=start;start=function(b){_start0(b);try{drApply()}catch(e){}};
 const _pv0=pushVote;pushVote=async function(v){await _pv0(v);try{if(S.last===v){const m=drMap(),i=drId(bkey(v));if(m[i]){delete m[i];drStore()}}}catch(e){}};
 const _rm0=refreshMine;refreshMine=async function(){await _rm0.apply(this,arguments);try{S.dr=null;drMap()}catch(e){}};
 const _homeV5=homeV;homeV=function(){let h=_homeV5();try{const ks=S.me?drList():[];if(ks.length){const mk='<div class="sec"><span>Ligas</span>',card=(d,i)=>{const l=L.find(x=>x.i===d.l);let sc=[];try{sc=JSON.parse(d.sc)}catch(e){}const t=sc[0]?sc[0][0].concat(sc[0][1]):[],fl=t.filter(x=>x!=null).length;return `<button class="card nxr" onclick="drResume(${i})">${l?logo(l,40):''}<span style="flex:1;min-width:0;text-align:left"><b style="display:block">${esc(d.a)} vs ${esc(d.b)}</b><span class="mu" style="font-size:12.5px">${d.free?'Batalla libre':esc(l?l.n:'')} · ${fl} de ${t.length} casillas</span></span><span class="nxc">›</span></button>`},blk='<div class="sec"><span>⏸ Votaciones a medias</span><span>'+ks.length+'</span></div><div class="nxl hs">'+ks.map(card).join('')+'</div>';h=h.includes(mk)?h.replace(mk,blk+mk):blk+h}}catch(e){}return h};
+
+/* ===== Video: latido del anfitrión (mantiene a todos juntos) ===== */
+setInterval(()=>{const D=S.dul;if(!D||!D.live||D.role!=='host'||D.ls!==1||!D.lts)return;duPub('play',D.lt+(Date.now()-D.lts)/1000,{hb:1})},4000);
+
+/* ===== Voz del duelo con varias personas (malla WebRTC: cada par se conecta entre sí) ===== */
+V.peers={};V.selfT=null;
+const vcPk=(a,b)=>a<b?a+'_'+b:b+'_'+a;
+function vcPeer(u){return V.peers[u]||(V.peers[u]={pc:null,sid:null,out:[],outT:null,iceN:0,gotAns:false,t:0,st:'',audio:null,sp:false,spT:null,busy:false,done:new Set()})}
+function vcClosePeer(u){const p=V.peers[u];if(!p)return;if(p.pc){try{p.pc.ontrack=p.pc.onicecandidate=p.pc.onconnectionstatechange=null;p.pc.close()}catch(e){}p.pc=null}clearInterval(p.spT);clearTimeout(p.outT);p.sp=false;p.out=[];p.iceN=0;p.gotAns=false;p.sid=null;p.st='';if(p.audio){p.audio.srcObject=null;try{p.audio.remove()}catch(e){}p.audio=null}}
+function vcClosePc(){Object.keys(V.peers).forEach(vcClosePeer);V.peers={};clearInterval(V.selfT);V.selfT=null;V.speaking=false;vcSpk()}
+function vcWatch2(stream,cb){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;V.ac=V.ac||new AC();if(V.ac.state==='suspended')V.ac.resume().catch(()=>{});const an=V.ac.createAnalyser();an.fftSize=256;V.ac.createMediaStreamSource(stream).connect(an);const buf=new Uint8Array(an.frequencyBinCount);return setInterval(()=>{an.getByteFrequencyData(buf);let m=0;for(let i=0;i<buf.length;i++)m+=buf[i];cb(m/buf.length>14)},200)}catch(e){return null}}
+function vcNewPc(u,sid){const P=vcPeer(u);if(P.pc){try{P.pc.close()}catch(e){}P.pc=null}P.out=[];P.iceN=0;P.gotAns=false;const pc=new RTCPeerConnection({iceServers:DU_ICE});P.pc=pc;P.sid=sid;P.st='conectando';
+ V.stream.getTracks().forEach(t=>pc.addTrack(t,V.stream));
+ pc.onicecandidate=e=>{if(e.candidate){P.out.push(JSON.stringify(e.candidate));clearTimeout(P.outT);P.outT=setTimeout(()=>vcFlushIce(u),120)}};
+ pc.ontrack=e=>{if(!P.audio){const a=document.createElement('audio');a.autoplay=true;a.setAttribute('playsinline','');a.style.display='none';document.body.appendChild(a);P.audio=a}const st=e.streams[0];P.audio.srcObject=st;P.audio.muted=!V.spk;P.audio.play().then(()=>{V.needTap=false;voiceUI()}).catch(()=>{V.needTap=true;voiceUI()});clearInterval(P.spT);P.spT=vcWatch2(st,s=>{if(s!==P.sp){P.sp=s;voiceUI()}})};
+ pc.onconnectionstatechange=()=>{const c=pc.connectionState;if(c==='connected')V.err='';P.st=c==='connected'?'conectado':((c==='failed'||c==='disconnected')?'reconectando':'conectando');voiceUI();
+  if(c==='failed')setTimeout(()=>{if(P.pc===pc&&pc.connectionState==='failed')vcRestartPeer(u)},1500);
+  else if(c==='disconnected')setTimeout(()=>{if(P.pc===pc&&pc.connectionState!=='connected')vcRestartPeer(u)},6000)};
+ return pc}
+function vcRestartPeer(u){if(!V.joined||!S.me)return;vcClosePeer(u);const P=V.peers[u];if(P)P.t=0;if(S.me.uid>u)vcPub({['vc.'+S.me.uid+'.t']:Date.now()});duVoiceSync()}
+function vcRestart(){Object.keys(V.peers).forEach(vcRestartPeer)}
+async function vcFlushIce(u){const P=V.peers[u];if(!P||!P.out.length||!S.me)return;const c=P.out.splice(0),me=S.me.uid,pk=vcPk(me,u),au=FB.fm.arrayUnion;
+ const val=au?au(...c):[...((((vcDoc()||{}).ice2||{})[pk]||{})[me]||[]),...c];await vcPub({['ice2.'+pk+'.'+me]:val})}
+function vcDrainIce(){const d=vcDoc();if(!d||!S.me)return;Object.keys(V.peers).forEach(u=>{const P=V.peers[u];if(!P||!P.pc||!P.pc.remoteDescription)return;const arr=(((d.ice2||{})[vcPk(S.me.uid,u)])||{})[u]||[];while(P.iceN<arr.length){const c=arr[P.iceN++];try{P.pc.addIceCandidate(JSON.parse(c)).catch(()=>{})}catch(e){}}})}
+async function vcPair(d,me,u,pv){const P=vcPeer(u),pk=vcPk(me,u),r=(d.rtc2||{})[pk]||{};if(P.busy)return;
+ if(me<u){
+  if(!P.pc||P.t!==pv.t){P.busy=true;try{P.t=pv.t;const sid=String(Date.now()),pc=vcNewPc(u,sid);let o=await pc.createOffer();o={type:o.type,sdp:vcOpus(o.sdp)};await pc.setLocalDescription(o);await vcPub({['rtc2.'+pk]:{sid,offer:o},['ice2.'+pk+'.'+me]:[],['ice2.'+pk+'.'+u]:[]})}catch(e){V.err='No se pudo conectar la voz.';vcClosePeer(u)}P.busy=false;setTimeout(duVoiceSync,300)}
+  else if(r.sid===P.sid&&r.answer&&!P.gotAns&&P.pc.signalingState==='have-local-offer'){P.gotAns=true;try{await P.pc.setRemoteDescription(r.answer)}catch(e){}}
+ }else if(r.sid&&r.offer&&!P.done.has(r.sid)){
+  P.busy=true;P.done.add(r.sid);try{const pc=vcNewPc(u,r.sid);await pc.setRemoteDescription(r.offer);let a=await pc.createAnswer();a={type:a.type,sdp:vcOpus(a.sdp)};await pc.setLocalDescription(a);await vcPub({['rtc2.'+pk+'.answer']:a})}catch(e){V.err='No se pudo conectar la voz.';vcClosePeer(u)}P.busy=false;setTimeout(duVoiceSync,300)}}
+async function duVoiceSync(){const D=S.dul,d=D&&D.d;if(!V.joined||!d||!S.me||!V.stream)return;const me=S.me.uid,pls=duPlayers(d).filter(p=>p.uid!==me),ids=new Set(pls.map(p=>p.uid));
+ Object.keys(V.peers).forEach(u=>{if(!ids.has(u)||!(d.vc&&d.vc[u]&&d.vc[u].on)){vcClosePeer(u);delete V.peers[u]}});
+ for(const p of pls){const pv=d.vc&&d.vc[p.uid];if(pv&&pv.on)await vcPair(d,me,p.uid,pv)}
+ vcDrainIce()}
+function vcPeersOn(){const d=vcDoc(),me=S.me&&S.me.uid;return d?duPlayers(d).filter(p=>p.uid!==me&&d.vc&&d.vc[p.uid]&&d.vc[p.uid].on):[]}
+function vcFriendLine(){const d=vcDoc(),me=S.me&&S.me.uid;if(!d||!me)return '';if(duPlayers(d).length<2)return 'Estás solo en la sala.';const on=vcPeersOn();if(!on.length)return 'Nadie más activó la voz todavía.';
+ const bad=on.filter(p=>{const P=V.peers[p.uid];return !P||P.st!=='conectado'});if(bad.length===on.length)return '⏳ Conectando con '+on.map(p=>'@'+esc(p.n)).join(', ')+'…';
+ const sp=on.filter(p=>{const P=V.peers[p.uid];return P&&P.sp});if(sp.length)return '🎙️ Habla: '+sp.map(p=>'@'+esc(p.n)).join(', ');
+ return '🔊 En voz: '+on.map(p=>'@'+esc(p.n)).join(', ')+(bad.length?' · conectando '+bad.length+'…':'')}
+function voiceSpk(){V.spk=!V.spk;Object.values(V.peers).forEach(P=>{if(P.audio)P.audio.muted=!V.spk});voiceUI()}
+function voiceTap(){Object.values(V.peers).forEach(P=>{if(P.audio)P.audio.play().then(()=>{V.needTap=false;voiceUI()}).catch(()=>{})});if(V.ac&&V.ac.state==='suspended')V.ac.resume().catch(()=>{})}
+function vcSpk(){const D=S.dul,d=D&&D.d;let el=document.getElementById('duspk');const pls=d?duPlayers(d):[],me=S.me&&S.me.uid;
+ const on=pls.filter(p=>d.vc&&d.vc[p.uid]&&d.vc[p.uid].on),show=!!(d&&d.st!=='done'&&me&&pls.length>2&&on.length&&(S.v==='duel'||S.v==='vote'||S.v==='res'));
+ if(!show){if(el)el.hidden=true;return}
+ if(!el){el=document.createElement('div');el.id='duspk';el.className='duspk';document.body.appendChild(el)}
+ const h=on.map(p=>{const pv=d.vc[p.uid],sp=p.uid===me?(V.joined&&V.speaking):!!(V.peers[p.uid]&&V.peers[p.uid].sp);return `<div class="dsp${sp?' on':''}${pv.mic?'':' off'}"><span class="dsa" style="--c:${duC(p.uid)}">${avX(p.uid,p.n,'')}</span><b>${esc(p.uid===me?'Tú':p.n)}</b></div>`}).join('');
+ if(el._h!==h){el.innerHTML=h;el._h=h}el.hidden=false}
+function voiceUI(){const el=document.getElementById('duch');
+ if(V.joined&&V.stream&&!V.selfT)V.selfT=vcWatch2(V.stream,s=>{if(V.speaking!==s){V.speaking=s;vcSpk()}});
+ if(el){const box=el.querySelector('#duchvc');if(box){const on=vcPeersOn();let h;
+  if(!V.joined)h=`<button class="duv-join" onclick="voiceJoin()">🎙️ Activar voz</button>${V.err?`<div class="duv-err">${esc(V.err)}</div>`:`<div class="duv-sub">Tu micrófono empieza apagado. Usa audífonos para evitar eco.${on.length?' Ya están en la voz: '+on.map(p=>'@'+esc(p.n)).join(', ')+'.':''}</div>`}`;
+  else h=`<div class="duv-row"><button class="duv-mic${V.mic?' on':''}" onclick="voiceMic()">${V.mic?'🔴 Micrófono ENCENDIDO':'🎙️ Micrófono apagado'}</button><button class="duv-sp${V.spk?'':' off'}" onclick="voiceSpk()" aria-label="Sonido">${V.spk?'🔊':'🔇'}</button><button class="duv-x" onclick="voiceStop()">Salir</button></div><div class="duv-st">${vcFriendLine()}</div>${V.needTap?'<button class="duv-join" onclick="voiceTap()">Toca aquí para activar el audio</button>':''}${V.err?`<div class="duv-err">${esc(V.err)}</div>`:''}`;
+  if(box.dataset.h!==h){box.innerHTML=h;box.dataset.h=h}
+  const mb=el.querySelector('#duchm');if(mb){mb.hidden=!V.joined;mb.className='duch-mb'+(V.mic?' on':'');mb.textContent=V.mic?'🔴':'🎙️';mb.setAttribute('aria-label',V.mic?'Apagar micrófono':'Encender micrófono')}}}
+ vcSpk()}
 </script>
 </body></html>
 
