@@ -1989,6 +1989,12 @@ html::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 @media (max-width:430px){.top{padding-left:10px;padding-right:10px;gap:4px}.top .brand{gap:6px;font-size:15px}.top .brand svg{width:30px;height:30px}.top .ib{width:32px;height:32px;flex:none}.top .coinb,.top .avbtn{flex:none}.top .brand{min-width:0;flex:0 1 auto}.top .brand b{overflow:hidden;white-space:nowrap}}
 
 /* Efecto moderno al ganar monedas */
+/* ===== Moneda voladora de bonus ===== */
+.fcoin{position:fixed;left:0;top:0;z-index:250;width:68px;height:68px;margin:-34px 0 0 -34px;border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;will-change:transform}
+.fcoin .coin{width:56px;height:56px;position:absolute;left:6px;top:2px;animation:cspin 2.4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(250,204,21,.95))}
+.fcoin b{position:absolute;left:50%;top:0;transform:translate(-50%,-70%);background:linear-gradient(180deg,#FDE047,#EAB308);color:#1A1300;font:900 14px/1 var(--dsp,inherit);padding:4px 8px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.4);white-space:nowrap}
+.fcoin em{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font:800 11px/1 var(--dsp,inherit);font-style:normal;background:rgba(0,0,0,.72);color:#fff;padding:3px 7px;border-radius:999px}
+.fcoin.pop{pointer-events:none}
 .cfxl{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden}
 .cfxl .cfxc{position:absolute;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;will-change:transform,opacity}
 .cfxb{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;padding:8px 18px 8px 10px;border-radius:999px;background:linear-gradient(180deg,#FDE047,#EAB308);color:#1A1300;font:800 24px/1 var(--dsp);letter-spacing:.5px;box-shadow:0 10px 30px rgba(250,204,21,.55),inset 0 1px 0 rgba(255,255,255,.7);white-space:nowrap}
@@ -2289,7 +2295,7 @@ const NEON_C=['#22D3EE','#F472B6','#A3E635','#FB923C'];
 function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[],spent:0}}
 function shopOwns(id){const s=shopS();return Array.isArray(s.own)&&s.own.includes(id)}
 function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);return l?(COIN_L[v.l]||30):0}
-function coinsEarned(){const mv=S.myVotes;if(!mv)return S._ce||0;if(S._cev===mv)return S._ce;let t=0;try{splitDups(mv).keep.forEach(v=>{t+=coinOf(v)})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t}
+function coinsEarned(){const bn=Math.max(0,+(shopS().bonus)||0),mv=S.myVotes;if(!mv)return (S._ce||0)+bn;if(S._cev===mv)return S._ce+bn;let t=0;try{splitDups(mv).keep.forEach(v=>{t+=coinOf(v)})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t+bn}
 function coinBal(){return Math.max(0,coinsEarned()-(shopS().spent||0))}
 function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=(sh.v>=2&&sh.frame)||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
 function ttOf(u){if(!u)return '';const sh=u.shop;const t=(sh&&typeof sh==='object'&&sh.v>=2)?(sh.title||''):'';return TITLES[t]?t:''}
@@ -2331,6 +2337,48 @@ function coinFx(from,to,gain){
     if(t){t.classList.remove('bump');void t.offsetWidth;t.classList.add('bump')}end()}};
  }}
 function shopTab(t){S.shopTab=t;go('tienda')}
+/* ===== Moneda voladora: mientras votas (liga, batalla libre, duelos y editor) sale una cada 4 minutos y tienes 6 segundos para agarrarla =====
+   Cantidad por peso (suman 100%): 5 monedas ≈39% · 10 ≈30% · 15 ≈22% · 30 ≈9%.
+   Las monedas ganadas se guardan en tu perfil (shop.bonus) y se suman a tu saldo. */
+const FC={every:240,life:6,t:0,el:null,raf:0,busy:false};
+try{FC.t=Math.min(FC.every,Math.max(0,+localStorage.getItem('vfms_fc')||0))}catch(e){}
+function fcAmount(){const T=[[5,90],[10,70],[15,50],[30,20]];let r=Math.random()*T.reduce((a,b)=>a+b[1],0);for(const [c,w] of T){if((r-=w)<0)return c}return 5}
+function fcKill(){if(FC.raf)cancelAnimationFrame(FC.raf);FC.raf=0;if(FC.el){FC.el.remove();FC.el=null}}
+function fcSpawn(){
+ if(FC.el)return;const amt=fcAmount(),W=()=>innerWidth,H=()=>innerHeight;
+ const el=document.createElement('button');el.type='button';el.className='fcoin';el.setAttribute('aria-label','Agarrar '+amt+' monedas');
+ el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>6</em>';document.body.appendChild(el);FC.el=el;
+ const top=80,bot=()=>H()-110,pad=40;
+ let x=Math.random()<.5?-30:W()+30,y=top+Math.random()*Math.max(60,bot()-top);
+ let vx=(x<0?1:-1)*(130+Math.random()*80),vy=(Math.random()<.5?-1:1)*(70+Math.random()*90);
+ const t0=performance.now();let last=t0,ph=Math.random()*6.28,got=false;
+ try{SFX.coin()}catch(e){}
+ const em=el.querySelector('em');
+ const tick=now=>{
+  if(!FC.el||FC.el!==el)return;
+  if(S.v!=='vote'||!S.me){fcKill();return}
+  const dt=Math.min(.05,(now-last)/1000);last=now;const el_=(now-t0)/1000,left=FC.life-el_;
+  if(left<=0){el.animate([{opacity:1},{opacity:0}],{duration:250,fill:'forwards'});setTimeout(()=>{if(FC.el===el)fcKill()},260);FC.raf=0;return}
+  ph+=dt*3;x+=vx*dt;y+=(vy+Math.sin(ph)*60)*dt;
+  if(x>W()-pad&&vx>0){vx=-vx;x=W()-pad}else if(x<pad&&vx<0&&el_>.8){vx=-vx;x=pad}
+  if(y<top){y=top;vy=Math.abs(vy)}else if(y>bot()){y=bot();vy=-Math.abs(vy)}
+  el.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';
+  em.textContent=Math.ceil(left);
+  FC.raf=requestAnimationFrame(tick)};
+ el.addEventListener('pointerdown',async ev=>{ev.preventDefault();ev.stopPropagation();if(got||FC.busy)return;got=true;FC.busy=true;
+  if(FC.raf)cancelAnimationFrame(FC.raf);FC.raf=0;el.classList.add('pop');
+  const bal=coinBal(),s=shopS(),nx={...s,bonus:Math.max(0,+(s.bonus)||0)+amt};
+  const ok=await shopSave(nx,'No se pudo guardar tu moneda. Revisa tu conexión.');FC.busy=false;
+  el.remove();if(FC.el===el)FC.el=null;
+  if(ok){S.coinGain=0;coinCount(bal,coinBal())}});
+ FC.raf=requestAnimationFrame(tick)}
+setInterval(()=>{
+ if(document.hidden)return;
+ if(S.v!=='vote'||!S.me){if(FC.el)fcKill();return}
+ if(FC.el||FC.busy)return;
+ FC.t+=1;try{localStorage.setItem('vfms_fc',String(FC.t))}catch(e){}
+ if(FC.t>=FC.every){FC.t=0;try{localStorage.setItem('vfms_fc','0')}catch(e){}fcSpawn()}
+},1000);
 async function shopSave(nx,msg){const prev=S.me.shop;S.me={...S.me,shop:nx};R();try{await B.updateUser(S.me.uid,{shop:nx});return true}catch(e){S.me={...S.me,shop:prev};R();try{achFail(msg)}catch(_){}return false}}
 function shopOpen(id){S.shopSheet=id;S.shopDone=false;R()}
 function shopClose(){S.shopSheet=null;S.shopDone=false;R()}
@@ -2365,7 +2413,7 @@ function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
 function shopCard(it,i){const own=shopOwns(it.id);
  return `<div class="shi${own?' own':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b><p>${esc(it.d)}</p>${shopBtn(it)}</div></div>`}
 function shopHowH(){const r=[['ws','World Series',50],['in','Internacional',40],['es','España',35]],lg=i=>L.find(x=>x.i===i);
- return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+30</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez. No suman Batalla libre ni Modo editor.</div></div>`}
+ return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+30</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">🪙 Extra: mientras votas, cada 4 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 6 segundos.</div></div>`}
 function tiendaV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
@@ -3485,6 +3533,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-11T20:00:00-04:00'),text:'Nueva moneda voladora 🪙: mientras votas (en batallas de liga, Batalla libre, duelos o Modo editor) cada 4 minutos aparece una moneda flotando por tu pantalla y tienes 6 segundos para tocarla. Puede traer 5 monedas (la más común), 10, 15 o 30 (la más rara). Se suman directo a tu saldo de la tienda.'},
  {ts:Date.parse('2026-11-11T17:45:00-04:00'),text:'Mejoras de rendimiento ⚡: la app va más fluida y carga más rápido. Ya no se repinta la barra de arriba ni el menú de abajo cuando no cambian, lo que está fuera de pantalla deja de animarse, las brasas de fondo van a 30 FPS y los escudos de las ligas pesan mucho menos. Todo se ve igual y no se quitó ninguna función. Si aún se te traba, en Ajustes (la tuerca) puedes bajar los FPS o desactivar animaciones y brillos.'},
  {ts:Date.parse('2026-11-11T17:30:00-04:00'),text:'Duelos y planillas ⚔️: ahora una sala admite hasta 7 jugadores y el anfitrión lleva el video (pausa, reanuda y adelanta a todos); durante la votación cada quien puede mover el suyo. La voz ahora funciona con varios jugadores y se ve quién habla con su foto. Nueva planilla actual con 0,5: igual que la actual (Random, Ida, Vuelta, Acapella y Deluxe) pero con medios puntos, de 0 a 10 (Acapella de 0 a 4); la eliges junto a Planilla antigua y Planilla actual, también al crear un duelo. En el chat del duelo ahora se ve bien el nombre de quien escribe, con un color para cada persona. Y en la planilla actual ya puedes tocar ⏸ Guardar y seguir después para dejar la votación a medias: la retomas desde Inicio o abriendo esa batalla.'},
  {ts:Date.parse('2026-11-11T16:30:00-04:00'),text:'Duelos más grandes ⚔️: ahora una sala admite hasta 5 jugadores (el anfitrión y 4 más), por invitación de amigos o con el código. Además, cuando varios compañeros activan «Permitir que los demás vean mi votación», puedes pasar de una votación a otra con las flechas ‹ › en la barra del duelo, para que no se acumulen. La voz por ahora sigue siendo solo para duelos de 2 personas.'},
