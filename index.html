@@ -1992,9 +1992,59 @@ html::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 /* ===== Moneda voladora de bonus ===== */
 .fcoin{position:fixed;left:0;top:0;z-index:250;width:68px;height:68px;margin:-34px 0 0 -34px;border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;will-change:transform}
 .fcoin .coin{width:56px;height:56px;position:absolute;left:6px;top:2px;animation:cspin 2.4s ease-in-out infinite;filter:drop-shadow(0 0 10px rgba(250,204,21,.95))}
-.fcoin b{position:absolute;left:50%;top:0;transform:translate(-50%,-70%);background:linear-gradient(180deg,#FDE047,#EAB308);color:#1A1300;font:900 14px/1 var(--dsp,inherit);padding:4px 8px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.4);white-space:nowrap}
-.fcoin em{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font:800 11px/1 var(--dsp,inherit);font-style:normal;background:rgba(0,0,0,.72);color:#fff;padding:3px 7px;border-radius:999px}
+.fcoin b{position:absolute;left:50%;top:0;transform:translate(-50%,-70%);background:linear-gradient(180deg,#FDE047,#EAB308);color:#1A1300;font-weight:900;font-size:14px;line-height:1;padding:4px 8px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.4);white-space:nowrap}
+.fcoin em{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-weight:800;font-size:11px;line-height:1;font-style:normal;background:rgba(0,0,0,.72);color:#fff;padding:3px 7px;border-radius:999px}
 .fcoin.pop{pointer-events:none}
+/* ===== Tienda: rarezas, marcos, fondos y efectos ===== */
+.shrar{position:absolute;right:8px;top:8px;z-index:6;font-size:10px;font-weight:900;line-height:1;letter-spacing:.4px;text-transform:uppercase;padding:4px 8px;border-radius:99px;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.r-com{background:#64748B}.r-rar{background:linear-gradient(90deg,#2563EB,#06B6D4)}.r-epi{background:linear-gradient(90deg,#7C3AED,#DB2777)}.r-leg{background:linear-gradient(90deg,#F59E0B,#EF4444)}
+.shleg{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--mu);margin:10px 1px 0}
+.shleg .shrar{position:static;box-shadow:none}
+.shhd{margin:22px 0 10px}.shhd:first-of-type{margin-top:14px}
+.shhd .shh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.shhd b{font-size:17px}
+.shhd em{font-style:normal;font-size:12px;font-weight:800;color:var(--mu);background:var(--cd);border:1px solid var(--bd);border-radius:99px;padding:3px 9px;white-space:nowrap}
+.shhd p{margin:4px 0 0;font-size:12.5px;color:var(--mu)}
+.shi.wide{grid-column:1/-1}
+.shi.wide .shpv{min-height:140px}
+.bstv{display:flex;align-items:center;gap:12px}
+.bstv .bz{font-size:54px;filter:drop-shadow(0 0 14px rgba(250,204,21,.9))}
+.bstv b{display:block;font-size:40px;line-height:1;background:linear-gradient(90deg,#FDE047,#F97316);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.bstv em{font-style:normal;font-size:12px;color:var(--mu);font-weight:800}
+.bstp{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:99px;background:linear-gradient(90deg,#FDE047,#F97316);color:#2b1a00;font-weight:900;font-size:12px}
+.fxv{font-size:44px;line-height:1}
+.shtry{margin-top:8px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);border-radius:99px;padding:6px 14px;font-weight:800;font-size:12px;cursor:pointer}
+.bnv{width:100%;height:70px;border-radius:14px;position:relative;overflow:hidden}
+.ptt.pt-ojo{color:#A5F3FC;border-color:rgba(34,211,238,.8)}
+.ptt.pt-racha{color:#FDBA74;border-color:rgba(251,146,60,.85)}
+.ptt.pt-leyenda{color:#FCA5A5;border-color:rgba(248,113,113,.85)}
+.ptt.pt-rey{color:#E9D5FF;border-color:rgba(192,132,252,.9)}
+.fr-purple{box-shadow:0 0 0 2px #E9D5FF,0 0 0 3.5px #7C3AED,0 0 9px 2px rgba(168,85,247,.6)}
+.fr-neon{animation:frNeon 1.8s ease-in-out infinite}
+@keyframes frNeon{0%,100%{box-shadow:0 0 0 2px #CFFAFE,0 0 0 3.5px #06B6D4,0 0 8px 2px rgba(34,211,238,.55)}50%{box-shadow:0 0 0 2px #CFFAFE,0 0 0 3.5px #22D3EE,0 0 18px 6px rgba(34,211,238,.95)}}
+.fr-fire{animation:frFire 1.2s ease-in-out infinite}
+@keyframes frFire{0%,100%{box-shadow:0 0 0 2px #FEF08A,0 0 0 3.5px #EA580C,0 0 10px 3px rgba(249,115,22,.7)}50%{box-shadow:0 0 0 2px #FDE047,0 0 0 3.5px #DC2626,0 0 18px 6px rgba(239,68,68,.9)}}
+.fr-rainbow{animation:frRb 4s linear infinite}
+@keyframes frRb{0%,100%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #EF4444,0 0 12px 3px rgba(239,68,68,.7)}20%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #F59E0B,0 0 12px 3px rgba(245,158,11,.7)}40%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #22C55E,0 0 12px 3px rgba(34,197,94,.7)}60%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #06B6D4,0 0 12px 3px rgba(6,182,212,.7)}80%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #A855F7,0 0 12px 3px rgba(168,85,247,.7)}}
+.fr-crown{animation:frCr 2s ease-in-out infinite}
+@keyframes frCr{0%,100%{box-shadow:0 0 0 2px #FFF3B0,0 0 0 3.5px #A855F7,0 0 10px 3px rgba(250,204,21,.6)}50%{box-shadow:0 0 0 2px #FFF3B0,0 0 0 3.5px #EAB308,0 0 20px 7px rgba(168,85,247,.8)}}
+.frw-neon{background:conic-gradient(from var(--fa,0deg),#22D3EE,#0E7490,#CFFAFE,#06B6D4,#155E75,#22D3EE);box-shadow:0 0 24px rgba(34,211,238,.7)}
+.frw-neon::before,.frw-neon::after{color:#CFFAFE;text-shadow:0 0 6px #22D3EE,0 0 12px #06B6D4}
+.frw-fire{background:conic-gradient(from var(--fa,0deg),#FDE047,#EA580C,#B91C1C,#F97316,#7F1D1D,#FDE047);box-shadow:0 0 26px rgba(249,115,22,.75);animation-duration:1.8s}
+.frw-fire::before,.frw-fire::after{content:'🔥';font-size:16px;text-shadow:none}
+.frw-rainbow{background:conic-gradient(from var(--fa,0deg),#EF4444,#F59E0B,#FDE047,#22C55E,#06B6D4,#6366F1,#A855F7,#EF4444);box-shadow:0 0 26px rgba(168,85,247,.55);animation-duration:2.6s}
+.frw-crown{background:conic-gradient(from var(--fa,0deg),#FDE047,#7C3AED,#FFF3B0,#EAB308,#4C1D95,#FDE047);box-shadow:0 0 28px rgba(250,204,21,.7),0 0 40px rgba(124,58,237,.45)}
+.frw-crown::before{content:'👑';font-size:24px;top:-20px;right:50%;transform:translateX(50%);animation:crBob 2s ease-in-out infinite;opacity:1;text-shadow:none}
+.frw-crown::after{color:#FFF3B0}
+@keyframes crBob{0%,100%{transform:translateX(50%) translateY(0)}50%{transform:translateX(50%) translateY(-4px)}}
+.pbn.bn-aurora,.bnv.bn-aurora{background:linear-gradient(120deg,#0EA5E9,#22C55E,#A855F7,#EC4899,#0EA5E9);background-size:300% 300%;animation:bnMove 7s ease infinite}
+.pbn.bn-galaxia,.bnv.bn-galaxia{background:radial-gradient(circle at 20% 30%,rgba(236,72,153,.55),transparent 45%),radial-gradient(circle at 80% 70%,rgba(59,130,246,.55),transparent 45%),#0B0720;animation:bnGal 6s ease-in-out infinite alternate}
+.pbn.bn-galaxia::after,.bnv.bn-galaxia::after{content:'';position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 90px 80px,#fff,transparent),radial-gradient(1.5px 1.5px at 160px 20px,#fff,transparent),radial-gradient(1px 1px at 220px 100px,#fff,transparent);background-size:240px 120px;pointer-events:none;animation:bnTw 3s ease-in-out infinite alternate}
+@keyframes bnMove{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes bnGal{from{background-position:0 0,0 0,0 0}to{background-position:30px 10px,-30px -10px,0 0}}
+@keyframes bnTw{from{opacity:.4}to{opacity:.95}}
+.ngr{background:linear-gradient(90deg,#FDE047,#F472B6,#22D3EE,#FDE047);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent;animation:ngMove 4s linear infinite}
+@keyframes ngMove{to{background-position:250% 0}}
 .cfxl{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden}
 .cfxl .cfxc{position:absolute;left:0;top:0;width:22px;height:22px;margin:-11px 0 0 -11px;will-change:transform,opacity}
 .cfxb{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;padding:8px 18px 8px 10px;border-radius:999px;background:linear-gradient(180deg,#FDE047,#EAB308);color:#1A1300;font:800 24px/1 var(--dsp);letter-spacing:.5px;box-shadow:0 10px 30px rgba(250,204,21,.55),inset 0 1px 0 rgba(255,255,255,.7);white-space:nowrap}
@@ -2094,6 +2144,7 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
  function tone(f,t,d,ty,g,f2){var a=AC,o=a.createOscillator(),e=a.createGain(),t0=a.currentTime+Math.max(0,t);o.type=ty||'sine';o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
   e.gain.setValueAtTime(.0001,t0);e.gain.exponentialRampToValueAtTime(g,t0+.008);e.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(e);e.connect(MG);o.start(t0);o.stop(t0+d+.03)}
  function buzz(p){if(C.haptic===false)return;try{if(navigator.vibrate)navigator.vibrate(p)}catch(e){}}
+ function noiseB(t,d,g,fc){var a=AC,n=Math.floor(a.sampleRate*d),b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(var i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);var sr=a.createBufferSource();sr.buffer=b;var f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=fc;f.Q.value=.9;var e=a.createGain();e.gain.value=g;sr.connect(f);f.connect(e);e.connect(MG);sr.start(a.currentTime+t)}
  window.SFX={
   sync:function(){if(MG)MG.gain.value=volv()},
   tap:function(){if(!ok('tap',45))return;tone(560,0,.05,'triangle',.07,420)},
@@ -2106,7 +2157,9 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
   rankup:function(d){if(!ok('rank',400))return;d=d||0;[523,659,784,1047].forEach(function(f,i){tone(f,d+i*.12,.22,'square',.05);tone(f,d+i*.12,.28,'triangle',.11)});[523,659,784,1047].forEach(function(f){tone(f,d+.5,.9,'triangle',.07)});buzz([30,50,30,50,60])},
   ach:function(){if(!ok('ach',300))return;tone(880,0,.4,'sine',.14);tone(1319,.1,.6,'sine',.12);tone(1760,.2,.7,'sine',.07);buzz([20,40,20])},
   notif:function(){if(!ok('notif',500))return;tone(1175,0,.2,'sine',.14);tone(1568,.1,.3,'sine',.11);buzz(25)},
-  error:function(){if(!ok('err',400))return;tone(220,0,.14,'sawtooth',.08,180);tone(165,.13,.2,'sawtooth',.08,130);buzz([40,40,40])}
+  error:function(){if(!ok('err',400))return;tone(220,0,.14,'sawtooth',.08,180);tone(165,.13,.2,'sawtooth',.08,130);buzz([40,40,40])},
+  clap:function(){if(!ok('clap',600))return;for(var i=0;i<26;i++){noiseB(Math.random()*1.5+i*.02,.07,.55*(1-i/42),1400+Math.random()*1800)}buzz([20,30,20])},
+  boo:function(){if(!ok('boo',600))return;tone(210,0,1,'sawtooth',.09,140);tone(216,0,1,'sawtooth',.07,146);tone(105,0,1,'sine',.1,70);buzz([60,40,60])}
  };
  /* Sonido suave al tocar botones y tarjetas */
  D.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var b=t.closest('button,a[href],[role="button"],.cell,.lt2,.shi,.card[onclick],.bat[onclick]');if(!b||b.disabled||b.closest('.sw,.cfgr'))return;window.SFX.tap()},true);
@@ -2262,12 +2315,28 @@ const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'ca
 /* ===== Monedas y tienda =====
    Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 50, Internacional 40, España 35 y las demás 30.
    No cuentan Batalla libre ni Modo editor. Lo gastado y lo comprado se guarda en tu perfil (campo «shop»). */
-const COIN_L={ws:50,in:40,es:35};
+const COIN_L={ws:60,in:50,es:40};
 const SHOP_BASE=[
+ {id:'boost',k:'boost',n:'Boost x2',d:'Durante 1 hora todo va al doble: votar World Series da 120 monedas en vez de 60, y la moneda voladora también trae el doble. Lo puedes comprar las veces que quieras; si lo compras con el Boost activo, se suma otra hora.',p:300},
  {id:'frame_purple',k:'frame',n:'Marco morado',d:'Borde morado brillante en tu foto de perfil. Muéstrate con estilo en la comunidad.',p:120,fr:'purple'},
  {id:'frame_gold',k:'frame',n:'Marco dorado',d:'Borde dorado animado en tu foto. Se ve en tu perfil, en comunidad y con tus amigos.',p:150,fr:'gold'},
+ {id:'frame_neon',k:'frame',n:'Marco neón',d:'Aro celeste que late como un letrero de neón. Se ve en tu perfil y en comunidad.',p:200,fr:'neon'},
+ {id:'frame_fire',k:'frame',n:'Marco de fuego',d:'Un aro de fuego animado alrededor de tu foto. Para los que arden en cada batalla.',p:300,fr:'fire'},
+ {id:'frame_rainbow',k:'frame',n:'Marco arcoíris',d:'Aro con todos los colores girando sin parar. Imposible de no notar.',p:400,fr:'rainbow'},
+ {id:'frame_crown',k:'frame',n:'Corona legendaria',d:'El marco más exclusivo: aro dorado y violeta con una corona flotando sobre tu foto.',p:800,fr:'crown'},
  {id:'title_estricto',k:'title',n:'Jurado estricto',d:'Un título que aparece debajo de tu nombre en tu perfil.',p:100,tt:'estricto'},
+ {id:'title_ojo',k:'title',n:'Ojo de águila',d:'Para quien no se le escapa ni una rima. Aparece debajo de tu nombre en tu perfil.',p:130,tt:'ojo'},
  {id:'title_duelista',k:'title',n:'Duelista',d:'El título de quien no le teme a ningún rival. Aparece debajo de tu nombre en tu perfil.',p:130,tt:'duelista'},
+ {id:'title_racha',k:'title',n:'Racha infernal',d:'Un título en llamas para quienes nunca fallan un día. Aparece debajo de tu nombre.',p:250,tt:'racha'},
+ {id:'title_leyenda',k:'title',n:'Leyenda',d:'Solo para quienes ya lo han visto todo. Aparece debajo de tu nombre en tu perfil.',p:400,tt:'leyenda'},
+ {id:'title_rey',k:'title',n:'Rey del freestyle',d:'El título más alto de la tienda. Aparece debajo de tu nombre en tu perfil.',p:600,tt:'rey'},
+ {id:'fx_confeti',k:'fx',n:'Confeti al votar',d:'Cada vez que envías tus puntajes, cae una lluvia de confeti por toda la pantalla.',p:200,eq:['fx','fx_confeti'],ic:'🎉'},
+ {id:'fx_chispas',k:'fx',n:'Chispas al votar',d:'Al enviar tus puntajes, estallan chispas doradas desde el centro de la pantalla.',p:200,eq:['fx','fx_chispas'],ic:'✨'},
+ {id:'snd_aplausos',k:'fx',n:'Sonido: Aplausos',d:'Suena un aplauso del público cada vez que envías tus puntajes.',p:150,eq:['snd','snd_aplausos'],ic:'👏'},
+ {id:'snd_abucheo',k:'fx',n:'Sonido: Abucheo',d:'Suena un abucheo de la tribuna cada vez que envías tus puntajes. Para los jueces duros.',p:150,eq:['snd','snd_abucheo'],ic:'😤'},
+ {id:'bn_aurora',k:'extra',n:'Fondo Aurora',d:'Tu perfil con un fondo animado de colores que se mueven como una aurora boreal.',p:280,eq:['bn','bn_aurora'],bn:'bn-aurora'},
+ {id:'bn_galaxia',k:'extra',n:'Fondo Galaxia',d:'Tu perfil con un cielo estrellado que brilla. Lo ve cualquiera que entre a tu perfil.',p:280,eq:['bn','bn_galaxia'],bn:'bn-galaxia'},
+ {id:'ng_grad',k:'extra',n:'Nombre con degradado',d:'Tu nombre en tu perfil se pinta con colores que fluyen.',p:220,eq:['ng','ng_grad']},
  {id:'nowm',k:'extra',n:'Imágenes sin marca',d:'Quita el texto «VotaFMS» de las imágenes de jornadas y tablas que compartes.',p:300}];
 /* Precios (en monedas) de colores, tarjetas y planillas: más bonito/animado = más caro. Cambia aquí cualquier precio. */
 const SHOP_PRICE={
@@ -2287,19 +2356,39 @@ function sv2(u){return !!(u&&((u.shop&&typeof u.shop==='object'&&u.shop.v>=2)||u
 function shopPatch(prof){const adm=String((prof&&prof.u)||'').toLowerCase()==='linexs17',old=prof&&prof.shop&&typeof prof.shop==='object'?prof.shop:null;
  return {shop:{own:[],spent:adm&&old?(old.spent||0):0,v:2},tema:'',dz:'',pl:'',fit:[]}}
 function shopMigrate(uid,prof){if(prof&&prof.shop&&typeof prof.shop==='object'&&prof.shop.v>=2)return null;const pt=shopPatch(prof);try{B.updateUser(uid,pt).catch(()=>{})}catch(e){}return pt}
-const FRAME_IDS=['gold','purple'];
-const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'},duelista:{t:'Duelista',ic:'⚔️'}};
-const SHOP_TABS=[['all','Todo'],['frame','Marcos'],['title','Títulos'],['color','Colores'],['card','Tarjetas'],['pack','Planillas'],['extra','Extras']];
-const SHOP_ORD=['frame','title','color','card','pack','extra'],SHOP_NM={frame:'Marcos de perfil',title:'Títulos',color:'Colores de la app',card:'Diseños de tarjeta',pack:'Diseños de planilla',extra:'Extras'};
+const FRAME_IDS=['gold','purple','neon','fire','rainbow','crown'];
+const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'},duelista:{t:'Duelista',ic:'⚔️'},ojo:{t:'Ojo de águila',ic:'🦅'},racha:{t:'Racha infernal',ic:'🔥'},leyenda:{t:'Leyenda',ic:'👑'},rey:{t:'Rey del freestyle',ic:'🎤'}};
+const SHOP_TABS=[['all','Todo'],['boost','⚡ Boost'],['frame','Marcos'],['title','Títulos'],['fx','Efectos'],['color','Colores'],['card','Tarjetas'],['pack','Planillas'],['extra','Extras']];
+const SHOP_ORD=['boost','frame','title','fx','color','card','pack','extra'],SHOP_NM={boost:'⚡ Boost',frame:'🖼️ Marcos de perfil',title:'🏷️ Títulos',fx:'🎉 Efectos y sonidos al votar',color:'🎨 Colores de la app',card:'🎤 Diseños de tarjeta',pack:'📋 Diseños de planilla',extra:'✨ Extras de perfil'};
+const SHOP_DS={boost:'Duplica todas tus monedas durante 1 hora. Se puede comprar otra vez cuando se acabe.',frame:'Un aro especial alrededor de tu foto. Lo ve todo el mundo.',title:'Una insignia con texto debajo de tu nombre.',fx:'Se activan solos al enviar tus puntajes. Toca «Probar» para verlos.',color:'Cambia el color de toda tu app.',card:'Diseño de rap para tu tarjeta de perfil.',pack:'Cambia cómo se ve tu planilla de votación.',extra:'Fondos animados, nombre con degradado y más.'};
+function shopRar(p){return p>=500?['leg','Legendario']:p>=300?['epi','Épico']:p>=150?['rar','Raro']:['com','Común']}
 const NEON_C=['#22D3EE','#F472B6','#A3E635','#FB923C'];
 function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[],spent:0}}
 function shopOwns(id){const s=shopS();return Array.isArray(s.own)&&s.own.includes(id)}
-function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);return l?(COIN_L[v.l]||30):0}
-function coinsEarned(){const bn=Math.max(0,+(shopS().bonus)||0),mv=S.myVotes;if(!mv)return (S._ce||0)+bn;if(S._cev===mv)return S._ce+bn;let t=0;try{splitDups(mv).keep.forEach(v=>{t+=coinOf(v)})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t+bn}
+function boostEnd(){const l=shopS().boostLog;return Array.isArray(l)&&l.length?(+l[l.length-1].e||0):0}
+function boostOn(){return boostEnd()>Date.now()}
+function boostAt(ts){const l=shopS().boostLog;if(!Array.isArray(l))return false;ts=+ts||0;return l.some(w=>ts>=w.s&&ts<w.e)}
+function boostLeft(){const m=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000));return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')}
+function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const b=COIN_L[v.l]||35;return boostAt(v.ts)?b*2:b}
+/* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
+   minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
+const VOTE_RULES={minGap:45,perDay:12,from:Date.parse('2026-11-12T00:00:00-04:00')};
+function coinPass(list){
+ const out=new Map();let prev=-1e15,day='',cnt=0;
+ [...(list||[])].filter(v=>v&&!v.free).sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(v=>{
+  const base=coinOf(v);if(!base){out.set(v,{c:0,why:''});return}
+  const t=+v.ts||0;let why='';
+  if(t>=VOTE_RULES.from){const d=new Date(t).toDateString();if(d!==day){day=d;cnt=0}
+   if(t-prev<VOTE_RULES.minGap*1000)why='rapido';else if(cnt>=VOTE_RULES.perDay)why='tope';else cnt++}
+  prev=t;out.set(v,{c:why?0:base,why})});
+ return out}
+function coinWhy(ts){let w='';try{coinPass(splitDups(S.myVotes||[]).keep).forEach((x,v)=>{if((+v.ts||0)===ts)w=x.why})}catch(e){}return w}
+function cnoteH(){const w=S.coinNote;return `<div class="cgain"><i class="coin bigc" style="width:40px;height:40px;filter:grayscale(1);opacity:.55"></i><div style="flex:1"><b>Esta batalla no sumó monedas</b><div class="mu" style="margin:0;font-size:12px">${w==='rapido'?'Votaste muy pronto después de tu voto anterior. Deja al menos '+VOTE_RULES.minGap+' segundos entre una batalla y otra.':'Ya llegaste al máximo de '+VOTE_RULES.perDay+' batallas con monedas hoy. Mañana vuelves a ganar.'}</div></div></div>`}
+function coinsEarned(){const bn=Math.max(0,+(shopS().bonus)||0),mv=S.myVotes;if(!mv)return (S._ce||0)+bn;if(S._cev===mv)return S._ce+bn;let t=0;try{coinPass(splitDups(mv).keep).forEach(x=>{t+=x.c})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t+bn}
 function coinBal(){return Math.max(0,coinsEarned()-(shopS().spent||0))}
 function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=(sh.v>=2&&sh.frame)||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
 function ttOf(u){if(!u)return '';const sh=u.shop;const t=(sh&&typeof sh==='object'&&sh.v>=2)?(sh.title||''):'';return TITLES[t]?t:''}
-function ttH(u){const t=ttOf(u);return t?`<div class="ptt"><span>${TITLES[t].ic}</span>${esc(TITLES[t].t)}</div>`:''}
+function ttH(u){const t=ttOf(u);return t?`<div class="ptt pt-${t}"><span>${TITLES[t].ic}</span>${esc(TITLES[t].t)}</div>`:''}
 function coinTween(from,to,dur){S.coinShow=from;const t0=performance.now();
  const step=t=>{const k=Math.min(1,(t-t0)/dur),v=Math.round(from+(to-from)*(1-Math.pow(1-k,3)));S.coinShow=k<1?v:null;document.querySelectorAll('.coinv').forEach(e=>{e.textContent=v});if(k<1)requestAnimationFrame(step)};
  requestAnimationFrame(step);const b=document.getElementById('coinb');if(b){b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
@@ -2336,7 +2425,31 @@ function coinFx(from,to,gain){
     rg.animate([{transform:'scale(1)',opacity:.95},{transform:'scale(5)',opacity:0}],{duration:650,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});
     if(t){t.classList.remove('bump');void t.offsetWidth;t.classList.add('bump')}end()}};
  }}
+setInterval(()=>{const e=document.getElementById('bstt');if(!e)return;if(!boostOn()){R();return}e.textContent=boostLeft()},1000);
 function shopTab(t){S.shopTab=t;go('tienda')}
+/* ===== Efectos y sonidos al votar (tienda) ===== */
+function shopFx(id){
+ const C=window.VCFG||{};if(C.noAnim||!document.body.animate)return;
+ const L=document.createElement('div');L.style.cssText='position:fixed;inset:0;z-index:245;pointer-events:none;overflow:hidden';document.body.appendChild(L);
+ const R_=Math.random;
+ if(id==='fx_confeti'){
+  const cols=['#FACC15','#F472B6','#22D3EE','#A3E635','#FB923C','#A78BFA'];
+  for(let i=0;i<70;i++){const e=document.createElement('i'),w=6+R_()*6;
+   e.style.cssText='position:absolute;top:-24px;left:'+(R_()*100)+'%;width:'+w+'px;height:'+(w*1.6)+'px;background:'+cols[i%cols.length]+';border-radius:2px';L.appendChild(e);
+   const dx=(R_()-.5)*180,rot=(R_()<.5?-1:1)*(360+R_()*540);
+   e.animate([{transform:'translate(0,0) rotate(0deg)',opacity:1},{transform:'translate('+dx+'px,'+(innerHeight+40)+'px) rotate('+rot+'deg)',opacity:1,offset:.88},{transform:'translate('+dx+'px,'+(innerHeight+60)+'px) rotate('+rot+'deg)',opacity:0}],{duration:1800+R_()*1400,delay:R_()*350,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'})}
+ }else{
+  for(let i=0;i<40;i++){const e=document.createElement('i');e.textContent='✦';
+   e.style.cssText='position:absolute;left:50%;top:42%;font-style:normal;color:#FDE047;text-shadow:0 0 8px #F59E0B;font-size:'+(10+R_()*16)+'px';L.appendChild(e);
+   const a=R_()*6.283,r=90+R_()*Math.min(innerWidth,520)*.5;
+   e.animate([{transform:'translate(-50%,-50%) scale(.2) rotate(0deg)',opacity:0},{transform:'translate(calc(-50% + '+Math.cos(a)*r*.6+'px),calc(-50% + '+Math.sin(a)*r*.6+'px)) scale(1.2) rotate(90deg)',opacity:1,offset:.35},{transform:'translate(calc(-50% + '+Math.cos(a)*r+'px),calc(-50% + '+Math.sin(a)*r+'px)) scale(.3) rotate(220deg)',opacity:0}],{duration:900+R_()*700,delay:R_()*120,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'})}
+ }
+ setTimeout(()=>L.remove(),3800)}
+function shopSnd(id){try{if(id==='snd_aplausos')SFX.clap();else if(id==='snd_abucheo')SFX.boo()}catch(e){}}
+function shopTry(id){if(id.startsWith('fx_'))shopFx(id);else shopSnd(id)}
+function shopVoteFx(){const s=shopS();if(s.fx&&shopOwns(s.fx))shopFx(s.fx);if(s.snd&&shopOwns(s.snd))shopSnd(s.snd)}
+function bnOf(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return sh.bn==='bn_aurora'?'bn-aurora':sh.bn==='bn_galaxia'?'bn-galaxia':''}
+function ngOf(u){const sh=u&&u.shop;return !!(sh&&typeof sh==='object'&&sh.v>=2&&sh.ng==='ng_grad')}
 /* ===== Moneda voladora: mientras votas (liga, batalla libre, duelos y editor) sale una cada 4 minutos y tienes 6 segundos para agarrarla =====
    Cantidad por peso (suman 100%): 5 monedas ≈39% · 10 ≈30% · 15 ≈22% · 30 ≈9%.
    Las monedas ganadas se guardan en tu perfil (shop.bonus) y se suman a tu saldo. */
@@ -2345,7 +2458,7 @@ try{FC.t=Math.min(FC.every,Math.max(0,+localStorage.getItem('vfms_fc')||0))}catc
 function fcAmount(){const T=[[5,90],[10,70],[15,50],[30,20]];let r=Math.random()*T.reduce((a,b)=>a+b[1],0);for(const [c,w] of T){if((r-=w)<0)return c}return 5}
 function fcKill(){if(FC.raf)cancelAnimationFrame(FC.raf);FC.raf=0;if(FC.el){FC.el.remove();FC.el=null}}
 function fcSpawn(){
- if(FC.el)return;const amt=fcAmount(),W=()=>innerWidth,H=()=>innerHeight;
+ if(FC.el)return;const amt=fcAmount()*(boostOn()?2:1),W=()=>innerWidth,H=()=>innerHeight;
  const el=document.createElement('button');el.type='button';el.className='fcoin';el.setAttribute('aria-label','Agarrar '+amt+' monedas');
  el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>6</em>';document.body.appendChild(el);FC.el=el;
  const top=80,bot=()=>H()-110,pad=40;
@@ -2384,18 +2497,24 @@ function shopOpen(id){S.shopSheet=id;S.shopDone=false;R()}
 function shopClose(){S.shopSheet=null;S.shopDone=false;R()}
 async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me||S.shopBusy)return;if(shopOwns(it.id))return shopClose();
  const bal=coinBal();if(bal<it.p){try{achFail('Te faltan '+(it.p-bal)+' monedas.')}catch(e){}return}
- S.shopBusy=true;const s=shopS(),nx={...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],spent:(s.spent||0)+it.p};
+ S.shopBusy=true;const s=shopS();let nx;
+ if(it.id==='boost'){const now=Date.now(),lg=Array.isArray(s.boostLog)?s.boostLog.slice():[],last=lg[lg.length-1];if(last&&last.e>now)lg[lg.length-1]={s:last.s,e:last.e+3600000};else lg.push({s:now,e:now+3600000});nx={...s,spent:(s.spent||0)+it.p,boostLog:lg}}
+ else nx={...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],spent:(s.spent||0)+it.p};
  const ok=await shopSave(nx,'No se pudo completar la compra.');S.shopBusy=false;
  if(ok){S.shopDone=true;coinCount(bal,coinBal())}}
 async function shopEq(kind,id){if(!S.me)return;const s=shopS();await shopSave({...s,[kind]:id},'No se pudo guardar el cambio.')}
-async function shopEqNow(){const it=SHOP.find(x=>x.id===S.shopSheet);S.shopSheet=null;S.shopDone=false;if(it&&it.k==='frame')await shopEq('frame',it.fr);else if(it&&it.k==='title')await shopEq('title',it.tt);else if(it&&it.k==='color')await setTema(it.th);else if(it&&it.k==='card')await setDiseno(it.dz);else if(it&&it.k==='pack')await setPl(it.pl);else R()}
+async function shopEqNow(){const it=SHOP.find(x=>x.id===S.shopSheet);S.shopSheet=null;S.shopDone=false;if(it&&it.k==='frame')await shopEq('frame',it.fr);else if(it&&it.k==='title')await shopEq('title',it.tt);else if(it&&it.k==='color')await setTema(it.th);else if(it&&it.k==='card')await setDiseno(it.dz);else if(it&&it.k==='pack')await setPl(it.pl);else if(it&&it.eq)await shopEq(it.eq[0],it.eq[1]);else R()}
 function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.pf[u.uid].foto;if(!f&&u.foto===undefined)pfQueue(u.uid)}
  const g=fr&&/(^|\s)lg(\s|$)/.test(cls||''),c=`av ${cls||''}${fr&&!g?' fr-'+fr:''}`;
  const inner=f?`<img class="${c}" src="${f}" alt="">`:`<span class="${c}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`;
  return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
 function shopPv(it){
+ if(it.k==='boost')return `<div class="shpv"><div class="bstv"><span class="bz">⚡</span><div><b>x2</b><em>todas tus monedas · 1 hora</em></div></div></div>`;
+ if(it.k==='fx')return `<div class="shpv"><div class="fxv">${it.ic}</div><button class="shtry" onclick="event.stopPropagation();shopTry('${it.id}')">▶ Probar</button></div>`;
+ if(it.id==='ng_grad')return `<div class="shpv"><div class="ngr" style="font-size:24px;font-weight:900">${esc((S.me&&S.me.u)||'Tu nombre')}</div></div>`;
+ if(it.bn)return `<div class="shpv"><div class="bnv ${it.bn}"></div></div>`;
  if(it.k==='frame')return `<div class="shpv">${avFr(S.me,'lg',it.fr)}</div>`;
- if(it.k==='title')return `<div class="shpv"><div class="ptt"><span>${TITLES[it.tt].ic}</span>${esc(TITLES[it.tt].t)}</div></div>`;
+ if(it.k==='title')return `<div class="shpv"><div class="ptt pt-${it.tt}"><span>${TITLES[it.tt].ic}</span>${esc(TITLES[it.tt].t)}</div></div>`;
  if(it.k==='color'){const t=THEMES.find(x=>x.id===it.th);return `<div class="shpv"><i class="tsw" style="background:linear-gradient(135deg,${t.c},${t.c2})"></i></div>`}
  if(it.k==='card'){const d=DESIGNS.find(x=>x.id===it.dz);return `<div class="shpv"><div class="dzv" style="--c:${d.c};--c2:${d.c2}">${d.art}</div></div>`}
  if(it.k==='pack'){const d=PL_D.find(x=>x.id===it.pl);return `<div class="shpv"><div class="${plCls(d)}" style="${plVars(d)}"><div class="plv"><div class="plvh"><span>${esc(d.n)}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div></div>`}
@@ -2404,33 +2523,34 @@ function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
  if(own){
   if(it.k==='frame')return s.frame===it.fr?`<button class="shbuy eq" onclick="shopEq('frame','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('frame','${it.fr}')">Equipar</button>`;
   if(it.k==='title')return s.title===it.tt?`<button class="shbuy eq" onclick="shopEq('title','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('title','${it.tt}')">Equipar</button>`;
+  if(it.eq){const on=s[it.eq[0]]===it.eq[1];return on?`<button class="shbuy eq" onclick="shopEq('${it.eq[0]}','')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="shopEq('${it.eq[0]}','${it.eq[1]}')">Equipar</button>`}
   if(it.k==='color')return S.me.tema===it.th?`<button class="shbuy eq" onclick="setTema('co')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="setTema('${it.th}')">Usar</button>`;
   if(it.k==='card')return S.me.dz===it.dz?`<button class="shbuy eq" onclick="setDiseno('')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="setDiseno('${it.dz}')">Usar</button>`;
   if(it.k==='pack')return S.me.pl===it.pl?`<button class="shbuy eq" onclick="setPl('')">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="setPl('${it.pl}')">Usar</button>`;
   return `<span class="shbuy own">✓ Activo</span>`}
  const ok=bal>=it.p;
  return `${ok?'':`<div class="shpr"><i style="width:${Math.min(100,Math.round(bal/it.p*100))}%"></i></div>`}<button class="shbuy${ok?'':' no'}" onclick="shopOpen('${it.id}')"><i class="coin"></i>${it.p}</button>${ok?'':`<div class="shnote">Te faltan ${it.p-bal}</div>`}`}
-function shopCard(it,i){const own=shopOwns(it.id);
- return `<div class="shi${own?' own':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b><p>${esc(it.d)}</p>${shopBtn(it)}</div></div>`}
-function shopHowH(){const r=[['ws','World Series',50],['in','Internacional',40],['es','España',35]],lg=i=>L.find(x=>x.i===i);
- return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+30</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">🪙 Extra: mientras votas, cada 4 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 6 segundos.</div></div>`}
+function shopCard(it,i){const own=shopOwns(it.id),r=shopRar(it.p);
+ return `<div class="shi${own?' own':''}${it.k==='boost'?' wide':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}<span class="shrar r-${r[0]}">${r[1]}</span>${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b><p>${esc(it.d)}</p>${shopBtn(it)}</div></div>`}
+function shopHowH(){const r=[['ws','World Series',60],['in','Internacional',50],['es','España',40]],lg=i=>L.find(x=>x.i===i);
+ return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+35</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de 12 batallas con monedas al día. Deja al menos 45 segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">🪙 Extra: mientras votas, cada 4 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 6 segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: 120).</div></div>`}
 function tiendaV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
  const tabs=SHOP_TABS.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.shopTab='${k}';R()">${t}</button>`).join('');
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button>
- <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div></div></div>
+ <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div>${boostOn()?`<span class="bstp">⚡ Boost x2 activo · <span id="bstt">${boostLeft()}</span></span>`:''}</div></div>
  <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
- <div class="shtabs">${tabs}</div>
- ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="sec shsec"><span>${SHOP_NM[k]}</span><span>${ow}/${l.length} · de menor a mayor precio</span></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
+ <div class="shtabs">${tabs}</div><div class="shleg"><span>Rareza:</span><span class="shrar r-com">Común</span><span class="shrar r-rar">Raro</span><span class="shrar r-epi">Épico</span><span class="shrar r-leg">Legendario</span><span>· más caro = más raro</span></div>
+ ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'dura 1 hora':ow+'/'+l.length+' tuyos'}</em></div><p>${SHOP_DS[k]}</p></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
  <button class="pfap" onclick="S.stkOpen=true;S.stkTierSel=null;R()"><span><b>🔥 Atuendos de la mascota</b><em>Se desbloquean con días de racha, no con monedas</em></span><i>›</i></button></div>`}
 function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
-function cgainH(){const g=S.coinGain||0;return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
+function cgainH(){const g=S.coinGain||0;if(g<=0&&S.coinNote)return cnoteH();return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
 function shopSheetH(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it)return '';const bal=coinBal(),done=!!S.shopDone,ok=bal>=it.p;
  const parts=done?Array.from({length:16},(_,i)=>{const a=i/16*Math.PI*2,r=70+(i%3)*28;return `<i style="--x:${Math.round(Math.cos(a)*r)}px;--y:${Math.round(Math.sin(a)*r)}px;animation-delay:${(i%4)*60}ms"></i>`}).join(''):'';
- const act=done?(it.k==='extra'?`<button class="btn" style="margin:0" onclick="shopClose()">Listo</button>`:`<button class="btn" style="margin:0" onclick="shopEqNow()">Equipar ahora</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Más tarde</button>`)
+ const act=done?((it.k==='extra'&&!it.eq)||it.k==='boost'?`<button class="btn" style="margin:0" onclick="shopClose()">Listo</button>`:`<button class="btn" style="margin:0" onclick="shopEqNow()">Equipar ahora</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Más tarde</button>`)
   :`<button class="shbuy big${ok?'':' no'}" ${ok?'onclick="shopBuy()"':'disabled'}>${ok?`Comprar por <i class="coin"></i>${it.p}`:`Te faltan ${it.p-bal} monedas`}</button><button class="btn s" style="margin:8px 0 0" onclick="shopClose()">Cancelar</button>`;
- return `<div class="ov" onclick="shopClose()"><div class="sh shsh" onclick="event.stopPropagation()"><div class="cfx">${parts}</div>${shopPv(it)}<div class="shsc"><h3>${done?'¡Es tuyo! 🎉':esc(it.n)}</h3><p>${done?esc(it.n)+' ya está en tu cuenta.':esc(it.d)}</p>${done?'':`<div class="shcalc"><span>Saldo</span><b><i class="coin"></i>${bal}</b><span>→</span><b class="${ok?'':'neg'}"><i class="coin"></i>${bal-it.p}</b></div>`}${act}</div></div></div>`}
+ return `<div class="ov" onclick="shopClose()"><div class="sh shsh" onclick="event.stopPropagation()"><div class="cfx">${parts}</div>${shopPv(it)}<div class="shsc"><h3>${done?(it.k==='boost'?'¡Boost activado! ⚡':'¡Es tuyo! 🎉'):esc(it.n)}</h3><p>${done?(it.k==='boost'?'Todo va al doble. Te quedan '+boostLeft()+' de Boost.':esc(it.n)+' ya está en tu cuenta.'):esc(it.d)}</p>${done?'':`<div class="shcalc"><span>Saldo</span><b><i class="coin"></i>${bal}</b><span>→</span><b class="${ok?'':'neg'}"><i class="coin"></i>${bal-it.p}</b></div>`}${act}</div></div></div>`}
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
 const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
 function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i);return {a:(p[0]||'').trim(),b:(p[1]||'').trim(),sa:null,sb:null,j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||null,j:e.n+' · '+e.d}}
@@ -3130,13 +3250,13 @@ function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{const nv=voteNorm(r
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
 async function pushVote2(v){
- let prevRank=null,newRank=null;S.coinGain=0;
+ let prevRank=null,newRank=null;S.coinGain=0;S.coinNote='';
  v.uid=S.me.uid;v.u=S.me.u;v.key=ck(v.free?'libre':v.l,v.a,v.b);v.ts=Date.now();
  let c={n:0,wa:0,wb:0};try{c=summ(await B.votesKey(v.key))}catch(e){}
  const cw=c.wa>=c.wb?0:1,uw=(()=>{const o=outcomeOf(v);return o.w==null?-1:(o.w==='a'?0:1)})();
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
  try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
- notifyFriends(v);try{SFX.vote()}catch(e){}S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}}catch(e){}})();
+ notifyFriends(v);try{SFX.vote()}catch(e){}try{shopVoteFx()}catch(e){}S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}})();
  try{S.comm=summ(await B.votesKey(v.key))}catch(e){S.comm={n:0,wa:0,wb:0,sa:0,sb:0}}
  R();
 }
@@ -3228,7 +3348,7 @@ function profileHead(u,isMe,uid){
  const fl=u.p?flagOf(u.p):'';
  const chips=[u.p?`<span class="pchip">${fl||'🌎'} ${esc(u.p)}</span>`:'',u.m?`<span class="pchip">🎤 ${esc(u.m)}</span>`:'',`<span class="pchip">📅 Desde ${esc(u.joined||'—')}</span>`].join('');
  const dz=dzOf(u);
- return `<div class="banner pbn${dz?' dz':''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1>${esc(u.u)}</h1>${ttH(u)}${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div>${pMascotH(u)}</div>
+ return `<div class="banner pbn${dz?' dz':''}${!dz&&bnOf(u)?' '+bnOf(u):''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1${ngOf(u)?' class="ngr"':''}>${esc(u.u)}</h1>${ttH(u)}${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div>${pMascotH(u)}</div>
  <div class="card pinfo"><div class="pchips">${chips}</div>${uid?presLine(uid):''}${u.a?`<div class="pab"><div class="mu">Sobre mí</div>${esc(u.a)}</div>`:''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
@@ -3533,7 +3653,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
- {ts:Date.parse('2026-11-11T20:00:00-04:00'),text:'Nueva moneda voladora 🪙: mientras votas (en batallas de liga, Batalla libre, duelos o Modo editor) cada 4 minutos aparece una moneda flotando por tu pantalla y tienes 6 segundos para tocarla. Puede traer 5 monedas (la más común), 10, 15 o 30 (la más rara). Se suman directo a tu saldo de la tienda.'},
+ {ts:Date.parse('2026-11-12T12:00:00-04:00'),text:'Tienda renovada 🛍️: ahora todo está ordenado por secciones con rarezas (Común, Raro, Épico y Legendario) y llegan objetos nuevos: Boost x2 (durante 1 hora todo lo que ganas va al doble), marcos de neón, fuego, arcoíris y corona, títulos nuevos, confeti y chispas al votar, sonidos de aplausos y abucheo, fondos animados y nombre con degradado. También sube lo que ganas por votar una batalla de liga: World Series 60, Internacional 50, España 40 y las demás 35. Para evitar trampas, se pueden ganar monedas hasta en 12 batallas de liga por día y con al menos 45 segundos entre un voto y otro. Y mientras votas, cada 4 minutos sale una moneda voladora: tócala en 6 segundos.'},
  {ts:Date.parse('2026-11-11T17:45:00-04:00'),text:'Mejoras de rendimiento ⚡: la app va más fluida y carga más rápido. Ya no se repinta la barra de arriba ni el menú de abajo cuando no cambian, lo que está fuera de pantalla deja de animarse, las brasas de fondo van a 30 FPS y los escudos de las ligas pesan mucho menos. Todo se ve igual y no se quitó ninguna función. Si aún se te traba, en Ajustes (la tuerca) puedes bajar los FPS o desactivar animaciones y brillos.'},
  {ts:Date.parse('2026-11-11T17:30:00-04:00'),text:'Duelos y planillas ⚔️: ahora una sala admite hasta 7 jugadores y el anfitrión lleva el video (pausa, reanuda y adelanta a todos); durante la votación cada quien puede mover el suyo. La voz ahora funciona con varios jugadores y se ve quién habla con su foto. Nueva planilla actual con 0,5: igual que la actual (Random, Ida, Vuelta, Acapella y Deluxe) pero con medios puntos, de 0 a 10 (Acapella de 0 a 4); la eliges junto a Planilla antigua y Planilla actual, también al crear un duelo. En el chat del duelo ahora se ve bien el nombre de quien escribe, con un color para cada persona. Y en la planilla actual ya puedes tocar ⏸ Guardar y seguir después para dejar la votación a medias: la retomas desde Inicio o abriendo esa batalla.'},
  {ts:Date.parse('2026-11-11T16:30:00-04:00'),text:'Duelos más grandes ⚔️: ahora una sala admite hasta 5 jugadores (el anfitrión y 4 más), por invitación de amigos o con el código. Además, cuando varios compañeros activan «Permitir que los demás vean mi votación», puedes pasar de una votación a otra con las flechas ‹ › en la barra del duelo, para que no se acumulen. La voz por ahora sigue siendo solo para duelos de 2 personas.'},
