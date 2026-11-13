@@ -3674,6 +3674,7 @@ async function deleteAccount(){
 
 const AVISOS=[
  {ts:Date.parse('2026-11-12T12:00:00-04:00'),text:'Tienda renovada 🛍️: ahora todo está ordenado por secciones con rarezas (Común, Raro, Épico y Legendario) y llegan objetos nuevos: Boost x2 (durante 1 hora todo lo que ganas va al doble), marcos de neón, fuego, arcoíris y corona, títulos nuevos, confeti y chispas al votar, sonidos de aplausos y abucheo, fondos animados y nombre con degradado. También sube lo que ganas por votar una batalla de liga: World Series 60, Internacional 50, España 40 y las demás 35. Para evitar trampas, se pueden ganar monedas hasta en 12 batallas de liga por día y con al menos 45 segundos entre un voto y otro. Y mientras votas, cada 4 minutos sale una moneda voladora: tócala en 6 segundos.'},
+ {ts:Date.parse('2026-11-13T00:30:00-04:00'),text:'Video sincronizado en duelos 🎬: ahora cualquier jugador puede pausar, reanudar o adelantar el video y a todos los de la sala les pasa lo mismo al mismo tiempo, en duelos de 2 o más.'},
  {ts:Date.parse('2026-11-12T23:40:00-04:00'),text:'Corrección del álbum 🎴: en FMS España 2017 la carta de Walls era un error; ahora es BTA 2017 (común). A quien le había salido Walls, esa carta se cambió por BTA 2017 en su álbum.'},
  {ts:Date.parse('2026-11-12T13:00:00-04:00'),text:'Nuevo: Álbum de freestylers 🎴. En la Tienda (y en el nuevo apartado Álbum, abajo en el menú) hay un sobre misterioso: lo abres y te sale un freestyler al azar, con su carta, su año y su calidad (común, raro, épico o legendario). Empezamos con FMS España 2017. En Álbum filtras por temporada, por FMS y buscas por nombre. Si tienes las animaciones activadas, abrir el sobre se ve mucho más espectacular.'},
  {ts:Date.parse('2026-11-12T12:00:00-04:00'),text:'Duelos más cómodos ⚔️: si el anfitrión sale, el mando pasa a otro jugador y la sala sigue. Puedes invitar a varios amigos a la vez y compartir el código por WhatsApp, volver a tu duelo si se cae el internet, avisar a quienes faltan por votar, poner un límite de tiempo y reaccionar con emojis (🔥 👏 😴 👎) sin escribir. Además la pantalla de duelos está más ordenada.'},
@@ -5230,17 +5231,17 @@ async function duShare(v){const D=S.dul;if(!D)return;D.sig='';try{await FB.fm.up
 /* --- Video sincronizado: pausar, reanudar, adelantar y cambiar de parte afectan a los dos --- */
 const duCmd=(f,a)=>{const el=document.getElementById('vpf');if(el&&el.contentWindow)el.contentWindow.postMessage(JSON.stringify({event:'command',func:f,args:a||[]}),'*')};
 const duPart=()=>{const b=S.bt;if(!b)return 0;const ids=ytIds(b.y);return (S.vpart&&S.vpart.y===b.y&&ids[S.vpart.i])?S.vpart.i:0};
-function duPub(st,t,x){const D=S.dul;if(!D||!S.me||D.role!=='host')return;D.ls=st==='play'?1:2;FB.fm.updateDoc(duRef(D.code),{vid:{st,t:Math.round((t||0)*10)/10,by:S.me.uid,n:Date.now(),ts:Date.now(),part:duPart(),...(x||{})}}).catch(()=>{})}
+function duPub(st,t,x){const D=S.dul;if(!D||!S.me)return;D.ls=st==='play'?1:2;FB.fm.updateDoc(duRef(D.code),{vid:{st,t:Math.round((t||0)*10)/10,by:S.me.uid,n:Date.now(),ts:Date.now(),part:duPart(),...(x||{})}}).catch(()=>{})}
 function duApply(v){const D=S.dul;if(!document.getElementById('vpf'))return;if(v.hb){if(D.detach)return}else D.detach=false;
  if(v.part!=null&&v.part!==duPart()){D.rem=1;try{_setVPart2(v.part)}finally{D.rem=0}D.got=0;D.ls=null;D.mute=Date.now()+2500;return}
  D.mute=Date.now()+1500;D.ls=v.st==='play'?1:2;
  if(Math.abs((D.t||0)-v.t)>(v.st==='play'?1.2:0.6))duCmd('seekTo',[v.t+(v.st==='play'?0.4:0),true]);
  duCmd(v.st==='play'?'playVideo':'pauseVideo')}
-function duState(st){const D=S.dul;if(!D||Date.now()<D.mute||(st!==1&&st!==2)||st===D.ls)return;if(D.role!=='host'){D.detach=true;D.ls=st;return}duPub(st===1?'play':'pause',D.t)}
+function duState(st){const D=S.dul;if(!D||Date.now()<D.mute||(st!==1&&st!==2)||st===D.ls)return;duPub(st===1?'play':'pause',D.t)}
 window.addEventListener('message',ev=>{const D=S.dul,el=document.getElementById('vpf');if(!D||!D.live||!el||ev.source!==el.contentWindow)return;let m;try{m=JSON.parse(ev.data)}catch(e){return}D.got=1;
  if(m.event==='infoDelivery'&&m.info){const i=m.info;
   if(typeof i.currentTime==='number'){const now=Date.now(),c=i.currentTime;
-   if(D.lts&&now>=D.mute&&D.ls){const e=D.ls===1?D.lt+(now-D.lts)/1000:D.lt;if(Math.abs(c-e)>(D.ls===1?3:1.5)){if(D.role==='host')duPub(D.ls===1?'play':'pause',c);else D.detach=true}}
+   if(D.lts&&now>=D.mute&&D.ls){const e=D.ls===1?D.lt+(now-D.lts)/1000:D.lt;if(Math.abs(c-e)>(D.ls===1?3:1.5))duPub(D.ls===1?'play':'pause',c)}
    D.t=c;D.lt=c;D.lts=now}
   if(typeof i.playerState==='number')duState(i.playerState)}else if(m.event==='onStateChange')duState(m.info)});
 setInterval(()=>{const D=S.dul;if(!D||!D.live)return;const el=document.getElementById('vpf');if(!el||!el.contentWindow)return;if(el!==D.el){D.el=el;D.got=0}if(!D.got)el.contentWindow.postMessage(JSON.stringify({event:'listening',id:1,channel:'widget'}),'*')},1000);
@@ -5304,7 +5305,7 @@ const _resV2=resV;resV=function(){if(!duOn())return _resV2();const D=S.dul;D.sav
 const _setFmt2=setFmt;setFmt=function(f){if(S.duelOn)return;return _setFmt2(f)};
 const _fmtSeg2=fmtSeg;fmtSeg=function(){return S.duelOn?'':_fmtSeg2()};
 const _linkAreaH2=linkAreaH;linkAreaH=function(b){return S.duelOn?'':_linkAreaH2(b)};
-const _setVPart2=setVPart;setVPart=function(i){_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){if(D.role!=='host')D.detach=true;D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
+const _setVPart2=setVPart;setVPart=function(i){_setVPart2(i);const D=S.dul;if(duOn()&&!D.rem){D.got=0;D.ls=null;D.mute=Date.now()+2500;duPub('pause',0)}};
 const _fmtRounds2=fmtRounds;fmtRounds=function(f,l){const D=S.dul,d=D&&D.d;if(!S.duelOn||!d)return _fmtRounds2(f,l);
  if(f==='actual')return [ACTR];
  const tp=d.tp||'auto';if(DU_RF[tp])return RF[DU_RF[tp]].slice();
@@ -6130,7 +6131,7 @@ D.addEventListener('pointerup',function(e){var d=dn;dn=null;if(!d)return;
 
 /* ===== Duelo: video solo del anfitrión · planilla 0,5 · borradores · nombres en el chat ===== */
 function duC(u){let h=0;for(const c of String(u))h=(h*31+c.charCodeAt(0))>>>0;return 'hsl('+(h%360)+',80%,62%)'}
-const _vytH0=vytH;vytH=function(){let h=_vytH0.apply(this,arguments);try{if(duOn()&&S.dul.role!=='host'){h+='<div class="mu" style="font-size:12px;margin:-4px 0 10px">🎬 El anfitrión lleva el video. Si lo mueves tú, dejas de seguirlo hasta que él lo vuelva a usar.</div>'}}catch(e){}return h};
+const _vytH0=vytH;vytH=function(){let h=_vytH0.apply(this,arguments);try{if(duOn()){h+='<div class="mu" style="font-size:12px;margin:-4px 0 10px">🎬 El video va sincronizado: si alguien pausa, reanuda o adelanta, le pasa a todos.</div>'}}catch(e){}return h};
 const drId=k=>String(k).replace(/[^a-z0-9|]/gi,'_').slice(0,120);
 const drKeyNow=()=>bkey({free:!!S.libre,l:S.lg,temp:S.temp,a:S.bt.a,b:S.bt.b});
 function drToast(t){try{const el=document.createElement('div');el.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:99999;background:var(--cd);color:var(--tx);border:1px solid var(--ac);border-radius:14px;padding:10px 16px;font:700 13px/1.3 inherit;box-shadow:var(--sh);max-width:86vw;text-align:center';el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),3800)}catch(e){}}
