@@ -2735,17 +2735,13 @@ function aKey(e){
  if(c&&!(S.sc[c.ri]&&S.sc[c.ri][c.m]))c=null;
  if(/^[0-9]$/.test(k)){
   if(!c){const first=aOrder().find(x=>S.sc[x.ri]&&S.sc[x.ri][x.m][x.idx]==null);if(!first)return;c=first;S.selA=first}
-  e.preventDefault();
- if((KBUF&&k!=='0')||(HP&&!KBUF)){HP=false;const nx=aStep(c,1);KBUF='';clearTimeout(KT);if(nx.ri!==c.ri||nx.m!==c.m||nx.idx!==c.idx){aGo(nx);c=nx}}
- const mx=maxA(c);let buf=KBUF+k,n=Number(buf);
-  if(n>mx){buf=k;n=Number(buf);if(n>mx)return}
-  KBUF=buf;S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);
-  if(n>=1&&n*10<=mx){R()}
-  else if(S.hf&&n+.5<=mx){KBUF='';HP=true;R()}
-  else{KBUF='';HP=false;const nx=aStep(c,1);const same=nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx;if(same){R()}else{aGo(nx)}}
+  e.preventDefault();HP=false;
+  const mx=maxA(c);let n;
+  if(KBUF==='1'&&k==='0'&&mx>=10){n=10;KBUF=''}else{n=Number(k);if(n>mx)return;KBUF=(n===1&&mx>=10)?'1':''}
+  S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);R();
   return}
  if(!c)return;
- if(S.hf&&(k===','||k==='.'||k===' ')){e.preventDefault();const cv=S.sc[c.ri][c.m][c.idx];if(cv==null)S.sc[c.ri][c.m][c.idx]=0.5;else if(cv%1===0&&cv+.5<=maxA(c))S.sc[c.ri][c.m][c.idx]=cv+.5;else return;KBUF='';HP=false;const nx=aStep(c,1);if(nx.ri===c.ri&&nx.m===c.m&&nx.idx===c.idx)R();else aGo(nx);return}
+ if(S.hf&&(k===','||k==='.'||k===' ')){e.preventDefault();const cv=S.sc[c.ri][c.m][c.idx];if(cv==null)S.sc[c.ri][c.m][c.idx]=0.5;else if(cv%1===0&&cv+.5<=maxA(c))S.sc[c.ri][c.m][c.idx]=cv+.5;else return;KBUF='';HP=false;R();return}
  if(k==='Backspace'||k==='Delete'){e.preventDefault();KBUF='';HP=false;clearTimeout(KT);S.sc[c.ri][c.m][c.idx]=null;R();return}
  if(k==='Escape'){e.preventDefault();KBUF='';clearTimeout(KT);if(S.sheet&&S.sheet.ri!=null){S.sheet=null;S.kpe=''}else S.selA=null;R();return}
  if(k==='Enter'||k==='ArrowRight'||(k==='Tab'&&!e.shiftKey)){e.preventDefault();aGo(aStep(c,1));return}
@@ -2754,7 +2750,7 @@ function aKey(e){
  if(k==='ArrowUp'){e.preventDefault();aGo(aVert(c,-1));return}
 }
 document.addEventListener('keydown',aKey);
-function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c&&KBUF==='1'?'Escribe 0 para poner 10, o Enter para dejar 1.':c?'Escribe el número con tu teclado.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${S.hf?' · Coma, punto o espacio = medio punto':''}${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
+function kbHint(){if(!isPC())return '';const c=S.selA;return `<div class="kbhint">⌨ ${c&&KBUF==='1'?'Escribe 0 para poner 10, o Enter para dejar 1.':c?'Escribe el número: se queda en la casilla hasta que tú te muevas.':'Selecciona una casilla y escribe el número con tu teclado.'} <span>Flechas, Tab o Enter para moverte · Retroceso para borrar${S.hf?' · Coma, punto o espacio = medio punto':''}${c?` · <a href="#" onclick="event.preventDefault();aOpenSheet()">Abrir selector</a>`:''}</span></div>`}
 function votarReplicaA(){if(S.rep==='voted')return;S.rounds.push(REPA);S.sc.push([[null],[null]]);S.rep='voted';S.ri=S.rounds.length-1;S.selA=null;R()}
 function quitarReplicaA(){const k=S.rounds.findIndex(r=>r.rep);if(k>=0){S.rounds.splice(k,1);S.sc.splice(k,1)}S.rep=null;S.selA=null;S.sheet=null;S.ri=0;R()}
 function actRowsV(v){const nm=Array.isArray(v.al)?v.al:null,n=nm?nm.length:Math.min(ACT.length,v.sc[0].a.length),rows=[];for(let i=0;i<n;i++)rows.push({r:(nm&&nm[i])||(ACT[i]&&ACT[i].k)||('Ronda '+(i+1)),ta:v.sc[0].a[i],tb:v.sc[0].b[i]});if(v.sc[1])rows.push({r:'Réplica',ta:sum(v.sc[1].a),tb:sum(v.sc[1].b)});return rows}
@@ -3215,19 +3211,16 @@ function bKey(e){
  if(/^[0-9]$/.test(k)){
   if(!c){const f=inStep().find(x=>S.sc[x.ri][x.m][x.idx]==null);if(!f)return;c=f;S.selB={ri:f.ri,m:f.m,idx:f.idx}}
   e.preventDefault();KLAST=null;
-  if(KBUF&&k!=='0'){const nx=bStep(c,1);KBUF='';clearTimeout(KT);if(nx.idx!==c.idx||nx.m!==c.m||nx.ri!==c.ri){bGo(nx);c=nx}}
-  const mx=maxAt(c.idx);let buf=KBUF+k,n=Number(buf);
-  if(n>mx){buf=k;n=Number(buf);if(n>mx)return}
-  KBUF=buf;S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);
-  if(n>=1&&n*10<=mx){R()}
-  else{KBUF='';KLAST={ri:c.ri,m:c.m,idx:c.idx,mx};const nx=bStep(c,1);if(nx.idx===c.idx&&nx.m===c.m&&nx.ri===c.ri)R();else bGo(nx)}
+  const mx=maxAt(c.idx);let n;
+  if(KBUF==='1'&&k==='0'&&mx>=10){n=10;KBUF=''}else{n=Number(k);if(n>mx)return;KBUF=(n===1&&mx>=10)?'1':''}
+  S.sc[c.ri][c.m][c.idx]=n;clearTimeout(KT);R();
   return}
  if(k===','||k==='.'||k===' '||k==='Spacebar'){
   let tg=KLAST||(c?{ri:c.ri,m:c.m,idx:c.idx,mx:maxAt(c.idx)}:null);
   if(!tg){const f=inStep().find(x=>S.sc[x.ri][x.m][x.idx]==null);if(f){tg={ri:f.ri,m:f.m,idx:f.idx,mx:maxAt(f.idx)};S.selB={ri:f.ri,m:f.m,idx:f.idx}}}
   if(!tg||!(S.sc[tg.ri]&&S.sc[tg.ri][tg.m]))return;
   e.preventDefault();const v=S.sc[tg.ri][tg.m][tg.idx];
-  if(v==null){KBUF='';clearTimeout(KT);S.sc[tg.ri][tg.m][tg.idx]=0.5;KLAST={ri:tg.ri,m:tg.m,idx:tg.idx,mx:tg.mx};const nx=bStep(tg,1);if(nx.idx===tg.idx&&nx.m===tg.m&&nx.ri===tg.ri)R();else bGo(nx);return}
+  if(v==null){KBUF='';clearTimeout(KT);S.sc[tg.ri][tg.m][tg.idx]=0.5;KLAST={ri:tg.ri,m:tg.m,idx:tg.idx,mx:tg.mx};R();return}
   if(v%1===0){if(v<tg.mx)S.sc[tg.ri][tg.m][tg.idx]=v+0.5}else S.sc[tg.ri][tg.m][tg.idx]=v-0.5;
   R();return}
  if(!c){if(k==='ArrowRight'||k==='ArrowLeft'||k==='ArrowUp'||k==='ArrowDown'){const f=inStep()[0];if(f){e.preventDefault();bGo(f)}}return}
@@ -3674,6 +3667,7 @@ async function deleteAccount(){
 
 const AVISOS=[
  {ts:Date.parse('2026-11-12T12:00:00-04:00'),text:'Tienda renovada 🛍️: ahora todo está ordenado por secciones con rarezas (Común, Raro, Épico y Legendario) y llegan objetos nuevos: Boost x2 (durante 1 hora todo lo que ganas va al doble), marcos de neón, fuego, arcoíris y corona, títulos nuevos, confeti y chispas al votar, sonidos de aplausos y abucheo, fondos animados y nombre con degradado. También sube lo que ganas por votar una batalla de liga: World Series 60, Internacional 50, España 40 y las demás 35. Para evitar trampas, se pueden ganar monedas hasta en 12 batallas de liga por día y con al menos 45 segundos entre un voto y otro. Y mientras votas, cada 4 minutos sale una moneda voladora: tócala en 6 segundos.'},
+ {ts:Date.parse('2026-11-13T09:00:00-04:00'),text:'Votar con el teclado en PC ⌨️: ahora, al escribir un número en una casilla, se queda ahí y ya no salta sola a la siguiente. Tú decides cuándo moverte, con las flechas, Tab, Enter o con el mouse. Para poner 10, escribe 1 y luego 0.'},
  {ts:Date.parse('2026-11-13T00:30:00-04:00'),text:'Video sincronizado en duelos 🎬: ahora cualquier jugador puede pausar, reanudar o adelantar el video y a todos los de la sala les pasa lo mismo al mismo tiempo, en duelos de 2 o más.'},
  {ts:Date.parse('2026-11-12T23:40:00-04:00'),text:'Corrección del álbum 🎴: en FMS España 2017 la carta de Walls era un error; ahora es BTA 2017 (común). A quien le había salido Walls, esa carta se cambió por BTA 2017 en su álbum.'},
  {ts:Date.parse('2026-11-12T13:00:00-04:00'),text:'Nuevo: Álbum de freestylers 🎴. En la Tienda (y en el nuevo apartado Álbum, abajo en el menú) hay un sobre misterioso: lo abres y te sale un freestyler al azar, con su carta, su año y su calidad (común, raro, épico o legendario). Empezamos con FMS España 2017. En Álbum filtras por temporada, por FMS y buscas por nombre. Si tienes las animaciones activadas, abrir el sobre se ve mucho más espectacular.'},
