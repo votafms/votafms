@@ -2331,11 +2331,11 @@ function rkN(x){if(S.me&&x.uid===S.me.uid){if(S.myVotes)return rankInfo(S.myVote
  if(x.rv===RANK_V)return x.rp||0;const c=S.rkc[x.uid];if(c&&c.n!=null)return c.n;rkQueue(x.uid);return x.rp||0}
 const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',album:'album',tienda:'perfil',admin:'perfil',editor:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
 /* ===== Monedas y tienda =====
-   Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 50, Internacional 40, España 35 y las demás 30.
+   Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 70, Internacional 60, España 50 y las demás 40.
    No cuentan Batalla libre ni Modo editor. Lo gastado y lo comprado se guarda en tu perfil (campo «shop»). */
-const COIN_L={ws:60,in:50,es:40};
+const COIN_L={ws:70,in:60,es:50};
 const SHOP_BASE=[
- {id:'boost',k:'boost',n:'Boost x2',d:'Durante 1 hora todo va al doble: votar World Series da 120 monedas en vez de 60, y la moneda voladora también trae el doble. Lo puedes comprar las veces que quieras; si lo compras con el Boost activo, se suma otra hora.',p:300},
+ {id:'boost',k:'boost',n:'Boost x2',d:'Durante 1 hora todo va al doble: votar World Series da 140 monedas en vez de 70, y la moneda voladora también trae el doble. Lo puedes comprar las veces que quieras; si lo compras con el Boost activo, se suma otra hora.',p:250},
  {id:'frame_purple',k:'frame',n:'Marco morado',d:'Borde morado brillante en tu foto de perfil. Muéstrate con estilo en la comunidad.',p:120,fr:'purple'},
  {id:'frame_gold',k:'frame',n:'Marco dorado',d:'Borde dorado animado en tu foto. Se ve en tu perfil, en comunidad y con tus amigos.',p:150,fr:'gold'},
  {id:'frame_neon',k:'frame',n:'Marco neón',d:'Aro celeste que late como un letrero de neón. Se ve en tu perfil y en comunidad.',p:200,fr:'neon'},
@@ -2388,7 +2388,7 @@ function boostEnd(){const l=shopS().boostLog;return Array.isArray(l)&&l.length?(
 function boostOn(){return boostEnd()>Date.now()}
 function boostAt(ts){const l=shopS().boostLog;if(!Array.isArray(l))return false;ts=+ts||0;return l.some(w=>ts>=w.s&&ts<w.e)}
 function boostLeft(){const m=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000));return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')}
-function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const b=COIN_L[v.l]||35;return boostAt(v.ts)?b*2:b}
+function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const b=COIN_L[v.l]||40;return boostAt(v.ts)?b*2:b}
 /* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
    minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
 const VOTE_RULES={minGap:45,perDay:12,from:Date.parse('2026-11-12T00:00:00-04:00')};
@@ -2470,17 +2470,17 @@ function shopTry(id){if(id.startsWith('fx_'))shopFx(id);else shopSnd(id)}
 function shopVoteFx(){const s=shopS();if(s.fx&&shopOwns(s.fx))shopFx(s.fx);if(s.snd&&shopOwns(s.snd))shopSnd(s.snd)}
 function bnOf(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return sh.bn==='bn_aurora'?'bn-aurora':sh.bn==='bn_galaxia'?'bn-galaxia':''}
 function ngOf(u){const sh=u&&u.shop;return !!(sh&&typeof sh==='object'&&sh.v>=2&&sh.ng==='ng_grad')}
-/* ===== Moneda voladora: mientras votas (liga, batalla libre, duelos y editor) sale una cada 4 minutos y tienes 6 segundos para agarrarla =====
+/* ===== Moneda voladora: mientras votas (liga, batalla libre, duelos y editor) sale una cada 3:30 minutos y tienes 7 segundos para agarrarla =====
    Cantidad por peso (suman 100%): 5 monedas ≈39% · 10 ≈30% · 15 ≈22% · 30 ≈9%.
    Las monedas ganadas se guardan en tu perfil (shop.bonus) y se suman a tu saldo. */
-const FC={every:240,life:6,t:0,el:null,raf:0,busy:false};
+const FC={every:210,life:7,t:0,el:null,raf:0,busy:false};
 try{FC.t=Math.min(FC.every,Math.max(0,+localStorage.getItem('vfms_fc')||0))}catch(e){}
 function fcAmount(){const T=[[5,90],[10,70],[15,50],[30,20]];let r=Math.random()*T.reduce((a,b)=>a+b[1],0);for(const [c,w] of T){if((r-=w)<0)return c}return 5}
 function fcKill(){if(FC.raf)cancelAnimationFrame(FC.raf);FC.raf=0;if(FC.el){FC.el.remove();FC.el=null}}
 function fcSpawn(){
  if(FC.el)return;const amt=fcAmount()*(boostOn()?2:1),W=()=>innerWidth,H=()=>innerHeight;
  const el=document.createElement('button');el.type='button';el.className='fcoin';el.setAttribute('aria-label','Agarrar '+amt+' monedas');
- el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>6</em>';document.body.appendChild(el);FC.el=el;
+ el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>7</em>';document.body.appendChild(el);FC.el=el;
  const top=80,bot=()=>H()-110,pad=40;
  let x=Math.random()<.5?-30:W()+30,y=top+Math.random()*Math.max(60,bot()-top);
  let vx=(x<0?1:-1)*(130+Math.random()*80),vy=(Math.random()<.5?-1:1)*(70+Math.random()*90);
@@ -2552,8 +2552,8 @@ function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
  return `${ok?'':`<div class="shpr"><i style="width:${Math.min(100,Math.round(bal/it.p*100))}%"></i></div>`}<button class="shbuy${ok?'':' no'}" onclick="shopOpen('${it.id}')"><i class="coin"></i>${it.p}</button>${ok?'':`<div class="shnote">Te faltan ${it.p-bal}</div>`}`}
 function shopCard(it,i){const own=shopOwns(it.id),r=shopRar(it.p);
  return `<div class="shi${own?' own':''}${it.k==='boost'?' wide':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}<span class="shrar r-${r[0]}">${r[1]}</span>${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b><p>${esc(it.d)}</p>${shopBtn(it)}</div></div>`}
-function shopHowH(){const r=[['ws','World Series',60],['in','Internacional',50],['es','España',40]],lg=i=>L.find(x=>x.i===i);
- return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+35</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de 12 batallas con monedas al día. Deja al menos 45 segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">🪙 Extra: mientras votas, cada 4 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 6 segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: 120).</div></div>`}
+function shopHowH(){const r=[['ws','World Series',70],['in','Internacional',60],['es','España',50]],lg=i=>L.find(x=>x.i===i);
+ return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+40</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de 12 batallas con monedas al día. Deja al menos 45 segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">🪙 Extra: mientras votas, cada 3:30 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 7 segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: 140).</div></div>`}
 function tiendaV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
@@ -2919,7 +2919,7 @@ function lgv(){
  const groups=ents.map(({e,ci})=>{const bs=e.b||[];
   return `<div class="jgrp"><div class="jhd"><b>${esc(jLabel(e))}</b><span>${esc(e.d||'Fecha por confirmar')}</span></div>
   <div class="jpills"><span class="pill ${e.k==='next'?'next':e.k==='done'?'done':''}">${esc(e.st)}</span>${sedeOk(e)?` <span class="pill">📍 ${esc(e.s)}</span>`:''}</div>
-  ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}${bs.length?impBtn({k:'j',lg:l,title:jLabel(e),sub:[e.d||'Fecha por confirmar',sedeOk(e)?e.s:''].filter(Boolean).join(' · '),items:bs.map(b=>{const x=batOf(e,b);return {a:x.a,b:x.b,sa:x.sa,sb:x.sb}})},'Importar jornada'):''}</div>`}).join('');
+  ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}${bs.length?impBtn({k:'j',lg:l,title:jLabel(e),sub:[e.d||'Fecha por confirmar',sedeOk(e)?e.s:''].filter(Boolean).join(' · '),items:bs.map(b=>{const x=batOf(e,b),r=impRes(myVoteOf(l.i,x),x.a);return {a:x.a,b:x.b,sa:r?r[0]:x.sa,sb:r?r[1]:x.sb}})},'Importar jornada'):''}</div>`}).join('');
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}">
  <div class="lgside"><button class="back" onclick="go('home')">${ico('back',18)} Ligas</button>
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
@@ -3026,7 +3026,7 @@ function linkKey(lg,temp,a,b,x){return ((lg==='es'&&temp==='2017')?'2017|'+a+'|'
 function jorV(lg,season){const J=SEASON_JOR[lg+'|'+season]||[];
  const bh=(ji,bi,b)=>`<button class="bat" onclick="startSeasonBat('${lg}','${season}',${ji},${bi})"><span class="side">${esc(b[0])}</span><span class="vs">${b[2]==='apl'?'APL':b[2]===true?'EXH':'VS'}</span><span class="side r">${esc(b[1])}</span></button>${(S.myVotes||[]).some(v=>!v.free&&bkey(v)===bkey({l:lg,temp:season,a:b[0],b:b[1]}))?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`;
  return J.map((j,ji)=>{
-  const imp=j.b.length?impBtn({k:'j',lg:L.find(x=>x.i===lg)||curL(),title:j.lab||('Jornada '+j.n),sub:[seasonLabel(season,lg),j.fecha,j.ciudad].filter(Boolean).join(' · '),items:j.b.map(b=>({a:b[0],b:b[1],tag:b[2]==='apl'?'APL':b[2]===true?'EXH':''}))},'Importar jornada'):'';
+  const imp=j.b.length?impBtn({k:'j',lg:L.find(x=>x.i===lg)||curL(),title:j.lab||('Jornada '+j.n),sub:[seasonLabel(season,lg),j.fecha,j.ciudad].filter(Boolean).join(' · '),items:j.b.map(b=>{const mv=(S.myVotes||[]).find(v=>!v.free&&bkey(v)===bkey({l:lg,temp:season,a:b[0],b:b[1]})),r=impRes(mv,b[0]);return {a:b[0],b:b[1],tag:b[2]==='apl'?'APL':b[2]===true?'EXH':'',sa:r?r[0]:null,sb:r?r[1]:null}})},'Importar jornada'):'';
   const head=`<div class="sec"><span>${esc(j.lab||('Jornada '+j.n))}</span><span>${esc(j.fecha||'')}</span></div>${j.ciudad?`<div class="mu" style="margin:-4px 2px 8px">${esc(j.ciudad)}</div>`:''}`;
   if(j.g&&GRP23[lg]&&season==='2023'){
    const part=(t,f)=>{const h=j.b.map((b,bi)=>f(b)?bh(ji,bi,b):'').join('');return h?`<div class="mu" style="margin:4px 2px 8px;font-weight:800">${t}</div>${h}`:''};
@@ -3668,6 +3668,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-13T19:45:00-04:00'),text:'Más monedas 🪙: ahora votar da más. World Series 70, Internacional 60, España 50 y las demás ligas 40. Con el Boost x2 se duplica: World Series 140, Internacional 120, España 100 y las demás 80. Además el Boost baja de precio: ahora cuesta 250 monedas (antes 300). Y la moneda voladora aparece más seguido: cada 3:30 minutos (antes 4) y tienes 7 segundos para agarrarla (antes 6).'},
+ {ts:Date.parse('2026-11-13T19:30:00-04:00'),text:'Arreglo al importar jornadas 🖼️: si ya votaste las batallas de una jornada, la imagen de «Importar jornada» ahora muestra tu resultado en cada enfrentamiento: 3-0 si ganaste directo, 2-1 si fue por réplica y 1-1 si empataste. Las batallas que no has votado siguen saliendo como VS.'},
  {ts:Date.parse('2026-11-13T15:00:00-04:00'),text:'Nuevo: Apuestas en vivo 🎲 y horarios por país 🕒. En Comunidad ahora hay un apartado Apuestas: cuando empiecen las batallas eliges quién gana y apuestas monedas; cuanto menos favorito sea tu elegido, más monedas te llevas si gana. Además, el calendario muestra la hora de inicio en tu hora y, al abrir la jornada, en la hora de cada país (FMS España Jornada 1: sábado 14 de noviembre, 3:00 p. m. en República Dominicana).'},
  {ts:Date.parse('2026-11-13T14:00:00-04:00'),text:'Nuevo: Ruleta de monedas 🎡 y álbum ampliado. En Comunidad, junto a Tablas y Ranking, ahora está Ruleta: la giras una vez cada 12 horas y puedes ganar 50, 75, 100, 150, 200 o 300 monedas, todos con la misma probabilidad. Con las animaciones activadas la ruleta gira con sonido, luces y lluvia de monedas. Además llega FMS España 2018 al álbum con 10 cartas nuevas: Walls (legendaria), Chuty (épica), Blon, Skone, Errece y Zasko (raras), y Arkano, Force, BTA y Hander (comunes).'},
  {ts:Date.parse('2026-11-13T13:00:00-04:00'),text:'Álbum ampliado 🎴: ya está FMS Argentina 2018 con 10 cartas nuevas. Legendarias: Dani, Wos y Replik. Épica: Papo. Raras: Cacha, Dtoke, Trueno y Mks. Comunes: Klan y Stuart. Llevan el borde celeste de FMS Argentina y las mismas animaciones al abrir el sobre (más vistosas si las tienes activadas). Los sobres ahora pueden darte cartas de España 2017 o Argentina 2018, y en Álbum puedes filtrar por temporada 2018.'},
@@ -5978,6 +5980,8 @@ function vzPanelH(){const on=vzOn(),r=vzRate(),sg=(a,b,n1,n2)=>`<div class="seg"
 const IMGR={};let IMGN=0;
 function impReg(sp){const k='i'+(++IMGN);IMGR[k]=sp;delete IMGR['i'+(IMGN-300)];return k}
 const IMP_ICO='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>';
+/* Resultado de MI voto como marcador de serie: directo 3-0, réplica 2-1, empate 1-1 (orientado a a/b) */
+function impRes(v,a){if(!v)return null;try{const o=outcomeOf(v);if(o.w==null)return [1,1];const win=o.k==='d'?[3,0]:[2,1];const flip=nrm(v.a)!==nrm(a)&&nrm(v.b)===nrm(a);const aw=(o.w==='a')!==flip;return aw?win:[win[1],win[0]]}catch(e){return null}}
 function impBtn(sp,txt,cls){return `<button class="${cls||'impj'}" onclick="impGo('${impReg(sp)}')">${IMP_ICO}${txt}</button>`}
 function xImpJ(g,j){if(!j.bats.length)return '';const A=xAuto(g),l=LX.find(x=>x.i===g.id)||{i:g.id,n:g.n,c:g.c,c2:g.c2,t:'ED'};
  return impBtn({k:'j',lg:l,title:j.n,items:j.bats.map(b=>{if(A){const r=xRs(g,b);return {a:b.a,b:b.b,sa:r?r.a:null,sb:r?r.b:null}}const v=xBk(g,b);return {a:b.a,b:b.b,sa:v?v.ta:null,sb:v?v.tb:null}})},'Importar jornada')}
