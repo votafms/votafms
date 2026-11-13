@@ -5198,8 +5198,8 @@ async function duJoin(){const fm=FB.fm,code=String(S.duc.code||'').trim().toUppe
    duSub(code,'guest')}}
  catch(e){S.dum='No se pudo entrar a la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
 function duSub(code,role){duStop();S.dul={code,role,d:null,mute:0,lastN:0,ls:null,t:0,lt:0,lts:0,el:null,got:0,live:false,sig:'',open:true,rem:0,saved:0};S.duv='lobby';S.v='duel';
- S.dul.unsub=FB.fm.onSnapshot(duRef(code),sn=>{const D=S.dul;if(!D||D.code!==code)return;if(!sn.exists())return duEnd('La sala ya no existe.');const d=sn.data();D.d=d;
-  if(d.st==='done'&&role==='guest'&&!D.live)return duEnd('El anfitrión cerró la sala.');
+ S.dul.unsub=FB.fm.onSnapshot(duRef(code),sn=>{const D=S.dul;if(!D||D.code!==code)return;if(!sn.exists())return duEnd('La sala ya no existe.');const d=sn.data();D.d=d;if(S.me){const nr=d.host===S.me.uid?'host':'guest';if(nr!==D.role){D.role=nr;D.detach=false;D.mute=Date.now()+1500;if(nr==='host'&&D.live)drToast('👑 Ahora eres el anfitrión')}}
+  if(d.st==='done'&&D.role==='guest'&&!D.live)return duEnd('El anfitrión cerró la sala.');
   if(d.st==='live'&&!D.live)duGo(d);else if(d.st==='live'&&D.live&&(d.rd||1)!==D.rd)duGo(d);
   const v=d.vid||{};if(v.n&&v.n!==D.lastN){D.lastN=v.n;if(v.by!==S.me.uid)duApply(v)}
   if(D.live){duRender();if(S.v==='duel'&&S.duv!=='next')R()}else R()},()=>duEnd('Se perdió la conexión con la sala.'))}
@@ -6188,6 +6188,69 @@ function voiceUI(){const el=document.getElementById('duch');
   if(box.dataset.h!==h){box.innerHTML=h;box.dataset.h=h}
   const mb=el.querySelector('#duchm');if(mb){mb.hidden=!V.joined;mb.className='duch-mb'+(V.mic?' on':'');mb.textContent=V.mic?'🔴':'🎙️';mb.setAttribute('aria-label',V.mic?'Apagar micrófono':'Encender micrófono')}}}
  vcSpk()}
+
+/* ===== Duelos: traspaso de anfitrión · invitar a varios · reconexión · avisos y límite · reacciones · más orden ===== */
+const duLsKey=()=>'vfms_durj_'+(S.me?S.me.uid:'');
+const _duSub9=duSub;duSub=function(c,r){_duSub9(c,r);try{localStorage.setItem(duLsKey(),c)}catch(e){}};
+const _duEnd9=duEnd;duEnd=function(m){if(!/conexi/.test(m||''))try{localStorage.removeItem(duLsKey())}catch(e){}_duEnd9(m)};
+/* 1) Si el anfitrión sale, el mando pasa al siguiente jugador (la sala solo se cierra si queda solo) */
+async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir del duelo?'))return;const me=S.me.uid,d=D.d;
+ try{const rest=d?duPlayers(d).filter(p=>p.uid!==me):[];let up;
+  if(D.role==='host'){if(rest.length){const nx=rest[0];up={host:nx.uid,hu:nx.n,['pl.'+nx.uid]:null,['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null,['sv.'+me]:null};if(d.guest){up.guest=null;up.gu=''}}else up={st:'done'}}
+  else{up={['pl.'+me]:null,['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null};if(d&&d.guest===me){up.guest=null;up.gu=''}}
+  await FB.fm.updateDoc(duRef(D.code),up)}catch(e){}duEnd('')}
+/* 3) Invitar a varios a la vez + enlace de WhatsApp */
+S.diSel=S.diSel||{};
+function diTog(u,on){S.diSel[u]=!!on;const b=document.getElementById('dimb');if(b){const n=Object.values(S.diSel).filter(Boolean).length;b.disabled=!n;b.textContent=n?'Invitar a '+n+' seleccionado'+(n>1?'s':''):'Selecciona amigos'}}
+async function diMulti(){const ids=Object.keys(S.diSel).filter(u=>S.diSel[u]);S.diSel={};for(const u of ids)await diInvite(u)}
+function duWa(){const D=S.dul;if(!D)return;const t='⚔️ Te invito a un duelo en VotaFMS. Entra a «Duelo con amigo» → «Tengo un código» y escribe: '+D.code+'\n'+location.href.split('#')[0];window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank')}
+diPanel=function(){const D=S.dul;if(!D||D.live||D.role!=='host'||!D.d||duPlayers(D.d).length>=DU_MAX||!S.me)return '';
+ const me=S.me.uid,now=Date.now(),inRoom=new Set(duPlayers(D.d).map(x=>x.uid));
+ const acc=(S.fr||[]).filter(f=>f.status==='accepted').map(f=>f.from===me?{uid:f.to,u:f.toName}:{uid:f.from,u:f.fromName}).filter(o=>!inRoom.has(o.uid));
+ const on=o=>{const i=presInfo(o.uid);return i&&i.on?1:0};acc.sort((a,b)=>on(b)-on(a)||String(a.u).localeCompare(String(b.u)));
+ const rows=acc.length?acc.map(o=>{const sent=(S.diSent[o.uid]||0)>now;
+  return `<label class="frow" style="cursor:pointer"><span style="display:flex;align-items:center;gap:8px;min-width:0"><input type="checkbox" ${S.diSel[o.uid]?'checked':''} ${sent?'disabled':''} onchange="diTog('${esc(o.uid)}',this.checked)">${withDot(o.uid,avX(o.uid,o.u))}<span style="text-align:left;min-width:0">@${esc(o.u)}${presLine(o.uid)}</span></span>${sent?'<span class="fbtn sent">Enviada…</span>':''}</label>`}).join(''):'<div class="mu">Todavía no tienes amigos agregados. Pásale el código a quien quieras que entre.</div>';
+ const n=Object.values(S.diSel).filter(Boolean).length;
+ return `<div class="du-sec">Invitar amigos</div><div class="card" style="padding:6px 16px;max-height:240px;overflow:auto">${rows}</div><div class="durow"><button class="btn" id="dimb" style="margin:0;flex:2" ${n?'':'disabled'} onclick="diMulti()">${n?'Invitar a '+n+' seleccionado'+(n>1?'s':''):'Selecciona amigos'}</button><button class="btn s" style="margin:0;flex:1" onclick="duWa()">💬 WhatsApp</button></div><div class="mu" style="font-size:12px;margin:6px 2px 12px">A tus amigos les sale un aviso arriba por 10 segundos, sin código.</div>`};
+/* 4) Reconexión: si se cayó el internet o cerraste la app, vuelves a tu sala */
+function rjHide(){const e=document.getElementById('durj');if(e)e.remove()}
+async function duRjCheck(){if(!S.me||!FB||S.dul)return rjHide();let c='';try{c=localStorage.getItem(duLsKey())||''}catch(e){}if(c.length!==6)return rjHide();
+ try{const sn=await FB.fm.getDoc(duRef(c));if(S.dul)return;const d=sn.exists()&&sn.data();if(!d||d.st==='done'||!duPlayers(d).some(p=>p.uid===S.me.uid)){try{localStorage.removeItem(duLsKey())}catch(e){}return rjHide()}
+  if(document.getElementById('durj'))return;const e=document.createElement('div');e.id='durj';e.innerHTML='<span>⚔️ Tu duelo sigue abierto · '+c+'</span><button onclick="duRj(\''+c+'\')">Volver</button><button class="x" onclick="try{localStorage.removeItem(duLsKey())}catch(e){}rjHide()">✕</button>';document.body.appendChild(e)}catch(e){}}
+async function duRj(c){rjHide();S.duc=S.duc||{mode:'liga',lg:'es',temp:'',ji:'',bi:'',a:'',b:'',y:'',fmt:'actual',tp:'auto',sel:null,code:''};S.duc.code=c;B.getLinks().then(l=>{S.links=l}).catch(()=>{});await duJoin();if(!S.dul){S.duv='join';go('duel')}}
+{const _w9=watchDuelInv;watchDuelInv=function(){_w9();duRjCheck()}}
+setInterval(duRjCheck,20000);window.addEventListener('online',()=>setTimeout(duRjCheck,800));
+/* Mensajes especiales por el mismo chat de la sala (sin campos nuevos en Firestore) */
+function duPush(m){const D=S.dul;if(!D||!D.d||!S.me)return;const now=Date.now(),me=S.me.uid;m={id:now.toString(36)+Math.random().toString(36).slice(2,5),ts:now,n:S.me.u,...m};
+ const arr=[...((D.d.ch||{})[me]||[]).filter(x=>x.k!=='react'||now-x.ts<15000).slice(-59),m];D.d.ch=D.d.ch||{};D.d.ch[me]=arr;D.chatSig='';duChatSync();FB.fm.updateDoc(duRef(D.code),{['ch.'+me]:arr}).catch(()=>{})}
+const _duMsgs9=duMsgs;duMsgs=function(){return _duMsgs9().filter(m=>m.k!=='react')};
+/* 5) Avisar a los que faltan + límite de tiempo (lo pone el anfitrión) */
+function duNudge(){const D=S.dul,d=D&&D.d;if(!d)return;const rd=d.rd||1,m=duPlayers(d).filter(p=>p.uid!==S.me.uid&&!(d.sv&&d.sv[p.uid]===rd));if(!m.length)return;
+ duPush({k:'nudge',to:m.map(p=>p.uid),t:'🔔 Faltan por votar: '+m.map(p=>'@'+p.n).join(', ')});drToast('Aviso enviado')}
+async function duLim(){const D=S.dul;if(!D||D.role!=='host')return;const v=prompt('¿Cuántos minutos para votar esta batalla? (déjalo vacío para quitar el límite)','3');if(v===null)return;const m=parseFloat(String(v).replace(',','.'));
+ try{await FB.fm.updateDoc(duRef(D.code),{lim:(m>0&&m<=60)?{end:Date.now()+Math.round(m*60000),rd:D.d.rd||1}:null})}catch(e){drToast('No se pudo poner el límite')}}
+const _duBH9=duBarH;duBarH=function(){const h=_duBH9(),D=S.dul;if(!h||!D||!D.d||!S.me)return h;const d=D.d,host=d.host===S.me.uid,rd=d.rd||1,lim=d.lim&&d.lim.rd===rd?d.lim:null,
+ miss=duPlayers(d).filter(p=>p.uid!==S.me.uid&&!(d.sv&&d.sv[p.uid]===rd));
+ let x='<div class="durow">'+(lim?'<span class="pill next" id="dulim" data-e="'+lim.end+'">⏱</span>':'');
+ if(host)x+='<button class="dut" '+(miss.length?'':'disabled')+' onclick="duNudge()">🔔 Falta'+(miss.length>1?'n':'')+' '+miss.length+'</button><button class="dut" onclick="duLim()">⏱ '+(lim?'Cambiar':'Límite')+'</button>';
+ return h.replace(/<\/div>$/,x+'</div></div>')};
+setInterval(()=>{const e=document.getElementById('dulim');if(!e)return;const s=Math.max(0,Math.round((+e.dataset.e-Date.now())/1000));e.textContent=s?'⏱ '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0'):'⏰ Se acabó el tiempo';if(!s&&S.dul&&S.dul.tz!==e.dataset.e){S.dul.tz=e.dataset.e;try{SFX.notif()}catch(x){}}},1000);
+/* 6) Reacciones rápidas con emojis (flotan en la pantalla de todos) */
+const RX=['🔥','👏','🤯','😂','😴','👎'];
+function duReact(e){const D=S.dul;if(!D||!S.me)return;const n=Date.now();if(n-(D.rxT||0)<700)return;D.rxT=n;duPush({k:'react',t:e});duFloat(e,S.me.u)}
+function duFloat(e,n){const el=document.createElement('div');el.className='durx';el.style.left=(8+Math.random()*78)+'%';el.innerHTML='<b>'+e+'</b><small>@'+esc(n)+'</small>';document.body.appendChild(el);setTimeout(()=>el.remove(),2600)}
+function duFx(){const D=S.dul;if(!D||!D.d||!S.me)return;const ch=D.d.ch||{},me=S.me.uid,first=!D.fx;D.fx=D.fx||new Set();
+ Object.keys(ch).forEach(u=>(ch[u]||[]).forEach(m=>{if(!m.id||D.fx.has(m.id))return;D.fx.add(m.id);if(first||u===me)return;
+  if(m.k==='react')duFloat(m.t,m.n||'');else if(m.k==='nudge'&&(m.to||[]).includes(me)){drToast('🔔 @'+(m.n||'')+' te avisa: ¡falta tu voto!');try{SFX.notif();navigator.vibrate&&navigator.vibrate(120)}catch(e){}}}))}
+const _duCS9=duChatSync;duChatSync=function(){_duCS9();try{duFx()}catch(e){}};
+const _duCE9=duChatEl;duChatEl=function(){const el=_duCE9();if(!el.querySelector('#durxb')){el.querySelector('.duch-r').insertAdjacentHTML('afterbegin','<div class="durx-t" id="durxt" hidden>'+RX.map(e=>'<button onclick="duReact(\''+e+'\')">'+e+'</button>').join('')+'</div><button class="duch-b" id="durxb" onclick="var t=document.getElementById(\'durxt\');t.hidden=!t.hidden" aria-label="Reacciones">😀</button>')}return el};
+/* Más orden: lo secundario va en bloques que se abren, las funciones son las mismas */
+{const _duV9=duelV;duelV=function(){let h=_duV9();
+ h=h.replace(/<div class="du-sec">Cómo funciona<\/div>(<div class="card du-steps">(?:<div class="du-step">[\s\S]*?<\/span><\/div>){3}<\/div>)/,(m,a)=>'<details class="duadv"><summary>¿Cómo funciona?</summary>'+a+'</details>');
+ h=h.replace(/(<div class="du-sec"><i>3<\/i>Video<\/div>[\s\S]*?)(<div class="du-acts">)/,(m,a,b)=>'<details class="duadv" '+(S.duAdv?'open':'')+' ontoggle="S.duAdv=this.open"><summary>Más opciones · video y planilla</summary>'+a+'</details>'+b);
+ h=h.replace(/<div class="du-sec">(Tu color de planilla · [^<]*)<\/div>(<div class="lpick">[\s\S]*?<\/div>)(?=<div class="du-acts">)/,(m,t,a)=>'<details class="duadv" '+(S.duCl?'open':'')+' ontoggle="S.duCl=this.open"><summary>'+t+'</summary>'+a+'</details>');
+ return h.replace('Copiar código</button>','Copiar código</button> <button class="btn s sm" onclick="duWa()">💬 WhatsApp</button>')}}
+{const st=document.createElement('style');st.textContent='.durow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 0}.durow .dut{margin:0;width:auto;flex:1}.durx{position:fixed;bottom:90px;z-index:99998;pointer-events:none;text-align:center;animation:durxu 2.6s ease-out forwards}.durx b{display:block;font-size:44px;line-height:1}.durx small{font:700 11px inherit;background:var(--cd);border-radius:8px;padding:1px 6px}@keyframes durxu{0%{opacity:0;transform:translateY(0) scale(.5)}15%{opacity:1;transform:translateY(-30px) scale(1.2)}100%{opacity:0;transform:translateY(-260px) scale(1)}}.durx-t{display:flex;gap:4px;background:var(--cd);border:1px solid var(--bd);border-radius:22px;padding:4px 6px;margin-bottom:6px}.durx-t button{background:none;border:0;font-size:24px;padding:4px;cursor:pointer}.durx-t[hidden]{display:none}#durj{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99997;display:flex;gap:8px;align-items:center;background:var(--cd);color:var(--tx);border:1px solid var(--ac);border-radius:16px;padding:8px 12px;font:700 13px inherit;box-shadow:var(--sh);max-width:92vw}#durj button{border:0;border-radius:10px;padding:6px 12px;font:800 13px inherit;background:var(--ac);color:#fff;cursor:pointer}#durj .x{background:none;color:var(--mu);padding:6px}details.duadv{margin:12px 0}details.duadv>summary{cursor:pointer;font-weight:800;padding:12px 14px;background:var(--bg2);border:1px solid var(--bd);border-radius:14px;list-style:none}details.duadv[open]>summary{margin-bottom:10px}';document.head.appendChild(st)}
 </script>
 </body></html>
 
