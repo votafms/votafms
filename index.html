@@ -2399,7 +2399,7 @@ function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[]
 function shopOwns(id){const s=shopS();return Array.isArray(s.own)&&s.own.includes(id)}
 function boostEnd(){const l=shopS().boostLog;return Array.isArray(l)&&l.length?(+l[l.length-1].e||0):0}
 function boostOn(){return boostEnd()>Date.now()}
-function boostAt(ts){const l=shopS().boostLog;if(!Array.isArray(l))return false;ts=+ts||0;return l.some(w=>ts>=w.s&&ts<w.e)}
+function boostAt(ts){const l=(S._blo||shopS()).boostLog;if(!Array.isArray(l))return false;ts=+ts||0;return l.some(w=>ts>=w.s&&ts<w.e)}
 function boostLeft(){const t=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000)),d=Math.floor(t/86400),h=Math.floor(t%86400/3600),m=Math.floor(t%3600/60),sc=t%60,P=(n,a,b)=>n+' '+(n===1?a:b);
  if(d)return P(d,'día','días')+(h?' y '+P(h,'hora','horas'):'');
  if(h)return P(h,'hora','horas')+(m?' y '+m+' min':'');
@@ -3968,8 +3968,8 @@ async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?
 
 
 /* ===== Admin: ver y quitar monedas de usuarios ===== */
-async function admCalcBal(u){const vs=await B.votesOfUser(u.uid);let t=0;try{coinPass(splitDups(vs).keep).forEach(x=>{t+=x.c})}catch(e){vs.forEach(v=>{t+=coinOf(v)})}
- const sh=u.shop&&typeof u.shop==='object'?u.shop:{};u.bal=Math.max(0,t+Math.max(0,+sh.bonus||0)-(+sh.spent||0));return u.bal}
+async function admCalcBal(u){const vs=await B.votesOfUser(u.uid);let t=0;const sh=u.shop&&typeof u.shop==='object'?u.shop:{};S._blo=sh;try{coinPass(splitDups(vs).keep).forEach(x=>{t+=x.c})}catch(e){vs.forEach(v=>{t+=coinOf(v)})}finally{S._blo=null}
+ u.bal=Math.max(0,t+Math.max(0,+sh.bonus||0)-(+sh.spent||0));return u.bal}
 async function admCoinSearch(all){if(!isAdmin())return;try{const q=((document.getElementById('acq')||{}).value||'').trim().toLowerCase().replace(/^@/,'');S.acQ=q;
  if(!q&&!all){S.acMsg='Escribe un nombre o pulsa «Ver todos».';R();return}
  S.acMsg='Buscando…';S.acRows=[];R();const us=(await B.listUsers()).filter(x=>!q||String(x.u||'').toLowerCase().includes(q));
