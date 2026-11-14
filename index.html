@@ -2176,6 +2176,7 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
   error:function(){if(!ok('err',400))return;tone(220,0,.14,'sawtooth',.08,180);tone(165,.13,.2,'sawtooth',.08,130);buzz([40,40,40])},
   clap:function(){if(!ok('clap',600))return;for(var i=0;i<26;i++){noiseB(Math.random()*1.5+i*.02,.07,.55*(1-i/42),1400+Math.random()*1800)}buzz([20,30,20])},
   boo:function(){if(!ok('boo',600))return;tone(210,0,1,'sawtooth',.09,140);tone(216,0,1,'sawtooth',.07,146);tone(105,0,1,'sine',.1,70);buzz([60,40,60])},
+  horn:function(){if(!ok('horn',600))return;[0,.55].forEach(function(d){tone(311,d,.45,'sawtooth',.11);tone(466,d,.45,'sawtooth',.09);tone(622,d,.45,'square',.05)});tone(311,1.1,.9,'sawtooth',.12);tone(466,1.1,.9,'sawtooth',.1);tone(622,1.1,.9,'square',.05);buzz([80,40,120])},
   pop:function(){if(!ok('pop',300))return;noiseB(0,.12,.8,900);tone(520,0,.1,'triangle',.12,900);noiseB(.06,.25,.35,3000);tone(1568,.1,.15,'sine',.07);tone(2093,.16,.22,'sine',.06);buzz([15,30,15])},
   sparkle:function(){if(!ok('sparkle',300))return;[1760,2349,2637,3136,2794].forEach(function(f,i){tone(f,i*.07,.28,'sine',.06)});tone(3520,.32,.45,'triangle',.04);buzz(12)}
  };
@@ -2255,7 +2256,7 @@ async function initFB(){
   return true;
  }catch(e){console.error(e);return false}
 }
-function setMe(uid,prof){{const _mg=shopMigrate(uid,prof);if(_mg)prof={...prof,..._mg}}S.me={uid,...prof};S.admin=false;S.collab=false;S.collabCal=false;try{B.getCollabCal(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabCal){S.collabCal=v;R()}})}catch(e){}try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
+function setMe(uid,prof){{const _mg=shopMigrate(uid,prof);if(_mg)prof={...prof,..._mg}}{const _dz=dzMigrate(uid,prof);if(_dz)prof={...prof,..._dz}}S.me={uid,...prof};S.admin=false;S.collab=false;S.collabCal=false;try{B.getCollabCal(uid).then(v=>{if(S.me&&S.me.uid===uid&&v!==S.collabCal){S.collabCal=v;R()}})}catch(e){}try{B.getCollab&&B.getCollab(uid).then(c=>{if(S.me&&S.me.uid===uid&&c!==S.collab){S.collab=c;R()}}).catch(()=>{})}catch(e){}B.getAdmin(uid).then(a=>{if(S.me&&S.me.uid===uid&&a!==S.admin){S.admin=a;R()}}).catch(()=>{});S.auth=(S.auth&&S.auth.mode==='newpw')?S.auth:null;R();refreshMine();startPresence();
  if(S.pend){const v=S.pend;S.pend=null;return pushVote(v)}
  if(S.v==='perfil')loadFor('perfil')}
 function watchAuth(){
@@ -2356,6 +2357,12 @@ const SHOP_BASE=[
  {id:'bn_galaxia',k:'extra',n:'Fondo Galaxia',d:'Tu perfil con un cielo estrellado que brilla. Lo ve cualquiera que entre a tu perfil.',p:280,eq:['bn','bn_galaxia'],bn:'bn-galaxia'},
  {id:'ng_grad',k:'extra',n:'Nombre con degradado',d:'Tu nombre en tu perfil se pinta con colores que fluyen.',p:220,eq:['ng','ng_grad']},
  {id:'nowm',k:'extra',n:'Imágenes sin marca',d:'Quita el texto «VotaFMS» de las imágenes de jornadas y tablas que compartes.',p:300}];
+SHOP_BASE.push(
+ {id:'snd_corneta',k:'fx',n:'Sonido: Corneta',d:'Suena una corneta de estadio cada vez que envías tus puntajes.',p:100,eq:['snd','snd_corneta'],ic:'📯'},
+ {id:'fx_monedas',k:'fx',n:'Lluvia de monedas',d:'Al enviar tus puntajes, caen monedas doradas por toda la pantalla.',p:250,eq:['fx','fx_monedas'],ic:'<i class="coin bigc"></i>'},
+ {id:'ng_oro',k:'extra',n:'Nombre dorado animado',d:'Tu nombre en el perfil brilla como oro líquido. Lo ve cualquiera que entre a tu perfil.',p:400,eq:['ng','ng_oro']},
+ {id:'frame_holo',k:'frame',n:'Marco holográfico',d:'Aro con reflejos de colores cambiantes, como una carta legendaria. Se ve en tu perfil y en comunidad.',p:500,fr:'holo'},
+ {id:'boost3',k:'boost',n:'Boost x2 · 3 horas',d:'Durante 3 horas todo va al doble: votar World Series da 140 monedas en vez de 70, y la moneda voladora también trae el doble. Si lo compras con un Boost activo, se suman las 3 horas.',p:600,bh:3});
 /* Precios (en monedas) de colores, tarjetas y planillas: más bonito/animado = más caro. Cambia aquí cualquier precio. */
 const SHOP_PRICE={
  th_pe:80,th_cl:80,th_ar:100,th_mx:100,th_ca:120,th_es:140,th_in:170,th_ws:200,
@@ -2364,7 +2371,6 @@ const SHOP_PRICE={
 let _shopAll=null;
 function shopAll(){if(_shopAll)return _shopAll;const a=[...SHOP_BASE],P=(id,d)=>SHOP_PRICE[id]||d;
  THEMES.filter(t=>t.id!=='co').forEach(t=>a.push({id:'th_'+t.id,k:'color',n:t.n,d:'Cambia el color de toda la app. Los demás ven tu tarjeta de perfil con este color.',p:P('th_'+t.id,100),th:t.id}));
- DESIGNS.forEach(d=>a.push({id:'dz_'+d.id,k:'card',n:d.n,d:'Diseño de rap solo para tu tarjeta de perfil: no cambia los colores de la app.',p:P('dz_'+d.id,200),dz:d.id}));
  PL_D.forEach(d=>a.push({id:'pl_'+d.id,k:'pack',n:d.n,d:'Diseño para tu planilla de votación. Solo cambia cómo se ve, no tus puntos.',p:P('pl_'+d.id,150),pl:d.id}));
  _shopAll=a;return a}
 const SHOP={find:f=>shopAll().find(f),filter:f=>shopAll().filter(f)};
@@ -2373,13 +2379,20 @@ function sv2(u){return !!(u&&((u.shop&&typeof u.shop==='object'&&u.shop.v>=2)||u
 /* Reset de la tienda (v2): quita colores, diseños, planillas, atuendos, marcos y títulos. linexs17 conserva su saldo actual. */
 function shopPatch(prof){const adm=String((prof&&prof.u)||'').toLowerCase()==='linexs17',old=prof&&prof.shop&&typeof prof.shop==='object'?prof.shop:null;
  return {shop:{own:[],spent:adm&&old?(old.spent||0):0,v:2},tema:'',dz:'',pl:'',fit:[]}}
+/* Los diseños de tarjeta se quitaron de la tienda: se devuelve lo pagado y se limpia el diseño elegido */
+const DZ_REFUND={dz_mic:150,dz_vinyl:170,dz_spray:190,dz_boombox:210,dz_beats:230,dz_cypher:250,dz_fire:300,dz_crown:400};
+function dzRefundPatch(prof){const sh=prof&&prof.shop&&typeof prof.shop==='object'?prof.shop:null,own=sh&&Array.isArray(sh.own)?sh.own:[],mine=own.filter(id=>DZ_REFUND[id]!==undefined);
+ if(!mine.length&&!(prof&&prof.dz))return null;const pt={dz:''};
+ if(mine.length){const back=mine.reduce((a,id)=>a+DZ_REFUND[id],0);pt.shop={...sh,own:own.filter(id=>DZ_REFUND[id]===undefined),spent:Math.max(0,(+sh.spent||0)-back)}}
+ return pt}
+function dzMigrate(uid,prof){const pt=dzRefundPatch(prof);if(!pt)return null;try{B.updateUser(uid,pt).catch(()=>{})}catch(e){}return pt}
 function shopMigrate(uid,prof){if(prof&&prof.shop&&typeof prof.shop==='object'&&prof.shop.v>=2)return null;const pt=shopPatch(prof);try{B.updateUser(uid,pt).catch(()=>{})}catch(e){}return pt}
-const FRAME_IDS=['gold','purple','neon','fire','rainbow','crown'];
+const FRAME_IDS=['gold','purple','neon','fire','rainbow','crown','holo'];
 const TT_TIER={estricto:'com',ojo:'com',duelista:'com',racha:'rar',leyenda:'epi',rey:'leg'};
 const TITLES={estricto:{t:'Jurado estricto',ic:'⚖️'},duelista:{t:'Duelista',ic:'⚔️'},ojo:{t:'Ojo de águila',ic:'🦅'},racha:{t:'Racha infernal',ic:'🔥'},leyenda:{t:'Leyenda',ic:'👑'},rey:{t:'Rey del freestyle',ic:'🎤'}};
-const SHOP_TABS=[['all','Todo'],['boost','⚡ Boost'],['frame','Marcos'],['title','Títulos'],['fx','Efectos'],['color','Colores'],['card','Tarjetas'],['pack','Planillas'],['extra','Extras']];
-const SHOP_ORD=['boost','frame','title','fx','color','card','pack','extra'],SHOP_NM={boost:'⚡ Boost',frame:'🖼️ Marcos de perfil',title:'🏷️ Títulos',fx:'🎉 Efectos y sonidos al votar',color:'🎨 Colores de la app',card:'🎤 Diseños de tarjeta',pack:'📋 Diseños de planilla',extra:'✨ Extras de perfil'};
-const SHOP_DS={boost:'Duplica todas tus monedas durante 1 hora. Se puede comprar otra vez cuando se acabe.',frame:'Un aro especial alrededor de tu foto. Lo ve todo el mundo.',title:'Una insignia con texto debajo de tu nombre.',fx:'Se activan solos al enviar tus puntajes. Toca «Probar» para verlos.',color:'Cambia el color de toda tu app.',card:'Diseño de rap para tu tarjeta de perfil.',pack:'Cambia cómo se ve tu planilla de votación.',extra:'Fondos animados, nombre con degradado y más.'};
+const SHOP_TABS=[['all','Todo'],['boost','⚡ Boost'],['frame','Marcos'],['title','Títulos'],['fx','Efectos'],['color','Colores'],['pack','Planillas'],['extra','Extras']];
+const SHOP_ORD=['boost','frame','title','fx','color','pack','extra'],SHOP_NM={boost:'⚡ Boost',frame:'🖼️ Marcos de perfil',title:'🏷️ Títulos',fx:'🎉 Efectos y sonidos al votar',color:'🎨 Colores de la app',card:'🎤 Diseños de tarjeta',pack:'📋 Diseños de planilla',extra:'✨ Extras de perfil'};
+const SHOP_DS={boost:'Duplica todas tus monedas durante 1 o 3 horas. Se puede comprar otra vez cuando se acabe.',frame:'Un aro especial alrededor de tu foto. Lo ve todo el mundo.',title:'Una insignia con texto debajo de tu nombre.',fx:'Se activan solos al enviar tus puntajes. Toca «Probar» para verlos.',color:'Cambia el color de toda tu app.',card:'Diseño de rap para tu tarjeta de perfil.',pack:'Cambia cómo se ve tu planilla de votación.',extra:'Fondos animados, nombre con degradado y más.'};
 function shopRar(p){return p>=500?['leg','Legendario']:p>=300?['epi','Épico']:p>=150?['rar','Raro']:['com','Común']}
 const NEON_C=['#22D3EE','#F472B6','#A3E635','#FB923C'];
 function shopS(){const s=S.me&&S.me.shop;return s&&typeof s==='object'?s:{own:[],spent:0}}
@@ -2448,7 +2461,7 @@ setInterval(()=>{const e=document.getElementById('bstt');if(!e)return;if(!boostO
 function shopTab(t){S.shopTab=t;go('tienda')}
 /* ===== Efectos y sonidos al votar (tienda) ===== */
 function shopFx(id){
- try{if(id==='fx_confeti')SFX.pop();else SFX.sparkle()}catch(e){}
+ try{if(id==='fx_confeti')SFX.pop();else if(id==='fx_monedas')SFX.coin();else SFX.sparkle()}catch(e){}
  const C=window.VCFG||{};if(C.noAnim||!document.body.animate)return;
  const L=document.createElement('div');L.style.cssText='position:fixed;inset:0;z-index:245;pointer-events:none;overflow:hidden';document.body.appendChild(L);
  const R_=Math.random;
@@ -2458,6 +2471,11 @@ function shopFx(id){
    e.style.cssText='position:absolute;top:-24px;left:'+(R_()*100)+'%;width:'+w+'px;height:'+(w*1.6)+'px;background:'+cols[i%cols.length]+';border-radius:2px';L.appendChild(e);
    const dx=(R_()-.5)*180,rot=(R_()<.5?-1:1)*(360+R_()*540);
    e.animate([{transform:'translate(0,0) rotate(0deg)',opacity:1},{transform:'translate('+dx+'px,'+(innerHeight+40)+'px) rotate('+rot+'deg)',opacity:1,offset:.88},{transform:'translate('+dx+'px,'+(innerHeight+60)+'px) rotate('+rot+'deg)',opacity:0}],{duration:1800+R_()*1400,delay:R_()*350,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'})}
+ }else if(id==='fx_monedas'){
+  for(let i=0;i<34;i++){const e=document.createElement('i'),w=18+R_()*16;e.className='coin';
+   e.style.cssText='position:absolute;top:-40px;left:'+(R_()*96)+'%;width:'+w+'px;height:'+w+'px';L.appendChild(e);
+   const dx=(R_()-.5)*120,rot=720+R_()*720;
+   e.animate([{transform:'translate(0,0) rotateY(0deg)',opacity:1},{transform:'translate('+dx+'px,'+(innerHeight+40)+'px) rotateY('+rot+'deg)',opacity:1,offset:.9},{transform:'translate('+dx+'px,'+(innerHeight+70)+'px) rotateY('+rot+'deg)',opacity:0}],{duration:1500+R_()*1300,delay:R_()*500,easing:'cubic-bezier(.4,.1,.6,1)',fill:'forwards'})}
  }else{
   for(let i=0;i<40;i++){const e=document.createElement('i');e.textContent='✦';
    e.style.cssText='position:absolute;left:50%;top:42%;font-style:normal;color:#FDE047;text-shadow:0 0 8px #F59E0B;font-size:'+(10+R_()*16)+'px';L.appendChild(e);
@@ -2465,11 +2483,12 @@ function shopFx(id){
    e.animate([{transform:'translate(-50%,-50%) scale(.2) rotate(0deg)',opacity:0},{transform:'translate(calc(-50% + '+Math.cos(a)*r*.6+'px),calc(-50% + '+Math.sin(a)*r*.6+'px)) scale(1.2) rotate(90deg)',opacity:1,offset:.35},{transform:'translate(calc(-50% + '+Math.cos(a)*r+'px),calc(-50% + '+Math.sin(a)*r+'px)) scale(.3) rotate(220deg)',opacity:0}],{duration:900+R_()*700,delay:R_()*120,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'})}
  }
  setTimeout(()=>L.remove(),3800)}
-function shopSnd(id){try{if(id==='snd_aplausos')SFX.clap();else if(id==='snd_abucheo')SFX.boo()}catch(e){}}
+function shopSnd(id){try{if(id==='snd_aplausos')SFX.clap();else if(id==='snd_abucheo')SFX.boo();else if(id==='snd_corneta')SFX.horn()}catch(e){}}
 function shopTry(id){if(id.startsWith('fx_'))shopFx(id);else shopSnd(id)}
 function shopVoteFx(){const s=shopS();if(s.fx&&shopOwns(s.fx))shopFx(s.fx);if(s.snd&&shopOwns(s.snd))shopSnd(s.snd)}
 function bnOf(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return sh.bn==='bn_aurora'?'bn-aurora':sh.bn==='bn_galaxia'?'bn-galaxia':''}
-function ngOf(u){const sh=u&&u.shop;return !!(sh&&typeof sh==='object'&&sh.v>=2&&sh.ng==='ng_grad')}
+function ngCls(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return sh.ng==='ng_grad'?'ngr':sh.ng==='ng_oro'?'ngr ngg':''}
+function ngOf(u){return !!ngCls(u)}
 /* ===== Moneda voladora: mientras votas (liga, batalla libre, duelos y editor) sale una cada 3:30 minutos y tienes 7 segundos para agarrarla =====
    Cantidad por peso (suman 100%): 5 monedas ≈39% · 10 ≈30% · 15 ≈22% · 30 ≈9%.
    Las monedas ganadas se guardan en tu perfil (shop.bonus) y se suman a tu saldo. */
@@ -2518,7 +2537,7 @@ function shopClose(){S.shopSheet=null;S.shopDone=false;R()}
 async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me||S.shopBusy)return;if(shopOwns(it.id))return shopClose();
  const bal=coinBal();if(bal<it.p){try{achFail('Te faltan '+(it.p-bal)+' monedas.')}catch(e){}return}
  S.shopBusy=true;const s=shopS();let nx;
- if(it.id==='boost'){const now=Date.now(),lg=Array.isArray(s.boostLog)?s.boostLog.slice():[],last=lg[lg.length-1];if(last&&last.e>now)lg[lg.length-1]={s:last.s,e:last.e+3600000};else lg.push({s:now,e:now+3600000});nx={...s,spent:(s.spent||0)+it.p,boostLog:lg}}
+ if(it.k==='boost'){const hr=3600000*(it.bh||1),now=Date.now(),lg=Array.isArray(s.boostLog)?s.boostLog.slice():[],last=lg[lg.length-1];if(last&&last.e>now)lg[lg.length-1]={s:last.s,e:last.e+hr};else lg.push({s:now,e:now+hr});nx={...s,spent:(s.spent||0)+it.p,boostLog:lg}}
  else nx={...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],spent:(s.spent||0)+it.p};
  const ok=await shopSave(nx,'No se pudo completar la compra.');S.shopBusy=false;
  if(ok){S.shopDone=true;coinCount(bal,coinBal())}}
@@ -2529,9 +2548,9 @@ function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.
  const inner=f?`<img class="${c}" src="${f}" alt="">`:`<span class="${c}">${esc(String((u&&u.u)||'?')[0].toUpperCase())}</span>`;
  return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
 function shopPv(it){
- if(it.k==='boost')return `<div class="shpv"><div class="bstv"><span class="bz">⚡</span><div><b>x2</b><em>todas tus monedas · 1 hora</em></div></div></div>`;
+ if(it.k==='boost')return `<div class="shpv"><div class="bstv"><span class="bz">⚡</span><div><b>x2</b><em>todas tus monedas · ${it.bh||1} hora${(it.bh||1)>1?'s':''}</em></div></div></div>`;
  if(it.k==='fx')return `<div class="shpv"><div class="fxv">${it.ic}</div><button class="shtry" onclick="event.stopPropagation();shopTry('${it.id}')">▶ Probar</button></div>`;
- if(it.id==='ng_grad')return `<div class="shpv"><div class="ngr" style="font-size:24px;font-weight:900">${esc((S.me&&S.me.u)||'Tu nombre')}</div></div>`;
+ if(it.id==='ng_grad'||it.id==='ng_oro')return `<div class="shpv"><div class="ngr${it.id==='ng_oro'?' ngg':''}" style="font-size:24px;font-weight:900">${esc((S.me&&S.me.u)||'Tu nombre')}</div></div>`;
  if(it.bn)return `<div class="shpv"><div class="bnv ${it.bn}"></div></div>`;
  if(it.k==='frame')return `<div class="shpv">${avFr(S.me,'lg',it.fr)}</div>`;
  if(it.k==='title')return `<div class="shpv"><div class="ptt pt-${it.tt} tr-${TT_TIER[it.tt]||'com'}"><span>${TITLES[it.tt].ic}</span>${esc(TITLES[it.tt].t)}</div></div>`;
@@ -2562,7 +2581,7 @@ function tiendaV(){
  <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div>${boostOn()?`<span class="bstp">⚡ Boost x2 activo · <span id="bstt">${boostLeft()}</span></span>`:''}</div></div>
  <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
  <div class="shtabs">${tabs}</div><div class="shleg"><span>Rareza:</span><span class="shrar r-com">Común</span><span class="shrar r-rar">Raro</span><span class="shrar r-epi">Épico</span><span class="shrar r-leg">Legendario</span><span>· más caro = más raro</span></div>
- ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'dura 1 hora':ow+'/'+l.length+' tuyos'}</em></div><p>${SHOP_DS[k]}</p></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
+ ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'1 o 3 horas':ow+'/'+l.length+' tuyos'}</em></div><p>${SHOP_DS[k]}</p></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
  <button class="pfap" onclick="S.stkOpen=true;S.stkTierSel=null;R()"><span><b>🔥 Atuendos de la mascota</b><em>Se desbloquean con días de racha, no con monedas</em></span><i>›</i></button></div>`}
 function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
 function cgainH(){const g=S.coinGain||0;if(g<=0&&S.coinNote)return cnoteH();return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
@@ -3363,7 +3382,7 @@ function profileHead(u,isMe,uid){
  const fl=u.p?flagOf(u.p):'';
  const chips=[u.p?`<span class="pchip">${fl||'🌎'} ${esc(u.p)}</span>`:'',u.m?`<span class="pchip">🎤 ${esc(u.m)}</span>`:'',`<span class="pchip">📅 Desde ${esc(u.joined||'—')}</span>`].join('');
  const dz=dzOf(u);
- return `<div class="banner pbn${dz?' dz':''}${!dz&&bnOf(u)?' '+bnOf(u):''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1${ngOf(u)?' class="ngr"':''}>${esc(u.u)}</h1>${ttH(u)}${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div>${pMascotH(u)}</div>
+ return `<div class="banner pbn${dz?' dz':''}${!dz&&bnOf(u)?' '+bnOf(u):''}" style="${dz?`--c:${dz.c};--c2:${dz.c2}`:themeStyle(u)}">${dz?`<div class="dzart">${dz.art}</div>`:''}${uid?withDot(uid,avU(u,'lg')):avU(u,'lg')}<div style="flex:1;min-width:0"><span class="kicker">${isMe?'Tu perfil':'Usuario'}</span><h1${ngCls(u)?' class="'+ngCls(u)+'"':''}>${esc(u.u)}</h1>${ttH(u)}${id?`<button class="pidb" onclick="copyId('${pid(id)}',this)" aria-label="Copiar ID">ID ${fmtPid(pid(id))} ⧉</button>`:''}</div>${pMascotH(u)}</div>
  <div class="card pinfo"><div class="pchips">${chips}</div>${uid?presLine(uid):''}${u.a?`<div class="pab"><div class="mu">Sobre mí</div>${esc(u.a)}</div>`:''}</div>`}
 function statsCard(votes){const n=votes.length,by=L.map(l=>({l,c:votes.filter(v=>v.l===l.i).length})).filter(o=>o.c),C=2*Math.PI*44;let off=0;
  const ring=by.map(o=>{const len=o.c/n*C,s=`<circle r="44" cx="60" cy="60" fill="none" stroke="${colr(o.l)}" stroke-width="14" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len;return s}).join('');
@@ -3668,6 +3687,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-14T10:00:00-04:00'),text:'Novedades de la tienda 🛍️: llegaron 5 artículos nuevos. Sonido Corneta (100), Lluvia de monedas (250), Nombre dorado animado (400), Marco holográfico (500) y Boost x2 de 3 horas (600). Además se quitaron los diseños de tarjeta de la tienda: si habías comprado alguno, te devolvimos las monedas automáticamente.'},
  {ts:Date.parse('2026-11-14T09:30:00-04:00'),text:'Álbum: llegó FMS México 2019 con 10 cartas nuevas 🇲🇽. Legendaria: Aczino. Épica: Jony Beltrán. Raras: Jack Adrenalina, Lobo Estepario, Rapder y RC. Comunes: Yoiker, Mcklopedia, Potencia y Zticma. Además ahora puedes abrir 10 sobres de una vez por 2000 monedas, y en las cartas solo se muestra el año.'},
  {ts:Date.parse('2026-11-13T22:45:00-04:00'),text:'Álbum ampliado 🎴: ya está FMS Argentina 2019 con 10 cartas nuevas. Legendaria: Trueno. Épicas: Cacha, Papo, Mks, Stuart y Sub. Raras: Replik, Dtoke y Nacho. Común: Klan. Además limpiamos el diseño: la etiqueta de calidad de cada carta es más pequeña y ya no se muestran precios en las cartas ni en el sobre. Las repetidas se siguen pudiendo vender con el botón «Vender repetida».'},
  {ts:Date.parse('2026-11-13T22:15:00-04:00'),text:'Álbum renovado 🎴: llegó FMS España 2019 con 10 cartas nuevas. Legendaria: Bnet. Épicas: Chuty y Zasko. Raras: Blon, Skone, BTA y Walls. Comunes: Force, Errece y Mr Ego. Además las cartas tienen un diseño nuevo con marco por calidad, estrellas y brillo animado. Y ahora puedes vender las cartas repetidas: Común 50 monedas, Rara 100, Épica 250 y Legendaria 500. Verás el botón «Vender repetida» debajo de cada carta que tengas más de una vez, y también al abrir un sobre que te salga repetida.'},
@@ -3930,7 +3950,7 @@ function adminV(){
  const list=S.adm;
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button><h1 class="pg">Panel de administrador</h1>
  <div class="sec"><span>Monedas y tienda</span></div>
-<div class="card"><div class="mu" style="margin:0 0 10px;font-size:13px">Reset de la tienda: quita a todos los usuarios sus colores de app, diseños de tarjeta y planilla, atuendos, marcos y títulos. A los usuarios normales se les devuelven sus monedas gastadas; linexs17 conserva exactamente el saldo que tiene. Los usuarios que ya entraron a la app se resetean solos al iniciar sesión; este botón resetea a todos los demás de una vez.</div><button class="btn s" onclick="adminResetShop()" style="margin-bottom:6px">🎤 Resetear tienda de todos los usuarios</button>${S.admCoinMsg?`<div class="mu" style="font-size:13px;margin-top:4px">${esc(S.admCoinMsg)}</div>`:''}</div>
+<div class="card"><div class="mu" style="margin:0 0 10px;font-size:13px">Reset de la tienda: quita a todos los usuarios sus colores de app, diseños de tarjeta y planilla, atuendos, marcos y títulos. A los usuarios normales se les devuelven sus monedas gastadas; linexs17 conserva exactamente el saldo que tiene. Los usuarios que ya entraron a la app se resetean solos al iniciar sesión; este botón resetea a todos los demás de una vez.</div><button class="btn s" onclick="adminResetShop()" style="margin-bottom:6px">🎤 Resetear tienda de todos los usuarios</button><button class="btn s" onclick="adminRefundCards()" style="margin-bottom:6px">↩️ Devolver monedas de diseños de tarjeta a todos</button>${S.admCoinMsg?`<div class="mu" style="font-size:13px;margin-top:4px">${esc(S.admCoinMsg)}</div>`:''}</div>
  <div class="card"><b style="display:block;margin-bottom:4px">🎁 Regalar monedas / ruleta libre</b><div class="mu" style="margin:0 0 10px;font-size:13px">Escribe el usuario (sin @). «Regalar» suma las monedas a su saldo. «Ruleta libre» le deja girar sin esperar las 12 horas. Para abrir sobres solo necesita monedas.</div><input id="agu" class="alq" placeholder="Usuario, por ejemplo linexs17" autocapitalize="none" autocomplete="off"><input id="agn" class="alq" type="number" inputmode="numeric" min="1" placeholder="Cantidad de monedas" style="margin-top:0"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn s" style="flex:1" onclick="admGift()"><i class="coin"></i> Regalar monedas</button><button class="btn s" style="flex:1" onclick="admRlFree(true)">🎡 Ruleta libre: activar</button><button class="btn s" style="flex:1" onclick="admRlFree(false)">Ruleta libre: quitar</button></div>${S.admGMsg?`<div class="mu" style="font-size:13px;margin-top:8px">${esc(S.admGMsg)}</div>`:''}</div>
  <div class="sec"><span>Comentarios de usuarios</span><span>${list?list.length:'…'}</span></div>
  ${list===null?'<div class="mu" style="text-align:center;padding:20px">Cargando…</div>':list.length?list.map(c=>`<div class="card"><div class="row" style="margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(c.u||'anónimo')}</b><span class="mu">${esc(c.d||'')}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(c.t||'')}</div><button class="btn s sm" style="color:#FF6B7A;margin-top:12px" onclick="adminDel('${esc(c.id)}')">Eliminar</button></div>`).join(''):'<div class="card mu" style="text-align:center">Aún no hay comentarios.</div>'}
@@ -3950,6 +3970,14 @@ async function admGift(){if(!isAdmin())return;try{const n=Math.floor(+((document
  await admApply(u,o=>({bonus:Math.max(0,+(o.bonus)||0)+n}),'✓ Le regalaste '+n+' monedas a '+u.u+'.')}catch(e){S.admGMsg='Error: '+(e&&e.message||'desconocido');R()}}
 async function admRlFree(on){if(!isAdmin())return;try{const u=await admFindUser();if(!u)return;
  await admApply(u,()=>({rlFree:!!on}),on?'✓ Ruleta libre activada para '+u.u+': puede girar sin esperar.':'✓ Ruleta libre quitada a '+u.u+'. Vuelve la espera de 12 horas.')}catch(e){S.admGMsg='Error: '+(e&&e.message||'desconocido');R()}}
+async function adminRefundCards(){if(!isAdmin())return;
+ if(!confirm('¿Devolver las monedas de los diseños de tarjeta a TODOS los usuarios que los compraron y quitarles el diseño? Los usuarios que entren después se devuelven solos al iniciar sesión.'))return;
+ S.admCoinMsg='Cargando usuarios…';R();
+ try{const us=await B.listUsers();let done=0,fail=0,back=0;
+  for(const u of us){const pt=dzRefundPatch(u);if(!pt)continue;try{await B.updateUser(u.uid,pt);done++;if(u.shop&&Array.isArray(u.shop.own))u.shop.own.forEach(id=>{if(DZ_REFUND[id])back+=DZ_REFUND[id]})}catch(e){fail++}}
+  S.admCoinMsg='✓ Listo. Usuarios actualizados: '+done+(back?' · Monedas devueltas: '+back:'')+(fail?' · Fallaron: '+fail:'')+(done||fail?'':' (nadie tenía diseños de tarjeta)')+'.'
+ }catch(e){S.admCoinMsg='Error: '+(e&&e.message||'desconocido')}
+ R()}
 async function adminResetShop(){
  if(!isAdmin())return;
  if(!confirm('¿Resetear la tienda de TODOS los usuarios? Se quitan colores, diseños de tarjeta y planilla, atuendos, marcos y títulos. Los usuarios normales recuperan sus monedas gastadas y linexs17 conserva su saldo actual.'))return;
@@ -4220,8 +4248,8 @@ const DESIGNS=[
  {id:'fire',n:'Fuego del Freestyle',c:'#F97316',c2:'#7F1D1D',need:25,art:_sv(`<path d="M246 6c8 26 38 38 36 74-1 26-18 46-40 46-24 0-42-16-40-40 1-22 18-30 22-48 6 10 10 4 22-32z" fill="#FDBA74" opacity=".9"/><path d="M248 46c6 18 24 26 22 50-1 16-12 26-24 26-14 0-24-10-22-26 1-14 12-20 14-34 6 8 8 2 10-16z" fill="#FDE047"/><path d="M200 70c5 12 16 16 14 34-1 10-8 16-16 16-9 0-15-7-14-17 1-10 8-14 9-24 4 5 6 1 7-9z" fill="#FB923C" opacity=".85"/><path d="M290 80c4 8 10 12 8 24-1 8-6 12-12 12" fill="none" stroke="#FDBA74" stroke-width="4" stroke-linecap="round" opacity=".6"/>`)},
  {id:'crown',n:'Rey del Freestyle',c:'#FACC15',c2:'#92400E',need:30,art:_sv(`<g fill="#FEF3C7" opacity=".8"><path d="M170 30l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><path d="M176 96l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M138 62l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></g><path d="M196 100l-6-56 32 24 24-40 24 40 32-24-6 56z" fill="#FEF08A" stroke="#FDE047" stroke-width="3" stroke-linejoin="round"/><rect x="196" y="100" width="100" height="14" rx="5" fill="#FDE047" stroke="#CA8A04" stroke-width="2"/><circle cx="190" cy="44" r="7" fill="#EF4444"/><circle cx="246" cy="26" r="7" fill="#3B82F6"/><circle cx="302" cy="44" r="7" fill="#22C55E"/><circle cx="246" cy="86" r="6" fill="#EF4444"/>`)}
 ];
-const dzOf=u=>{const id=u&&sv2(u)&&u.dz;const d=id?DESIGNS.find(x=>x.id===id)||null:null;if(d&&S.me&&u.uid&&u.uid===S.me.uid&&!shopOwns('dz_'+d.id))return null;return d};
-function designCardH(){if(!S.me)return '';const cur=S.me.dz||'';
+const dzOf=u=>null;const _dzOfOld=u=>{const id=u&&sv2(u)&&u.dz;const d=id?DESIGNS.find(x=>x.id===id)||null:null;if(d&&S.me&&u.uid&&u.uid===S.me.uid&&!shopOwns('dz_'+d.id))return null;return d};
+function designCardH(){return '';const cur=S.me.dz||'';
  const tile=d=>{const ok=shopOwns('dz_'+d.id),on=cur===d.id;return `<button class="dzt${on?' on':''}" onclick="setDiseno('${d.id}')" aria-label="${esc(d.n)}"><div class="dzp" style="--c:${d.c};--c2:${d.c2}">${d.art}${ok?(on?'<u>✓</u>':''):'<u>🔒</u>'}</div><span>${esc(d.n)}</span><em>${ok?(on?'En uso':'Tuyo'):'<i class="coin"></i> '+shopP('dz_'+d.id)}</em></button>`};
  const none=`<button class="dzt${cur?'':' on'}" onclick="setDiseno('')"><div class="dzp" style="--c:var(--ac);--c2:var(--ac2)">${cur?'':'<u>✓</u>'}</div><span>Sin diseño</span><em>Color de tu app</em></button>`;
  return `<div class="card"><b>Diseño de tarjeta</b><div class="mu" style="margin:4px 0 12px">Diseños de rap solo para tu tarjeta de perfil: no cambian los colores de la app. Se compran en la tienda con monedas.</div><div class="dz-g">${none}${DESIGNS.map(tile).join('')}</div></div>`}
@@ -6424,6 +6452,13 @@ function shopScene(){const ac='var(--ac,#22c55e)',stripes=Array.from({length:8},
 .al10c{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .al10t{position:static!important;text-align:center;font:800 11px/1 inherit;padding:6px;border-radius:999px;background:rgba(255,255,255,.1);color:#cbd5e1}.al10t.nw{background:linear-gradient(90deg,#22c55e,#86efac);color:#052e16}
 .al10in .alact{display:flex;gap:10px;padding:12px 0 16px;background:linear-gradient(0deg,rgba(5,5,10,.95) 60%,transparent)}.al10in .alact .btn{flex:1}
+`;document.head.appendChild(st)}
+
+{const st=document.createElement('style');st.textContent=`.ngr.ngg{background-image:linear-gradient(90deg,#B45309,#FDE047,#FFFBD0,#F59E0B,#B45309);background-size:250% 100%;filter:drop-shadow(0 0 6px rgba(250,204,21,.55))}
+.fr-holo{animation:frHolo 3s linear infinite}
+@keyframes frHolo{0%,100%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #F0ABFC,0 0 12px 3px rgba(240,171,252,.7)}25%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #67E8F9,0 0 12px 3px rgba(103,232,249,.7)}50%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #FDE68A,0 0 12px 3px rgba(253,230,138,.7)}75%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #A5B4FC,0 0 12px 3px rgba(165,180,252,.7)}}
+.frw-holo{background:conic-gradient(from var(--fa,0deg),#F0ABFC,#67E8F9,#FDE68A,#A5B4FC,#F9A8D4,#6EE7B7,#F0ABFC);box-shadow:0 0 26px rgba(103,232,249,.6),0 0 36px rgba(240,171,252,.45);animation-duration:2.2s}
+.frw-holo::before,.frw-holo::after{color:#fff;text-shadow:0 0 6px #67E8F9,0 0 12px #F0ABFC}
 `;document.head.appendChild(st)}
 /* ===== Ruleta de monedas: 1 giro cada 12 horas (apartado Ruleta en Comunidad) ===== */
 const RL_P=[50,75,100,150,200,300],RL_MS=12*3600*1000,RL_COL=['#ef4444','#f59e0b','#22c55e','#06b6d4','#6366f1','#ec4899'];
