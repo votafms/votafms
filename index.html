@@ -2379,7 +2379,8 @@ const shopP=id=>{const it=SHOP.find(x=>x.id===id);return it?it.p:0};
 function sv2(u){return !!(u&&((u.shop&&typeof u.shop==='object'&&u.shop.v>=2)||u.sv===1))}
 /* Reset de la tienda (v2): quita colores, diseños, planillas, atuendos, marcos y títulos. linexs17 conserva su saldo actual. */
 function shopPatch(prof){const adm=String((prof&&prof.u)||'').toLowerCase()==='linexs17',old=prof&&prof.shop&&typeof prof.shop==='object'?prof.shop:null;
- return {shop:{own:[],spent:adm&&old?(old.spent||0):0,v:2},tema:'',dz:'',pl:'',fit:[]}}
+ const bt={};let sp=0;if(old&&old.bets&&typeof old.bets==='object')for(const id in old.bets){const o=old.bets[id];if(o&&!o.d){bt[id]=o;sp+=+o.m||0}}/* las apuestas activas nunca se pierden en un reseteo */
+ return {shop:{own:[],spent:adm&&old?(old.spent||0):sp,v:2,...(sp?{bets:bt}:{})},tema:'',dz:'',pl:'',fit:[]}}
 /* Los diseños de tarjeta se quitaron de la tienda: se devuelve lo pagado y se limpia el diseño elegido */
 const DZ_REFUND={dz_mic:150,dz_vinyl:170,dz_spray:190,dz_boombox:210,dz_beats:230,dz_cypher:250,dz_fire:300,dz_crown:400};
 function dzRefundPatch(prof){const sh=prof&&prof.shop&&typeof prof.shop==='object'?prof.shop:null,own=sh&&Array.isArray(sh.own)?sh.own:[],mine=own.filter(id=>DZ_REFUND[id]!==undefined);
@@ -2607,7 +2608,7 @@ async function loadFor(v){
   else if(v==='tienda'&&S.me&&!S.myVotes){S.myVotes=await cleanMine();R()}
   else if(v==='admin'){S.adm=isAdmin()?await B.listComments():[];R()}
   else if(v==='comunidad'){const arr=await Promise.all(COMUN.map(id=>B.votesOfLeague(id)));S.comm5={};COMUN.forEach((id,i)=>S.comm5[id]=arr[i]);R()}
-  else if(v==='lg'&&(LINEUP[S.lg]||SEASON_OPTS[S.lg])){const mine=S.me?await cleanMine():[];const tv=curSeason(S.lg);S.lgVotes=mine.filter(x=>x.l===S.lg&&(x.temp||'2026')===tv);if(tv!=='2026')S.links=await B.getLinks();R()}
+  else if(v==='lg'&&(LINEUP[S.lg]||SEASON_OPTS[S.lg])){const mine=S.me?await cleanMine():[];const tv=curSeason(S.lg);S.lgVotes=mine.filter(x=>x.l===S.lg&&(x.temp||'2026')===tv);try{S.links=await B.getLinks()}catch(e){}R()}
   else if(v==='search'){S.users=await B.listUsers();await refreshFriends();R();refreshPres()}
   else if(v==='user'){await refreshFriends();const p=await B.getUser(S.uid);S.uProf=p?pub(p):{u:'?',p:'',m:'',a:'',joined:''};const canSee=(S.me&&S.me.uid===S.uid)||isFriend(S.uid)||isAdmin();S.uVotes=canSee?splitDups(await B.votesOfUser(S.uid)).keep:[];R();refreshPres()}
  }catch(e){if(v==='perfil')S.myVotes=[];if(v==='admin')S.adm=[];if(v==='search')S.users=[];if(v==='user'){S.uVotes=[];S.uProf=S.uProf||{u:'?',p:'',m:'',a:'',joined:''}}R()}
@@ -2949,7 +2950,7 @@ function lgv(){
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
  <div class="lgctl">${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}</div></div><div class="lgmain">${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div></div>`;
 }
-const LINK_TEMPS=['2017','2018','2019','2020','2021','2023','2024','2025'];
+const LINK_TEMPS=['2026','2017','2018','2019','2020','2021','2023','2024','2025'];
 const canLink=()=>!!(S.me&&(S.admin||S.collab));
 function link17Form(ed){return `<div class="card" style="margin-bottom:12px"><b>${ed?'Cambiar el link del video':'Añade el link para ver esta batalla'}</b><div class="mu" style="margin:4px 0 10px">Pega el link de YouTube. Si la batalla está en partes, pega todos los links en orden separados por un espacio. Lo verá cualquiera que abra esta batalla. <span style="color:var(--ac);font-weight:800">Modo colaborador</span></div><input id="lk17" placeholder="https://youtube.com/watch?v=..."><button class="btn sm" style="width:100%" onclick="saveLink17()">Guardar link</button>${ed?'<button class="btn s sm" style="width:100%;margin-top:8px" onclick="S.lkEdit=false;R()">Cancelar</button>':''}</div>`}
 /* ===== Batallas en varias partes: "id1,id2,id3" en el mismo campo de video ===== */
@@ -2964,13 +2965,13 @@ function setVPart(i){const b=S.bt;if(!b)return;const ids=ytIds(b.y);if(!ids[i])r
  const f=document.getElementById('vpf');const st=ytSt(b.y)[i]||0;if(f)f.src='https://www.youtube-nocookie.com/embed/'+ids[i]+ytQ(b.y,i);
  const a=document.getElementById('vpa');if(a)a.href='https://www.youtube.com/watch?v='+ids[i]+(st?'&t='+st+'s':'');
  document.querySelectorAll('#vpt .stp').forEach((el,k)=>el.classList.toggle('on',k===i))}
-function linkAreaH(b){if(!LINK_TEMPS.includes(S.temp))return '';
+function linkAreaH(b){if(!LINK_TEMPS.includes(S.temp||'2026'))return '';
  if(!canLink())return b.y?'':'<div class="mu" style="margin:0 0 12px;font-size:13px">🎬 Esta batalla aún no tiene video. Pronto lo añadiremos.</div>';
  if(!b.y)return link17Form(false);
  return S.lkEdit?link17Form(true):`<button class="btn s sm" style="margin:0 0 12px" onclick="S.lkEdit=true;R()">✏️ Cambiar link del video</button>`}
 async function saveLink17(){const v=(document.getElementById('lk17')||{}).value||'';const ids=ytParse(v),m=ids.length?[null,ids.join(',')]:null;
  if(!m){S.msgP='Ese link no parece de YouTube. Revisa el link.';return R()}
- try{const key=linkKey(S.lg,S.temp,S.bt.a,S.bt.b,S.bt.lx);await B.setLink(key,m[1]);S.links=S.links||{};S.links[key]=m[1];S.bt.y=m[1];S.lkEdit=false;S.msgP='Link guardado'}
+ try{const key=linkKey(S.lg,S.temp||'2026',S.bt.a,S.bt.b,S.bt.lx);await B.setLink(key,m[1]);S.links=S.links||{};S.links[key]=m[1];S.bt.y=m[1];S.lkEdit=false;S.msgP='Link guardado'}
  catch(e){S.msgP=/permission|insufficient/i.test(String(e&&(e.code||e.message)))?'No tienes permiso para añadir links. Pídele acceso de colaborador al administrador.':'No se pudo guardar el link. Revisa las reglas de Firestore.'}
  R();}
 const LINEUP18es=['Hander','Zasko','Errecé','Arkano','Blon','BTA','Chuty','Force','Skone','Walls'];
@@ -3311,15 +3312,22 @@ const MES_L=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','
 S.calTab='prox';S.calOpen={};
 function toggleCal(ci){S.calOpen[ci]=!S.calOpen[ci];achMark('cal');R()}
 function setCalTab(t){S.calTab=t;achMark('cal');R()}
+function liveH(id){return `<div class="mu" style="margin:10px 0 6px;font-weight:700">🔴 Directo de la jornada</div><div style="position:relative;width:100%;padding-top:56.25%;border-radius:14px;overflow:hidden;background:#000"><iframe src="https://www.youtube-nocookie.com/embed/${esc(id)}" title="Directo de la jornada" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div><a class="mu" style="display:inline-block;margin:6px 0 0;font-size:12px" href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" rel="noopener">Abrir en YouTube ↗</a>`}
+/* Admin/colaborador del calendario: link del directo de una jornada (se guarda dentro del calendario) */
+function ceLive(i,v){const e=CAL[i];if(!e||!canCal())return;v=String(v||'').trim();
+ if(!v){delete e.lv;S.ce.msg='Link quitado. Toca Guardar calendario para publicar el cambio.';return R()}
+ const id=ytParse(v)[0];if(!id){S.ce.msg='Ese link no parece de YouTube. Revisa el link.';return R()}
+ e.lv=id;S.ce.msg='Link del directo puesto. Toca Guardar calendario para publicarlo.';R()}
 function calCard(e,ci){
  const l=L.find(x=>x.i===e.i);const open=!!S.calOpen[ci];
  const dp=e.dt?e.dt.split('-'):null;
  const cd=dp?`<div class="cdate"><b>${+dp[2]}</b><span>${MES_C[+dp[1]-1]}</span></div>`:`<div class="cdate none"><b>?</b><span>FECHA</span></div>`;
  const nb=(e.b||[]).length;
  const col=e.k==='next'?'next':e.k==='done'?'done':'';
- const det=open?`<div class="cdet">${e.lu&&e.lu.length?`<div class="mu" style="margin:10px 0 6px;font-weight:700">Line-up</div><div class="chips" style="margin-top:0">${e.lu.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>`:''}${nb?`<div class="mu" style="margin:12px 0 6px;font-weight:700">Batallas</div>${e.b.map(x=>crow(batOf(e,x))).join('')}`:'<div class="mu" style="margin-top:10px">Aún no hay batallas confirmadas.</div>'}${e.note?`<div class="mu" style="margin-top:8px;font-size:12px">${esc(e.note)}</div>`:''}</div>`:'';
- return `<div class="ccard" style="--lc:${l?l.c:'var(--ac)'}"><button class="chead" onclick="toggleCal(${ci})" aria-expanded="${open}">${cd}<div style="flex:1;min-width:0;text-align:left"><div class="row" style="gap:8px;margin-bottom:3px">${l?logo(l,24):''}<b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.n)}</b></div><div class="mu" style="margin:0;font-size:12px">${esc(e.s||(e.dt?'Sede por confirmar':'Fecha por confirmar'))}</div><div style="margin-top:6px"><span class="pill ${col}">${esc(e.st)}</span>${nb?` <span class="mu" style="font-size:12px">${nb} ${nb===1?'batalla':'batallas'}</span>`:''}</div></div><span class="cchev">${open?'▴':'▾'}</span></button>${det}</div>`}
+ const det=open?`<div class="cdet">${e.lv?liveH(e.lv):''}${e.lu&&e.lu.length?`<div class="mu" style="margin:10px 0 6px;font-weight:700">Line-up</div><div class="chips" style="margin-top:0">${e.lu.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>`:''}${nb?`<div class="mu" style="margin:12px 0 6px;font-weight:700">Batallas</div>${e.b.map(x=>crow(batOf(e,x))).join('')}`:'<div class="mu" style="margin-top:10px">Aún no hay batallas confirmadas.</div>'}${e.note?`<div class="mu" style="margin-top:8px;font-size:12px">${esc(e.note)}</div>`:''}</div>`:'';
+ return `<div class="ccard" style="--lc:${l?l.c:'var(--ac)'}"><button class="chead" onclick="toggleCal(${ci})" aria-expanded="${open}">${cd}<div style="flex:1;min-width:0;text-align:left"><div class="row" style="gap:8px;margin-bottom:3px">${l?logo(l,24):''}<b style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.n)}</b></div><div class="mu" style="margin:0;font-size:12px">${esc(e.s||(e.dt?'Sede por confirmar':'Fecha por confirmar'))}</div><div style="margin-top:6px"><span class="pill ${col}">${esc(e.st)}</span>${e.lv?' <span class="pill" style="background:#e53935;color:#fff">🔴 Directo</span>':''}${nb?` <span class="mu" style="font-size:12px">${nb} ${nb===1?'batalla':'batallas'}</span>`:''}</div></div><span class="cchev">${open?'▴':'▾'}</span></button>${det}</div>`}
 function calV(){
+ if(!S.calLk){S.calLk=1;try{B.getLinks().then(l=>{S.links={...l,...(S.links||{})};R()}).catch(()=>{})}catch(e){}}
  const tab=S.calTab||'prox';
  const list=CAL.map((e,ci)=>({e,ci})).filter(x=>tab==='fin'?x.e.k==='done':x.e.k!=='done');
  const dated=list.filter(x=>x.e.dt).sort((a,b)=>a.e.dt.localeCompare(b.e.dt));
@@ -3692,6 +3700,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-14T19:00:00-04:00'),text:'Apuestas más seguras 🎲: si ya apostaste, tu apuesta se queda guardada aunque salgas o recargues la página; solo se devuelve si la batalla se anula o se borra de verdad.'},
+ {ts:Date.parse('2026-11-14T18:00:00-04:00'),text:'Directo en las jornadas 🔴: ahora cada jornada del Calendario puede tener el link de su directo, aunque todavía no se hayan confirmado las batallas; ábrela y míralo ahí mismo. Además, las batallas de la temporada 2026 ya pueden tener su video como las demás.'},
  {ts:Date.parse('2026-11-14T16:00:00-04:00'),text:'Apuestas 👥: ahora en cada batalla puedes tocar «Ver quién apostó» y ver quiénes apostaron por cada competidor. Las cantidades siguen siendo privadas.'},
  {ts:Date.parse('2026-11-14T15:30:00-04:00'),text:'Videos en la temporada actual 🎬: las batallas de las jornadas de 2026 ya pueden tener su video, con el directo de la jornada y cada batalla en su minuto. Empezamos con FMS España · Jornada 1.'},
  {ts:Date.parse('2026-11-14T12:15:00-04:00'),text:'Cuenta regresiva mejorada ⏳: ahora, cuando empieza una jornada, la cuenta regresiva de la pantalla de inicio pasa sola a la siguiente. Hoy: después de FMS España (3:00 p. m. hora RD) sigue FMS Colombia · Jornada 2 a las 7:30 p. m. hora RD. En cada jornada puedes ver su hora en tu país.'},
@@ -5236,7 +5246,7 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
   return `<div class="card"><div class="mu" style="margin:0 0 6px;font-size:12px;color:${l?l.c:'var(--mu)'}">${l?esc(l.n):''}</div><div class="row" style="gap:8px;align-items:center;margin-bottom:8px"><input value="${esc(e.n)}" oninput="ceSet(${i},'n',this.value)" style="margin:0;flex:1;font-weight:700"><button class="ib" onclick="ceDel(${i})" aria-label="Quitar" style="width:34px;height:34px;flex:0 0 auto">✕</button></div>
 <div class="row" style="gap:8px"><input type="date" value="${esc(e.dt||'')}" onchange="ceSet(${i},'dt',this.value)" style="flex:1;margin:0 0 8px"><select onchange="ceSet(${i},'k',this.value)" style="flex:1;${sty}"><option value="next" ${e.k==='next'?'selected':''}>Próxima</option><option value="none" ${e.k==='none'?'selected':''}>Sin fecha</option></select></div>
 <div class="mu" style="margin:0 0 4px;font-size:12px">Hora de inicio (hora de República Dominicana)</div><input type="time" value="${esc(e.tm||'')}" onchange="ceSet(${i},'tm',this.value)" style="margin:0 0 8px"><input value="${esc(e.s||'')}" placeholder="Sede (ej: Cali, Colombia)" oninput="ceSet(${i},'s',this.value)">
-<textarea rows="4" placeholder="Una batalla por línea: MC A vs MC B" oninput="ceSet(${i},'b',this.value)">${esc((e.b||[]).filter(x=>typeof x==='string').join('\n'))}</textarea></div>`}).join('');
+<div class="mu" style="margin:0 0 4px;font-size:12px">🔴 Link del directo de la jornada (YouTube; sirve aunque aún no haya batallas confirmadas)</div><input value="${esc(e.lv?'https://youtu.be/'+e.lv:'')}" placeholder="https://www.youtube.com/watch?v=…" onchange="ceLive(${i},this.value)" style="margin:0 0 8px"><textarea rows="4" placeholder="Una batalla por línea: MC A vs MC B" oninput="ceSet(${i},'b',this.value)">${esc((e.b||[]).filter(x=>typeof x==='string').join('\n'))}</textarea></div>`}).join('');
  return `<div class="sec"><span>Editar calendario</span><span>${CAL.filter(e=>e.k!=='done').length}</span></div><div class="mu" style="margin:0 2px 10px">Cambia fechas, sedes y batallas de las próximas jornadas. Lo que cambies se publica para todos al guardar. Las jornadas finalizadas no se editan aquí.</div>${rows}<div class="card"><div class="row" style="gap:8px"><select onchange="S.ce.lg=this.value" style="flex:1;${sty}">${L.map(l=>`<option value="${l.i}" ${l.i===D.lg?'selected':''}>${esc(l.n)}</option>`).join('')}</select><button class="btn s sm" style="width:auto;flex:0 0 auto;margin:0 0 8px" onclick="ceAdd()">+ Añadir jornada</button></div><button class="btn sm" style="width:100%" onclick="ceSave()" ${D.busy?'disabled':''}>Guardar calendario</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>`}
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
