@@ -3700,6 +3700,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-14T20:00:00-04:00'),text:'Apuestas terminadas 🏁: en Comunidad → Apuestas ahora se ven todas las batallas que ya terminaron (antes solo las últimas 6), cada una con su ganador.'},
  {ts:Date.parse('2026-11-14T19:00:00-04:00'),text:'Apuestas más seguras 🎲: si ya apostaste, tu apuesta se queda guardada aunque salgas o recargues la página; solo se devuelve si la batalla se anula o se borra de verdad.'},
  {ts:Date.parse('2026-11-14T18:00:00-04:00'),text:'Directo en las jornadas 🔴: ahora cada jornada del Calendario puede tener el link de su directo, aunque todavía no se hayan confirmado las batallas; ábrela y míralo ahí mismo. Además, las batallas de la temporada 2026 ya pueden tener su video como las demás.'},
  {ts:Date.parse('2026-11-14T16:00:00-04:00'),text:'Apuestas 👥: ahora en cada batalla puedes tocar «Ver quién apostó» y ver quiénes apostaron por cada competidor. Las cantidades siguen siendo privadas.'},
@@ -6596,7 +6597,7 @@ function betsEnsure(){
  if(BT.un&&BT.uid===S.me.uid)return;
  if(BT.un){try{BT.un()}catch(e){}BT.un=null}
  const fm=FB.fm;BT.uid=S.me.uid;S.betsReady=false;S.betsErr='';
- try{BT.un=fm.onSnapshot(fm.query(fm.collection(FB.db,'bets'),fm.where('ts','>',Date.now()-14*864e5)),snap=>{S.bets=snap.docs.map(d=>({id:d.id,...d.data()}));S.betsReady=true;S.betsErr='';betsClaim();betsRefresh()},err=>{S.betsErr=(err&&err.code)||'error';S.betsReady=true;betsRefresh()})}catch(e){S.betsErr='error'}}
+ try{BT.un=fm.onSnapshot(fm.query(fm.collection(FB.db,'bets'),fm.limit(500)),snap=>{S.bets=snap.docs.map(d=>({id:d.id,...d.data()}));S.betsReady=true;S.betsErr='';betsClaim();betsRefresh()},err=>{S.betsErr=(err&&err.code)||'error';S.betsReady=true;betsRefresh()})}catch(e){S.betsErr='error'}}
 setInterval(betsEnsure,2000);
 function betsRefresh(){const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){clearTimeout(BT.rt);BT.rt=setTimeout(betsRefresh,1500);return}
  if((S.v==='comunidad'&&S.commTab==='apuestas')||S.v==='admin')R()}
@@ -6676,7 +6677,7 @@ function betCard(d){
  if(own){const pot=betPay(own.m,own.x),w=st==='done'?(d.w===own.s?'win':'lose'):st==='void'?'void':'wait';
   const rs={win:`🎉 ¡Acertaste! +${own.d?own.r:pot}`,lose:'💔 Fallaste',void:'↩️ Reembolsada',wait:st==='closed'?'⏳ En juego…':'🎟️ Apuesta hecha'}[w];
   tk=`<div class="btk ${w}">${w==='win'?'<div class="btrain">'+Array.from({length:8},(_,i)=>`<i class="coin" style="left:${6+i*12}%;animation-delay:${(i%4)*.25}s"></i>`).join('')+'</div>':''}<div class="btkl"><b>${esc(own.pk)}</b></div><div class="btkm"><i class="coin"></i>${own.m}<i>→</i><i class="coin"></i>${pot}</div><div class="btkr">${rs}</div>${w==='wait'&&st==='open'?`<button class="btq" onclick="betCancel('${d.id}')">✖ Quitar apuesta</button>`:''}</div>`}
- return `<div class="btc s-${stl[2]}" style="--c1:${c1};--c2:${c2}"><div class="bth"><span class="btlg">${logo(l,16)}<b>${esc(l.n)}</b></span><span class="btst s-${stl[2]}"><i></i>${stl[0]} ${stl[1]}</span></div><div class="btv">${sd('a',d.a)}<div class="btvs"><span>VS</span></div>${sd('b',d.b)}</div><div class="btbar"><i style="width:${pa}%"></i><span>${pa}%</span><span>${pb}%</span></div>${sample}${panel}${tk}${S.me?btWhoH(d):''}</div>`}
+ return `<div class="btc s-${stl[2]}" style="--c1:${c1};--c2:${c2}"><div class="bth"><span class="btlg">${logo(l,16)}<b>${esc(l.n)}</b></span><span class="btst s-${stl[2]}"><i></i>${stl[0]} ${stl[1]}</span></div><div class="btv">${sd('a',d.a)}<div class="btvs"><span>VS</span></div>${sd('b',d.b)}</div><div class="btbar"><i style="width:${pa}%"></i><span>${pa}%</span><span>${pb}%</span></div>${st==='done'&&d.w?`<div style="margin:8px 0 0;font-weight:800;font-size:13px;text-align:center">🏆 Ganó ${esc(d.w==='a'?d.a:d.b)}</div>`:''}${sample}${panel}${tk}${S.me?btWhoH(d):''}</div>`}
 function betsV(){
  betsEnsure();
  const head=`<div class="bthero"><div class="btlive"><i></i>EN VIVO</div><h2>Apuestas</h2></div>`;
@@ -6685,7 +6686,7 @@ function betsV(){
  if(!S.betsReady)return head+'<div class="card mu">Cargando apuestas…</div>';
  const all=(S.bets||[]).filter(x=>x.st!=='draft'),ord=(a,b)=>(+a.o||+a.ts||0)-(+b.o||+b.ts||0),
   live=all.filter(x=>x.st==='closed').sort(ord),opn=all.filter(x=>(x.st||'open')==='open').sort(ord),
-  fin=all.filter(x=>x.st==='done'||x.st==='void').sort((a,b)=>(+b.tsd||+b.ts||0)-(+a.tsd||+a.ts||0)).slice(0,6);
+  fin=all.filter(x=>x.st==='done'||x.st==='void').sort((a,b)=>(+b.tsd||+b.ts||0)-(+a.tsd||+a.ts||0));
  const mine=shopS().bets||{},my=Object.keys(mine).map(k=>mine[k]),act=my.filter(o=>!o.d).length,net=my.filter(o=>o.d).reduce((t,o)=>t+(+o.r||0)-(+o.m||0),0);
  const strip=my.length?`<div class="btsum"><div><b>${act}</b><span>activas</span></div><div><b class="${net>=0?'up':'dn'}">${net>=0?'+':''}${net}</b><span>neto <i class="coin"></i></span></div></div>`:'';
  const sec=(t,a)=>a.length?`<div class="sec"><span>${t}</span><span>${a.length}</span></div>`+a.map(betCard).join(''):'';
