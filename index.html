@@ -6052,7 +6052,8 @@ async function init(){
  const ok=await initFB();
  if(!ok){document.getElementById('app').innerHTML='<div class="card">No se pudo conectar con la base de datos. Revisa tu conexión y recarga la página.</div>';return}
  watchAuth();R();handleResetLink();calSync();}
-init();
+/* Arranca cuando TODOS los scripts ya cargaron (evita «kickOf is not defined» en archivos grandes) */
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 
 const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return h};
 /* ===== Apartados plegables: los más cargados se minimizan y siguen visibles como cabecera ===== */
