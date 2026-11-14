@@ -2400,7 +2400,10 @@ function shopOwns(id){const s=shopS();return Array.isArray(s.own)&&s.own.include
 function boostEnd(){const l=shopS().boostLog;return Array.isArray(l)&&l.length?(+l[l.length-1].e||0):0}
 function boostOn(){return boostEnd()>Date.now()}
 function boostAt(ts){const l=shopS().boostLog;if(!Array.isArray(l))return false;ts=+ts||0;return l.some(w=>ts>=w.s&&ts<w.e)}
-function boostLeft(){const m=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000));return Math.floor(m/60)+':'+String(m%60).padStart(2,'0')}
+function boostLeft(){const t=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000)),d=Math.floor(t/86400),h=Math.floor(t%86400/3600),m=Math.floor(t%3600/60),sc=t%60,P=(n,a,b)=>n+' '+(n===1?a:b);
+ if(d)return P(d,'día','días')+(h?' y '+P(h,'hora','horas'):'');
+ if(h)return P(h,'hora','horas')+(m?' y '+m+' min':'');
+ return m?m+' min '+String(sc).padStart(2,'0')+' s':sc+' s'}
 function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const b=COIN_L[v.l]||40;return boostAt(v.ts)?b*2:b}
 /* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
    minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
@@ -3687,6 +3690,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-14T10:20:00-04:00'),text:'Contador del Boost más claro ⚡: ahora el tiempo que te queda se ve como «3 horas», «3 horas y 25 min» o «1 día y 3 horas» en vez de minutos y segundos pegados.'},
  {ts:Date.parse('2026-11-14T10:00:00-04:00'),text:'Novedades de la tienda 🛍️: llegaron 5 artículos nuevos. Sonido Corneta (100), Lluvia de monedas (250), Nombre dorado animado (400), Marco holográfico (500) y Boost x2 de 3 horas (600). Además se quitaron los diseños de tarjeta de la tienda: si habías comprado alguno, te devolvimos las monedas automáticamente.'},
  {ts:Date.parse('2026-11-14T09:30:00-04:00'),text:'Álbum: llegó FMS México 2019 con 10 cartas nuevas 🇲🇽. Legendaria: Aczino. Épica: Jony Beltrán. Raras: Jack Adrenalina, Lobo Estepario, Rapder y RC. Comunes: Yoiker, Mcklopedia, Potencia y Zticma. Además ahora puedes abrir 10 sobres de una vez por 2000 monedas, y en las cartas solo se muestra el año.'},
  {ts:Date.parse('2026-11-13T22:45:00-04:00'),text:'Álbum ampliado 🎴: ya está FMS Argentina 2019 con 10 cartas nuevas. Legendaria: Trueno. Épicas: Cacha, Papo, Mks, Stuart y Sub. Raras: Replik, Dtoke y Nacho. Común: Klan. Además limpiamos el diseño: la etiqueta de calidad de cada carta es más pequeña y ya no se muestran precios en las cartas ni en el sobre. Las repetidas se siguen pudiendo vender con el botón «Vender repetida».'},
