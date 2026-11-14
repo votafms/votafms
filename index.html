@@ -2595,7 +2595,8 @@ function shopSheetH(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it)return ''
  return `<div class="ov" onclick="shopClose()"><div class="sh shsh" onclick="event.stopPropagation()"><div class="cfx">${parts}</div>${shopPv(it)}<div class="shsc"><h3>${done?(it.k==='boost'?'¡Boost activado! ⚡':'¡Es tuyo! 🎉'):esc(it.n)}</h3><p>${done?(it.k==='boost'?'Todo va al doble. Te quedan '+boostLeft()+' de Boost.':esc(it.n)+' ya está en tu cuenta.'):esc(it.d)}</p>${done?'':`<div class="shcalc"><span>Saldo</span><b><i class="coin"></i>${bal}</b><span>→</span><b class="${ok?'':'neg'}"><i class="coin"></i>${bal-it.p}</b></div>`}${act}</div></div></div>`}
 const accentOf=l=>l.i==='in'?['#CA8A04','#FACC15']:[l.c,l.c2];
 const jLabel=e=>{const m=e.n.match(/Jornada \d+/);return m?m[0]:e.n};
-function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i);return {a:(p[0]||'').trim(),b:(p[1]||'').trim(),sa:null,sb:null,j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||null,j:e.n+' · '+e.d}}
+function batYt(e,a,b){try{return (S.links||{})[linkKey(e.i,'2026',a,b)]||null}catch(x){return null}}
+function batOf(e,b){if(typeof b==='string'){const p=b.split(/ vs /i),a=(p[0]||'').trim(),c=(p[1]||'').trim();return {a,b:c,sa:null,sb:null,y:batYt(e,a,c),j:e.n+' · '+e.d}}return {a:b.a,b:b.b,sa:b.sa,sb:b.sb,y:b.y||batYt(e,b.a,b.b),j:e.n+' · '+e.d}}
 function crow(x){const sc=x.sa!=null,left=sc&&x.sa>x.sb,right=sc&&x.sb>x.sa;return `<div class="crow"><span class="cn ${left?'cw':sc?'cl':''}">${esc(x.a)}</span><span class="cs">${sc?fmt(x.sa)+' – '+fmt(x.sb):'VS'}</span><span class="cn r ${right?'cw':sc?'cl':''}">${esc(x.b)}</span></div>`}
 
 function go(v){S.difKb=false;S.difSheet=false;S.v=v;if(v==='lg')S.lgVotes=null;if(v==='comunidad')S.comm5=null;window.scrollTo(0,0);if(v==='perfil')S.myVotes=S.me?null:[];if(v==='search')S.users=null;if(v==='admin')S.adm=null;if(v==='user'){S.uProf=null;S.uVotes=null}R();loadFor(v)}
@@ -3690,6 +3691,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-14T15:30:00-04:00'),text:'Videos en la temporada actual 🎬: las batallas de las jornadas de 2026 ya pueden tener su video, con el directo de la jornada y cada batalla en su minuto. Empezamos con FMS España · Jornada 1.'},
  {ts:Date.parse('2026-11-14T12:15:00-04:00'),text:'Cuenta regresiva mejorada ⏳: ahora, cuando empieza una jornada, la cuenta regresiva de la pantalla de inicio pasa sola a la siguiente. Hoy: después de FMS España (3:00 p. m. hora RD) sigue FMS Colombia · Jornada 2 a las 7:30 p. m. hora RD. En cada jornada puedes ver su hora en tu país.'},
  {ts:Date.parse('2026-11-14T10:40:00-04:00'),text:'Más batallas con monedas cada día 🪙: el límite sube de 12 a 20 batallas por día. Si hoy o algún día ya habías votado más de 12, esas batallas extra ahora también te dan monedas, hasta llegar a 20. Se siguen pidiendo 45 segundos entre un voto y el siguiente.'},
  {ts:Date.parse('2026-11-14T10:20:00-04:00'),text:'Contador del Boost más claro ⚡: ahora el tiempo que te queda se ve como «3 horas», «3 horas y 25 min» o «1 día y 3 horas» en vez de minutos y segundos pegados.'},
@@ -5131,13 +5133,15 @@ const DJ_PRE={
 3:58:19 MP vs KG
 4:12:58 Skill vs Xplain
 4:28:35 Nekroos vs Black Code`}};
+/* Jornadas de la temporada actual (2026): salen del calendario */
+function djJors(lg,season){if(season==='2026')return CAL.filter(e=>e.i===lg).map(e=>({lab:e.n+(e.d?' · '+e.d:''),b:(e.b||[]).map(x=>{const o=batOf(e,x);return [o.a,o.b]})}));return SEASON_JOR[lg+'|'+season]||[]}
 function djEnd(D,sec){if(sec==null)return null;const all=(D.bd||[]).concat(D.rows.map(r=>djSec(r.t)).filter(x=>x!=null));const n=all.filter(x=>x>sec).sort((a,b)=>a-b)[0];return n==null?null:n}
 function djSet(f,v){const D=S.dj;D[f]=v;if(f==='lg'){D.season='';D.ji=''}if(f==='season')D.ji='';D.rows=[];D.msg='';D.fin=false;R()}
 async function djPrep(){const D=S.dj;if(!isAdmin()||D.busy)return;
  const id=ytParse(D.url)[0];if(!id){D.msg='Pega el link del directo (YouTube).';return R()}
  const P=DJ_PRE[id];
- if(P){if(!String(D.ts||'').trim())D.ts=P.ts;if(!D.lg||!D.season||D.ji===''){const ji=(SEASON_JOR[P.lg+'|'+P.season]||[]).findIndex(x=>(x.lab||'').includes(P.jl));if(ji>=0){D.lg=P.lg;D.season=P.season;D.ji=String(ji)}}}
- const J=SEASON_JOR[D.lg+'|'+D.season]||[],j=J[D.ji];
+ if(P){if(!String(D.ts||'').trim())D.ts=P.ts;if(!D.lg||!D.season||D.ji===''){const ji=djJors(P.lg,P.season).findIndex(x=>(x.lab||'').includes(P.jl));if(ji>=0){D.lg=P.lg;D.season=P.season;D.ji=String(ji)}}}
+ const J=djJors(D.lg,D.season),j=J[D.ji];
  if(!j){D.msg='Elige liga, temporada y jornada.';return R()}
  D.id=id;D.msg='';D.fin=false;
  const rows=(j.b||[]).map(b=>({key:linkKey(D.lg,D.season,b[0],b[1],b[3]),a:b[0],b:b[1],tag:b[2]===true?'Exhibición':b[2]==='apl'?'Aplazada':b[2]==='po'?'Play-Off':'',qa:vq(b[0]),qb:vq(b[1]),t:''}));
@@ -5168,13 +5172,13 @@ const _adminV4=adminV;
 adminV=function(){let h=_adminV4();if(!isAdmin())return h;
  S.dj=S.dj||{lg:'',season:'',ji:'',url:'',ts:'',rows:[],busy:false,msg:'',rep:false,nt:false};const D=S.dj,cur=D.cur||{};
  const ks=Object.keys(SEASON_JOR).filter(k=>LINK_TEMPS.includes(k.split('|')[1]));
- const lgs=L.filter(l=>ks.some(k=>k.startsWith(l.i+'|')));
- const sea=[...new Set(ks.filter(k=>k.startsWith(D.lg+'|')).map(k=>k.split('|')[1]))].sort().reverse();
- const JJ=(SEASON_JOR[D.lg+'|'+D.season]||[]);
+ const lgs=L.filter(l=>ks.some(k=>k.startsWith(l.i+'|'))||CAL.some(e=>e.i===l.i));
+ const sea=[...new Set(ks.filter(k=>k.startsWith(D.lg+'|')).map(k=>k.split('|')[1]).concat(CAL.some(e=>e.i===D.lg)?['2026']:[]))].sort().reverse();
+ const JJ=djJors(D.lg,D.season);
  const opt=(v,t,s)=>`<option value="${esc(v)}" ${String(v)===String(s)?'selected':''}>${esc(t)}</option>`;
  const sel=`<select onchange="djSet('lg',this.value)" style="${DJS}">${opt('','Liga…',D.lg)}${lgs.map(l=>opt(l.i,l.n,D.lg)).join('')}</select><select onchange="djSet('season',this.value)" style="${DJS}" ${D.lg?'':'disabled'}>${opt('','Temporada…',D.season)}${sea.map(s=>opt(s,s,D.season)).join('')}</select><select onchange="djSet('ji',this.value)" style="${DJS}" ${D.season?'':'disabled'}>${opt('','Jornada…',D.ji)}${JJ.map((j,i)=>opt(i,j.lab||('Jornada '+j.n),D.ji)).join('')}</select>`;
  const rows=D.rows.length?`<div class="mu" style="margin:0 0 8px">Revisa el minuto de cada batalla (puedes corregirlo o llenarlo a mano) y guarda. Formato <b>1:23:45</b> o <b>23:45</b>.</div>${D.rows.map((r,i)=>`<div class="card" style="padding:10px 12px"><div class="row" style="gap:10px;align-items:center"><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(r.a)} vs ${esc(r.b)}</div><div class="mu" style="font-size:12px">${r.saved?'✓ Guardada':cur[r.key]?'Ya tiene link':'Sin link'}${r.tag?' · '+r.tag:''}${(()=>{const s=djSec(r.t),e=djEnd(D,s);return s==null?'':' · '+djFmt(s)+(e?' → '+djFmt(e):' → final')})()}</div></div><input value="${esc(r.t)}" placeholder="0:00" inputmode="numeric" oninput="S.dj.rows[${i}].t=this.value" style="width:96px;margin:0;text-align:center"></div></div>`).join('')}<label class="mu" style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" ${D.rep?'checked':''} onchange="S.dj.rep=this.checked" style="width:auto;margin:0"> Reemplazar links que ya existen</label><label class="mu" style="display:flex;gap:8px;align-items:center;margin:0 0 10px"><input type="checkbox" ${D.nt?'checked':''} onchange="S.dj.nt=this.checked" style="width:auto;margin:0"> Guardar también las que no tienen minuto (empiezan desde el inicio del directo)</label>${D.fin?`<div class="ok" style="margin:0 0 10px">${D.fail?'Se guardaron '+D.done+' y fallaron '+D.fail+(D.err?' ('+esc(String(D.err))+')':''):'✓ Guardadas '+D.done+' batallas.'}${D.sk&&(D.sk.sinT||D.sk.malT||D.sk.yaE)?' No guardé: '+[D.sk.sinT?D.sk.sinT+' sin minuto':'',D.sk.malT?D.sk.malT+' con minuto mal escrito':'',D.sk.yaE?D.sk.yaE+' que ya tenían link':''].filter(Boolean).join(', ')+'.':''}</div>`:''}<button class="btn sm" style="width:100%" onclick="djSave()" ${D.busy?'disabled':''}>${D.busy?'Guardando… '+(D.done||0):'Guardar en la jornada'}</button>`:'';
- const box=`<div class="sec"><span>Directo de una jornada</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Pega el link del directo y la lista de tiempos (la de la descripción o los comentarios del video, una línea por batalla, ej: <i>1:23:45 Nez vs Sweet Pain</i>; incluye también las líneas de declaraciones o previa). Cada batalla se guarda con su tramo: empieza en su minuto y se detiene donde empieza lo siguiente. Los directos de FMS Perú 2024 Pre-Finals y Finals ya traen su lista cargada: solo pega el link.</div>${sel}<input placeholder="Link del directo de YouTube" value="${esc(D.url)}" oninput="S.dj.url=this.value"><textarea rows="5" placeholder="0:12:30 Nez vs Sweet Pain&#10;0:31:10 Arkano vs Dani VK" oninput="S.dj.ts=this.value">${esc(D.ts)}</textarea><button class="btn sm" style="width:100%" onclick="djPrep()" ${D.busy?'disabled':''}>Preparar jornada</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>${rows}`;
+ const box=`<div class="sec"><span>Directo de una jornada</span></div><div class="card"><div class="mu" style="margin:0 0 10px">Pega el link del directo y la lista de tiempos (la de la descripción o los comentarios del video, una línea por batalla, ej: <i>1:23:45 Nez vs Sweet Pain</i>; incluye también las líneas de declaraciones o previa). Cada batalla se guarda con su tramo: empieza en su minuto y se detiene donde empieza lo siguiente. Sirve también para las jornadas de 2026 (elige la temporada 2026), incluso si el directo está en vivo ahora: pega el link, marca «Guardar también las que no tienen minuto» y guarda; cuando termine, vuelve, pon los minutos y marca «Reemplazar links que ya existen». Los directos de FMS Perú 2024 Pre-Finals y Finals ya traen su lista cargada: solo pega el link.</div>${sel}<input placeholder="Link del directo de YouTube" value="${esc(D.url)}" oninput="S.dj.url=this.value"><textarea rows="5" placeholder="0:12:30 Nez vs Sweet Pain&#10;0:31:10 Arkano vs Dani VK" oninput="S.dj.ts=this.value">${esc(D.ts)}</textarea><button class="btn sm" style="width:100%" onclick="djPrep()" ${D.busy?'disabled':''}>Preparar jornada</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>${rows}`;
  return h.replace('<div class="sec"><span>Videos: pegar links y asignar solo</span></div>',box+'<div class="sec"><span>Videos: pegar links y asignar solo</span></div>')};
 
 /* ===== Calendario editable (solo tú y quien tenga el permiso) + inicio con cuenta atrás y progreso ===== */
