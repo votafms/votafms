@@ -3930,12 +3930,25 @@ function adminV(){
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button><h1 class="pg">Panel de administrador</h1>
  <div class="sec"><span>Monedas y tienda</span></div>
 <div class="card"><div class="mu" style="margin:0 0 10px;font-size:13px">Reset de la tienda: quita a todos los usuarios sus colores de app, diseños de tarjeta y planilla, atuendos, marcos y títulos. A los usuarios normales se les devuelven sus monedas gastadas; linexs17 conserva exactamente el saldo que tiene. Los usuarios que ya entraron a la app se resetean solos al iniciar sesión; este botón resetea a todos los demás de una vez.</div><button class="btn s" onclick="adminResetShop()" style="margin-bottom:6px">🎤 Resetear tienda de todos los usuarios</button>${S.admCoinMsg?`<div class="mu" style="font-size:13px;margin-top:4px">${esc(S.admCoinMsg)}</div>`:''}</div>
+ <div class="card"><b style="display:block;margin-bottom:4px">🎁 Regalar monedas / ruleta libre</b><div class="mu" style="margin:0 0 10px;font-size:13px">Escribe el usuario (sin @). «Regalar» suma las monedas a su saldo. «Ruleta libre» le deja girar sin esperar las 12 horas. Para abrir sobres solo necesita monedas.</div><input id="agu" class="alq" placeholder="Usuario, por ejemplo linexs17" autocapitalize="none" autocomplete="off"><input id="agn" class="alq" type="number" inputmode="numeric" min="1" placeholder="Cantidad de monedas" style="margin-top:0"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn s" style="flex:1" onclick="admGift()">🪙 Regalar monedas</button><button class="btn s" style="flex:1" onclick="admRlFree(true)">🎡 Ruleta libre: activar</button><button class="btn s" style="flex:1" onclick="admRlFree(false)">Ruleta libre: quitar</button></div>${S.admGMsg?`<div class="mu" style="font-size:13px;margin-top:8px">${esc(S.admGMsg)}</div>`:''}</div>
  <div class="sec"><span>Comentarios de usuarios</span><span>${list?list.length:'…'}</span></div>
  ${list===null?'<div class="mu" style="text-align:center;padding:20px">Cargando…</div>':list.length?list.map(c=>`<div class="card"><div class="row" style="margin-bottom:8px"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(c.u||'anónimo')}</b><span class="mu">${esc(c.d||'')}</span></div><div style="white-space:pre-wrap;word-break:break-word">${esc(c.t||'')}</div><button class="btn s sm" style="color:#FF6B7A;margin-top:12px" onclick="adminDel('${esc(c.id)}')">Eliminar</button></div>`).join(''):'<div class="card mu" style="text-align:center">Aún no hay comentarios.</div>'}
  <button class="btn s" onclick="go('admin')">Actualizar</button>`}
 async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?'))return;try{await B.deleteComment(id);S.adm=(S.adm||[]).filter(c=>c.id!==id)}catch(e){S.msgP='No se pudo eliminar el comentario.'}R()}
 
 /* ===== Admin: reset de tienda de todos los usuarios ===== */
+
+/* ===== Admin: regalar monedas y activar ruleta libre a un usuario ===== */
+async function admFindUser(){const un=((document.getElementById('agu')||{}).value||'').trim().toLowerCase().replace(/^@/,'');if(!un){S.admGMsg='Escribe el usuario.';R();return null}
+ S.admGMsg='Buscando…';R();const us=await B.listUsers(),u=us.find(x=>String(x.u||'').toLowerCase()===un);if(!u){S.admGMsg='No encontré al usuario «'+un+'».';R();return null}return u}
+async function admApply(u,patch,okMsg){const old=u.shop&&typeof u.shop==='object'?u.shop:{own:[],spent:0,v:2},nx={...old,...patch(old)};
+ if(S.me&&u.uid===S.me.uid){const ok=await shopSave(nx,'No se pudo guardar.');S.admGMsg=ok?okMsg:'No se pudo guardar.';R();return}
+ await B.updateUser(u.uid,{shop:nx});S.admGMsg=okMsg+' (si esa cuenta está abierta ahora, que recargue la app para verlo).';R()}
+async function admGift(){if(!isAdmin())return;try{const n=Math.floor(+((document.getElementById('agn')||{}).value)||0);if(!(n>=1&&n<=1000000)){S.admGMsg='Pon una cantidad entre 1 y 1.000.000.';R();return}
+ const u=await admFindUser();if(!u)return;if(!confirm('¿Regalar '+n+' monedas a '+u.u+'?'))return;
+ await admApply(u,o=>({bonus:Math.max(0,+(o.bonus)||0)+n}),'✓ Le regalaste '+n+' monedas a '+u.u+'.')}catch(e){S.admGMsg='Error: '+(e&&e.message||'desconocido');R()}}
+async function admRlFree(on){if(!isAdmin())return;try{const u=await admFindUser();if(!u)return;
+ await admApply(u,()=>({rlFree:!!on}),on?'✓ Ruleta libre activada para '+u.u+': puede girar sin esperar.':'✓ Ruleta libre quitada a '+u.u+'. Vuelve la espera de 12 horas.')}catch(e){S.admGMsg='Error: '+(e&&e.message||'desconocido');R()}}
 async function adminResetShop(){
  if(!isAdmin())return;
  if(!confirm('¿Resetear la tienda de TODOS los usuarios? Se quitan colores, diseños de tarjeta y planilla, atuendos, marcos y títulos. Los usuarios normales recuperan sus monedas gastadas y linexs17 conserva su saldo actual.'))return;
@@ -6391,7 +6404,7 @@ function shopScene(){const ac='var(--ac,#22c55e)',stripes=Array.from({length:8},
 `;document.head.appendChild(st)}
 /* ===== Ruleta de monedas: 1 giro cada 12 horas (apartado Ruleta en Comunidad) ===== */
 const RL_P=[50,75,100,150,200,300],RL_MS=12*3600*1000,RL_COL=['#ef4444','#f59e0b','#22c55e','#06b6d4','#6366f1','#ec4899'];
-const rlLeft=()=>{const a=+shopS().spinAt||0;return Math.min(RL_MS,Math.max(0,a+RL_MS-Date.now()))};
+const rlLeft=()=>{if(shopS().rlFree)return 0;const a=+shopS().spinAt||0;return Math.min(RL_MS,Math.max(0,a+RL_MS-Date.now()))};
 const rlFmt=ms=>{const s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,z=n=>String(n).padStart(2,'0');return z(h)+':'+z(m)+':'+z(x)};
 function rlIdx(){try{const u=new Uint32Array(1);do{crypto.getRandomValues(u)}while(u[0]>=4294967292);return u[0]%6}catch(e){return Math.floor(Math.random()*6)}}
 function rlSvg(){const R=98,pt=(a,r)=>{const t=(a-90)*Math.PI/180;return [(r*Math.cos(t)).toFixed(2),(r*Math.sin(t)).toFixed(2)]};
