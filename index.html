@@ -2407,7 +2407,7 @@ function boostLeft(){const t=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000))
 function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const b=COIN_L[v.l]||40;return boostAt(v.ts)?b*2:b}
 /* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
    minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
-const VOTE_RULES={minGap:45,perDay:12,from:Date.parse('2026-11-12T00:00:00-04:00')};
+const VOTE_RULES={minGap:45,perDay:20,from:Date.parse('2026-11-12T00:00:00-04:00')};
 function coinPass(list){
  const out=new Map();let prev=-1e15,day='',cnt=0;
  [...(list||[])].filter(v=>v&&!v.free).sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(v=>{
@@ -2575,7 +2575,7 @@ function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
 function shopCard(it,i){const own=shopOwns(it.id),r=shopRar(it.p);
  return `<div class="shi${own?' own':''}${it.k==='boost'?' wide':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}<span class="shrar r-${r[0]}">${r[1]}</span>${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b><p>${esc(it.d)}</p>${shopBtn(it)}</div></div>`}
 function shopHowH(){const r=[['ws','World Series',70],['in','Internacional',60],['es','España',50]],lg=i=>L.find(x=>x.i===i);
- return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+40</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de 12 batallas con monedas al día. Deja al menos 45 segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\"><i class=\"coin\"></i> Extra: mientras votas, cada 3:30 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 7 segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: 140).</div></div>`}
+ return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+40</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de 20 batallas con monedas al día. Deja al menos 45 segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\"><i class=\"coin\"></i> Extra: mientras votas, cada 3:30 minutos sale una moneda voladora (5, 10, 15 o 30 monedas). Tócala en 7 segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: 140).</div></div>`}
 function tiendaV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
@@ -3690,6 +3690,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-14T10:40:00-04:00'),text:'Más batallas con monedas cada día 🪙: el límite sube de 12 a 20 batallas por día. Si hoy o algún día ya habías votado más de 12, esas batallas extra ahora también te dan monedas, hasta llegar a 20. Se siguen pidiendo 45 segundos entre un voto y el siguiente.'},
  {ts:Date.parse('2026-11-14T10:20:00-04:00'),text:'Contador del Boost más claro ⚡: ahora el tiempo que te queda se ve como «3 horas», «3 horas y 25 min» o «1 día y 3 horas» en vez de minutos y segundos pegados.'},
  {ts:Date.parse('2026-11-14T10:00:00-04:00'),text:'Novedades de la tienda 🛍️: llegaron 5 artículos nuevos. Sonido Corneta (100), Lluvia de monedas (250), Nombre dorado animado (400), Marco holográfico (500) y Boost x2 de 3 horas (600). Además se quitaron los diseños de tarjeta de la tienda: si habías comprado alguno, te devolvimos las monedas automáticamente.'},
  {ts:Date.parse('2026-11-14T09:30:00-04:00'),text:'Álbum: llegó FMS México 2019 con 10 cartas nuevas 🇲🇽. Legendaria: Aczino. Épica: Jony Beltrán. Raras: Jack Adrenalina, Lobo Estepario, Rapder y RC. Comunes: Yoiker, Mcklopedia, Potencia y Zticma. Además ahora puedes abrir 10 sobres de una vez por 2000 monedas, y en las cartas solo se muestra el año.'},
