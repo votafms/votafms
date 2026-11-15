@@ -6696,7 +6696,9 @@ async function betsClaim(){
   if(!inL&&id in miss&&miss[id]===undefined)continue;
   const d=inL||miss[id];let pay=null;
   if(d){if(d.st==='void'){pay=o.m;back+=o.m}else if(d.st==='done'&&(d.w==='a'||d.w==='b')){pay=d.w===o.s?betPay(o.m,o.x):0;if(pay>0)won+=pay;else lost++}}
-  else if(now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
+  /* Solo devolver monedas si se confirmó en el servidor que la batalla no existe (miss[id]===null).
+     Si miss[id]===undefined significa que la consulta falló o no se hizo → no tocar nada. */
+  else if(id in miss&&miss[id]===null&&now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
   if(pay==null)continue;nb[id]={...o,d:1,r:pay};add+=pay;ch=true}
  if(!ch){S.betClaiming=false;return}
  for(const id in nb){if(nb[id].d&&now-(+nb[id].ts||0)>30*864e5)delete nb[id]}
