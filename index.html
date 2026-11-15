@@ -4195,6 +4195,76 @@ async function admGift(){if(!isAdmin())return;try{const n=Math.floor(+((document
  await admApply(u,o=>({bonus:Math.max(0,+(o.bonus)||0)+n}),'✓ Le regalaste '+n+' monedas a '+u.u+'.')}catch(e){S.admGMsg='Error: '+(e&&e.message||'desconocido');R()}}
 async function admRlFree(on){if(!isAdmin())return;try{const u=await admFindUser();if(!u)return;
  await admApply(u,()=>({rlFree:!!on}),on?'✓ Ruleta libre activada para '+u.u+': puede girar sin esperar.':'✓ Ruleta libre quitada a '+u.u+'. Vuelve la espera de 12 horas.')}catch(e){S.admGMsg='Error: '+(e&&e.message||'desconocido');R()}}
+/* ===== Admin: sorteo de monedas (IDs de usuarios, tómbola con bolas, entrega inmediata) ===== */
+function sorParse(t){const ids=[];let bad=0;String(t||'').split(/[\n,;]+/).forEach(c=>{if(!c.trim())return;const d=c.replace(/\D/g,'');if(d.length>=9&&d.length%9===0){for(let i=0;i<d.length;i+=9){const x=d.slice(i,i+9);if(!ids.includes(x))ids.push(x)}}else bad++});return {ids,bad}}
+function sorRnd(n){const a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;do{crypto.getRandomValues(a)}while(a[0]>=lim);return a[0]%n}
+function sorCount(){const p=sorParse((S.sor||{}).ids);return p.ids.length+' participante'+(p.ids.length===1?'':'s')+(p.bad?' · '+p.bad+' línea'+(p.bad===1?'':'s')+' no válida'+(p.bad===1?'':'s'):'')}
+function sorIn(v){S.sor.ids=v;const e=document.getElementById('sorn');if(e)e.textContent=sorCount()}
+function sorNew(){S.sor.won=[];S.sor.msg='';R()}
+function sorteoV(){const D=S.sor||(S.sor={ids:'',amt:'',won:[],msg:'',busy:false});
+ return `<div class="card"><b style="display:block;margin-bottom:8px">🎰 Sorteo de monedas</b><textarea id="sorids" class="alq" rows="5" placeholder="IDs de los participantes, uno por línea" oninput="sorIn(this.value)" style="resize:vertical">${esc(D.ids)}</textarea><div class="mu" id="sorn" style="font-size:13px;margin:0 0 8px">${sorCount()}</div><input class="alq" type="number" inputmode="numeric" min="1" placeholder="Monedas para el ganador" value="${esc(D.amt)}" oninput="S.sor.amt=this.value" style="margin-top:0"><button class="btn" style="width:100%" ${D.busy?'disabled':''} onclick="sorGo()">🎰 Sortear</button>${D.msg?`<div class="mu" style="font-size:13px;margin-top:8px">${esc(D.msg)}</div>`:''}${D.won.length?`<div style="margin-top:12px">${D.won.map(x=>`<div class="row" style="gap:8px;padding:8px 0;border-top:1px solid rgba(255,255,255,.08)"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(x.u)}</b><span style="white-space:nowrap">${x.amt.toLocaleString('es')} <i class="coin"></i> ${x.ok?'✓':'⚠️'}</span></div>`).join('')}<button class="btn s sm" style="margin-top:8px" onclick="sorNew()">Nuevo sorteo</button></div>`:''}</div>`}
+async function sorGo(){if(!isAdmin())return;const D=S.sor;if(!D||D.busy)return;
+ const p=sorParse(D.ids),amt=Math.floor(+D.amt||0),avail=p.ids.filter(x=>!D.won.some(w=>w.id===x));
+ if(!p.ids.length){D.msg='Pega los IDs de los participantes.';R();return}
+ if(!avail.length){D.msg='Todos ya ganaron. Pulsa «Nuevo sorteo».';R();return}
+ if(!(amt>=1&&amt<=1000000)){D.msg='Pon una cantidad entre 1 y 1.000.000.';R();return}
+ D.busy=true;D.msg='Preparando…';R();
+ try{const us=await B.listUsersFull(),by={};us.forEach(u=>{by[pid(u.uid)]=u});
+  const ok=avail.filter(x=>by[x]),miss=avail.filter(x=>!by[x]);
+  D.busy=false;D.msg=miss.length?'No encontré '+miss.length+' ID'+(miss.length===1?'':'s')+': '+miss.slice(0,4).map(fmtPid).join(', ')+(miss.length>4?'…':''):'';
+  if(!ok.length){D.msg='Ninguno de esos IDs existe.';R();return}
+  R();sorShow(by[ok[sorRnd(ok.length)]],amt,ok.length)
+ }catch(e){D.busy=false;D.msg='Error: '+(e&&e.message||'desconocido');R()}}
+async function sorPay(w,amt){try{if(S.me&&w.uid===S.me.uid&&S.me.shop)w.shop=S.me.shop;
+ const old=w.shop&&typeof w.shop==='object'?w.shop:{own:[],spent:0,v:2},nx={...old,bonus:Math.max(0,+(old.bonus)||0)+amt};
+ if(S.me&&w.uid===S.me.uid){if(!await shopSave(nx,'No se pudo guardar.'))return false}else await B.updateUser(w.uid,{shop:nx});
+ w.shop=nx;return true}catch(e){return false}}
+async function sorDeliver(w,amt){const D=S.sor;let rec=D.won.find(x=>x.uid===w.uid&&!x.ok);if(!rec){rec={uid:w.uid,id:pid(w.uid),u:w.u,amt,ok:false};D.won.push(rec)}
+ const ok=await sorPay(w,amt);rec.ok=ok;S.sorRetry=ok?null:{w,amt};const st=document.getElementById('sorst');
+ if(st){if(ok){st.innerHTML='✓ '+amt.toLocaleString('es')+' monedas entregadas <i class="coin"></i>';try{SFX.coin()}catch(e){}}else st.innerHTML='No se pudieron entregar. <button class="btn s sm" onclick="sorRetry()">Reintentar</button>'}
+ R()}
+function sorRetry(){const r=S.sorRetry;if(!r)return;const st=document.getElementById('sorst');if(st)st.textContent='Entregando monedas…';sorDeliver(r.w,r.amt)}
+function sorClose(){const e=document.getElementById('sorov');if(e)e.remove()}
+function sorConfetti(el){const C=['#fde047','#f59e0b','#ef4444','#22c55e','#3b82f6','#ec4899'];for(let i=0;i<40;i++){const c=document.createElement('i');c.className='sorcf';c.style.cssText='left:'+Math.random()*100+'%;background:'+C[i%6]+';animation-duration:'+(2+Math.random()*1.8)+'s;animation-delay:'+Math.random()*.6+'s';el.appendChild(c);setTimeout(()=>c.remove(),4600)}}
+function sorShow(w,amt,n){sorClose();
+ const rich=!(window.VCFG&&window.VCFG.noAnim),el=document.createElement('div');el.id='sorov';el.className='sorov';
+ el.innerHTML=`<div class="sorbox"><div class="sort">Sorteo · <i class="coin"></i> ${amt.toLocaleString('es')}</div><canvas id="sorcv" width="360" height="410"></canvas><div class="sorres" id="sorres"></div>${rich?'<button class="btn s sm" id="sorsk">Saltar</button>':''}</div>`;
+ document.body.appendChild(el);
+ const cv=document.getElementById('sorcv'),cx=cv.getContext('2d'),CX=180,CY=165,R0=148,m=Math.min(Math.max(n,2),30),r=m>20?15:17,
+  COL=['#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7','#ec4899','#14b8a6','#eab308'],bl=[],win=Math.floor(Math.random()*m);
+ for(let i=0;i<m;i++){const a=Math.random()*6.283,d=Math.sqrt(Math.random())*(R0-r-4);bl.push({x:CX+Math.cos(a)*d,y:CY+Math.sin(a)*d,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6,c:COL[i%8],n:i+1,s:1})}
+ const W=bl[win],T_MIX=3200,T_SET=4600,T_PULL=5500,T_DROP=6300;let t0=performance.now(),revealed=false,pf=null;
+ function step(t){const mix=t<T_MIX,g=mix?.12:.5;
+  bl.forEach(b=>{if(b===W&&t>=T_SET)return;
+   if(mix){const dx=b.x-CX,dy=b.y-CY;b.vx+=-dy*.004+(Math.random()-.5)*.9;b.vy+=dx*.004+(Math.random()-.5)*.9-.12}
+   b.vy+=g;b.vx*=mix?.995:.985;b.vy*=mix?.995:.985;const sp=Math.hypot(b.vx,b.vy);if(sp>9){b.vx*=9/sp;b.vy*=9/sp}
+   b.x+=b.vx;b.y+=b.vy;const dx=b.x-CX,dy=b.y-CY,d=Math.hypot(dx,dy),lim=R0-r;
+   if(d>lim){const nx=dx/d,ny=dy/d,dot=b.vx*nx+b.vy*ny;if(dot>0){b.vx-=1.8*dot*nx;b.vy-=1.8*dot*ny}b.x=CX+nx*lim;b.y=CY+ny*lim}});
+  for(let i=0;i<m;i++)for(let j=i+1;j<m;j++){const a=bl[i],b=bl[j];if((a===W||b===W)&&t>=T_SET)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||.01,mn=2*r;
+   if(d<mn){const nx=dx/d,ny=dy/d,p=(mn-d)/2;a.x-=nx*p;a.y-=ny*p;b.x+=nx*p;b.y+=ny*p;const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx+=rv*nx;a.vy+=rv*ny;b.vx-=rv*nx;b.vy-=rv*ny}}}}
+ function ball(b,glow){const rr=r*b.s;cx.save();if(glow){cx.shadowColor='#fde047';cx.shadowBlur=26}
+  cx.fillStyle=b.c;cx.beginPath();cx.arc(b.x,b.y,rr,0,7);cx.fill();cx.restore();
+  const hg=cx.createRadialGradient(b.x-rr*.35,b.y-rr*.4,rr*.1,b.x,b.y,rr);hg.addColorStop(0,'rgba(255,255,255,.65)');hg.addColorStop(.5,'rgba(255,255,255,0)');hg.addColorStop(1,'rgba(0,0,0,.28)');
+  cx.fillStyle=hg;cx.beginPath();cx.arc(b.x,b.y,rr,0,7);cx.fill();
+  cx.fillStyle='#fff';cx.font='900 '+Math.round(rr*.82)+'px sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(b.n,b.x,b.y+1)}
+ function draw(t){cx.clearRect(0,0,360,410);
+  cx.fillStyle='rgba(255,255,255,.1)';cx.fillRect(CX-22,CY+R0-6,44,50);cx.strokeStyle='rgba(255,255,255,.4)';cx.lineWidth=3;cx.beginPath();cx.moveTo(CX-22,CY+R0-4);cx.lineTo(CX-22,CY+R0+44);cx.moveTo(CX+22,CY+R0-4);cx.lineTo(CX+22,CY+R0+44);cx.stroke();
+  const gr=cx.createRadialGradient(CX-40,CY-50,20,CX,CY,R0);gr.addColorStop(0,'rgba(255,255,255,.18)');gr.addColorStop(1,'rgba(255,255,255,.04)');
+  cx.fillStyle=gr;cx.beginPath();cx.arc(CX,CY,R0,0,7);cx.fill();cx.lineWidth=4;cx.strokeStyle='rgba(255,255,255,.55)';cx.stroke();
+  bl.forEach(b=>{if(b!==W)ball(b)});ball(W,t>=T_DROP)}
+ function reveal(){if(revealed)return;revealed=true;try{SFX.notif()}catch(e){}
+  const sk=document.getElementById('sorsk');if(sk)sk.remove();const res=document.getElementById('sorres');if(!res)return;
+  res.innerHTML=`<div class="sorw">${esc(w.u)}</div><div class="sorid">ID ${fmtPid(pid(w.uid))}</div><div class="sorst" id="sorst">Entregando monedas…</div><div class="sorbt"><button class="btn" onclick="sorClose()">Cerrar</button><button class="btn s" onclick="sorClose();sorGo()">Sortear otra vez</button></div>`;
+  sorConfetti(el);sorDeliver(w,amt)}
+ function frame(now){if(!document.body.contains(el))return;const t=now-t0;step(t);
+  if(t>=T_SET){pf=pf||{x:W.x,y:W.y};const by=CY+R0-r;
+   if(t<T_PULL){const k=(t-T_SET)/(T_PULL-T_SET),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;W.x=pf.x+(CX-pf.x)*e;W.y=pf.y+(by-pf.y)*e;W.s=1}
+   else{const k=Math.min(1,(t-T_PULL)/(T_DROP-T_PULL)),e=k*k*(3-2*k);W.x=CX;W.y=by+(370-by)*e;W.s=1+.8*e}}
+  draw(t);if(t>=T_DROP)reveal();requestAnimationFrame(frame)}
+ const skip=()=>{for(let i=0;i<150;i++)step(T_SET+1);t0=performance.now()-T_DROP-1};
+ const sk=document.getElementById('sorsk');if(sk)sk.onclick=skip;if(!rich)skip();
+ requestAnimationFrame(frame)}
+{const st=document.createElement('style');st.textContent='.sorov{position:fixed;inset:0;z-index:99999;background:rgba(5,6,12,.95);display:flex;align-items:center;justify-content:center;overflow:auto}.sorbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;width:min(100%,400px)}.sorbox canvas{width:min(92vw,340px);height:auto}.sort{font-weight:900;font-size:18px;color:#fff}.sorres{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.sorw{font-size:28px;font-weight:900;color:#fde047;text-align:center;word-break:break-word}.sorid,.sorst{color:#fff;font-size:14px;text-align:center}.sorbt{display:flex;gap:8px;width:100%;margin-top:8px}.sorbt .btn{flex:1}.sorcf{position:fixed;top:-20px;width:9px;height:14px;border-radius:2px;z-index:100000;pointer-events:none;animation:sorfall linear forwards}@keyframes sorfall{to{transform:translateY(110vh) rotate(720deg)}}';document.head.appendChild(st)}
 async function adminRefundCards(){if(!isAdmin())return;
  if(!confirm('¿Devolver las monedas de los diseños de tarjeta a TODOS los usuarios que los compraron y quitarles el diseño? Los usuarios que entren después se devuelven solos al iniciar sesión.'))return;
  S.admCoinMsg='Cargando usuarios…';R();
@@ -5462,16 +5532,17 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
 /* Panel de administrador ordenado en pestañas (solo agrupa lo que ya existe) */
-const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['col','👥 Equipo'],['com','💬 Comentarios']];
+const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['col','👥 Equipo'],['com','💬 Comentarios']];
 function admTab(k){S.admTab=k;R()}
 const _adminV6=adminV;
 adminV=function(){const h=_adminV6();if(!isAdmin())return h;
- const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[]};let cur=null;
+ const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[]};let cur=null;
  const kind=s=>/monedas/i.test(s)?'coins':/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
  kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col'||m==='coins')return}}if(cur===null)head.push(k);else g[cur].push(k)});
  const tab=ADM_TABS.some(x=>x[0]===S.admTab)?S.admTab:'cal';
  const bar=`<div class="seg" style="flex-wrap:wrap;gap:4px">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')" style="font-size:12px;padding:9px 6px;flex:1 1 30%">${x[1]}</button>`).join('')}</div>`;
  try{if(typeof betAdminV==='function'){const t2=document.createElement('template');t2.innerHTML=betAdminV();g.bets=[...t2.content.children]}}catch(e){}
+ try{if(typeof sorteoV==='function'&&tab==='sorteo'){const t3=document.createElement('template');t3.innerHTML=sorteoV();g.sorteo=[...t3.content.children]}}catch(e){}
  return head.map(k=>k.outerHTML).join('')+bar+(g[tab].length?g[tab].map(k=>k.outerHTML).join(''):'<div class="card mu" style="text-align:center">Nada por aquí todavía.</div>')};
 const _calV=calV;
 calV=function(){return _calV()+((S.me&&!S.admin&&S.collabCal)?calEditV():'')};
