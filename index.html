@@ -2192,14 +2192,14 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
 @keyframes xmA{0%,100%{opacity:.25}50%{opacity:1}}
 .xm-s{position:absolute;top:18px;font-size:18px;animation:xmT 2.2s ease-in-out infinite}.xm-s.a{left:8px}.xm-s.b{right:8px;animation-delay:-1.1s}
 @keyframes xmT{0%,100%{transform:scale(.8) rotate(-8deg);opacity:.6}50%{transform:scale(1.15) rotate(8deg);opacity:1}}
-.sn{position:absolute;top:-10px;width:var(--sz,4px);height:var(--sz,4px);border-radius:50%;background:#fff;opacity:.85;box-shadow:0 0 6px rgba(255,255,255,.8);animation:xmF var(--d,9s) linear var(--dl,0s) infinite}
+.sn{position:absolute;top:-10px;width:var(--sz,4px);height:var(--sz,4px);border-radius:50%;background:#fff;opacity:.95;box-shadow:0 0 0 1px rgba(125,175,230,.65),0 0 6px rgba(120,180,240,.8);animation:xmF var(--d,9s) linear var(--dl,0s) infinite}
 @keyframes xmF{to{transform:translate(var(--dx,0px),105vh)}}
 html.noanim .xmL .sn{display:none}
-.luzv{position:relative;overflow:hidden;width:100%;max-width:260px;height:92px;border-radius:18px;background:linear-gradient(135deg,#DC2626,#15803D);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+.luzv{position:relative;overflow:hidden;width:100%;max-width:260px;height:92px;border-radius:18px;background:linear-gradient(160deg,#FFFFFF,#DCEEFF);border:1px solid #BFDBFE;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#0F172A;text-align:center}
 .luzv .sn{width:4px;height:4px;top:-6px;animation:xmFp var(--d) linear var(--dl) infinite}
 @keyframes xmFp{to{transform:translateY(100px)}}
-.luzv .lzb{position:absolute;left:0;right:0;top:0;height:14px;background:radial-gradient(circle at 10px 7px,#FACC15 0 4px,transparent 5px) 0 0/30px 14px repeat-x;animation:xmA 1.2s ease-in-out infinite}
-.luzv b{font-size:17px;font-weight:900;text-shadow:0 2px 6px rgba(0,0,0,.4)}.luzv em{font-style:normal;font-size:11.5px;opacity:.92;margin-top:2px}
+.luzv .lzb{position:absolute;left:0;right:0;top:0;height:14px;background:radial-gradient(circle at 8px 7px,#EF4444 0 4px,transparent 5px) 0 0/30px 14px repeat-x,radial-gradient(circle at 23px 7px,#22C55E 0 4px,transparent 5px) 0 0/30px 14px repeat-x;animation:xmA 1.2s ease-in-out infinite}
+.luzv b{font-size:17px;font-weight:900;color:#0F172A}.luzv em{font-style:normal;font-size:11.5px;color:#334E78;margin-top:2px}
 .shdv{display:flex;align-items:center;gap:12px}.shdv>span{font-size:54px;filter:drop-shadow(0 0 14px rgba(56,189,248,.9));animation:xmT 2.4s ease-in-out infinite}
 .shdv b{display:block;font-size:20px;font-weight:900;background:linear-gradient(90deg,#7DD3FC,#A78BFA);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}.shdv em{font-style:normal;font-size:12px;color:var(--mu)}
 .stk-ch.shield{margin-top:8px;border-color:rgba(56,189,248,.6);background:rgba(56,189,248,.12)}
@@ -2492,13 +2492,13 @@ SHOP_BASE.push({id:'suit_familia',k:'suit',n:'Traje Noche en Familia',d:'Edició
 SHOP_BASE.push({id:'pl_campeones',k:'pack',n:'Noche de Campeones',d:'Edición limitada: planilla oscura con bordes dorados animados, destellos al seleccionar celdas y corona al enviar tus puntajes.',p:1200,nw:1,until:PACK_LIMIT_END,pl:'campeones'});
 const LUZ_END=Date.parse('2026-12-06T00:00:00-04:00');
 const luzLive=()=>Date.now()<LUZ_END;
-SHOP_BASE.push({id:'th_luz',k:'color',n:'Luces de Diciembre',d:'Edición limitada (21 días): la app en rojo y verde con nieve cayendo, luces de colores parpadeando arriba, estrellas que brillan y botones con destellos dorados. Los demás ven tu tarjeta de perfil en rojo y verde.',p:950,nw:1,until:LUZ_END,th:'luz'});
+SHOP_BASE.push({id:'th_luz',k:'color',n:'Luces de Diciembre',d:'Edición limitada (21 días): toda la app se vuelve blanca, con nieve cayendo, luces de colores parpadeando arriba, estrellas y dulces que brillan y botones con destellos de hielo. Los demás ven tu tarjeta de perfil en azul hielo.',p:950,nw:1,until:LUZ_END,th:'luz'});
 SHOP_BASE.push({id:'fx_graffiti',k:'fx',n:'Graffiti al votar',d:'Al enviar tus puntajes, un spray pinta en la pantalla el resultado que diste, con trazos, gotas de pintura y salpicaduras.',p:260,nw:1,eq:['fx','fx_graffiti'],ic:'🎨'});
 SHOP_BASE.push({id:'shield',k:'boost',n:'Escudo de racha',d:'Si un día no entras, el escudo se gasta solo y tu racha y tu mascota no se pierden. Es de un solo uso, funciona con un día perdido y puedes guardar hasta 3. Se suma a la oportunidad gratis de cada 10 días: primero se usa esa y luego el escudo.',p:450,nw:1,sh:1});
 let _shopAll=null;
 function shopAll(){if(_shopAll)return _shopAll;const a=[...SHOP_BASE],P=(id,d)=>SHOP_PRICE[id]||d;
  THEMES.filter(t=>t.id!=='co'&&t.id!=='luz').forEach(t=>a.push({id:'th_'+t.id,k:'color',n:t.n,d:'Cambia el color de toda la app. Los demás ven tu tarjeta de perfil con este color.',p:P('th_'+t.id,100),th:t.id}));
- PL_D.forEach(d=>a.push({id:'pl_'+d.id,k:'pack',n:d.n,d:'Diseño para tu planilla de votación. Solo cambia cómo se ve, no tus puntos.',p:P('pl_'+d.id,150),pl:d.id}));
+ PL_D.filter(d=>d.id!=='campeones').forEach(d=>a.push({id:'pl_'+d.id,k:'pack',n:d.n,d:'Diseño para tu planilla de votación. Solo cambia cómo se ve, no tus puntos.',p:P('pl_'+d.id,150),pl:d.id}));
  a.forEach(it=>{it.p0=it.p;if(!it.nw&&!(it.id in NEW_PRICE))it.p=Math.round(it.p*1.1)});_shopAll=a;return a}
 const SHOP={find:f=>shopAll().find(f),filter:f=>shopAll().filter(f)};
 const shopP=id=>{const it=SHOP.find(x=>x.id===id);return it?it.p:0};
@@ -2707,7 +2707,7 @@ function suitBanner(){const it=SHOP.find(x=>x.id==='suit_familia'),own=shopOwns(
 function plcBurst(){if(document.documentElement.classList.contains('noanim'))return;const w=document.createElement('div');w.className='plc-burst';let h='<div class="plc-flash"></div><span class="plc-crown-big">👑</span>';const em=['✨','⭐','✦','🪙','✨','💛'];for(let i=0;i<22;i++){const a=i/22*Math.PI*2+Math.random()*.3,r=90+Math.random()*130;h+=`<span class="plc-sp" style="--dx:${Math.round(Math.cos(a)*r)}px;--dy:${Math.round(Math.sin(a)*r-40)}px;--rot:${Math.round(Math.random()*360-180)}deg;animation-delay:${Math.round(Math.random()*120)}ms;font-size:${12+Math.round(Math.random()*12)}px">${em[i%em.length]}</span>`}w.innerHTML=h;document.body.appendChild(w);setTimeout(()=>w.remove(),1900)}
 function plMiniH(id){const d=PL_D.find(x=>x.id===id);if(!d)return '🏆';return `<div class="${plCls(d)}" style="${plVars(d)}"><div class="plv"><div class="plvh"><span>${esc(d.n)}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div>`}
 function luzBanner(){const it=SHOP.find(x=>x.id==='th_luz');if(!it)return '';const own=shopOwns(it.id),d=Math.max(1,Math.ceil((LUZ_END-Date.now())/864e5));
- return `<button class="suitb" style="--f1:#EF4444;--f2:#22C55E;border-color:rgba(239,68,68,.55);background:linear-gradient(135deg,rgba(220,38,38,.24),rgba(21,128,61,.2))" onclick="shopOpen('th_luz')"><div class="suitm"><i class="tsw" style="background:linear-gradient(135deg,#DC2626,#15803D);display:block;width:100%;height:100%;border-radius:14px"></i></div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Luces de Diciembre</b><span>Color con nieve, luces y estrellas</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
+ return `<button class="suitb" style="--f1:#7DD3FC;--f2:#FFFFFF;border-color:rgba(125,211,252,.7);background:linear-gradient(135deg,rgba(186,230,253,.35),rgba(255,255,255,.12))" onclick="shopOpen('th_luz')"><div class="suitm"><i class="tsw" style="background:linear-gradient(135deg,#FFFFFF,#7DD3FC);display:block;width:100%;height:100%;border-radius:14px"></i></div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Luces de Diciembre</b><span>App blanca con nieve, luces y estrellas</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
 function packLimitBanner(){const it=SHOP.find(x=>x.id==='pl_campeones');if(!it)return '';const own=shopOwns(it.id),d=Math.max(1,Math.ceil((PACK_LIMIT_END-Date.now())/864e5));
  return `<button class="suitb" style="--f1:#EAB308;--f2:#FDE047;border-color:rgba(234,179,8,.55);background:linear-gradient(135deg,rgba(234,179,8,.22),rgba(253,224,71,.10))" onclick="shopOpen('pl_campeones')"><div class="suitm plm">${plMiniH('campeones')}</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Noche de Campeones</b><span>Planilla dorada con corona animada</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
 async function suitEq(on){if(!S.me)return;const prev=Array.isArray(S.me.fit)?S.me.fit:[],sl=SUIT_IDS.map(i=>OUTFITS.find(y=>y.id===i).slot);
@@ -3867,7 +3867,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
- {ts:Date.parse('2026-11-14T23:30:00-04:00'),text:'Tienda: 3 objetos nuevos 🛍️. ⭐ Limitado (21 días, hasta el 5 de diciembre): el color «Luces de Diciembre» (950 monedas, Legendario) pone la app en rojo y verde con nieve cayendo, luces de colores parpadeando, estrellas brillantes y botones con destellos dorados. 🎨 Efectos: «Graffiti al votar» (260, Raro) pinta con spray tu resultado en la pantalla al enviar tus puntajes. ⚡ Boost: «Escudo de racha» (450, Épico) protege tu racha si un día no entras; es de un solo uso, puedes guardar hasta 3 y se usa después de la oportunidad gratis de cada 10 días.'},
+ {ts:Date.parse('2026-11-14T23:50:00-04:00'),text:'Arreglos de la tienda 🛠️: el color «Luces de Diciembre» ahora es blanco: toda la app se pone blanca con nieve cayendo y decoraciones de luces, estrellas y dulces (si ya lo tenías, se actualizó solo). Además se quitó la planilla «Noche de Campeones» repetida que salía en Limitado.'},
+ {ts:Date.parse('2026-11-14T23:30:00-04:00'),text:'Tienda: 3 objetos nuevos 🛍️. ⭐ Limitado (21 días, hasta el 5 de diciembre): el color «Luces de Diciembre» (950 monedas, Legendario) vuelve toda la app blanca, con nieve cayendo, luces de colores parpadeando, estrellas y dulces brillantes y botones con destellos de hielo. 🎨 Efectos: «Graffiti al votar» (260, Raro) pinta con spray tu resultado en la pantalla al enviar tus puntajes. ⚡ Boost: «Escudo de racha» (450, Épico) protege tu racha si un día no entras; es de un solo uso, puedes guardar hasta 3 y se usa después de la oportunidad gratis de cada 10 días.'},
  {ts:Date.parse('2026-11-14T20:00:00-04:00'),text:'Apuestas terminadas 🏁: en Comunidad → Apuestas ahora se ven todas las batallas que ya terminaron (antes solo las últimas 6), cada una con su ganador.'},
  {ts:Date.parse('2026-11-14T19:00:00-04:00'),text:'Apuestas más seguras 🎲: si ya apostaste, tu apuesta se queda guardada aunque salgas o recargues la página; solo se devuelve si la batalla se anula o se borra de verdad.'},
  {ts:Date.parse('2026-11-14T18:00:00-04:00'),text:'Directo en las jornadas 🔴: ahora cada jornada del Calendario puede tener el link de su directo, aunque todavía no se hayan confirmado las batallas; ábrela y míralo ahí mismo. Además, las batallas de la temporada 2026 ya pueden tener su video como las demás.'},
@@ -4436,14 +4437,20 @@ const THEMES=[
  {id:'nar',n:'Atardecer',c:'#F97316',c2:'#FDBA74',ac:'#F97316',ac2:'#FDBA74',need:0},
  {id:'lim',n:'Lima Neón',c:'#84CC16',c2:'#D9F99D',ac:'#84CC16',ac2:'#D9F99D',need:0},
  {id:'neb',n:'Nebulosa',c:'#DB2777',c2:'#4F46E5',ac:'#EC4899',ac2:'#A5B4FC',need:0},
- {id:'luz',n:'Luces de Diciembre',c:'#DC2626',c2:'#15803D',ac:'#EF4444',ac2:'#FDE047',tint:'#15803D',need:0}
+ {id:'luz',n:'Luces de Diciembre',c:'#60A5FA',c2:'#E0F2FE',ac:'#0EA5E9',ac2:'#7DD3FC',need:0}
 ];
 const themeOf=u=>{const t=u&&sv2(u)&&THEMES.find(x=>x.id===u.tema);if(!t)return THEMES[0];if(S.me&&u.uid&&u.uid===S.me.uid&&!themeOk(t))return THEMES[0];return t};
 const themeOk=t=>t.id==='co'||shopOwns('th_'+t.id);
 const _hx=h=>{h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.substr(i,2),16))};
 const _mix=(a,b,p)=>{const A=_hx(a),B=_hx(b);return '#'+A.map((v,i)=>Math.round(v*p+B[i]*(1-p)).toString(16).padStart(2,'0')).join('')};
 let _THM=null;
-function xmasSync(id){let d=document.getElementById('xmL');if(id!=='luz'){if(d)d.remove();return}if(d||!document.body)return;
+function luzWhite(on){const H=document.documentElement;H.classList.toggle('luzw',!!on);if(!on||document.getElementById('luzw-css'))return;
+ try{let css='';const re=/:root:not\(\[data-theme="dark"\]\)/g;
+  for(const sh of Array.from(document.styleSheets)){let rl;try{rl=sh.cssRules}catch(e){continue}
+   for(const r of Array.from(rl)){if(r.type===4&&/prefers-color-scheme:\s*light/.test(r.conditionText||r.media.mediaText)){for(const q of Array.from(r.cssRules)){if(q.selectorText&&q.selectorText.includes(':root:not([data-theme="dark"])'))css+=q.cssText.replace(re,'html.luzw')+'\n'}}}}
+  css+='html.luzw{--bg:#F4F9FF;--bg2:#FFFFFF;--cd:#FFFFFF;--cd2:#EAF3FC;--navbg:#FFFFFF;--tx:#0F172A;--mu:#52688A;--bd:rgba(14,116,144,.16);--sh:0 10px 26px rgba(15,23,42,.08);color-scheme:light}';
+  const el=document.createElement('style');el.id='luzw-css';el.textContent=css;document.head.appendChild(el)}catch(e){}}
+function xmasSync(id){luzWhite(id==='luz');let d=document.getElementById('xmL');if(id!=='luz'){if(d)d.remove();return}if(d||!document.body)return;
  d=document.createElement('div');d.id='xmL';d.className='xmL';d.setAttribute('aria-hidden','true');
  let h='<div class="xm-g"></div><span class="xm-s a">⭐</span><span class="xm-s b">🍬</span>';
  for(let i=0;i<26;i++)h+=`<i class="sn" style="left:${(Math.random()*100).toFixed(1)}%;--sz:${(3+Math.random()*4).toFixed(1)}px;--d:${(7+Math.random()*8).toFixed(1)}s;--dl:-${(Math.random()*12).toFixed(1)}s;--dx:${Math.round(Math.random()*60-30)}px"></i>`;
@@ -4455,7 +4462,7 @@ function applyTheme(){
  if(id==='co'){el.textContent='';return}
  const t=THEMES.find(x=>x.id===id),tn=t.tint||t.ac,k='#060606',r=_hx(t.ac).join(','),r2=_hx(t.ac2).join(',');
  const dark=`--bg:${_mix(tn,k,.04)};--bg2:${_mix(tn,k,.07)};--cd:${_mix(tn,k,.10)};--cd2:${_mix(tn,k,.14)};--navbg:${_mix(tn,k,.04)};`;
- el.textContent=`:root{--ac:${t.ac};--ac2:${t.ac2};--acr:${r};--acr2:${r2};--bd:rgba(${r},.16);${dark}}`+(id==='luz'?`.btn:not(.s){animation:xmG 2.6s ease-in-out infinite}@keyframes xmG{50%{box-shadow:0 0 20px rgba(250,204,21,.6),0 8px 18px rgba(${r},.3)}}`:'')}
+ el.textContent=`:root{--ac:${t.ac};--ac2:${t.ac2};--acr:${r};--acr2:${r2};--bd:rgba(${r},.16);${dark}}`+(id==='luz'?`.btn:not(.s){animation:xmG 2.6s ease-in-out infinite}@keyframes xmG{50%{box-shadow:0 0 20px rgba(56,189,248,.55),0 8px 18px rgba(${r},.3)}}`:'')}
 const themeStyle=u=>{const t=themeOf(u);return `--c:${t.c};--c2:${t.c2}`};
 function colorTeaser(n){return ''}
 function themeCardH(){if(!S.me)return '';const cur=themeOf(S.me).id;
