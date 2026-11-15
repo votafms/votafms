@@ -2394,7 +2394,7 @@ const B={
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v)},
  async deleteVote(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'votes',id))},
  async getLinks(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'videos'));const o={};q.docs.forEach(d=>{o[d.id]=d.data().y});return o},
- async setLink(id,y){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now()})},
+ async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})},
   async votesOfLeague(l){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('l','==',l),fm.limit(2000)));return s.docs.map(d=>d.data())},
  async changeUsername(uid,oldU,newU){const fm=FB.fm;const ex=await fm.getDoc(fm.doc(FB.db,'usernames',newU));if(ex.exists())throw new Error('taken');await fm.setDoc(fm.doc(FB.db,'usernames',newU),{uid});await fm.updateDoc(fm.doc(FB.db,'users',uid),{u:newU,unAt:Date.now()});await fm.deleteDoc(fm.doc(FB.db,'usernames',oldU))},
   async getNotifs(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',uid),fm.limit(100)));return q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.type!=='duelinv').sort((a,b)=>b.ts-a.ts)},
@@ -5237,7 +5237,7 @@ Object.assign(B,{
  async listCollabs(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'collabs'));return q.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
  async grantCollab(un,by){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'usernames',un));if(!s.exists())throw new Error('nouser');const uid=s.data().uid,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'collabs',uid),{u:un,ts,by});return {uid,u:un,ts,by}},
  async revokeCollab(uid){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'collabs',uid))},
- async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})}});
+ async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})}});
 const _start1=start;start=function(b){S.lkEdit=false;return _start1(b)};
 const _adminV1=adminV;
 adminV=function(){let h=_adminV1();if(!isAdmin())return h;
