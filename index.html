@@ -2449,6 +2449,24 @@ const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'ca
 const COIN_L={ws:100,in:90,es:85},COIN_DEF=80;
 /* Los votos hechos ANTES de esta fecha conservan lo que valían (70/60/50/40); solo los votos desde esta fecha dan los valores nuevos. Así nadie recibe monedas retroactivas. */
 const COIN_NEW_FROM=Date.parse('2026-11-14T23:00:00-04:00'),COIN_L_OLD={ws:70,in:60,es:50},COIN_DEF_OLD=40;
+/* ===== Economía editable por el administrador (config/economia): precios, monedas por votar, espera y moneda voladora ===== */
+const ECO={prices:{},tiers:[],fcT:null,ts:0},ECO_DEF_FC=[[30,90],[40,70],[50,50],[70,20]];
+const ecoTier=ts=>{let t=null;for(const x of ECO.tiers){if(ts>=x.f)t=x}return t};
+const ecoCoin=(lg,ts)=>{const t=ecoTier(ts==null?Date.now():ts);return t?(t.L&&t.L[lg]!=null?t.L[lg]:t.d):(COIN_L[lg]||COIN_DEF)};
+const ecoDef=ts=>{const t=ecoTier(ts==null?Date.now():ts);return t?t.d:COIN_DEF};
+const ecoRule=ts=>{const t=ecoTier(ts==null?Date.now():ts);return {minGap:t&&t.g!=null?t.g:VOTE_RULES.minGap,perDay:t&&t.pd!=null?t.pd:VOTE_RULES.perDay}};
+const ecoFcT=()=>ECO.fcT&&ECO.fcT.length?ECO.fcT:ECO_DEF_FC;
+const ecoMS=e=>e>=60?Math.floor(e/60)+':'+String(e%60).padStart(2,'0')+' minutos':e+' segundos';
+const ecoFcTxt=()=>{const a=[...new Set(ecoFcT().map(x=>x[0]))].sort((x,y)=>x-y);return a.length>1?a.slice(0,-1).join(', ')+' o '+a[a.length-1]:String(a[0])};
+function ecoApply(c){c=c||{};ECO.prices=c.prices&&typeof c.prices==='object'?c.prices:{};
+ ECO.tiers=Array.isArray(c.tiers)?c.tiers.filter(t=>t&&+t.f>0&&t.d!=null).sort((a,b)=>a.f-b.f):[];
+ const f=c.fc;if(f){if(+f.every>=10)FC.every=Math.floor(f.every);if(+f.life>=2)FC.life=Math.floor(f.life);
+  const T=Array.isArray(f.T)?f.T.filter(x=>x&&+x[0]>=1&&+x[1]>0).map(x=>[Math.floor(x[0]),+x[1]]):[];ECO.fcT=T.length?T:null;FC.t=Math.min(FC.t,FC.every)}
+ if(c.alb){if(+c.alb.p>0)ALB_P=Math.floor(c.alb.p);if(c.alb.sell)['com','rar','epi','leg'].forEach(k=>{if(+c.alb.sell[k]>=0&&c.alb.sell[k]!==''&&c.alb.sell[k]!=null)ALB_SELL[k]=Math.floor(c.alb.sell[k])})}
+ if(c.pass&&window.pfPrices)window.pfPrices(Math.floor(c.pass.f),Math.floor(c.pass.h));
+ _shopAll=null;S._cev=null;S._ce=0}
+async function ecoSync(){try{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','economia'));
+ if(d.exists()&&d.data().ts!==ECO.ts){const c=JSON.parse(d.data().cfg||'{}');ECO.ts=d.data().ts;ecoApply(c);if(!(S.v==='admin'&&S.admTab==='eco'))R()}}catch(e){}}
 const SHOP_BASE=[
  {id:'boost',k:'boost',n:'Boost x2',d:'Durante 1 hora todo va al doble: votar World Series da 200 monedas en vez de 100, y la moneda voladora también trae el doble. Lo puedes comprar las veces que quieras; si lo compras con el Boost activo, se suma otra hora.',p:250},
  {id:'frame_purple',k:'frame',n:'Marco morado',d:'Borde morado brillante en tu foto de perfil. Muéstrate con estilo en la comunidad.',p:120,fr:'purple'},
@@ -2499,7 +2517,7 @@ let _shopAll=null;
 function shopAll(){if(_shopAll)return _shopAll;const a=[...SHOP_BASE],P=(id,d)=>SHOP_PRICE[id]||d;
  THEMES.filter(t=>t.id!=='co'&&t.id!=='luz').forEach(t=>a.push({id:'th_'+t.id,k:'color',n:t.n,d:'Cambia el color de toda la app. Los demás ven tu tarjeta de perfil con este color.',p:P('th_'+t.id,100),th:t.id}));
  PL_D.filter(d=>d.id!=='campeones').forEach(d=>a.push({id:'pl_'+d.id,k:'pack',n:d.n,d:'Diseño para tu planilla de votación. Solo cambia cómo se ve, no tus puntos.',p:P('pl_'+d.id,150),pl:d.id}));
- a.forEach(it=>{it.p0=it.p;if(!it.nw&&!(it.id in NEW_PRICE))it.p=Math.round(it.p*1.1)});_shopAll=a;return a}
+ a.forEach(it=>{it.p0=it.p;if(!it.nw&&!(it.id in NEW_PRICE))it.p=Math.round(it.p*1.1);it.pb=it.p;const o=ECO.prices[it.id];if(o>0)it.p=o});_shopAll=a;return a}
 const SHOP={find:f=>shopAll().find(f),filter:f=>shopAll().filter(f)};
 const shopP=id=>{const it=SHOP.find(x=>x.id===id);return it?it.p:0};
 function sv2(u){return !!(u&&((u.shop&&typeof u.shop==='object'&&u.shop.v>=2)||u.sv===1))}
@@ -2532,7 +2550,7 @@ function boostLeft(){const t=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000))
  if(d)return P(d,'día','días')+(h?' y '+P(h,'hora','horas'):'');
  if(h)return P(h,'hora','horas')+(m?' y '+m+' min':'');
  return m?m+' min '+String(sc).padStart(2,'0')+' s':sc+' s'}
-function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const nw=(+v.ts||0)>=COIN_NEW_FROM,b=nw?(COIN_L[v.l]||COIN_DEF):(COIN_L_OLD[v.l]||COIN_DEF_OLD);return boostAt(v.ts)?b*2:b}
+function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const nw=(+v.ts||0)>=COIN_NEW_FROM,tr=ecoTier(+v.ts||0),b=tr?(tr.L&&tr.L[v.l]!=null?tr.L[v.l]:tr.d):nw?(COIN_L[v.l]||COIN_DEF):(COIN_L_OLD[v.l]||COIN_DEF_OLD);return boostAt(v.ts)?b*2:b}
 /* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
    minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
 const VOTE_RULES={minGap:45,perDay:20,from:Date.parse('2026-11-12T00:00:00-04:00')};
@@ -2542,11 +2560,11 @@ function coinPass(list){
   const base=coinOf(v);if(!base){out.set(v,{c:0,why:''});return}
   const t=+v.ts||0;let why='';
   if(t>=VOTE_RULES.from){const d=new Date(t).toDateString();if(d!==day){day=d;cnt=0}
-   if(t-prev<VOTE_RULES.minGap*1000)why='rapido';else if(cnt>=VOTE_RULES.perDay)why='tope';else cnt++}
+   const RL=ecoRule(t);if(t-prev<RL.minGap*1000)why='rapido';else if(cnt>=RL.perDay)why='tope';else cnt++}
   prev=t;out.set(v,{c:why?0:base,why})});
  return out}
 function coinWhy(ts){let w='';try{coinPass(splitDups(S.myVotes||[]).keep).forEach((x,v)=>{if((+v.ts||0)===ts)w=x.why})}catch(e){}return w}
-function cnoteH(){const w=S.coinNote;return `<div class="cgain"><i class="coin bigc" style="width:40px;height:40px;filter:grayscale(1);opacity:.55"></i><div style="flex:1"><b>Esta batalla no sumó monedas</b><div class="mu" style="margin:0;font-size:12px">${w==='rapido'?'Votaste muy pronto después de tu voto anterior. Deja al menos '+VOTE_RULES.minGap+' segundos entre una batalla y otra.':'Ya llegaste al máximo de '+VOTE_RULES.perDay+' batallas con monedas hoy. Mañana vuelves a ganar.'}</div></div></div>`}
+function cnoteH(){const w=S.coinNote;return `<div class="cgain"><i class="coin bigc" style="width:40px;height:40px;filter:grayscale(1);opacity:.55"></i><div style="flex:1"><b>Esta batalla no sumó monedas</b><div class="mu" style="margin:0;font-size:12px">${w==='rapido'?'Votaste muy pronto después de tu voto anterior. Deja al menos '+ecoRule(Date.now()).minGap+' segundos entre una batalla y otra.':'Ya llegaste al máximo de '+ecoRule(Date.now()).perDay+' batallas con monedas hoy. Mañana vuelves a ganar.'}</div></div></div>`}
 function coinsEarned(){const bn=Math.max(0,+(shopS().bonus)||0),mv=S.myVotes;if(!mv)return (S._ce||0)+bn;if(S._cev===mv)return S._ce+bn;let t=0;try{coinPass(splitDups(mv).keep).forEach(x=>{t+=x.c})}catch(e){mv.forEach(v=>{t+=coinOf(v)})}S._cev=mv;S._ce=t;return t+bn}
 function coinBal(){return Math.max(0,coinsEarned()-(shopS().spent||0))}
 function frOf(u){if(!u)return '';let f='';const sh=u.shop;if(sh&&typeof sh==='object')f=(sh.v>=2&&sh.frame)||'';else if(u.uid&&S.me&&S.me.uid===u.uid&&S.me.shop)f=S.me.shop.frame||'';else{const p=u.uid&&S.pf&&S.pf[u.uid];f=(p&&p.fr)||''}return FRAME_IDS.includes(f)?f:''}
@@ -2636,12 +2654,12 @@ function ngOf(u){return !!ngCls(u)}
    Las monedas ganadas se guardan en tu perfil (shop.bonus) y se suman a tu saldo. */
 const FC={every:210,life:7,t:0,el:null,raf:0,busy:false};
 try{FC.t=Math.min(FC.every,Math.max(0,+localStorage.getItem('vfms_fc')||0))}catch(e){}
-function fcAmount(){const T=[[30,90],[40,70],[50,50],[70,20]];let r=Math.random()*T.reduce((a,b)=>a+b[1],0);for(const [c,w] of T){if((r-=w)<0)return c}return 30}
+function fcAmount(){const T=ecoFcT();let r=Math.random()*T.reduce((a,b)=>a+b[1],0);for(const [c,w] of T){if((r-=w)<0)return c}return 30}
 function fcKill(){if(FC.raf)cancelAnimationFrame(FC.raf);FC.raf=0;if(FC.el){FC.el.remove();FC.el=null}}
 function fcSpawn(){
  if(FC.el)return;const amt=fcAmount()*(boostOn()?2:1),W=()=>innerWidth,H=()=>innerHeight;
  const el=document.createElement('button');el.type='button';el.className='fcoin';el.setAttribute('aria-label','Agarrar '+amt+' monedas');
- el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>7</em>';document.body.appendChild(el);FC.el=el;
+ el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>'+FC.life+'</em>';document.body.appendChild(el);FC.el=el;
  const top=80,bot=()=>H()-110,pad=40;
  let x=Math.random()<.5?-30:W()+30,y=top+Math.random()*Math.max(60,bot()-top);
  let vx=(x<0?1:-1)*(130+Math.random()*80),vy=(Math.random()<.5?-1:1)*(70+Math.random()*90);
@@ -2741,8 +2759,8 @@ function shopBtn(it){const own=shopOwns(it.id),s=shopS(),bal=coinBal();
  return `${ok?'':`<div class="shpr"><i style="width:${Math.min(100,Math.round(bal/it.p*100))}%"></i></div>`}<button class="shbuy${ok?'':' no'}" onclick="shopOpen('${it.id}')"><i class="coin"></i>${it.p}</button>${ok?'':`<div class="shnote">Te faltan ${it.p-bal}</div>`}`}
 function shopCard(it,i){const own=shopOwns(it.id),r=shopRar(it.p0||it.p);
  return `<div class="shi${own?' own':''}${it.k==='boost'?' wide':''}" style="--i:${i}">${own?'<span class="shtag">Tuyo</span>':''}<span class="shrar r-${r[0]}">${r[1]}</span>${shopPv(it)}<div class="shbd"><b>${esc(it.n)}</b>${shopBtn(it)}</div></div>`}
-function shopHowH(){const r=[['ws','World Series',100],['in','Internacional',90],['es','España',85]],lg=i=>L.find(x=>x.i===i);
- return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+80</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de 20 batallas con monedas al día. Deja al menos 45 segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\"><i class=\"coin\"></i> Extra: mientras votas, cada 3:30 minutos sale una moneda voladora (30, 40, 50 o 70 monedas). Tócala en 7 segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: 200).</div></div>`}
+function shopHowH(){const r=[['ws','World Series',ecoCoin('ws')],['in','Internacional',ecoCoin('in')],['es','España',ecoCoin('es')]],lg=i=>L.find(x=>x.i===i);
+ return `<div class="shhow">${r.map(([i,n,c])=>`<div class="shr">${lg(i)?logo(lg(i),26):''}<span>${n}</span><b>+${c}</b></div>`).join('')}<div class="shr"><span class="shall">🌎</span><span>Las demás ligas</span><b>+${ecoDef()}</b></div><div class="shnote" style="grid-column:1/-1;text-align:left">Cada batalla de liga cuenta una sola vez, y hay un máximo de ${ecoRule(Date.now()).perDay} batallas con monedas al día. Deja al menos ${ecoRule(Date.now()).minGap} segundos entre un voto y otro. No suman Batalla libre ni Modo editor.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\"><i class=\"coin\"></i> Extra: mientras votas, cada ${ecoMS(FC.every)} sale una moneda voladora (${ecoFcTxt()} monedas). Tócala en ${FC.life} segundos.</div><div class=\"shnote\" style=\"grid-column:1/-1;text-align:left\">⚡ Con el Boost x2 (dura 1 hora), todo lo de arriba se duplica (World Series: ${ecoCoin('ws')*2}).</div></div>`}
 function tiendaV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
@@ -4265,6 +4283,54 @@ function sorShow(w,amt,n){sorClose();
  const sk=document.getElementById('sorsk');if(sk)sk.onclick=skip;if(!rich)skip();
  requestAnimationFrame(frame)}
 {const st=document.createElement('style');st.textContent='.sorov{position:fixed;inset:0;z-index:99999;background:rgba(5,6,12,.95);display:flex;align-items:center;justify-content:center;overflow:auto}.sorbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 12px;width:min(100%,400px)}.sorbox canvas{width:min(92vw,340px);height:auto}.sort{font-weight:900;font-size:18px;color:#fff}.sorres{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.sorw{font-size:28px;font-weight:900;color:#fde047;text-align:center;word-break:break-word}.sorid,.sorst{color:#fff;font-size:14px;text-align:center}.sorbt{display:flex;gap:8px;width:100%;margin-top:8px}.sorbt .btn{flex:1}.sorcf{position:fixed;top:-20px;width:9px;height:14px;border-radius:2px;z-index:100000;pointer-events:none;animation:sorfall linear forwards}@keyframes sorfall{to{transform:translateY(110vh) rotate(720deg)}}';document.head.appendChild(st)}
+/* ===== Admin: pestaña Economía (precios, monedas por votar, espera y moneda voladora) ===== */
+const ecoLg=()=>L.filter(l=>!(typeof HIDDEN_LIGAS!=='undefined'&&HIDDEN_LIGAS.includes(l.i)));
+function ecoDraft(){const sh={};SHOP.filter(()=>true).forEach(it=>{sh[it.id]=it.p});const lg={};ecoLg().forEach(l=>{lg[l.i]=ecoCoin(l.i)});
+ const T=ecoFcT(),sm=T.reduce((a,b)=>a+b[1],0),pp=window.pfPricesGet?window.pfPricesGet():[4000,2500],rl=ecoRule(Date.now());
+ return {prices:sh,alb:{p:ALB_P,sell:{...ALB_SELL}},pass:{f:pp[0],h:pp[1]},L:lg,d:ecoDef(),g:rl.minGap,pd:rl.perDay,fc:{every:FC.every,life:FC.life,T:T.map(x=>[x[0],Math.round(x[1]*1000/sm)/10])}}}
+function ecoP(id,v){S.ecoD.prices[id]=v}
+function ecoFcSum(){const e=document.getElementById('ecoft');if(!e)return;const sm=S.ecoD.fc.T.reduce((a,b)=>a+(+b[1]||0),0);e.textContent='Total '+(Math.round(sm*10)/10)+'%'+(Math.abs(sm-100)>.05?' · se ajusta a 100%':'')}
+function ecoFcA(i,v){S.ecoD.fc.T[i][0]=v}
+function ecoFcP(i,v){S.ecoD.fc.T[i][1]=v;ecoFcSum()}
+function ecoFcAdd(){S.ecoD.fc.T.push(['','']);R()}
+function ecoFcDel(i){S.ecoD.fc.T.splice(i,1);R()}
+function ecoPct(){const p=+(S.ecoPctV||0);if(!(p>-90&&p<=1000)||!p){S.ecoMsg='Pon un porcentaje, por ejemplo 10.';R();return}
+ const D=S.ecoD,f=x=>Math.max(1,Math.round((+x||0)*(1+p/100)));for(const id in D.prices)D.prices[id]=f(D.prices[id]);D.alb.p=f(D.alb.p);D.pass.f=f(D.pass.f);D.pass.h=f(D.pass.h);
+ S.ecoMsg='Precios cambiados '+(p>0?'+':'')+p+'%. Revisa y pulsa «Guardar precios».';R()}
+function ecoV(){const D=S.ecoD||(S.ecoD=ecoDraft()),O=S.ecoO||(S.ecoO={});
+ const inp=(v,on,w)=>`<input class="alq" type="number" inputmode="decimal" min="0" value="${esc(String(v))}" oninput="${on}" style="width:${w||92}px;margin:0;padding:8px 10px;text-align:right;flex:none">`;
+ const row=(t,f)=>`<div class="row" style="gap:8px;align-items:center;padding:6px 0;border-top:1px solid rgba(255,255,255,.08)"><span style="flex:1;min-width:0;font-size:13px">${t}</span>${f}</div>`;
+ const det=(k,t,b)=>`<details class="duadv" ${O[k]?'open':''} ontoggle="S.ecoO['${k}']=this.open"><summary>${t}</summary>${b}</details>`;
+ const KN={boost:'Boosts',frame:'Marcos',title:'Títulos',fx:'Efectos y sonidos',color:'Colores',pack:'Planillas',card:'Tarjetas',extra:'Extras',suit:'Trajes'},items=SHOP.filter(()=>true),ks=[...new Set(items.map(x=>x.k))];
+ const shop=ks.map(k=>{const l=items.filter(x=>x.k===k);return det('s_'+k,'🛍️ '+(KN[k]||k)+' · '+l.length,l.map(it=>row(esc(it.n),inp(D.prices[it.id],`ecoP('${it.id}',this.value)`))).join(''))}).join('');
+ const RN={com:'Común',rar:'Raro',epi:'Épico',leg:'Legendario'};
+ const alb=det('alb','🎴 Álbum',row('Sobre (10 sobres = x10)',inp(D.alb.p,'S.ecoD.alb.p=this.value'))+['com','rar','epi','leg'].map(k=>row('Vender repetida · '+RN[k],inp(D.alb.sell[k],`S.ecoD.alb.sell.${k}=this.value`))).join(''));
+ const pas=det('pas','🏡 Pase de batalla',row('Pase completo',inp(D.pass.f,'S.ecoD.pass.f=this.value'))+row('Pase básico',inp(D.pass.h,'S.ecoD.pass.h=this.value')));
+ const sv=lbl=>`<button class="btn" style="width:100%;margin-top:10px" ${S.ecoBusy?'disabled':''} onclick="ecoSave()">${lbl}</button>`;
+ const msg=S.ecoMsg?`<div class="card mu" style="font-size:13px">${esc(S.ecoMsg)}</div>`:'';
+ const fcr=D.fc.T.map((x,i)=>`<div class="row" style="gap:8px;align-items:center;padding:6px 0;border-top:1px solid rgba(255,255,255,.08)"><i class="coin"></i>${inp(x[0],`ecoFcA(${i},this.value)`,76)}<span class="mu" style="flex:1;font-size:13px">monedas · prob. %</span>${inp(x[1],`ecoFcP(${i},this.value)`,76)}<button class="btn s sm" style="color:#FF6B7A" onclick="ecoFcDel(${i})">✕</button></div>`).join('');
+ const sm=D.fc.T.reduce((a,b)=>a+(+b[1]||0),0);
+ return msg+`<div class="card"><b style="display:block;margin-bottom:8px">💰 Precios</b><div class="row" style="gap:8px;margin-bottom:6px"><input class="alq" type="number" inputmode="decimal" placeholder="Cambiar todos %" value="${esc(String(S.ecoPctV||''))}" oninput="S.ecoPctV=this.value" style="margin:0;flex:1"><button class="btn s" onclick="ecoPct()">Aplicar</button></div>${shop}${alb}${pas}${sv('Guardar precios')}</div>
+<div class="card"><b style="display:block;margin-bottom:8px">🪙 Monedas por votar</b>${ecoLg().map(l=>row(esc(l.n),inp(D.L[l.i],`S.ecoD.L['${l.i}']=this.value`))).join('')}${row('Otras ligas',inp(D.d,'S.ecoD.d=this.value'))}${row('Segundos de espera entre votos',inp(D.g,'S.ecoD.g=this.value'))}${row('Máximo de batallas con monedas al día',inp(D.pd,'S.ecoD.pd=this.value'))}<div class="mu" style="font-size:12px;margin-top:6px">Vale para los votos desde ahora.</div>${sv('Guardar monedas')}</div>
+<div class="card"><b style="display:block;margin-bottom:8px">🎈 Moneda voladora</b>${row('Segundos entre una y otra',inp(D.fc.every,'S.ecoD.fc.every=this.value'))}${row('Segundos para agarrarla',inp(D.fc.life,'S.ecoD.fc.life=this.value'))}${fcr}<div class="row" style="gap:8px;margin-top:8px;align-items:center"><button class="btn s sm" onclick="ecoFcAdd()">+ Añadir</button><span class="mu" id="ecoft" style="font-size:12px">Total ${Math.round(sm*10)/10}%${Math.abs(sm-100)>.05?' · se ajusta a 100%':''}</span></div>${sv('Guardar moneda voladora')}</div>`}
+async function ecoSave(){if(!isAdmin()||S.ecoBusy)return;const D=S.ecoD;if(!D)return;
+ const bad=m=>{S.ecoMsg=m;R()},n=v=>Math.floor(+v);
+ const prices={};for(const it of SHOP.filter(()=>true)){const v=n(D.prices[it.id]);if(!(v>=1&&v<=1000000))return bad('Precio no válido en «'+it.n+'».');if(v!==it.pb)prices[it.id]=v}
+ const ap=n(D.alb.p);if(!(ap>=1&&ap<=1000000))return bad('Precio del sobre no válido.');
+ const sell={};for(const k of ['com','rar','epi','leg']){const v=n(D.alb.sell[k]);if(!(v>=0&&v<=1000000&&D.alb.sell[k]!==''))return bad('Precio de venta no válido.');sell[k]=v}
+ const pf=n(D.pass.f),ph=n(D.pass.h);if(!(pf>=1&&pf<=1000000&&ph>=1&&ph<=1000000))return bad('Precio del pase no válido.');
+ const Lv={};for(const l of ecoLg()){const v=n(D.L[l.i]);if(!(v>=0&&v<=100000&&D.L[l.i]!==''))return bad('Monedas no válidas en '+l.n+'.');Lv[l.i]=v}
+ const d=n(D.d),g=n(D.g),pd=n(D.pd);if(!(d>=0&&d<=100000&&D.d!==''))return bad('Monedas de «Otras ligas» no válidas.');if(!(g>=0&&g<=3600&&D.g!==''))return bad('La espera debe estar entre 0 y 3600 segundos.');if(!(pd>=1&&pd<=1000&&D.pd!==''))return bad('El máximo diario debe estar entre 1 y 1000.');
+ const ev=n(D.fc.every),lf=n(D.fc.life);if(!(ev>=10&&ev<=86400))return bad('Segundos entre monedas voladoras: de 10 a 86400.');if(!(lf>=2&&lf<=120))return bad('Segundos para agarrarla: de 2 a 120.');
+ const T=D.fc.T.filter(x=>+x[0]>=1&&+x[1]>0).map(x=>[Math.floor(+x[0]),+x[1]]);if(!T.length)return bad('Pon al menos una cantidad con probabilidad.');
+ const eff={L:{},d:ecoDef(),g:ecoRule(Date.now()).minGap,pd:ecoRule(Date.now()).perDay};ecoLg().forEach(l=>{eff.L[l.i]=ecoCoin(l.i)});
+ const tiers=[...ECO.tiers];if(JSON.stringify(eff)!==JSON.stringify({L:Lv,d,g,pd}))tiers.push({f:Date.now(),L:Lv,d,g,pd});
+ const cfg={prices,alb:{p:ap,sell},pass:{f:pf,h:ph},tiers:tiers.slice(-60),fc:{every:ev,life:lf,T}};
+ S.ecoBusy=true;S.ecoMsg='Guardando…';R();
+ try{const fm=FB.fm,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'config','economia'),{cfg:JSON.stringify(cfg),ts,by:S.me.uid});ECO.ts=ts;ecoApply(cfg);S.ecoD=ecoDraft();S.ecoMsg='✓ Guardado. Ya lo ven todos los usuarios.'}
+ catch(e){S.ecoMsg='No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste la regla de config/economia en Firestore?'}
+ S.ecoBusy=false;R()}
+setInterval(ecoSync,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)ecoSync()});
 async function adminRefundCards(){if(!isAdmin())return;
  if(!confirm('¿Devolver las monedas de los diseños de tarjeta a TODOS los usuarios que los compraron y quitarles el diseño? Los usuarios que entren después se devuelven solos al iniciar sesión.'))return;
  S.admCoinMsg='Cargando usuarios…';R();
@@ -5532,17 +5598,18 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
 /* Panel de administrador ordenado en pestañas (solo agrupa lo que ya existe) */
-const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['col','👥 Equipo'],['com','💬 Comentarios']];
+const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['col','👥 Equipo'],['com','💬 Comentarios']];
 function admTab(k){S.admTab=k;R()}
 const _adminV6=adminV;
 adminV=function(){const h=_adminV6();if(!isAdmin())return h;
- const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[]};let cur=null;
+ const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[],eco:[]};let cur=null;
  const kind=s=>/monedas/i.test(s)?'coins':/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
  kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col'||m==='coins')return}}if(cur===null)head.push(k);else g[cur].push(k)});
  const tab=ADM_TABS.some(x=>x[0]===S.admTab)?S.admTab:'cal';
  const bar=`<div class="seg" style="flex-wrap:wrap;gap:4px">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')" style="font-size:12px;padding:9px 6px;flex:1 1 30%">${x[1]}</button>`).join('')}</div>`;
  try{if(typeof betAdminV==='function'){const t2=document.createElement('template');t2.innerHTML=betAdminV();g.bets=[...t2.content.children]}}catch(e){}
  try{if(typeof sorteoV==='function'&&tab==='sorteo'){const t3=document.createElement('template');t3.innerHTML=sorteoV();g.sorteo=[...t3.content.children]}}catch(e){}
+ try{if(typeof ecoV==='function'&&tab==='eco'){const t4=document.createElement('template');t4.innerHTML=ecoV();g.eco=[...t4.content.children]}}catch(e){}
  return head.map(k=>k.outerHTML).join('')+bar+(g[tab].length?g[tab].map(k=>k.outerHTML).join(''):'<div class="card mu" style="text-align:center">Nada por aquí todavía.</div>')};
 const _calV=calV;
 calV=function(){return _calV()+((S.me&&!S.admin&&S.collabCal)?calEditV():'')};
@@ -6447,7 +6514,7 @@ async function init(){
  if(q.get('panel')==='1'){document.body.classList.add('panel');S.lg=q.get('l')||'es';start({a:q.get('a')||'MC 1',b:q.get('b')||'MC 2',j:'Planilla',y:q.get('y')||null,libre:q.get('libre')==='1'})}
  const ok=await initFB();
  if(!ok){document.getElementById('app').innerHTML='<div class="card">No se pudo conectar con la base de datos. Revisa tu conexión y recarga la página.</div>';return}
- watchAuth();R();handleResetLink();calSync();}
+ watchAuth();R();handleResetLink();calSync();ecoSync();}
 /* Arranca cuando TODOS los scripts ya cargaron (evita «kickOf is not defined» en archivos grandes) */
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 
@@ -6691,7 +6758,7 @@ const ALB_IMG19C=["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBA
 ALB.push(...[['acertijo','Acertijo','epi'],['drose','Drose','epi'],['teorema','Teorema','leg'],['ricto','Ricto','epi'],['tomcrowley','Tom Crowley','com'],['pepegrillo','Pepe Grillo','com'],['stigma','Stigma','com'],['kaiser','Kaiser','rar'],['nitro','Nitro','com'],['elmenor','El Menor','rar']].map((x,i)=>({id:'cl19_'+x[0],n:x[1],r:x[2],y:2019,lg:'cl',img:ALB_IMG19C[i],x:x[0]==='teorema'?1:0})));
 const ALBP=ALB.filter(c=>!c.x);
 const ALB_RAR={com:['Común','#9aa4b2'],rar:['Raro','#3b82f6'],epi:['Épico','#a855f7'],leg:['Legendario','#f5b301']};
-const ALB_P=200;
+let ALB_P=200;
 const ALB_SELL={com:50,rar:100,epi:250,leg:500};
 const ALB_ST={com:1,rar:2,epi:3,leg:4};
 const albOwn=()=>{const a=shopS().alb;if(!a||typeof a!=='object')return {};if(!a.es17_walls)return a;const r={...a},w=r.es17_walls;delete r.es17_walls;r.es17_bta=(r.es17_bta||0)+w;return r};
@@ -7060,7 +7127,7 @@ async function betImport(){const i=(document.getElementById('bimp')||{}).value;c
 
 /* ===== PASE DE BATALLA mensual: La Familia (noviembre 2026) ===== */
 {
-const PASS_M='2026-11',PRICE_FULL=4000,PRICE_HALF=2500,VPL=4,N=15,HALF=7;
+const PASS_M='2026-11',VPL=4,N=15,HALF=7;let PRICE_FULL=4000,PRICE_HALF=2500;window.pfPrices=(f,h)=>{if(f>0)PRICE_FULL=f;if(h>0)PRICE_HALF=h};window.pfPricesGet=()=>[PRICE_FULL,PRICE_HALF];
 const MK=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const RN={com:'Común',rar:'Raro',epi:'Épico',leg:'Legendario'};
 const KEY={tt:'title',th:'pfth',pl:'pfpl',bn:'bn',bg:'pfbg',ng:'ng',fx:'fx'};
