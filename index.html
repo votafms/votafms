@@ -3947,7 +3947,7 @@ const AVISOS=[
  {ts:Date.parse('2026-11-14T12:00:00-04:00'),text:'Gran actualización: tienda más ordenada con animaciones, 8 colores nuevos, traje limitado Noche en Familia para tu mascota (10 días), 3 rangos nuevos (Maestro, Mítico e Inmortal), perfil y ajustes más limpios (Accesibilidad ahora está en la tuerca) y apuestas más seguras. Los precios de la tienda subieron 10% y los votos nuevos dan 5% menos puntos de rango.'},
  {ts:Date.parse('2026-11-15T10:45:00-04:00'),text:'Álbum ampliado 🎴: ya está FMS Chile 2019 con 10 cartas nuevas. Épicas: Acertijo, Drose y Ricto. Raras: Kaiser y El Menor. Comunes: Tom Crowley, Pepe Grillo, Stigma y Nitro. Llevan el borde azul oscuro de FMS Chile y todas salen en los sobres con la misma probabilidad. La carta legendaria de Teorema no sale en sobres: es el último premio del Pase de batalla y pasa a tu álbum cuando la reclamas.'},
  {ts:Date.parse('2026-11-15T16:20:00-04:00'),text:'Arreglo en FMS World Series, temporada 2025: esa temporada tenía una ronda más. Ahora, al votar sus batallas, la primera ronda es 12x12. En la planilla actual y en la actual 0,5 es una fila más de 0 a 10, antes de Random, Ida, Vuelta, Acapella (0 a 4) y Deluxe. En la planilla antigua tiene 6 patrones por MC. Las demás rondas siguen igual.'},
-{ts:Date.parse('2026-11-15T19:00:00-04:00'),text:'Nueva medalla 🏅: quien compre el Pase de batalla La Familia (completo o básico) recibe una medalla dorada de la familia que aparece en horizontal en su tarjeta de perfil. Cada pase que compres sumará su medalla, y los demás usuarios también la ven en tu perfil.'},
+{ts:Date.parse('2026-11-15T19:00:00-04:00'),text:'Nueva medalla 🏅: quien compre el Pase de batalla La Familia (completo o básico) recibe una medalla dorada de la familia que aparece en horizontal en su tarjeta de perfil. Debajo de la medalla se ve el nivel al que va tu pase, y los demás usuarios también la ven en tu perfil. Además el pase ahora tiene 16 niveles (antes se mostraba como 15): el nivel 16 es la carta legendaria de Teorema.'},
 {ts:Date.parse('2026-11-15T09:00:00-04:00'),text:'Nuevo: Pase de batalla 🏡 La Familia. Entra desde la caja animada arriba de Ligas. Cada batalla votada (de cualquier liga) suma lo mismo: 4 batallas = 1 nivel y hay 15 premios exclusivos del mes, 2 legendarios. Pase completo por 4000 monedas (todo desbloqueado) o básico por 2500 (la mitad al instante y el resto votando). Son solo cosméticos.'},
 {ts:Date.parse('2026-11-14T23:00:00-04:00'),text:'Más monedas por votar (desde esta actualización, sin cambiar lo que ya habías ganado): World Series da 100, Internacional 90, España 85 y las demás ligas 80. Las monedas voladoras ahora traen 30, 40, 50 o 70. La ruleta se rediseñó (más compacta) y ahora da 100, 200, 350, 400, 500 o 600 monedas.'},
  {ts:Date.parse('2026-11-03T08:10:00-04:00'),text:'Nuevo: 15 diseños de planilla que se desbloquean con tu rango. En la pantalla de votación, toca 🎨 Diseño de planilla y elige: la planilla Base (con el color de la liga) o un diseño nuevo. Cada nivel de rango desbloquea uno: desde Asfalto en Underground 1 hasta el animado Rey del Freestyle en Elite 3. Son los mismos en todas las ligas y solo cambian cómo se ve la planilla; no afectan tus puntos ni tus votos.'},
@@ -5600,17 +5600,18 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
 /* Panel de administrador ordenado en pestañas (solo agrupa lo que ya existe) */
-const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['col','👥 Equipo'],['com','💬 Comentarios']];
+const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['pase','🏡 Pase'],['col','👥 Equipo'],['com','💬 Comentarios']];
 function admTab(k){S.admTab=k;R()}
 const _adminV6=adminV;
 adminV=function(){const h=_adminV6();if(!isAdmin())return h;
- const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[],eco:[]};let cur=null;
+ const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[],eco:[],pase:[]};let cur=null;
  const kind=s=>/monedas/i.test(s)?'coins':/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
  kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col'||m==='coins')return}}if(cur===null)head.push(k);else g[cur].push(k)});
  const tab=ADM_TABS.some(x=>x[0]===S.admTab)?S.admTab:'cal';
  const bar=`<div class="seg" style="flex-wrap:wrap;gap:4px">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')" style="font-size:12px;padding:9px 6px;flex:1 1 30%">${x[1]}</button>`).join('')}</div>`;
  try{if(typeof betAdminV==='function'){const t2=document.createElement('template');t2.innerHTML=betAdminV();g.bets=[...t2.content.children]}}catch(e){}
  try{if(typeof sorteoV==='function'&&tab==='sorteo'){const t3=document.createElement('template');t3.innerHTML=sorteoV();g.sorteo=[...t3.content.children]}}catch(e){}
+ try{if(tab==='pase'&&typeof paseAdmV==='function'){const t5=document.createElement('template');t5.innerHTML=paseAdmV();g.pase=[...t5.content.children]}}catch(e){}
  try{if(typeof ecoV==='function'&&tab==='eco'){const t4=document.createElement('template');t4.innerHTML=ecoV();g.eco=[...t4.content.children]}}catch(e){}
  return head.map(k=>k.outerHTML).join('')+bar+(g[tab].length?g[tab].map(k=>k.outerHTML).join(''):'<div class="card mu" style="text-align:center">Nada por aquí todavía.</div>')};
 const _calV=calV;
@@ -7129,7 +7130,7 @@ async function betImport(){const i=(document.getElementById('bimp')||{}).value;c
 
 /* ===== PASE DE BATALLA mensual: La Familia (noviembre 2026) ===== */
 {
-const PASS_M='2026-11',VPL=4,N=15,HALF=7;let PRICE_FULL=4000,PRICE_HALF=2500;window.pfPrices=(f,h)=>{if(f>0)PRICE_FULL=f;if(h>0)PRICE_HALF=h};window.pfPricesGet=()=>[PRICE_FULL,PRICE_HALF];
+const PASS_M='2026-11',VPL=4,N=16,HALF=7;let PRICE_FULL=4000,PRICE_HALF=2500;window.pfPrices=(f,h)=>{if(f>0)PRICE_FULL=f;if(h>0)PRICE_HALF=h};window.pfPricesGet=()=>[PRICE_FULL,PRICE_HALF];
 const MK=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const RN={com:'Común',rar:'Raro',epi:'Épico',leg:'Legendario'};
 const KEY={tt:'title',th:'pfth',pl:'pfpl',bn:'bn',bg:'pfbg',ng:'ng',fx:'fx'};
@@ -7156,10 +7157,12 @@ const ps=()=>{const p=shopS().pass;return p&&p.m===PASS_M&&p.t&&live()?p:null};
 const votes=()=>{const mv=S.myVotes;if(!mv)return S._pfv||0;if(S._pfvs===mv)return S._pfv;const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);let n=0;try{n=splitDups(mv).keep.filter(v=>v&&!v.free&&(+v.ts||0)>=m0.getTime()).length}catch(e){}S._pfvs=mv;S._pfv=n;return n};
 const lvl=()=>Math.min(N,Math.floor(votes()/VPL));
 const open=n=>{const p=ps();return !!p&&(p.t===2||n<=HALF||lvl()>=Math.min(n,N))};
+window.pfLvNow=()=>ps()?lvl():0;
+const pfSyncLv=()=>{const p=ps();if(!p||!S.me||S.pfBusy||S._pfLvB)return;const L=lvl();if(L>(+p.lv||0)){S._pfLvB=true;shopSave({...shopS(),pass:{...p,lv:L}},'No se pudo guardar tu nivel del pase.').finally(()=>{S._pfLvB=false})}};
 const daysLeft=()=>{const d=new Date();return Math.max(1,Math.ceil((new Date(d.getFullYear(),d.getMonth()+1,1)-d)/864e5))};
 /* --- compras, reclamar, equipar --- */
 window.pfBuy=async function(t){if(!S.me){openAuth('create');return}if(S.pfBusy||!live())return;const p=ps(),paid=p?(p.t===2?PRICE_FULL:PRICE_HALF):0,price=(t===2?PRICE_FULL:PRICE_HALF)-paid;if(price<=0)return;const bal=coinBal();if(bal<price){try{achFail('Te faltan '+(price-bal)+' monedas.')}catch(e){}return}
- S.pfBusy=true;const s=shopS();const ok=await shopSave({...s,spent:(s.spent||0)+price,pass:{m:PASS_M,t},pm:[...new Set([...(Array.isArray(s.pm)?s.pm:[]),PASS_M])]},'No se pudo comprar el pase.');S.pfBusy=false;if(ok){try{coinCount(bal,coinBal())}catch(e){}try{SFX.notif()}catch(e){}pfBurst('¡Pase desbloqueado!',t===2?'Tienes todos los premios listos para reclamar.':'Los premios 1 al '+HALF+' ya están listos. El resto se gana votando.')}};
+ S.pfBusy=true;const s=shopS();const ok=await shopSave({...s,spent:(s.spent||0)+price,pass:{m:PASS_M,t,lv:Math.max(lvl(),(p&&p.lv)||0)}},'No se pudo comprar el pase.');S.pfBusy=false;if(ok){try{coinCount(bal,coinBal())}catch(e){}try{SFX.notif()}catch(e){}pfBurst('¡Pase desbloqueado!',t===2?'Tienes todos los premios listos para reclamar.':'Los premios 1 al '+HALF+' ya están listos. El resto se gana votando.')}};
 window.pfClaim=async function(n){const it=PF[n-1];if(!it||!S.me||S.pfBusy||!open(n)||shopOwns(it.id))return;S.pfBusy=true;const s=shopS();
  if(it.k==='al'){const c=ALB.find(x=>x.id==='cl19_teorema'),al={...albOwn()};al[c.id]=(al[c.id]||0)+1;const ok=await shopSave({...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],alb:al},'No se pudo reclamar el premio.');S.pfBusy=false;if(ok){try{albReveal(c,al[c.id])}catch(e){}}return}
  const ok=await shopSave({...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id]},'No se pudo reclamar el premio.');S.pfBusy=false;if(ok)pfReveal(it)};
@@ -7199,16 +7202,25 @@ function pfApply(){const s=(S.me&&S.me.shop)||{},th=s.pfth&&shopOwns(s.pfth)?s.p
  b.className=bg==='pf_6'?'pfbg1':'pfbg2';b.innerHTML=bg==='pf_14'?Array.from({length:7},(_,i)=>`<i style="left:${8+i*13}%;animation-delay:${i*.9}s"></i>`).join(''):''}
 {const _a=applyTheme;applyTheme=function(){_a();try{pfApply()}catch(e){}}}
 
+
+/* ===== Admin: quién tiene el Pase de batalla ===== */
+async function admPaseLoad(){if(!isAdmin())return;S.paseMsg='Cargando usuarios…';S.paseRows=null;R();
+ try{const us=await B.listUsersFull();S.paseRows=us.map(u=>{const sh=u.shop&&typeof u.shop==='object'?u.shop:{},p=sh.pass&&sh.pass.t?sh.pass:null;return {u:u.u||'(sin nombre)',t:p?p.t:0,m:p?p.m:'',ok:!!p,lv:p?(+p.lv||0):0}}).filter(x=>x.ok).sort((a,b)=>(b.t-a.t)||a.u.localeCompare(b.u));S.paseTot=us.length;S.paseMsg=''}catch(e){S.paseMsg='Error: '+(e&&e.message||'desconocido')}R()}
+function paseAdmV(){const r=S.paseRows,full=r?r.filter(x=>x.t===2).length:0,half=r?r.filter(x=>x.t===1).length:0;
+ return `<div class="sec"><span>🏡 Pase La Familia</span><span>${r?r.length+' de '+S.paseTot:'…'}</span></div>
+ <button class="btn" onclick="admPaseLoad()">${r?'Actualizar lista':'Ver quién tiene el pase'}</button>
+ ${S.paseMsg?`<div class="mu" style="margin:10px 0">${esc(S.paseMsg)}</div>`:''}
+ ${r?`<div class="card"><div class="mu" style="margin:0 0 8px">Completo: <b>${full}</b> · Básico: <b>${half}</b></div>${r.length?r.map(x=>`<div class="row" style="padding:7px 0;border-top:1px solid var(--bd)"><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(x.u)}</b><span class="mu">${x.t===2?'Completo':'Básico'} · Nv. ${x.lv}</span></div>`).join(''):'<div class="mu">Nadie ha comprado el pase todavía.</div>'}</div>`:''}`}
 /* --- Medallas de pases en la tarjeta de perfil (una por cada pase comprado, en horizontal) --- */
 {
 const MG='<defs><linearGradient id="pmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".45" stop-color="#fbbf24"/><stop offset="1" stop-color="#b45309"/></linearGradient></defs>';
 const PMEDALS={'2026-11':{nm:'Pase La Familia · Noviembre 2026',svg:'<svg viewBox="0 0 48 48" aria-hidden="true">'+MG+'<g fill="url(#pmg)"><path d="M24 4 44 21h-5v21H9V21H4z"/><rect x="33" y="8" width="5" height="9" rx="1"/></g><path d="M24 36c-6-4.6-9-7.4-9-11a4.6 4.6 0 0 1 9-1.4A4.6 4.6 0 0 1 33 25c0 3.600-3 6.400-9 11z" fill="#1a1204"/></svg>'}};
-const css=document.createElement('style');css.textContent='.pmeds{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}.pmed{width:38px;height:38px;filter:drop-shadow(0 0 5px rgba(251,191,36,.45));cursor:default}.pmed svg{width:100%;height:100%;display:block}';document.head.appendChild(css);
-const meds=u=>{const sh=u&&u.shop;if(!sh||typeof sh!=='object')return [];const a=new Set(Array.isArray(sh.pm)?sh.pm:[]);if(sh.pass&&sh.pass.m&&sh.pass.t)a.add(sh.pass.m);return [...a].filter(m=>PMEDALS[m]).sort()};
-const _ph=profileHead;profileHead=function(u,isMe,uid){const h=_ph(u,isMe,uid);try{const m=meds(u);if(!m.length)return h;const row='<div class="pmeds">'+m.map(k=>`<span class="pmed" title="${PMEDALS[k].nm}" aria-label="${PMEDALS[k].nm}">${PMEDALS[k].svg}</span>`).join('')+'</div>';return h.replace('<div class="card pinfo">','<div class="card pinfo">'+row)}catch(e){return h}};
+const css=document.createElement('style');css.textContent='.pmeds{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}.pmed{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:default}.pmed svg{width:38px;height:38px;display:block;filter:drop-shadow(0 0 5px rgba(251,191,36,.45))}.pmed b{font-size:10px;line-height:1;color:#fbbf24;font-weight:800;letter-spacing:.3px}';document.head.appendChild(css);
+const meds=u=>{const sh=u&&u.shop;if(!sh||typeof sh!=='object')return [];return sh.pass&&sh.pass.m&&sh.pass.t&&PMEDALS[sh.pass.m]?[{k:sh.pass.m,lv:Math.max(0,+sh.pass.lv||0)}]:[]};
+const _ph=profileHead;profileHead=function(u,isMe,uid){const h=_ph(u,isMe,uid);try{const m=meds(u);if(!m.length)return h;const row='<div class="pmeds">'+m.map(o=>{const k=o.k,lv=isMe&&window.pfLvNow&&k==='2026-11'?Math.max(o.lv,window.pfLvNow()):o.lv;return `<span class="pmed" title="${PMEDALS[k].nm} · Nivel ${lv}" aria-label="${PMEDALS[k].nm}, nivel ${lv}">${PMEDALS[k].svg}<b>Nv. ${lv}</b></span>`}).join('')+'</div>';return h.replace('<div class="card pinfo">','<div class="card pinfo">'+row)}catch(e){return h}};
 }
 /* --- caja animada en Ligas (arriba de todo) --- */
-function pfBox(){if(!live())return '';const p=ps(),L=lvl();
+function pfBox(){if(!live())return '';const p=ps(),L=lvl();try{setTimeout(pfSyncLv,0)}catch(e){}
  const sub=p?`Nivel ${L}/${N} · ${votes()} batallas votadas`:'Temporada La Familia · ¡Desbloquéalo!';
  return `<button class="pfbox" onclick="go('pase')" aria-label="Abrir el pase de batalla"><svg class="pfsv" viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="112" rx="44" ry="5" fill="#0006"/><g class="pfbx"><rect x="22" y="56" width="76" height="54" rx="6" fill="#b4232f"/><g fill="#fde7c8" opacity=".55"><rect x="22" y="56" width="76" height="9"/><rect x="22" y="74" width="76" height="9"/><rect x="22" y="92" width="76" height="9"/></g><rect x="54" y="56" width="12" height="54" fill="#f5c542"/><path d="M60 98c-8-6-12-10-12-15a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 5-4 9-12 15z" fill="#fff" opacity=".9"/></g><g class="pfhs"><path d="M60 8 84 28v10H36V28z" fill="#f5c542"/><rect x="44" y="30" width="32" height="26" fill="#fde7c8"/><rect x="55" y="40" width="10" height="16" fill="#7c1d2e"/><circle cx="60" cy="24" r="4" fill="#b4232f"/></g><g class="pfld"><rect x="16" y="44" width="88" height="16" rx="5" fill="#d92d3a"/><rect x="54" y="44" width="12" height="16" fill="#f5c542"/><path d="M60 44c-10-14-26-6-18 2 5 4 18 0 18-2zM60 44c10-14 26-6 18 2-5 4-18 0-18-2z" fill="#f5c542"/></g><g class="pfst" fill="#fde047"><path d="M12 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M108 22l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/></g></svg><span class="pftx"><em>${p?(p.t===2?'PASE COMPLETO':'PASE BÁSICO'):'NUEVO · NOVIEMBRE'}</em><b>PASE DE BATALLA</b><span>${sub}</span><span class="pfbar"><i style="width:${Math.round(L*100/N)}%"></i></span></span><span class="pfgo">›</span></button>`}
 {const _h=VIEW.home;VIEW.home=function(){const h=_h();try{return pfBox()+bzBox()+h}catch(e){return h}}}
