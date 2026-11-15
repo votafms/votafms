@@ -3867,6 +3867,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-15T08:10:00-04:00'),text:'Arreglo: en el panel de administrador, «Videos: pegar links y asignar solo» ahora reconoce también las batallas de la temporada 2026 (por ejemplo, Babi vs El Menor de la Jornada 1 de FMS España). Antes decía «no la encuentro» y no dejaba guardar.'},
  {ts:Date.parse('2026-11-15T07:50:00-04:00'),text:'Panel de administrador: la plantilla de videos ahora también incluye las batallas de la temporada 2026 (las del calendario, como la Jornada 1 de FMS España), así que ya se pueden cargar sus links por la plantilla igual que los de las temporadas anteriores.'},
  {ts:Date.parse('2026-11-14T23:50:00-04:00'),text:'Arreglos de la tienda 🛠️: el color «Luces de Diciembre» ahora es blanco: toda la app se pone blanca con nieve cayendo y decoraciones de luces, estrellas y dulces (si ya lo tenías, se actualizó solo). Además se quitó la planilla «Noche de Campeones» repetida que salía en Limitado.'},
  {ts:Date.parse('2026-11-14T23:30:00-04:00'),text:'Tienda: 3 objetos nuevos 🛍️. ⭐ Limitado (21 días, hasta el 5 de diciembre): el color «Luces de Diciembre» (950 monedas, Legendario) vuelve toda la app blanca, con nieve cayendo, luces de colores parpadeando, estrellas y dulces brillantes y botones con destellos de hielo. 🎨 Efectos: «Graffiti al votar» (260, Raro) pinta con spray tu resultado en la pantalla al enviar tus puntajes. ⚡ Boost: «Escudo de racha» (450, Épico) protege tu racha si un día no entras; es de un solo uso, puedes guardar hasta 3 y se usa después de la oportunidad gratis de cada 10 días.'},
@@ -5269,14 +5270,18 @@ adminV=function(){let h=_adminV2();if(!isAdmin())return h;
 const vq=s=>' '+String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9ñ]+/g,' ').trim()+' ';
 const VLG=[['es',['espana','spain']],['ar',['argentina']],['mx',['mexico']],['pe',['peru']],['cl',['chile']],['co',['colombia']],['ca',['caribe']],['in',['internacional','international']],['ws',['world series','worldseries']]];
 let _VIDX=null;
-function vidIdx(){if(_VIDX)return _VIDX;const o=[];
+function vidIdx(){return vidIdxBase().concat(vidIdxCal())}
+function vidIdxBase(){if(_VIDX)return _VIDX;const o=[];
  Object.keys(SEASON_JOR).forEach(k=>{const [lg,season]=k.split('|');if(!LINK_TEMPS.includes(season))return;const l=L.find(x=>x.i===lg);
   (SEASON_JOR[k]||[]).forEach(j=>(j.b||[]).forEach(b=>{o.push({key:linkKey(lg,season,b[0],b[1],b[3]),lg,season,ln:l?l.n:lg,jn:j.n,jl:j.lab||('Jornada '+j.n),a:b[0],b:b[1],qa:vq(b[0]),qb:vq(b[1]),tag:b[2]===true?'Exhibición':b[2]==='apl'?'Aplazada':b[2]==='po'?'Play-Off':''})}))});
- return _VIDX=o}
+ _VIDX=o;return o}
+function vidIdxCal(){const o=[];try{(typeof CAL!=='undefined'?CAL:[]).forEach(e=>{if(!e||!e.i||String(e.dt||'').slice(0,4)!=='2026')return;const l=L.find(x=>x.i===e.i),m=String(e.n||'').match(/Jornada (\d+)/);
+  (e.b||[]).forEach(b=>{let a,c;if(typeof b==='string'){const p=b.split(/ vs /i);a=(p[0]||'').trim();c=(p[1]||'').trim()}else{a=b.a;c=b.b}if(!a||!c)return;
+   o.push({key:linkKey(e.i,'2026',a,c),lg:e.i,season:'2026',ln:l?l.n:e.i,jn:m?+m[1]:null,jl:m?m[0]:e.n,a,b:c,qa:vq(a),qb:vq(c),tag:''})})})}catch(x){}return o}
 /* Lee el texto (título del video + canal + tu pista) y devuelve las batallas que encajan, de la más probable a la menos */
 function vidFind(txt){const T=vq(txt),I=vidIdx();
  const lgs=VLG.filter(g=>g[1].some(w=>T.includes(' '+w+' '))).map(g=>g[0]);
- const ym=T.match(/ (20(?:1[7-9]|2[0-5])) /),yr=ym?ym[1]:null;
+ const ym=T.match(/ (20(?:1[7-9]|2[0-6])) /),yr=ym?ym[1]:null;
  const jm=T.match(/ (?:jornada|fecha|j) ?(\d{1,2}) /),jn=jm?+jm[1]:null;
  const seen=new Set(),c=[];
  I.forEach(x=>{if(!T.includes(x.qa)||!T.includes(x.qb)||seen.has(x.key))return;seen.add(x.key);let s=0;
