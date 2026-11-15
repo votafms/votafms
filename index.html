@@ -3541,7 +3541,7 @@ function perfilV(){
  const tabs=`<div class="seg s4 pftabs">${T.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.pfTab='${k}';R()">${t}</button>`).join('')}</div>`;
  let body='';
  if(tab==='resumen'){
-  body=`${shopMiniH()}${rankCardH(S.myVotes)}${pfQuickH()}`}
+  body=`${shopMiniH()}${rankCardH(S.myVotes)}${pfQuickH()}${S.myVotes?statsCard(S.myVotes):''}`}
  else if(tab==='editar'){
   body=`<div class="sec" style="margin-top:6px"><span>Información</span></div>
  <label class="btn s fotobtn" style="margin-bottom:12px">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
