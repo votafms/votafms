@@ -2346,7 +2346,7 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow,sv:(d.shop&&typeof d.shop==='object'&&d.shop.v>=2)?1:0});
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow,sv:(d.shop&&typeof d.shop==='object'&&d.shop.v>=2)?1:0,pz:(d.shop&&typeof d.shop==='object'&&d.shop.pass&&d.shop.pass.t)?{m:d.shop.pass.m,t:d.shop.pass.t,lv:+d.shop.pass.lv||0}:null});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -7216,7 +7216,7 @@ function paseAdmV(){const r=S.paseRows,full=r?r.filter(x=>x.t===2).length:0,half
 const MG='<defs><linearGradient id="pmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".45" stop-color="#fbbf24"/><stop offset="1" stop-color="#b45309"/></linearGradient></defs>';
 const PMEDALS={'2026-11':{nm:'Pase La Familia · Noviembre 2026',svg:'<svg viewBox="0 0 48 48" aria-hidden="true">'+MG+'<g fill="url(#pmg)"><path d="M24 4 44 21h-5v21H9V21H4z"/><rect x="33" y="8" width="5" height="9" rx="1"/></g><path d="M24 36c-6-4.6-9-7.4-9-11a4.6 4.6 0 0 1 9-1.4A4.6 4.6 0 0 1 33 25c0 3.600-3 6.400-9 11z" fill="#1a1204"/></svg>'}};
 const css=document.createElement('style');css.textContent='.pmeds{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}.pmed{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:default}.pmed svg{width:38px;height:38px;display:block;filter:drop-shadow(0 0 5px rgba(251,191,36,.45))}.pmed b{font-size:10px;line-height:1;color:#fbbf24;font-weight:800;letter-spacing:.3px}';document.head.appendChild(css);
-const meds=u=>{const sh=u&&u.shop;if(!sh||typeof sh!=='object')return [];return sh.pass&&sh.pass.m&&sh.pass.t&&PMEDALS[sh.pass.m]?[{k:sh.pass.m,lv:Math.max(0,+sh.pass.lv||0)}]:[]};
+const meds=u=>{const sh=u&&u.shop,ps0=(sh&&typeof sh==='object'&&sh.pass)||(u&&u.pz)||null;return ps0&&ps0.m&&ps0.t&&PMEDALS[ps0.m]?[{k:ps0.m,lv:Math.max(0,+ps0.lv||0)}]:[]};
 const _ph=profileHead;profileHead=function(u,isMe,uid){const h=_ph(u,isMe,uid);try{const m=meds(u);if(!m.length)return h;const row='<div class="pmeds">'+m.map(o=>{const k=o.k,lv=isMe&&window.pfLvNow&&k==='2026-11'?Math.max(o.lv,window.pfLvNow()):o.lv;return `<span class="pmed" title="${PMEDALS[k].nm} · Nivel ${lv}" aria-label="${PMEDALS[k].nm}, nivel ${lv}">${PMEDALS[k].svg}<b>Nv. ${lv}</b></span>`}).join('')+'</div>';return h.replace('<div class="card pinfo">','<div class="card pinfo">'+row)}catch(e){return h}};
 }
 /* --- caja animada en Ligas (arriba de todo) --- */
