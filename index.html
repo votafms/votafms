@@ -2126,6 +2126,8 @@ html.a-focus :focus-visible{outline:3px solid #fff!important;outline-offset:2px!
 @keyframes shSh{to{background-position:220% 0}}
 @keyframes suG{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.0),0 8px 24px rgba(249,115,22,.25)}50%{box-shadow:0 0 0 4px rgba(249,115,22,.18),0 10px 30px rgba(249,115,22,.4)}}
 .suitb{width:100%;display:flex;align-items:center;gap:12px;margin:12px 0 4px;padding:12px 14px;border-radius:22px;border:1px solid rgba(251,146,60,.55);background:linear-gradient(135deg,rgba(234,88,12,.28),rgba(253,224,71,.12));color:var(--tx);font-family:inherit;text-align:left;cursor:pointer;animation:suG 2.8s ease-in-out infinite;--f1:#FB923C;--f2:#FDE047}
+.suitm.plm{width:118px;display:block}.plm .plv{border-radius:12px}.plm .plvh{padding:5px 8px;font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.plm .plvb{padding:7px 8px 3px;gap:3px}.plm .plvb i{height:12px;border-radius:50%}.plm .plvt{padding:3px 8px 8px;gap:3px}.plm .plvt b{height:11px;border-radius:8px}
+.suitm.plm{margin-right:2px}
 .suitm{width:78px;flex:0 0 auto}.suitm.big{width:120px;margin:0 auto}
 .suitt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.suitt em{font-style:normal;font-size:11px;font-weight:900;letter-spacing:.5px;color:#FDBA74;text-transform:uppercase}
 .suitt b{font-size:18px;font-weight:900}.suitt span{font-size:12.5px;color:var(--mu)}
@@ -2590,10 +2592,10 @@ function shopDiff(a,b){const fm=FB.fm,o=[],pa=a||{},pb=b||{},J=JSON.stringify;
   else if(k==='own'&&Array.isArray(y)){const xa=Array.isArray(x)?x:[],ad=y.filter(i=>!xa.includes(i)),rm=xa.filter(i=>!y.includes(i));if(ad.length)o.push(['shop.own',fm.arrayUnion(...ad)]);if(rm.length)o.push(['shop.own',fm.arrayRemove(...rm)])}
   else o.push(['shop.'+k,y])}
  for(const k of Object.keys(pa))if(!(k in pb))o.push(['shop.'+k,fm.deleteField()]);return o}
-async function shopSave(nx,msg){const prev=S.me.shop,uid=S.me.uid;S.me={...S.me,shop:nx};R();
+async function shopSave(nx,msg){const prev=S.me.shop,uid=S.me.uid;S.me={...S.me,shop:nx};try{R()}catch(e){console.error('shopSave R',e);try{achFail('Error al dibujar: '+(e&&e.message||e))}catch(_){}}
  const run=async()=>{const fl=[];shopDiff(prev,nx).forEach(([q,v])=>fl.push(q,v));if(!fl.length)return;const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),...fl)};
  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
- try{await job;return true}catch(e){try{const pr=await B.getUser(uid);if(S.me&&S.me.uid===uid){S.me={...S.me,shop:(pr&&pr.shop)||prev};R()}}catch(_){S.me={...S.me,shop:prev};R()}try{achFail(msg)}catch(_){}return false}finally{SHQ.n--}}
+ try{await job;return true}catch(e){try{const pr=await B.getUser(uid);if(S.me&&S.me.uid===uid){S.me={...S.me,shop:(pr&&pr.shop)||prev};R()}}catch(_){S.me={...S.me,shop:prev};R()}console.error('shopSave',e);try{achFail(msg+(e&&e.code?' ('+e.code+')':''))}catch(_){}return false}finally{SHQ.n--}}
 function shopOpen(id){S.shopSheet=id;S.shopDone=false;R()}
 function shopClose(){S.shopSheet=null;S.shopDone=false;R()}
 async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me||S.shopBusy)return;if(shopOwns(it.id))return shopClose();if(it.until&&Date.now()>=it.until){try{achFail('Este traje ya salió de la tienda.')}catch(e){}return}
@@ -2601,7 +2603,7 @@ async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me
  S.shopBusy=true;const s=shopS();let nx;
  if(it.k==='boost'){const hr=3600000*(it.bh||1),now=Date.now(),lg=Array.isArray(s.boostLog)?s.boostLog.slice():[],last=lg[lg.length-1];if(last&&last.e>now)lg[lg.length-1]={s:last.s,e:last.e+hr};else lg.push({s:now,e:now+hr});nx={...s,spent:(s.spent||0)+it.p,boostLog:lg}}
  else nx={...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],spent:(s.spent||0)+it.p};
- const ok=await shopSave(nx,'No se pudo completar la compra.');S.shopBusy=false;
+ let ok=false;try{ok=await shopSave(nx,'No se pudo completar la compra.')}catch(e){console.error('shopBuy',e);try{achFail('Error: '+(e&&e.message||e))}catch(_){}}S.shopBusy=false;
  if(ok){S.shopDone=true;coinCount(bal,coinBal())}}
 async function shopEq(kind,id){if(!S.me)return;const s=shopS();await shopSave({...s,[kind]:id},'No se pudo guardar el cambio.')}
 async function shopEqNow(){const it=SHOP.find(x=>x.id===S.shopSheet);S.shopSheet=null;S.shopDone=false;if(it&&it.k==='suit')await suitEq(1);else if(it&&it.k==='frame')await shopEq('frame',it.fr);else if(it&&it.k==='title')await shopEq('title',it.tt);else if(it&&it.k==='color')await setTema(it.th);else if(it&&it.k==='card')await setDiseno(it.dz);else if(it&&it.k==='pack')await setPl(it.pl);else if(it&&it.eq)await shopEq(it.eq[0],it.eq[1]);else R()}
@@ -2611,8 +2613,9 @@ function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.
  return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
 function suitBanner(){const it=SHOP.find(x=>x.id==='suit_familia'),own=shopOwns(it.id),d=Math.max(1,Math.ceil((SUIT_END-Date.now())/864e5));
  return `<button class="suitb" onclick="shopOpen('suit_familia')"><div class="suitm">${stkSvg(30,true,SUIT_IDS)}</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Noche en Familia</b><span>Traje completo para tu mascota</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
+function plMiniH(id){const d=PL_D.find(x=>x.id===id);if(!d)return '🏆';return `<div class="${plCls(d)}" style="${plVars(d)}"><div class="plv"><div class="plvh"><span>${esc(d.n)}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div>`}
 function packLimitBanner(){const it=SHOP.find(x=>x.id==='pl_campeones');if(!it)return '';const own=shopOwns(it.id),d=Math.max(1,Math.ceil((PACK_LIMIT_END-Date.now())/864e5));
- return `<button class="suitb" style="--f1:#EAB308;--f2:#FDE047;border-color:rgba(234,179,8,.55);background:linear-gradient(135deg,rgba(234,179,8,.22),rgba(253,224,71,.10))" onclick="shopOpen('pl_campeones')"><div class="suitm" style="display:flex;align-items:center;justify-content:center;font-size:28px;width:72px">🏆</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Noche de Campeones</b><span>Planilla dorada con corona animada</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
+ return `<button class="suitb" style="--f1:#EAB308;--f2:#FDE047;border-color:rgba(234,179,8,.55);background:linear-gradient(135deg,rgba(234,179,8,.22),rgba(253,224,71,.10))" onclick="shopOpen('pl_campeones')"><div class="suitm plm">${plMiniH('campeones')}</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Noche de Campeones</b><span>Planilla dorada con corona animada</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
 async function suitEq(on){if(!S.me)return;const prev=Array.isArray(S.me.fit)?S.me.fit:[],sl=SUIT_IDS.map(i=>OUTFITS.find(y=>y.id===i).slot);
  let nx=prev.filter(x=>{const q=OUTFITS.find(y=>y.id===x);return q&&!SUIT_IDS.includes(x)&&!(on&&sl.includes(q.slot))});if(on)nx=[...nx,...SUIT_IDS];
  S.me={...S.me,fit:nx};R();try{await B.updateUser(S.me.uid,{fit:nx})}catch(e){S.me={...S.me,fit:prev};R();try{achFail('No se pudo guardar el atuendo.')}catch(_){}}}
@@ -2652,7 +2655,7 @@ function tiendaV(){
  <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div>${boostOn()?`<span class="bstp">⚡ Boost x2 activo · <span id="bstt">${boostLeft()}</span></span>`:''}</div></div>
  <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
  <div class="shtabs">${tabs}</div>${tab==='all'&&suitLive()?suitBanner():''}${tab==='all'&&packLimitLive()?packLimitBanner():''}
- ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k&&(!x.until||x.until>Date.now()||shopOwns(x.id))).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'1 o 3 horas':ow+'/'+l.length+' tuyos'}</em></div></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
+ ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>(x.k===k||(tab==='suit'&&k==='suit'&&x.id==='pl_campeones'))&&(!x.until||x.until>Date.now()||shopOwns(x.id))).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'1 o 3 horas':ow+'/'+l.length+' tuyos'}</em></div></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
  <button class="pfap" onclick="S.stkOpen=true;S.stkTierSel=null;R()"><span><b>🔥 Atuendos de la mascota</b><em>Se desbloquean con días de racha, no con monedas</em></span><i>›</i></button></div>`}
 function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
 function cgainH(){const g=S.coinGain||0;if(g<=0&&S.coinNote)return cnoteH();return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
