@@ -2415,7 +2415,9 @@ const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'ca
 /* ===== Monedas y tienda =====
    Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 100, Internacional 90, España 85 y las demás 80.
    No cuentan Batalla libre ni Modo editor. Lo gastado y lo comprado se guarda en tu perfil (campo «shop»). */
-const COIN_L={ws:100,in:90,es:85};
+const COIN_L={ws:100,in:90,es:85},COIN_DEF=80;
+/* Los votos hechos ANTES de esta fecha conservan lo que valían (70/60/50/40); solo los votos desde esta fecha dan los valores nuevos. Así nadie recibe monedas retroactivas. */
+const COIN_NEW_FROM=Date.parse('2026-11-14T23:00:00-04:00'),COIN_L_OLD={ws:70,in:60,es:50},COIN_DEF_OLD=40;
 const SHOP_BASE=[
  {id:'boost',k:'boost',n:'Boost x2',d:'Durante 1 hora todo va al doble: votar World Series da 200 monedas en vez de 100, y la moneda voladora también trae el doble. Lo puedes comprar las veces que quieras; si lo compras con el Boost activo, se suma otra hora.',p:250},
  {id:'frame_purple',k:'frame',n:'Marco morado',d:'Borde morado brillante en tu foto de perfil. Muéstrate con estilo en la comunidad.',p:120,fr:'purple'},
@@ -2494,7 +2496,7 @@ function boostLeft(){const t=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000))
  if(d)return P(d,'día','días')+(h?' y '+P(h,'hora','horas'):'');
  if(h)return P(h,'hora','horas')+(m?' y '+m+' min':'');
  return m?m+' min '+String(sc).padStart(2,'0')+' s':sc+' s'}
-function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const b=COIN_L[v.l]||80;return boostAt(v.ts)?b*2:b}
+function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const nw=(+v.ts||0)>=COIN_NEW_FROM,b=nw?(COIN_L[v.l]||COIN_DEF):(COIN_L_OLD[v.l]||COIN_DEF_OLD);return boostAt(v.ts)?b*2:b}
 /* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
    minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
 const VOTE_RULES={minGap:45,perDay:20,from:Date.parse('2026-11-12T00:00:00-04:00')};
@@ -3869,7 +3871,7 @@ const AVISOS=[
  {ts:Date.parse('2026-11-03T21:00:00-04:00'),text:'Rediseño de tres apartados. 🏆 Logros: ahora son medallas redondas agrupadas por categoría (Primeros pasos, Votaciones, Comunidad, Rango y estilo y MC IA); arriba ves cuánto llevas y los que están casi listos, y al tocar una medalla ves qué hacer. 🛡️ Ver mi rango: en cada liga ahora es una tarjeta con tu rango y tu progreso, y su ventana muestra tu escalera de rangos con el diseño de planilla que desbloquea cada nivel. 🏠 Inicio: las ligas ahora son tarjetas con tu avance (por ejemplo, 3 de 11 votadas) y su próxima jornada, y las próximas jornadas se abren con un toque.'},
  {ts:Date.parse('2026-11-03T17:45:00-04:00'),text:'Nuevo: 2 logros más (ya son 32): Cypher con la IA, por escribirle a MC IA, y Sparring de Rimas, por entrenar con ella. En la pestaña IA hay un botón 🥊 Entrenar y un micrófono para dictar con tu voz. Además, en la temporada 2026 la planilla antigua empieza ahora en Random: se quitaron Easy, Hard y las Temáticas, y tus votaciones anteriores se pueden seguir editando.'},
  {ts:Date.parse('2026-11-14T12:00:00-04:00'),text:'Gran actualización: tienda más ordenada con animaciones, 8 colores nuevos, traje limitado Noche en Familia para tu mascota (10 días), 3 rangos nuevos (Maestro, Mítico e Inmortal), perfil y ajustes más limpios (Accesibilidad ahora está en la tuerca) y apuestas más seguras. Los precios de la tienda subieron 10% y los votos nuevos dan 5% menos puntos de rango.'},
- {ts:Date.parse('2026-11-14T23:00:00-04:00'),text:'Más monedas por votar: World Series da 100, Internacional 90, España 85 y las demás ligas 80. Las monedas voladoras ahora traen 30, 40, 50 o 70. La ruleta se rediseñó (más compacta) y ahora da 100, 200, 350, 400, 500 o 600 monedas.'},
+ {ts:Date.parse('2026-11-14T23:00:00-04:00'),text:'Más monedas por votar (desde esta actualización, sin cambiar lo que ya habías ganado): World Series da 100, Internacional 90, España 85 y las demás ligas 80. Las monedas voladoras ahora traen 30, 40, 50 o 70. La ruleta se rediseñó (más compacta) y ahora da 100, 200, 350, 400, 500 o 600 monedas.'},
  {ts:Date.parse('2026-11-03T08:10:00-04:00'),text:'Nuevo: 15 diseños de planilla que se desbloquean con tu rango. En la pantalla de votación, toca 🎨 Diseño de planilla y elige: la planilla Base (con el color de la liga) o un diseño nuevo. Cada nivel de rango desbloquea uno: desde Asfalto en Underground 1 hasta el animado Rey del Freestyle en Elite 3. Son los mismos en todas las ligas y solo cambian cómo se ve la planilla; no afectan tus puntos ni tus votos.'},
  {ts:Date.parse('2026-11-03T06:45:00-04:00'),text:'Mejoras en la mascota de racha: ahora puedes activar «Mostrar en mi perfil» para que tus amigos y visitantes vean tu mascota (con tus atuendos y el color de tu llama) en tu tarjeta de perfil; viene desactivado y lo cambias cuando quieras. Además, la hoja de la racha quedó más limpia: los colores de la llama ahora se ven como círculos de colores, con candado los que aún no desbloqueas; toca uno y te dice a cuántos días se desbloquea.'},
  {ts:Date.parse('2026-11-03T01:40:00-04:00'),text:'Nuevo diseño en la barra de abajo: ahora es una barra flotante de cristal con bordes redondeados. La pestaña en la que estás se ilumina y muestra su nombre (Ligas, Calendario, Buscar, Perfil, Comunidad o IA), y las demás quedan solo con su icono para que se vea más limpio.'},
