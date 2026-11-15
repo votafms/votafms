@@ -2003,6 +2003,18 @@ html::after{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
 .cfgbox{padding:10px 0;border-top:1px dashed var(--bd)}
 @media (max-width:430px){.top{padding-left:10px;padding-right:10px;gap:4px}.top .brand{gap:6px;font-size:15px}.top .brand svg{width:30px;height:30px}.top .ib{width:32px;height:32px;flex:none}.top .coinb,.top .avbtn{flex:none}.top .brand{min-width:0;flex:0 1 auto}.top .brand b{overflow:hidden;white-space:nowrap}}
 
+/* ===== Planilla Noche de Campeones – edición limitada ===== */
+@keyframes plc-pulse{0%,100%{box-shadow:0 0 0 0 rgba(234,179,8,.0),0 0 12px 2px rgba(234,179,8,.18)}50%{box-shadow:0 0 0 3px rgba(234,179,8,.22),0 0 22px 6px rgba(234,179,8,.32)}}
+@keyframes plc-particle{0%{transform:translateY(0) scale(1);opacity:.9}100%{transform:translateY(-38px) scale(.3);opacity:0}}
+@keyframes plc-crown{0%{transform:translateY(-18px) scale(.4);opacity:0}60%{transform:translateY(4px) scale(1.18);opacity:1}80%{transform:translateY(-2px) scale(.97)}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes plc-shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.pld-campeones{--ac:#EAB308;--ac2:#FDE047;--plh:linear-gradient(135deg,#0d0a00,#1a1300 40%,#2a1f00);--plr:14px;--plm:26%;--plx:#1A1300}
+.pld-campeones .plvh{background:linear-gradient(90deg,rgba(234,179,8,.22),rgba(253,224,71,.18),rgba(234,179,8,.22));border-bottom:1px solid rgba(234,179,8,.35);position:relative;overflow:hidden}
+.pld-campeones .plvh::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,230,80,.18) 50%,transparent 100%);background-size:200% 100%;animation:plc-shimmer 2.4s linear infinite}
+.pld-campeones.cell.sel,.pld-campeones .cell.sel{animation:plc-pulse 1.6s ease-in-out infinite;border-color:rgba(234,179,8,.7)!important;background:rgba(234,179,8,.22)!important}
+.pld-campeones .cell.set{border-color:rgba(234,179,8,.45);background:rgba(234,179,8,.13)}
+.plc-particle{position:absolute;pointer-events:none;font-size:9px;animation:plc-particle .7s ease-out forwards;z-index:5}
+.plc-crown-anim{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:28px;animation:plc-crown .7s cubic-bezier(.34,1.56,.64,1) both;pointer-events:none;z-index:9}
 /* Efecto moderno al ganar monedas */
 /* ===== Moneda voladora de bonus ===== */
 .fcoin{position:fixed;left:0;top:0;z-index:250;width:68px;height:68px;margin:-34px 0 0 -34px;border:0;background:none;padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;will-change:transform}
@@ -2396,9 +2408,12 @@ const SHOP_PRICE={...NEW_PRICE,
  dz_mic:150,dz_vinyl:170,dz_spray:190,dz_boombox:210,dz_beats:230,dz_cypher:250,dz_fire:300,dz_crown:400,
  pl_asfalto:60,pl_cemento:80,pl_barrio:100,'pl_nx-cian':120,'pl_nx-rosa':120,'pl_nx-lima':120,'pl_nx-naranja':120,pl_cypher:120,pl_plata:130,pl_neon:140,pl_vinilo:150,pl_graffiti:160,pl_sunset:180,pl_escenario:200,pl_oro:260,pl_ambar:280,pl_cristal:300,pl_aurora:340,pl_rey:450};
 const SUIT_START=Date.parse('2026-11-14T00:00:00-04:00'),SUIT_END=SUIT_START+10*864e5,SUIT_IDS=['fam_gorro','fam_lentes','fam_bufanda','fam_capa','fam_aura'];
+const PACK_LIMIT_START=Date.parse('2026-11-14T00:00:00-04:00'),PACK_LIMIT_END=PACK_LIMIT_START+10*864e5;
+const packLimitLive=()=>Date.now()<PACK_LIMIT_END;
 const suitLive=()=>Date.now()<SUIT_END;
 const fitOk=o=>o.set?shopOwns(o.set):stkDays()>=o.need;
 SHOP_BASE.push({id:'suit_familia',k:'suit',n:'Traje Noche en Familia',d:'Edición limitada de noviembre: gorro, lentes, bufanda, manta, y aura de hojas y corazones para tu mascota de racha. Se equipa completo con un toque.',p:1000,nw:1,until:SUIT_END});
+SHOP_BASE.push({id:'pl_campeones',k:'pack',n:'Noche de Campeones',d:'Edición limitada: planilla oscura con bordes dorados animados, destellos al seleccionar celdas y corona al enviar tus puntajes.',p:1200,nw:1,until:PACK_LIMIT_END,pl:'campeones'});
 let _shopAll=null;
 function shopAll(){if(_shopAll)return _shopAll;const a=[...SHOP_BASE],P=(id,d)=>SHOP_PRICE[id]||d;
  THEMES.filter(t=>t.id!=='co').forEach(t=>a.push({id:'th_'+t.id,k:'color',n:t.n,d:'Cambia el color de toda la app. Los demás ven tu tarjeta de perfil con este color.',p:P('th_'+t.id,100),th:t.id}));
@@ -2596,6 +2611,8 @@ function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.
  return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
 function suitBanner(){const it=SHOP.find(x=>x.id==='suit_familia'),own=shopOwns(it.id),d=Math.max(1,Math.ceil((SUIT_END-Date.now())/864e5));
  return `<button class="suitb" onclick="shopOpen('suit_familia')"><div class="suitm">${stkSvg(30,true,SUIT_IDS)}</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Noche en Familia</b><span>Traje completo para tu mascota</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
+function packLimitBanner(){const it=SHOP.find(x=>x.id==='pl_campeones');if(!it)return '';const own=shopOwns(it.id),d=Math.max(1,Math.ceil((PACK_LIMIT_END-Date.now())/864e5));
+ return `<button class="suitb" style="--f1:#EAB308;--f2:#FDE047;border-color:rgba(234,179,8,.55);background:linear-gradient(135deg,rgba(234,179,8,.22),rgba(253,224,71,.10))" onclick="shopOpen('pl_campeones')"><div class="suitm" style="display:flex;align-items:center;justify-content:center;font-size:28px;width:72px">🏆</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>Noche de Campeones</b><span>Planilla dorada con corona animada</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
 async function suitEq(on){if(!S.me)return;const prev=Array.isArray(S.me.fit)?S.me.fit:[],sl=SUIT_IDS.map(i=>OUTFITS.find(y=>y.id===i).slot);
  let nx=prev.filter(x=>{const q=OUTFITS.find(y=>y.id===x);return q&&!SUIT_IDS.includes(x)&&!(on&&sl.includes(q.slot))});if(on)nx=[...nx,...SUIT_IDS];
  S.me={...S.me,fit:nx};R();try{await B.updateUser(S.me.uid,{fit:nx})}catch(e){S.me={...S.me,fit:prev};R();try{achFail('No se pudo guardar el atuendo.')}catch(_){}}}
@@ -2630,11 +2647,11 @@ function shopHowH(){const r=[['ws','World Series',70],['in','Internacional',60],
 function tiendaV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tienda</span><h1>Monedas VotaFMS</h1><p>Crea una cuenta para ganar monedas votando y canjearlas por marcos, títulos, colores y diseños.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
  const bal=coinBal(),tab=S.shopTab||'all',sp=shopS().spent||0;
- const tabs=SHOP_TABS.filter(t=>t[0]!=='suit'||suitLive()).map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.shopTab='${k}';R()">${t}</button>`).join('');
+ const tabs=SHOP_TABS.filter(t=>t[0]!=='suit'||(suitLive()||packLimitLive())).map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.shopTab='${k}';R()">${t}</button>`).join('');
  return `<button class="back" onclick="go('perfil')">${ico('back',18)} Perfil</button>
  <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div>${boostOn()?`<span class="bstp">⚡ Boost x2 activo · <span id="bstt">${boostLeft()}</span></span>`:''}</div></div>
  <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
- <div class="shtabs">${tabs}</div>${tab==='all'&&suitLive()?suitBanner():''}
+ <div class="shtabs">${tabs}</div>${tab==='all'&&suitLive()?suitBanner():''}${tab==='all'&&packLimitLive()?packLimitBanner():''}
  ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>x.k===k&&(!x.until||x.until>Date.now()||shopOwns(x.id))).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'1 o 3 horas':ow+'/'+l.length+' tuyos'}</em></div></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
  <button class="pfap" onclick="S.stkOpen=true;S.stkTierSel=null;R()"><span><b>🔥 Atuendos de la mascota</b><em>Se desbloquean con días de racha, no con monedas</em></span><i>›</i></button></div>`}
 function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
@@ -3168,8 +3185,9 @@ const PL_D=[
  {id:'nx-cian',n:'Neón Cian',c:['#22D3EE','#A5F3FC'],r:12,m:22,h:'linear-gradient(90deg,#042F3A,#0E7490)',fx:'fx-glow'},
  {id:'nx-rosa',n:'Neón Rosa',c:['#F472B6','#FBCFE8'],r:12,m:22,h:'linear-gradient(90deg,#500724,#BE185D)',fx:'fx-glow'},
  {id:'nx-lima',n:'Neón Lima',c:['#A3E635','#ECFCCB'],r:12,m:22,h:'linear-gradient(90deg,#1A2E05,#4D7C0F)',hx:'#0b1400',fx:'fx-glow'},
- {id:'nx-naranja',n:'Neón Naranja',c:['#FB923C','#FED7AA'],r:12,m:22,h:'linear-gradient(90deg,#431407,#C2410C)',fx:'fx-glow'}];
-const plOk=(d,i)=>shopOwns('pl_'+d.id);
+ {id:'nx-naranja',n:'Neón Naranja',c:['#FB923C','#FED7AA'],r:12,m:22,h:'linear-gradient(90deg,#431407,#C2410C)',fx:'fx-glow'},
+ {id:'campeones',n:'Noche de Campeones',c:['#EAB308','#FDE047'],r:14,m:26,hx:'#1A1300',lh:1,h:'linear-gradient(135deg,#0d0a00,#1a1300 40%,#2a1f00)',fx:'fx-gold fx-shine plc-anim',limit:true}];
+const plOk=(d,i)=>shopOwns('pl_'+d.id)||shopOwns('pl_campeones'&&d.id==='campeones'?'pl_campeones':'pl_'+d.id);
 const plLvl=()=>{let a=0,b=0;try{if(S.myVotes)a=rankInfo(S.myVotes).lvl}catch(e){}try{if(S.me&&S.me.rp>0)b=rankFromTotal(S.me.rp).lvl}catch(e){}return Math.max(a,b)};
 const plRankName=i=>RANKS[Math.floor(i/3)]+' '+(i%3+1);
 const plVars=d=>`--ac:${d.c[0]};--ac2:${d.c[1]};--plh:${d.h};--plr:${d.r}px;--plm:${d.m}%;--plx:${d.hx||'#fff'};${d.p?`--plp:${d.p};`:''}`;
@@ -3345,7 +3363,10 @@ async function pushVote2(v){
  const cw=c.wa>=c.wb?0:1,uw=(()=>{const o=outcomeOf(v);return o.w==null?-1:(o.w==='a'?0:1)})();
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
  try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
- notifyFriends(v);try{SFX.vote()}catch(e){}try{shopVoteFx()}catch(e){}S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}})();
+ notifyFriends(v);try{SFX.vote()}catch(e){}try{shopVoteFx()}catch(e){}
+ /* Corona animada si planilla Noche de Campeones activa */
+ if(S.me&&S.me.pl==='campeones'&&shopOwns('pl_campeones')){try{const pl=document.querySelector('.pld-campeones .plvh,.plvh');if(pl){const cr=document.createElement('span');cr.className='plc-crown-anim';cr.textContent='👑';pl.style.position='relative';pl.appendChild(cr);setTimeout(()=>cr.remove(),1200);for(let _i=0;_i<6;_i++){const p=document.createElement('span');p.className='plc-particle';p.textContent='✨';p.style.cssText=`left:${10+_i*15}%;top:0`;pl.appendChild(p);setTimeout(()=>p.remove(),800)}}}catch(_e){}}
+ S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine()}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}})();
  try{S.comm=summ(await B.votesKey(v.key))}catch(e){S.comm={n:0,wa:0,wb:0,sa:0,sb:0}}
  R();
 }
@@ -6696,9 +6717,7 @@ async function betsClaim(){
   if(!inL&&id in miss&&miss[id]===undefined)continue;
   const d=inL||miss[id];let pay=null;
   if(d){if(d.st==='void'){pay=o.m;back+=o.m}else if(d.st==='done'&&(d.w==='a'||d.w==='b')){pay=d.w===o.s?betPay(o.m,o.x):0;if(pay>0)won+=pay;else lost++}}
-  /* Solo devolver monedas si se confirmó en el servidor que la batalla no existe (miss[id]===null).
-     Si miss[id]===undefined significa que la consulta falló o no se hizo → no tocar nada. */
-  else if(id in miss&&miss[id]===null&&now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
+  else if(now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
   if(pay==null)continue;nb[id]={...o,d:1,r:pay};add+=pay;ch=true}
  if(!ch){S.betClaiming=false;return}
  for(const id in nb){if(nb[id].d&&now-(+nb[id].ts||0)>30*864e5)delete nb[id]}
