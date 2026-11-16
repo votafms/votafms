@@ -2203,7 +2203,9 @@ html.noanim .xmL .sn{display:none}
 .shdv{display:flex;align-items:center;gap:12px}.shdv>span{font-size:54px;filter:drop-shadow(0 0 14px rgba(56,189,248,.9));animation:xmT 2.4s ease-in-out infinite}
 .shdv b{display:block;font-size:20px;font-weight:900;background:linear-gradient(90deg,#7DD3FC,#A78BFA);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}.shdv em{font-style:normal;font-size:12px;color:var(--mu)}
 .stk-ch.shield{margin-top:8px;border-color:rgba(56,189,248,.6);background:rgba(56,189,248,.12)}
-</style></head>
+</style>
+<style id="mvpcss">.mvpl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 2px 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,#fbbf24 14%,var(--cd));border:1px solid color-mix(in srgb,#fbbf24 45%,transparent);font-size:13px}.mvpl span{font-weight:900;color:#fbbf24;letter-spacing:.5px}.mvpl b{min-width:0}.mvpt{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}.mvpt b{width:100%;font-size:12px;color:var(--mu)}.mvpt span{padding:4px 10px;border-radius:999px;background:color-mix(in srgb,#fbbf24 16%,var(--cd));border:1px solid color-mix(in srgb,#fbbf24 40%,transparent);font-size:12px;font-weight:700}.mvpt em{font-style:normal;color:#fbbf24}</style>
+</head>
 <body>
 <header class="top" id="top"></header>
 <main id="app"></main>
@@ -3109,6 +3111,24 @@ function comunidadV(){
  return head+COMUN.map(id=>{const l=L.find(x=>x.i===id);const votes=(S.comm5[id]||[]).filter(v=>!v.free&&(v.temp||'2026')==='2026');const [a1]=accentOf(l);
   return `<div class="clg" style="--lc:${a1}"><div class="clh"><b>${esc(l.n)}</b><span>${commCount(votes)}</span></div>${votes.length?tablaHTML(standings(id,votes),l):'<div class="card mu">Todavía no hay votaciones en esta liga.</div>'}</div>`}).join('');
 }
+/* ===== Tablas por jornada, tabla general y MVP de cada jornada (todas las temporadas) ===== */
+function lgJors(lg,season){if(season==='2026')return CAL.filter(e=>e.i===lg).map(e=>({lab:jLabel(e),b:(e.b||[]).map(x=>{const o=batOf(e,x);return [o.a,o.b]})}));return (SEASON_JOR[lg+'|'+season]||[]).map(j=>({lab:j.lab||('Jornada '+j.n),b:(j.b||[]).map(b=>[b[0],b[1]])}))}
+function jorMap(lg,season){const m={};lgJors(lg,season).forEach((j,i)=>j.b.forEach(b=>{const k=bkey({l:lg,temp:season,a:b[0],b:b[1]});if(!(k in m))m[k]=i}));return m}
+function jorUniq(votes){const seen=new Set(),out=[];(votes||[]).filter(v=>v&&!v.free).sort((x,y)=>(x.ts||0)-(y.ts||0)).forEach(v=>{const k=bkey(v);if(seen.has(k))return;seen.add(k);out.push(v)});return out}
+function jorMvp(lg,season){const votes=S.lgVotes;if(!votes)return null;const M=S._mvpC;if(M&&M.v===votes&&M.k===lg+'|'+season)return M.r;
+ const map=jorMap(lg,season),J=lgJors(lg,season),per=J.map(()=>({})),has=J.map(()=>0);
+ jorUniq(votes).forEach(v=>{const i=map[bkey(v)];if(i==null)return;const nv=voteNorm(v);has[i]++;const p=per[i];p[v.a]=(p[v.a]||0)+(+nv.ta||0);p[v.b]=(p[v.b]||0)+(+nv.tb||0)});
+ const top=per.map((p,i)=>{if(!has[i])return null;let mx=-1,names=[];Object.keys(p).forEach(n=>{if(p[n]>mx){mx=p[n];names=[n]}else if(p[n]===mx)names.push(n)});return {names,pts:mx}});
+ const tally={};top.forEach(t=>{if(t)t.names.forEach(n=>tally[n]=(tally[n]||0)+1)});
+ const r={top,has,tally:Object.entries(tally).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))};S._mvpC={v:votes,k:lg+'|'+season,r};return r}
+function mvpLine(lg,season,ji){const m=jorMvp(lg,season),t=m&&m.top[ji];if(!t)return '';
+ return `<div class="mvpl">🏅 <span>MVP</span> <b>${t.names.map(esc).join(' / ')}</b> · ${fmt(Math.round(t.pts*10)/10)} pts</div>`}
+function tbPick(lg,season,v){S.tbSel=S.tbSel||{};const k=lg+'|'+season,o=S.tbSel[k]||{j:'all',m:'acc'};S.tbSel[k]={j:v==='all'?'all':+v,m:o.m||'acc'};R()}
+function tbMode(lg,season,m){S.tbSel=S.tbSel||{};const k=lg+'|'+season,o=S.tbSel[k]||{j:'all',m:'acc'};S.tbSel[k]={j:o.j,m};R()}
+function tbSelH(lg,season){const J=lgJors(lg,season);if(!J.length)return '';const k=lg+'|'+season,st=(S.tbSel||{})[k]||{j:'all',m:'acc'},mv=jorMvp(lg,season);
+ const ob=J.map((j,i)=>`<option value="${i}" ${st.j===i?'selected':''}>${esc(j.lab)}${mv&&mv.has[i]?' ✓':''}</option>`).join('');
+ const tl=mv&&mv.tally.length?`<div class="mvpt"><b>🏅 MVPs por jornada</b>${mv.tally.slice(0,8).map(([n,c])=>`<span>${esc(n)} <em>×${c}</em></span>`).join('')}</div>`:'';
+ return `<div class="card seasel"><b class="sl">Ver tabla de</b><span class="selw"><select aria-label="Tabla por jornada" onchange="tbPick('${lg}','${season}',this.value)"><option value="all" ${st.j==='all'?'selected':''}>📊 Tabla general</option>${ob}</select></span>${st.j!=='all'?`<div class="seg" style="margin:2px 0 0"><button class="${st.m!=='one'?'on':''}" onclick="tbMode('${lg}','${season}','acc')">Hasta esta jornada</button><button class="${st.m==='one'?'on':''}" onclick="tbMode('${lg}','${season}','one')">Solo esta jornada</button></div>`:''}${tl}</div>`}
 function standingsCard(l){
  if(l.i==='in')return '';
  if((l.i==='ca'||l.i==='pe')&&curSeason(l.i)==='2025')return '';
@@ -3116,16 +3136,23 @@ function standingsCard(l){
  const tv=curSeason(l.i);
  const head=`<div class="sec"><span>Mi tabla de la liga</span><span>${S.me?'solo tus votos':'inicia sesión'}</span></div>`;
  if(!S.lgVotes)return head+`<div class="card mu">Cargando tabla…</div>`;
- if(GRP23[l.i]&&tv==='2023')return head+['A','B'].map(g=>tablaHTML(standings(l.i,S.lgVotes,tv,GRP23[l.i][g]),l,{title:'Grupo '+g,noTags:true})).join('');
- return head+tablaHTML(standings(l.i,S.lgVotes,tv),l);
+ const J=lgJors(l.i,tv),st=((S.tbSel||{})[l.i+'|'+tv])||{j:'all',m:'acc'},ji=(st.j!=='all'&&st.j<J.length)?st.j:'all';
+ let votes=S.lgVotes,ttl='',extra='';
+ if(ji!=='all'){const map=jorMap(l.i,tv);votes=S.lgVotes.filter(v=>{const i=map[bkey(v)];return i!=null&&(st.m==='one'?i===ji:i<=ji)});
+  ttl=(st.m==='one'?'':'Hasta la ')+J[ji].lab;extra=votes.length?'':`<div class="card mu" style="text-align:center">Aún no has votado batallas de esta jornada.</div>`}
+ const sel=tbSelH(l.i,tv),mv=ji!=='all'?mvpLine(l.i,tv,ji):'';
+ if(extra)return head+sel+extra;
+ const o=ji==='all'?{}:{noTags:true,title:ttl};
+ if(GRP23[l.i]&&tv==='2023')return head+sel+mv+['A','B'].map(g=>tablaHTML(standings(l.i,votes,tv,GRP23[l.i][g]),l,{title:(ttl?ttl+' · ':'')+'Grupo '+g,noTags:true})).join('');
+ return head+sel+mv+tablaHTML(standings(l.i,votes,tv),l,o);
 }
 const sedeOk=e=>!!(e&&e.s&&!/confirmar/i.test(e.s));
 function lgv(){
  const l=curL(),ents=CAL.map((e,ci)=>({e,ci})).filter(x=>x.e.i===l.i);
  const [ac1,ac2]=accentOf(l);
  const cur=(ents.find(x=>x.e.k==='next')||ents[ents.length-1]||{e:{st:'Sin fecha confirmada',d:''}}).e;
- const groups=ents.map(({e,ci})=>{const bs=e.b||[];
-  return `<div class="jgrp"><div class="jhd"><b>${esc(jLabel(e))}</b><span>${esc(e.d||'Fecha por confirmar')}</span></div>
+ const groups=ents.map(({e,ci},gi)=>{const bs=e.b||[];
+  return `<div class="jgrp"><div class="jhd"><b>${esc(jLabel(e))}</b><span>${esc(e.d||'Fecha por confirmar')}</span></div>${mvpLine(l.i,'2026',gi)}
   <div class="jpills"><span class="pill ${e.k==='next'?'next':e.k==='done'?'done':''}">${esc(e.st)}</span>${sedeOk(e)?` <span class="pill">📍 ${esc(e.s)}</span>`:''}</div>
   ${bs.length?bs.map((b,bi)=>{const x=batOf(e,b);return `<button class="bat" onclick="startBat(${ci},${bi})"><span class="side">${esc(x.a)}</span><span class="vs">VS</span><span class="side r">${esc(x.b)}</span></button>${myVoteOf(l.i,x)?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`}).join(''):'<div class="card mu" style="text-align:center">Aún no hay batallas confirmadas para esta jornada.</div>'}${bs.length?impBtn({k:'j',lg:l,title:jLabel(e),sub:[e.d||'Fecha por confirmar',sedeOk(e)?e.s:''].filter(Boolean).join(' · '),items:bs.map(b=>{const x=batOf(e,b),r=impRes(myVoteOf(l.i,x),x.a);return {a:x.a,b:x.b,sa:r?r[0]:x.sa,sb:r?r[1]:x.sb}})},'Importar jornada'):''}</div>`}).join('');
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}">
@@ -3235,7 +3262,7 @@ function jorV(lg,season){const J=SEASON_JOR[lg+'|'+season]||[];
  const bh=(ji,bi,b)=>`<button class="bat" onclick="startSeasonBat('${lg}','${season}',${ji},${bi})"><span class="side">${esc(b[0])}</span><span class="vs">${b[2]==='apl'?'APL':b[2]===true?'EXH':'VS'}</span><span class="side r">${esc(b[1])}</span></button>${(S.myVotes||[]).some(v=>!v.free&&bkey(v)===bkey({l:lg,temp:season,a:b[0],b:b[1]}))?'<div class="sc2" style="color:var(--ac);font-weight:800">✓ Votada · toca para editar</div>':'<div style="height:8px"></div>'}`;
  return J.map((j,ji)=>{
   const imp=j.b.length?impBtn({k:'j',lg:L.find(x=>x.i===lg)||curL(),title:j.lab||('Jornada '+j.n),sub:[seasonLabel(season,lg),j.fecha,j.ciudad].filter(Boolean).join(' · '),items:j.b.map(b=>{const mv=(S.myVotes||[]).find(v=>!v.free&&bkey(v)===bkey({l:lg,temp:season,a:b[0],b:b[1]})),r=impRes(mv,b[0]);return {a:b[0],b:b[1],tag:b[2]==='apl'?'APL':b[2]===true?'EXH':'',sa:r?r[0]:null,sb:r?r[1]:null}})},'Importar jornada'):'';
-  const head=`<div class="sec"><span>${esc(j.lab||('Jornada '+j.n))}</span><span>${esc(j.fecha||'')}</span></div>${j.ciudad?`<div class="mu" style="margin:-4px 2px 8px">${esc(j.ciudad)}</div>`:''}`;
+  const head=`<div class="sec"><span>${esc(j.lab||('Jornada '+j.n))}</span><span>${esc(j.fecha||'')}</span></div>${j.ciudad?`<div class="mu" style="margin:-4px 2px 8px">${esc(j.ciudad)}</div>`:''}${mvpLine(lg,season,ji)}`;
   if(j.g&&GRP23[lg]&&season==='2023'){
    const part=(t,f)=>{const h=j.b.map((b,bi)=>f(b)?bh(ji,bi,b):'').join('');return h?`<div class="mu" style="margin:4px 2px 8px;font-weight:800">${t}</div>${h}`:''};
    return head+part('Grupo A',b=>b[2]!==true&&b[2]!=='po'&&grpOf(lg,b)==='A')+part('Grupo B',b=>b[2]!==true&&b[2]!=='po'&&grpOf(lg,b)==='B')+part('Play-Off',b=>b[2]==='po')+part('Exhibición',b=>b[2]===true)+imp}
@@ -3947,6 +3974,7 @@ const AVISOS=[
  {ts:Date.parse('2026-11-14T12:00:00-04:00'),text:'Gran actualización: tienda más ordenada con animaciones, 8 colores nuevos, traje limitado Noche en Familia para tu mascota (10 días), 3 rangos nuevos (Maestro, Mítico e Inmortal), perfil y ajustes más limpios (Accesibilidad ahora está en la tuerca) y apuestas más seguras. Los precios de la tienda subieron 10% y los votos nuevos dan 5% menos puntos de rango.'},
  {ts:Date.parse('2026-11-15T10:45:00-04:00'),text:'Álbum ampliado 🎴: ya está FMS Chile 2019 con 10 cartas nuevas. Épicas: Acertijo, Drose y Ricto. Raras: Kaiser y El Menor. Comunes: Tom Crowley, Pepe Grillo, Stigma y Nitro. Llevan el borde azul oscuro de FMS Chile y todas salen en los sobres con la misma probabilidad. La carta legendaria de Teorema no sale en sobres: es el último premio del Pase de batalla y pasa a tu álbum cuando la reclamas.'},
  {ts:Date.parse('2026-11-15T16:20:00-04:00'),text:'Arreglo en FMS World Series, temporada 2025: esa temporada tenía una ronda más. Ahora, al votar sus batallas, la primera ronda es 12x12. En la planilla actual y en la actual 0,5 es una fila más de 0 a 10, antes de Random, Ida, Vuelta, Acapella (0 a 4) y Deluxe. En la planilla antigua tiene 6 patrones por MC. Las demás rondas siguen igual.'},
+{ts:Date.parse('2026-11-15T20:45:00-04:00'),text:'Tablas por jornada 📊 (todas las ligas y temporadas, de 2017 a 2026): arriba de la tabla de cada liga hay un menú «Ver tabla de» donde eliges la Tabla general o la de cualquier jornada. En cada jornada puedes ver la tabla acumulada (hasta esa jornada, para ver cómo evoluciona) o solo la de esa jornada. Además, arriba de cada jornada aparece el 🏅 MVP: el MC que más puntos (PTB) te sacó en esa jornada, y en el menú ves cuántos MVPs lleva cada MC en la temporada. Todo se calcula con tus votos.'},
 {ts:Date.parse('2026-11-15T19:00:00-04:00'),text:'Nueva medalla 🏅: quien compre el Pase de batalla La Familia (completo o básico) recibe una medalla dorada de la familia que aparece en horizontal en su tarjeta de perfil. Debajo de la medalla se ve el nivel de tu pase (completo: 16; básico: 7 y sube votando) y se actualiza al votar, y los demás usuarios también la ven en tu perfil. Además el pase ahora tiene 16 niveles (antes se mostraba como 15): el nivel 16 es la carta legendaria de Teorema.'},
 {ts:Date.parse('2026-11-15T09:00:00-04:00'),text:'Nuevo: Pase de batalla 🏡 La Familia. Entra desde la caja animada arriba de Ligas. Cada batalla votada (de cualquier liga) suma lo mismo: 4 batallas = 1 nivel y hay 15 premios exclusivos del mes, 2 legendarios. Pase completo por 4000 monedas (todo desbloqueado) o básico por 2500 (la mitad al instante y el resto votando). Son solo cosméticos.'},
 {ts:Date.parse('2026-11-14T23:00:00-04:00'),text:'Más monedas por votar (desde esta actualización, sin cambiar lo que ya habías ganado): World Series da 100, Internacional 90, España 85 y las demás ligas 80. Las monedas voladoras ahora traen 30, 40, 50 o 70. La ruleta se rediseñó (más compacta) y ahora da 100, 200, 350, 400, 500 o 600 monedas.'},
