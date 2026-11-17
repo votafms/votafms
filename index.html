@@ -3802,7 +3802,7 @@ async function submitUsername(){const A=S.auth;const un=(A.un||'').trim().toLowe
  A.sug=null;A.busy=true;R();S.authBusy=true;
  try{const uid=FB.auth.currentUser.uid;
   if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
-  const prof={p:'',m:'',a:'',joined:today()};await B.createUser(uid,un,prof);try{await B.updateUser(uid,{lcm:Date.now()})}catch(_e){}S.authBusy=false;setMe(uid,{u:un,...prof});
+  const prof={p:'',m:'',a:'',joined:today()};await B.createUser(uid,un,prof);try{await B.updateUser(uid,{lcm:Date.now(),lgp:Date.now()})}catch(_e){}S.authBusy=false;setMe(uid,{u:un,...prof});
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
 async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
  const email=(A.email||'').trim().toLowerCase(),pw=A.pw||'';
@@ -3817,7 +3817,7 @@ async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
    if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
    const cred=await FB.am.createUserWithEmailAndPassword(FB.auth,email,pw);
    const prof={p:'',m:'',a:'',joined:today()};
-   try{await B.createUser(cred.user.uid,un,prof);try{await B.updateUser(cred.user.uid,{lcm:Date.now()})}catch(_e){}}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
+   try{await B.createUser(cred.user.uid,un,prof);try{await B.updateUser(cred.user.uid,{lcm:Date.now(),lgp:Date.now()})}catch(_e){}}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
    S.authBusy=false;setMe(cred.user.uid,{u:un,...prof});
   }catch(e){S.authBusy=false;authErr(fbErr(e))}
  }else{
@@ -4609,10 +4609,10 @@ function achToast(items,coins){
 function achBonusLocal(n){const s=shopS();S.me={...S.me,shop:{...s,bonus:Math.max(0,+(s.bonus)||0)+n}}}
 async function achCommit(ids,ts){const fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid);
  return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),d=(sn.exists()&&sn.data())||{},lg=d.logros||{},nw=ids.filter(id=>!lg[id]);
-  if(!nw.length)return {nw:[],paid:!!d.lcm};
+  if(!nw.length)return {nw:[],paid:!!(d.lcm||d.lgp)};
   const p={};nw.forEach(id=>{p['logros.'+id]=ts});
-  if(d.lcm)p['shop.bonus']=fm.increment(nw.length*ACH_COIN_NEW);
-  tx.update(ref,p);return {nw,paid:!!d.lcm}})}
+  if(d.lcm||d.lgp)p['shop.bonus']=fm.increment(nw.length*ACH_COIN_NEW);
+  tx.update(ref,p);return {nw,paid:!!(d.lcm||d.lgp)}})}
 async function achSave(ids){
  if(!S.me||!ids.length)return {nw:[],paid:false};const ts=Date.now();S.ach=S.ach||{};let r;
  try{r=await achCommit(ids,ts)}catch(e){console.error('achSave',e);return {nw:[],paid:false}}
@@ -4626,11 +4626,15 @@ function achCoinToast(n,amt){try{SFX.ach()}catch(e){}
  el.onclick=()=>{el.remove();openAch()};document.body.appendChild(el);
  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4800)}
 async function achMig(o){
- const ts=Date.now(),olds=ACH.filter(a=>ACH_OLD.has(a.id)&&o[a.id].done).map(a=>a.id);
- const fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid);let amt=0;
- try{amt=await fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),d=(sn.exists()&&sn.data())||{};if(d.lcm)return -1;
-   const lg=d.logros||{},p={lcm:ts};olds.forEach(id=>{if(!lg[id])p['logros.'+id]=ts});
-   const t=olds.length*ACH_COIN_OLD;if(t)p['shop.bonus']=fm.increment(t);tx.update(ref,p);return t})}
+ const ts=Date.now(),fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid);let amt=0,olds=[];
+ try{const sn=await fm.getDoc(ref),d=(sn.exists()&&sn.data())||{};
+  if(d.lgp){S.lcm=true;return 0}
+  const lg=d.logros||{},lc=+d.lcm||0;
+  /* los que ya tienen fecha igual o posterior a lcm ya se pagaron (900 o 100): no se vuelven a pagar */
+  olds=ACH.filter(a=>ACH_OLD.has(a.id)&&o[a.id].done&&!(lc&&lg[a.id]&&lg[a.id]>=lc)).map(a=>a.id);
+  const p={lgp:ts};if(!d.lcm)p.lcm=ts;olds.forEach(id=>{if(!lg[id])p['logros.'+id]=ts});
+  amt=olds.length*ACH_COIN_OLD;if(amt)p['shop.bonus']=fm.increment(amt);
+  await fm.updateDoc(ref,p)}
  catch(e){console.error('achMig',e);return 0}
  S.lcm=true;S.ach=S.ach||{};olds.forEach(id=>{if(!S.ach[id])S.ach[id]=ts});
  if(amt>0){const b0=coinBal();achBonusLocal(amt);achCoinToast(olds.length,amt);try{coinCount(b0,coinBal())}catch(e){}return 1}
@@ -4674,7 +4678,7 @@ document.addEventListener('click',e=>{
  if(_egT.length>=7){_egT=[];egShow()}});
 async function loadAch(){
  if(!S.me)return;const uid=S.me.uid;S._achFull=false;
- try{const d=await B.getUser(uid);S.ach=Object.assign({},(d&&d.logros)||{});S.lcm=!!(d&&d.lcm)}catch(e){S.ach=S.ach||null;return}
+ try{const d=await B.getUser(uid);S.ach=Object.assign({},(d&&d.logros)||{});S.lcm=!!(d&&(d.lcm||d.lgp))}catch(e){S.ach=S.ach||null;return}
  try{S.likeGiven=await B.likeGivenAny(uid)}catch(e){}
  try{await loadLikes(uid,true)}catch(e){}
  S._achFull=true;await syncAch()}
