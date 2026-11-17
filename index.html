@@ -2205,6 +2205,7 @@ html.noanim .xmL .sn{display:none}
 .stk-ch.shield{margin-top:8px;border-color:rgba(56,189,248,.6);background:rgba(56,189,248,.12)}
 </style>
 <style id="mvpcss">.mvpl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 2px 10px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,#fbbf24 14%,var(--cd));border:1px solid color-mix(in srgb,#fbbf24 45%,transparent);font-size:13px}.mvpl span{font-weight:900;color:#fbbf24;letter-spacing:.5px}.mvpl b{min-width:0}.mvpt{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}.mvpt b{width:100%;font-size:12px;color:var(--mu)}.mvpt span{padding:4px 10px;border-radius:999px;background:color-mix(in srgb,#fbbf24 16%,var(--cd));border:1px solid color-mix(in srgb,#fbbf24 40%,transparent);font-size:12px;font-weight:700}.mvpt em{font-style:normal;color:#fbbf24}</style>
+<style id="f4css">.f4c{padding:0;overflow:hidden}.f4h{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;background:none;border:0;color:inherit;font:inherit;font-weight:800;font-size:14px;text-align:left;cursor:pointer}.f4h em{margin-left:auto;font-style:normal;font-weight:600;font-size:12px;color:var(--mu)}.f4h i{font-style:normal;color:var(--mu);font-size:12px}.f4l{padding:2px 14px 12px;display:flex;flex-direction:column;gap:7px}.f4r{display:grid;grid-template-columns:26px minmax(0,1fr) minmax(60px,38%) 28px;align-items:center;gap:8px;font-size:13px}.f4p{text-align:center;font-weight:800;color:var(--mu)}.f4n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}.f4b{height:7px;border-radius:99px;background:color-mix(in srgb,var(--ac) 16%,transparent);overflow:hidden}.f4b i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ac),var(--ac2))}.f4r b{text-align:right}</style>
 </head>
 <body>
 <header class="top" id="top"></header>
@@ -2841,7 +2842,7 @@ async function friendAct(uid,name){
   if(!f){await B.sendFriend(S.me.uid,S.me.u,uid,name);S.msgP='Solicitud enviada a '+name}
   else if(f.status==='pending'&&f.to===S.me.uid){await B.acceptFriend(f.id);S.msgP='Ahora son amigos'}
   else return;
-  await refreshFriends();
+  await refreshFriends();try{syncAch()}catch(_e){}
  }catch(e){S.msgP='No se pudo completar la acción. Revisa las reglas de Firestore.'}
  R();
 }
@@ -2992,7 +2993,9 @@ function R(){
  const vkey=(S.v==='vote'&&S.bt)?(S.bt.a+'|'+S.bt.b+'|'+(S.bt.y||'')+'|'+S.lg+'|'+(S.lkEdit?1:0)+(S.collab||S.admin?'c':'')):null;
  const plan=document.getElementById('plan');
  if(vkey&&vkey===VKEY&&plan){
-  plan.innerHTML=planHTML();{const sp=plSpec();plan.className=sp.cls;plan.style.cssText=sp.style}
+  const _pso=S.fmt!=='actual'?plan.querySelector('.pl-scroll'):null,_psl=_pso?_pso.scrollLeft:0,_psk=S.ri+'_'+S.pi+'_'+S.fmt,_pss=plan._sk===_psk,_psy=window.scrollY;
+  plan.innerHTML=planHTML();plan._sk=_psk;{const sp=plSpec();plan.className=sp.cls;plan.style.cssText=sp.style}
+  if(_pso&&_pss){const _psn=plan.querySelector('.pl-scroll');if(_psn&&_psl)_psn.scrollLeft=_psl;if(Math.abs(window.scrollY-_psy)>2)window.scrollTo(window.scrollX,_psy)}
   const vb=document.getElementById('vbar');if(vb&&S.bt)vb.innerHTML=vbarH(S.bt,vytH());const ve=document.getElementById('vemp');if(ve&&S.bt)ve.textContent=(S.first||0)===1?S.bt.b:S.bt.a;
   const sg=document.getElementById('fmtseg');if(sg&&!S.editId)sg.outerHTML=fmtSeg();
  }else{
@@ -3130,6 +3133,17 @@ function tbSelH(lg,season){const J=lgJors(lg,season);if(!J.length)return '';cons
  const ob=J.map((j,i)=>`<option value="${i}" ${st.j===i?'selected':''}>${esc(j.lab)}${mv&&mv.has[i]?' ✓':''}</option>`).join('');
  const tl=mv&&mv.tally.length?`<div class="mvpt"><b>🏅 MVPs por jornada</b>${mv.tally.slice(0,8).map(([n,c])=>`<span>${esc(n)} <em>×${c}</em></span>`).join('')}</div>`:'';
  return `<div class="card seasel"><b class="sl">Ver tabla de</b><span class="selw"><select aria-label="Tabla por jornada" onchange="tbPick('${lg}','${season}',this.value)"><option value="all" ${st.j==='all'?'selected':''}>📊 Tabla general</option>${ob}</select></span>${st.j!=='all'?`<div class="seg" style="margin:2px 0 0"><button class="${st.m!=='one'?'on':''}" onclick="tbMode('${lg}','${season}','acc')">Hasta esta jornada</button><button class="${st.m==='one'?'on':''}" onclick="tbMode('${lg}','${season}','one')">Solo esta jornada</button></div>`:''}${tl}</div>`}
+/* ===== Ranking de 4s: los MCs a los que más 4s les has puesto (planilla antigua) en la liga y temporada que estás viendo ===== */
+function fourStats(lg,tv){const src=S.lgVotes||(S.myVotes||[]).filter(x=>x.l===lg&&(x.temp||'2026')===tv),m={};let tot=0;
+ (src||[]).forEach(v=>{if(!v||v.free||v.ed||v.fmt==='actual'||!Array.isArray(v.sc))return;
+  v.sc.forEach(r=>{[['a',v.a],['b',v.b]].forEach(([k,nm])=>{const arr=r&&r[k];if(!Array.isArray(arr))return;let c=0;arr.forEach(x=>{if(x===4)c++});
+   if(c){const key=nrm(nm);(m[key]=m[key]||{n:nm,c:0}).c+=c;tot+=c}})})});
+ return {rows:Object.values(m).sort((a,b)=>b.c-a.c||String(a.n).localeCompare(String(b.n),'es')),tot}}
+function fourToggle(k){S.fourOpen=S.fourOpen||{};S.fourOpen[k]=!S.fourOpen[k];R()}
+function fourRankCard(l){if(!S.me)return '';const tv=curSeason(l.i),st=fourStats(l.i,tv);if(!st.tot)return '';
+ const k=l.i+'|'+tv,open=!!(S.fourOpen&&S.fourOpen[k]),mx=st.rows[0].c,md=['🥇','🥈','🥉'];
+ const rows=open?`<div class="f4l">${st.rows.map((r,i)=>`<div class="f4r"><span class="f4p">${md[i]||i+1}</span><span class="f4n">${esc(r.n)}</span><span class="f4b"><i style="width:${Math.round(r.c/mx*100)}%"></i></span><b>${r.c}</b></div>`).join('')}</div>`:'';
+ return `<div class="card f4c"><button class="f4h" onclick="fourToggle('${k}')" aria-expanded="${open}"><span>⭐ Ranking de 4s</span><em>${st.tot} en total</em><i>${open?'▴':'▾'}</i></button>${rows}</div>`}
 function standingsCard(l){
  if(l.i==='in')return '';
  if((l.i==='ca'||l.i==='pe')&&curSeason(l.i)==='2025')return '';
@@ -3159,7 +3173,7 @@ function lgv(){
  return `<div class="lgwrap" style="--ac:${ac1};--ac2:${ac2};--lc:${l.c}">
  <div class="lgside"><button class="back" onclick="go('home')">${ico('back',18)} Ligas</button>
  <div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,70)}<div style="flex:1;min-width:0"><span class="kicker">${esc(cur.st)}</span><h1>${esc(l.n)}</h1><p>${cur.d?esc(cur.d):'Fecha por confirmar'}</p>${sedeOk(cur)?`<p style="margin-top:4px">📍 ${esc(cur.s)}</p>`:''}</div></div>
- <div class="lgctl">${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}</div></div><div class="lgmain">${standingsCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div></div>`;
+ <div class="lgctl">${rkStripH()}${SEASON_OPTS[S.lg]?seasonSel(S.lg):''}</div></div><div class="lgmain">${standingsCard(l)}${fourRankCard(l)}${curSeason(S.lg)!=='2026'?jorV(S.lg,curSeason(S.lg)):ents.length?groups:'<div class="card mu" style="text-align:center">Aún no hay batallas cargadas para esta liga.</div>'}</div></div>`;
 }
 const LINK_TEMPS=['2026','2017','2018','2019','2020','2021','2023','2024','2025'];
 const canLink=()=>!!(S.me&&(S.admin||S.collab));
@@ -3502,21 +3516,21 @@ function summ(rows){let wa=0,wb=0,sa=0,sb=0;rows.forEach(r=>{const nv=voteNorm(r
 async function saveVote(){const v=buildVote();if(!S.me){S.pend=v;return openAuth('create')}await pushVote(v)}
 async function pushVote(v){if(S.saving)return;S.saving=true;try{await pushVote2(v)}finally{S.saving=false}}
 async function pushVote2(v){
- let prevRank=null,newRank=null;S.coinGain=0;S.coinNote='';
+ let prevRank=null,newRank=null;S.coinGain=0;S.coinNote='';S.rankNote=false;
  v.uid=S.me.uid;v.u=S.me.u;v.key=ck(v.free?'libre':v.l,v.a,v.b);v.ts=Date.now();
  let c={n:0,wa:0,wb:0};try{c=summ(await B.votesKey(v.key))}catch(e){}
  const cw=c.wa>=c.wb?0:1,uw=(()=>{const o=outcomeOf(v);return o.w==null?-1:(o.w==='a'?0:1)})();
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
- try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
+ try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}{const _o=ex?mine.find(x=>x.id===ex):null;v.ts0=_o?(_o.ts0||_o.ts||v.ts):v.ts}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
  notifyFriends(v);try{SFX.vote()}catch(e){}try{shopVoteFx(v)}catch(e){}
  /* Corona animada si planilla Noche de Campeones activa */
  if(S.me&&S.me.pl==='campeones'&&shopOwns('pl_campeones')){try{plcBurst()}catch(_e){}}
- S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine();try{window.pfSyncLv&&window.pfSyncLv()}catch(_e){}}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}})();
+ S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine();try{window.pfSyncLv&&window.pfSyncLv()}catch(_e){}}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}try{const _u=rankUniq(S.myVotes||[]),_c=rankCapped(_u),_m=_u.find(x=>+x.ts===+v.ts);if(_m&&_c.has(_m)){S.rankNote=true;R()}}catch(e){}})();
  try{S.comm=summ(await B.votesKey(v.key))}catch(e){S.comm={n:0,wa:0,wb:0,sa:0,sb:0}}
  R();
 }
 function resV(){const v=S.last;if(!v)return homeV();const c=S.comm;const tw=c?c.wa+c.wb:0;const pa=tw?Math.round(c.wa/tw*100):50;
- return `<div class="ok">${S.dupNote?esc(S.dupNote):'Voto guardado en tu perfil'}</div>${cgainH()}
+ return `<div class="ok">${S.dupNote?esc(S.dupNote):'Voto guardado en tu perfil'}</div>${cgainH()}${rkNoteH()}
  <div class="card"><b>Resultados de la comunidad</b>${c?`<div class="row" style="justify-content:space-between;margin-top:10px"><b style="color:var(--ac)">${esc(v.a)} ${tw?pa:'–'}%</b><b style="color:var(--b2)">${tw?100-pa:'–'}% ${esc(v.b)}</b></div><div class="bar"><i style="width:${pa}%"></i></div><div class="mu">${c.n} ${c.n===1?'voto':'votos'} en esta batalla</div>`:'<div class="mu" style="margin-top:8px">Cargando resultados…</div>'}</div>
  ${c&&c.n?`<div class="stats"><div class="stat"><big>${fmt(Math.round(c.sa/c.n*10)/10)}</big><span>Media de ${esc(v.a)}</span></div><div class="stat"><big>${fmt(Math.round(c.sb/c.n*10)/10)}</big><span>Media de ${esc(v.b)}</span></div></div>`:''}
  <div class="card" style="margin-top:12px"><b>Tu voto</b><div class="mu" style="margin-top:4px">${fmt(v.ta)} – ${fmt(v.tb)}${v.ra!=null?' · Réplica '+fmt(v.ra)+' – '+fmt(v.rb):''} · ${esc(v.msg||'')}</div></div>
@@ -3788,7 +3802,7 @@ async function submitUsername(){const A=S.auth;const un=(A.un||'').trim().toLowe
  A.sug=null;A.busy=true;R();S.authBusy=true;
  try{const uid=FB.auth.currentUser.uid;
   if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
-  const prof={p:'',m:'',a:'',joined:today()};await B.createUser(uid,un,prof);S.authBusy=false;setMe(uid,{u:un,...prof});
+  const prof={p:'',m:'',a:'',joined:today()};await B.createUser(uid,un,prof);try{await B.updateUser(uid,{lcm:Date.now()})}catch(_e){}S.authBusy=false;setMe(uid,{u:un,...prof});
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
 async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
  const email=(A.email||'').trim().toLowerCase(),pw=A.pw||'';
@@ -3803,7 +3817,7 @@ async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
    if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
    const cred=await FB.am.createUserWithEmailAndPassword(FB.auth,email,pw);
    const prof={p:'',m:'',a:'',joined:today()};
-   try{await B.createUser(cred.user.uid,un,prof)}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
+   try{await B.createUser(cred.user.uid,un,prof);try{await B.updateUser(cred.user.uid,{lcm:Date.now()})}catch(_e){}}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
    S.authBusy=false;setMe(cred.user.uid,{u:un,...prof});
   }catch(e){S.authBusy=false;authErr(fbErr(e))}
  }else{
@@ -3913,6 +3927,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-16T12:00:00-04:00'),text:'Actualización 🏆: 10 logros nuevos (ya son 50): completar los álbumes de FMS España 2017, 2018 y 2019, Argentina 2018 y 2019, México 2019 y Chile 2019, comprar un pase élite, comprar 20 objetos de la tienda y enviarle solicitud de amistad al desarrollador. Si ya lo habías hecho, se desbloquean solos. Además los logros ahora dan monedas: 900 por cada logro nuevo, y por los logros que ya tenías antes recibes 100 monedas por cada uno. También: desde el 17 de noviembre solo las primeras 13 batallas de cada día suben tu rango (la 14 ya no da puntos de rango hasta el día siguiente), arreglamos que la planilla antigua te devolvía al inicio de las casillas al votar Téc., Flow y P.Esc, y dentro de cada liga hay un nuevo Ranking de 4s con los MCs a los que más 4s les has puesto.'},
  {ts:Date.parse('2026-11-15T08:10:00-04:00'),text:'Arreglo: en el panel de administrador, «Videos: pegar links y asignar solo» ahora reconoce también las batallas de la temporada 2026 (por ejemplo, Babi vs El Menor de la Jornada 1 de FMS España). Antes decía «no la encuentro» y no dejaba guardar.'},
  {ts:Date.parse('2026-11-15T07:50:00-04:00'),text:'Panel de administrador: la plantilla de videos ahora también incluye las batallas de la temporada 2026 (las del calendario, como la Jornada 1 de FMS España), así que ya se pueden cargar sus links por la plantilla igual que los de las temporadas anteriores.'},
  {ts:Date.parse('2026-11-14T23:50:00-04:00'),text:'Arreglos de la tienda 🛠️: el color «Luces de Diciembre» ahora es blanco: toda la app se pone blanca con nieve cayendo y decoraciones de luces, estrellas y dulces (si ya lo tenías, se actualizó solo). Además se quitó la planilla «Noche de Campeones» repetida que salía en Limitado.'},
@@ -4125,7 +4140,7 @@ async function saveUsername(){const m=S.me;if(!m)return;const nu=(document.getEl
  catch(e){const tk=e&&e.message==='taken';if(tk)S.nameSug=await nameSuggest(nu);S.msgP=tk?'Ese nombre de usuario ya está en uso. Prueba con otro.':'No se pudo cambiar el nombre. Intenta de nuevo.'}
  R();}
 const RANKS=['Underground','Regional','Semiprofesional','Profesional','Elite','Maestro','Mítico','Inmortal'];
-const RANK_V=3; /* versión de la escala de puntos: los rp guardados con otra versión están desactualizados */
+const RANK_V=4; /* versión de la escala de puntos: los rp guardados con otra versión están desactualizados */
 const LP={ws:150,es:130,in:110,ar:100,mx:95,cl:90,co:85,pe:80,ca:75};
 const RANK_TH=[100,250,450,700,1000,1350,1750,2200,2700,3300,4000,4800,5700,6700,7800,9000,10300,11700,13200,14800,16500,18300,20200];
 const RANK_CUT=Date.parse('2026-11-14T12:00:00-04:00'); /* los votos desde esta fecha dan 5% menos puntos de rango */
@@ -4136,8 +4151,16 @@ function rankFromTotal(total){
  const curThr=idx===0?0:RANK_TH[idx-1],nxtThr=isMax?null:RANK_TH[idx];
  const pct=isMax?100:Math.round((total-curThr)/(nxtThr-curThr)*100);const next=isMax?0:nxtThr-total;
  return {n:total,t,sub,name:RANKS[t]+' '+sub,pct,next,lvl:idx}}
-function rankInfo(votes){const seen=new Set();let total=0;(votes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');if(seen.has(k))return;seen.add(k);total+=leaguePts(v.l,v.ts);});
+/* Límite diario: solo las primeras RANK_CAP.n batallas de liga de cada día suman puntos de rango (la 14 en adelante no, hasta el día siguiente).
+   Empieza a contar desde RANK_CAP.from, así los votos anteriores conservan todos sus puntos. Editar un voto no gasta un cupo nuevo (se usa su fecha original, ts0). */
+const RANK_CAP={from:Date.parse('2026-11-17T00:00:00-04:00'),n:13};
+const rkT=v=>+(v&&(v.ts0||v.ts))||0;
+function rankUniq(votes){const seen=new Set(),out=[];(votes||[]).forEach(v=>{if(v.free)return;const k=(v.temp||'2026')+'|'+v.l+'|'+[nrm(v.a),nrm(v.b)].sort().join('|');if(seen.has(k))return;seen.add(k);out.push(v)});return out}
+function rankCapped(uniq){const cp=new Set();let day='',cnt=0;
+ uniq.filter(v=>rkT(v)>=RANK_CAP.from).sort((a,b)=>rkT(a)-rkT(b)).forEach(v=>{const d=new Date(rkT(v)).toDateString();if(d!==day){day=d;cnt=0}if(cnt>=RANK_CAP.n)cp.add(v);else cnt++});return cp}
+function rankInfo(votes){const u=rankUniq(votes),cp=rankCapped(u);let total=0;u.forEach(v=>{if(!cp.has(v))total+=leaguePts(v.l,v.ts)});
  return rankFromTotal(total)}
+function rkNoteH(){return S.rankNote?`<div class="cgain"><span style="font-size:32px;opacity:.6;width:40px;text-align:center">🛡️</span><div style="flex:1"><b>Esta batalla no sumó puntos de rango</b><div class="mu" style="margin:0;font-size:12px">Ya llegaste al máximo de ${RANK_CAP.n} batallas por día que suben tu rango. Mañana vuelves a subir.</div></div></div>`:''}
 const RANK_COL=['#94A3B8','#F59E0B','#E2E8F0','#FDE047','#C084FC','#38BDF8','#F43F5E','#34D399'];
 const rcol=t=>RANK_COL[t]||'#EAB308';
 const rpips=(sub,n=3)=>`<div class="rpips">${[1,2,3].map(i=>`<span class="rpip${i<=sub?' on':''}"></span>`).join('')}</div>`;
@@ -4398,7 +4421,7 @@ async function adminResetShop(){
  R()}
 
 /* ===== Logros ===== */
-const ACH_N=40;
+const ACH_N=50;
 const ACH=[
  {id:'cuenta',ic:'🎤',x:'#F59E0B',n:'Pisa el Escenario',d:'Crea tu cuenta y entra a la rueda.'},
  {id:'voto1',ic:'⚖️',x:'#EF4444',n:'Primer Veredicto',d:'Vota tu primera batalla de liga.'},
@@ -4439,8 +4462,20 @@ const ACH=[
  {id:'rd',ic:'🇩🇴',x:'#2563EB',n:'Orgullo Quisqueyano',d:'Pon República Dominicana como tu país en el perfil.'},
  {id:'sinrastro',ic:'🕵️',x:'#475569',n:'Sin Rastro',d:'Usa «Borrar para todos» en un mensaje del chat.'},
  {id:'drip',ic:'🧢',x:'#F59E0B',n:'Drip Completo',d:'Ponle atuendo a tu mascota en las 6 zonas a la vez.'},
- {id:'embajador',ic:'📣',x:'#10B981',n:'Embajador del Barrio',d:'Comparte tu perfil con «Compartir mi perfil».'}
+ {id:'embajador',ic:'📣',x:'#10B981',n:'Embajador del Barrio',d:'Comparte tu perfil con «Compartir mi perfil».'},
+ {id:'alb_es17',ic:'🇪🇸',x:'#E11D48',n:'Álbum ESP 2017',d:'Completa todas las cartas de FMS España 2017.'},
+ {id:'alb_es18',ic:'🇪🇸',x:'#F59E0B',n:'Álbum ESP 2018',d:'Completa todas las cartas de FMS España 2018.'},
+ {id:'alb_es19',ic:'🇪🇸',x:'#EF4444',n:'Álbum ESP 2019',d:'Completa todas las cartas de FMS España 2019.'},
+ {id:'alb_ar18',ic:'🇦🇷',x:'#38BDF8',n:'Álbum ARG 2018',d:'Completa todas las cartas de FMS Argentina 2018.'},
+ {id:'alb_ar19',ic:'🇦🇷',x:'#0EA5E9',n:'Álbum ARG 2019',d:'Completa todas las cartas de FMS Argentina 2019.'},
+ {id:'alb_mx19',ic:'🇲🇽',x:'#22C55E',n:'Álbum MEX 2019',d:'Completa todas las cartas de FMS México 2019.'},
+ {id:'alb_cl19',ic:'🇨🇱',x:'#3B82F6',n:'Álbum CHI 2019',d:'Completa todas las cartas de FMS Chile 2019.'},
+ {id:'pase_elite',ic:'🎟️',x:'#FACC15',n:'Pase Élite',d:'Compra al menos un pase élite (completo) de los pases de batalla mensuales.'},
+ {id:'tienda20',ic:'🛍️',x:'#EC4899',n:'Cliente Frecuente',d:'Compra al menos 20 objetos de la tienda.'},
+ {id:'amigo_dev',ic:'👋',x:'#8B5CF6',n:'Saludo al Dev',d:'Envíale una solicitud de amistad al desarrollador.'}
 ];
+/* Los 40 logros que ya existían antes de que dieran monedas (por ellos se pagó 100 monedas por única vez). Cada logro nuevo da 900. */
+const ACH_OLD=new Set(ACH.slice(0,40).map(a=>a.id));const ACH_COIN_OLD=100,ACH_COIN_NEW=900,DEV_USER='linexs17';
 S.ach=S.ach||null;S.achOpen=false;S.achTab='all';S.likeCache=S.likeCache||{};S.likeGiven=false;
 const isLgVote=v=>!v.free&&!v.ed;
 function jornadaBest(){
@@ -4509,6 +4544,11 @@ function achCalc(){
  let _dz=0,_dt=6;try{const fit=Array.isArray(me&&me.fit)?me.fit:[],sl=new Set(OUTFITS.map(x=>x.slot));_dt=sl.size;_dz=new Set(fit.map(id=>{const q=OUTFITS.find(y=>y.id===id);return q&&q.slot}).filter(Boolean)).size}catch(e){}
  set('drip',_dz>=_dt&&_dt>0,_dz,_dt,_dz+' / '+_dt+' zonas');
  set('embajador',false,0,1,'');
+ const _ab=[['alb_es17','es17_'],['alb_es18','es18_'],['alb_es19','es19_'],['alb_ar18','ar18_'],['alb_ar19','ar19_'],['alb_mx19','mx19_'],['alb_cl19','cl19_']];
+ try{const al=albOwn();_ab.forEach(([id,pf])=>{const c=ALB.filter(x=>x.id.indexOf(pf)===0),n=c.filter(x=>(al[x.id]||0)>0).length;set(id,c.length>0&&n>=c.length,n,Math.max(c.length,1),n+' / '+c.length+' cartas')})}catch(e){_ab.forEach(([id])=>set(id,false,0,10,''))}
+ {const pp=shopS().pass;set('pase_elite',!!(pp&&pp.t===2),0,1,'')}
+ {let nT=0;try{const ow=shopS().own;if(Array.isArray(ow))nT=SHOP.filter(x=>ow.includes(x.id)).length}catch(e){}set('tienda20',nT>=20,nT,20,nT+' / 20 objetos')}
+ set('amigo_dev',!!(me&&(S.fr||[]).some(f=>f.from===me.uid&&String(f.toName||'').toLowerCase()===DEV_USER)),0,1,'');
  return o}
 function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
 function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
@@ -4517,8 +4557,10 @@ function closeAch(){S.achOpen=false;S.achSel=null;R()}
 const ACH_CATS=[
  {k:'ini',n:'Primeros pasos',ic:'🎤',ids:['cuenta','voto1','foto','copyid','bio','coment','cal']},
  {k:'vot',n:'Votaciones',ic:'⚖️',ids:['jornada','voto10','voto30','p40','rep3','libre','actual','es2017','ar2018','ws','madrugada','empate']},
- {k:'soc',n:'Comunidad',ic:'🤝',ids:['amigos5','amigos15','like','likes5','likes10','visitas5','sinrastro','embajador']},
+ {k:'soc',n:'Comunidad',ic:'🤝',ids:['amigos5','amigos15','like','likes5','likes10','visitas5','sinrastro','embajador','amigo_dev']},
  {k:'ran',n:'Rango y estilo',ic:'👑',ids:['regional3','semi3','pro1','pro3','elite3','tema_ca','jair','rd','drip']},
+ {k:'alb',n:'Álbum',ic:'🎴',ids:['alb_es17','alb_es18','alb_es19','alb_ar18','alb_ar19','alb_mx19','alb_cl19']},
+ {k:'tie',n:'Tienda',ic:'🛍️',ids:['pase_elite','tienda20']},
  {k:'ia',n:'MC IA',ic:'🤖',ids:['ia_use','ia_train']},
  {k:'sec',n:'Secretos',ic:'🥚',ids:['easter','te_quiero']}];
 function achSel(id){S.achSel=(S.achSel===id)?null:id;R()}
@@ -4546,33 +4588,65 @@ function achSheet(){
  const left=ACH_N-n;
  return `<div class="ov" onclick="closeAch()"><div class="sh ach-sh" onclick="event.stopPropagation()">
  <div class="axh"><div class="ach-ring"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="36" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="8"/><circle cx="42" cy="42" r="36" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*n/ACH_N} ${C}" transform="rotate(-90 42 42)"/></svg><b>${n}<small>de ${ACH_N}</small></b></div>
- <div class="axht"><h2>Tus logros</h2><p>${left>0?`Te faltan <b>${left}</b> para completarlos todos.`:'¡Los completaste todos!'}</p><span>Por ahora los logros son solo para coleccionar.</span></div></div>
+ <div class="axht"><h2>Tus logros</h2><p>${left>0?`Te faltan <b>${left}</b> para completarlos todos.`:'¡Los completaste todos!'}</p><span>Cada logro nuevo te da ${ACH_COIN_NEW} monedas.</span></div></div>
  ${S.me?'':`<div class="card" style="margin:12px 0 0;text-align:center"><b>Crea tu cuenta</b><div class="mu" style="margin:4px 0 10px">Inicia sesión para ir guardando tus logros.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.achOpen=false;openAuth('create')">Crear cuenta</button></div>`}
  ${colorTeaser(n)}<div class="ach-seg"><button class="${tab==='all'?'on':''}" onclick="S.achTab='all';R()">Todos ${ACH_N}</button><button class="${tab==='got'?'on':''}" onclick="S.achTab='got';R()">Logrados ${n}</button><button class="${tab==='lock'?'on':''}" onclick="S.achTab='lock';R()">Pendientes ${left}</button></div>
  ${nearH}${sections}${empty}
  <div class="ach-note">Toca una medalla para ver qué debes hacer 🎙️</div>
  ${det}<button class="btn s" style="margin:14px 0 0" onclick="closeAch()">Cerrar</button></div></div>`}
-function achToast(items){
+function achToast(items,coins){
  if(!items.length)return;try{SFX.ach()}catch(e){}
  const old=document.getElementById('achtoast');if(old)old.remove();
  const one=items.length===1?items[0]:null;
  const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';
- el.innerHTML=`<div class="tm">${one?one.ic:'🏆'}</div><div><small>${one?'Logro desbloqueado':'Logros desbloqueados'}</small><b>${one?esc(one.n):'¡Has desbloqueado '+items.length+' logros!'}</b></div>`;
+ el.innerHTML=`<div class="tm">${one?one.ic:'🏆'}</div><div><small>${one?'Logro desbloqueado':'Logros desbloqueados'}${coins?' · +'+coins+' monedas':''}</small><b>${one?esc(one.n):'¡Has desbloqueado '+items.length+' logros!'}</b></div>`;
  el.onclick=()=>{el.remove();openAch()};
  document.body.appendChild(el);
  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4800)}
+/* ===== Monedas por logros =====
+   Cada logro nuevo da ACH_COIN_NEW monedas. Una sola vez por cuenta (campo lcm) se pagan ACH_COIN_OLD monedas por cada logro de los 40 originales que ya tenía.
+   Todo se guarda en una transacción para que nunca se pague dos veces (aunque haya dos pestañas abiertas). */
+function achBonusLocal(n){const s=shopS();S.me={...S.me,shop:{...s,bonus:Math.max(0,+(s.bonus)||0)+n}}}
+async function achCommit(ids,ts){const fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid);
+ return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),d=(sn.exists()&&sn.data())||{},lg=d.logros||{},nw=ids.filter(id=>!lg[id]);
+  if(!nw.length)return {nw:[],paid:!!d.lcm};
+  const p={};nw.forEach(id=>{p['logros.'+id]=ts});
+  if(d.lcm)p['shop.bonus']=fm.increment(nw.length*ACH_COIN_NEW);
+  tx.update(ref,p);return {nw,paid:!!d.lcm}})}
 async function achSave(ids){
- if(!S.me||!ids.length)return;const ts=Date.now(),patch={};S.ach=S.ach||{};
- ids.forEach(id=>{S.ach[id]=ts;patch['logros.'+id]=ts});
- try{await B.updateUser(S.me.uid,patch)}catch(e){}}
+ if(!S.me||!ids.length)return {nw:[],paid:false};const ts=Date.now();S.ach=S.ach||{};let r;
+ try{r=await achCommit(ids,ts)}catch(e){console.error('achSave',e);return {nw:[],paid:false}}
+ ids.forEach(id=>{if(!S.ach[id])S.ach[id]=ts});
+ if(r.paid&&r.nw.length)achBonusLocal(r.nw.length*ACH_COIN_NEW);
+ return r}
+function achCoinToast(n,amt){try{SFX.ach()}catch(e){}
+ const old=document.getElementById('achtoast');if(old)old.remove();
+ const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';
+ el.innerHTML=`<div class="tm">🪙</div><div><small>Recompensa por tus logros</small><b>+${amt} monedas · ${n} ${n===1?'logro':'logros'} × ${ACH_COIN_OLD}</b></div>`;
+ el.onclick=()=>{el.remove();openAch()};document.body.appendChild(el);
+ setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4800)}
+async function achMig(o){
+ const ts=Date.now(),olds=ACH.filter(a=>ACH_OLD.has(a.id)&&o[a.id].done).map(a=>a.id);
+ const fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid);let amt=0;
+ try{amt=await fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),d=(sn.exists()&&sn.data())||{};if(d.lcm)return -1;
+   const lg=d.logros||{},p={lcm:ts};olds.forEach(id=>{if(!lg[id])p['logros.'+id]=ts});
+   const t=olds.length*ACH_COIN_OLD;if(t)p['shop.bonus']=fm.increment(t);tx.update(ref,p);return t})}
+ catch(e){console.error('achMig',e);return 0}
+ S.lcm=true;S.ach=S.ach||{};olds.forEach(id=>{if(!S.ach[id])S.ach[id]=ts});
+ if(amt>0){const b0=coinBal();achBonusLocal(amt);achCoinToast(olds.length,amt);try{coinCount(b0,coinBal())}catch(e){}return 1}
+ return 0}
 let _achBusy=false;
 async function syncAch(){
- if(!S.me||S.ach===null||_achBusy)return;_achBusy=true;
- try{const o=achCalc();const fresh=ACH.filter(a=>o[a.id].done&&!(S.ach&&S.ach[a.id]));
-  if(fresh.length){await achSave(fresh.map(a=>a.id));achToast(fresh)}}
+ if(!S.me||S.ach===null||_achBusy)return;_achBusy=true;let late=0;
+ try{const o=achCalc();
+  if(S._achFull&&S.lcm===false)late=await achMig(o);
+  if(S.lcm){const fresh=ACH.filter(a=>o[a.id].done&&!(S.ach&&S.ach[a.id]));
+   if(fresh.length){const b0=coinBal(),r=await achSave(fresh.map(a=>a.id)),got=fresh.filter(a=>r.nw.includes(a.id));
+    if(got.length){const show=()=>{achToast(got,r.paid?got.length*ACH_COIN_NEW:0);if(r.paid){try{coinCount(b0,coinBal())}catch(e){}}};if(late)setTimeout(show,5200);else show()}}}}
  finally{_achBusy=false}
  if(S.achOpen||S.v==='lg')R()}
-function achMark(id){if(!S.me||S.ach===null)return;if(S.ach&&S.ach[id])return;const a=ACH.find(x=>x.id===id);if(!a)return;achSave([id]).then(()=>{achToast([a]);if(S.achOpen||S.v==='lg')R()})}
+function achMark(id){if(!S.me||S.ach===null)return;if(S.ach&&S.ach[id])return;const a=ACH.find(x=>x.id===id);if(!a)return;const b0=coinBal();
+ achSave([id]).then(r=>{if(!r.nw.length)return;achToast([a],r.paid?ACH_COIN_NEW:0);if(r.paid){try{coinCount(b0,coinBal())}catch(e){}}if(S.achOpen||S.v==='lg')R()})}
 /* ===== Easter egg: toca 7 veces seguidas el logo de VotaFMS ===== */
 let _egT=[],_egOn=false;
 function egBeat(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC(),t0=c.currentTime+.05;
@@ -4599,11 +4673,11 @@ document.addEventListener('click',e=>{
  if(_egT.length>=4){b.classList.remove('eg-sh');void b.offsetWidth;b.classList.add('eg-sh')}
  if(_egT.length>=7){_egT=[];egShow()}});
 async function loadAch(){
- if(!S.me)return;const uid=S.me.uid;
- try{const d=await B.getUser(uid);S.ach=Object.assign({},(d&&d.logros)||{})}catch(e){S.ach=S.ach||null;return}
+ if(!S.me)return;const uid=S.me.uid;S._achFull=false;
+ try{const d=await B.getUser(uid);S.ach=Object.assign({},(d&&d.logros)||{});S.lcm=!!(d&&d.lcm)}catch(e){S.ach=S.ach||null;return}
  try{S.likeGiven=await B.likeGivenAny(uid)}catch(e){}
  try{await loadLikes(uid,true)}catch(e){}
- await syncAch()}
+ S._achFull=true;await syncAch()}
 
 /* ===== Colores de tarjeta de perfil (se desbloquean con logros) ===== */
 const THEMES=[
@@ -4891,7 +4965,7 @@ Sobre la app VotaFMS:
 - Votar: eliges una liga y una batalla y puntúas ronda por ronda con casillas de 0 a 10 en pasos de medio punto. Hay réplica de 6 casillas por MC y la opción "Diferencia para que sea directa". También hay votación libre pegando el link de YouTube de cualquier batalla. Puedes guardar y editar tus votos.
 - Cada liga muestra una tabla con solo tus votos. En Comunidad está el ranking global de rangos.
 - Rangos: subes ganando puntos al votar. Hay 8 niveles (Underground, Regional, Semi, Profesional, Elite, Maestro, Mítico e Inmortal), cada uno con 3 subniveles.
-- Logros: hay 40 (por ahora son solo para coleccionar). Los colores de la app, los diseños de tarjeta y de planilla, los marcos y los títulos se compran en la Tienda con monedas, que se ganan votando batallas de liga. Los atuendos de la mascota se desbloquean con días de racha.
+- Logros: hay 50; cada logro nuevo da 900 monedas (por los 40 que ya existían antes se pagaron 100 monedas por cada uno que ya tenías). Los colores de la app, los diseños de tarjeta y de planilla, los marcos y los títulos se compran en la Tienda con monedas, que se ganan votando batallas de liga. Los atuendos de la mascota se desbloquean con días de racha.
 - Perfil: foto, MC favorito, biografía, color, ID de usuario de 9 números. Puedes buscar usuarios, agregar amigos, dar likes y ver quién está en línea. Entre amigos hay chat con el botón "Enviar mensaje" en su perfil.
 - Racha diaria: un micrófono en llamas cuenta los días seguidos que entras. Cada 10 días de racha ganas 1 oportunidad por si faltas un día.
 - Calendario: próximas jornadas y resultados. La bandeja de entrada trae avisos de las actualizaciones. MC IA (tú) tiene un botón Entrenar para practicar rimas y un micrófono para dictar por voz. También puedes crear imágenes: hasta 3 por día por usuario, con el botón «Crear imagen» o pidiendo «dibuja…» o «genera una imagen de…».
