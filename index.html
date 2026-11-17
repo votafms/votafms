@@ -2391,7 +2391,7 @@ const B={
  async createUser(uid,u,prof){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
  async updateUser(uid,prof){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),prof)},
  async topUsers(n){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.orderBy('rp','desc'),fm.limit(n)));return q.docs.map(d=>({uid:d.id,...pub(d.data())}))},
- async listUsersFull(){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(200)));return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null}})},
+ async listUsersFull(){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(200)));return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null}})},
  async listUsers(){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(200)));return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},
  async addVote(v){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'votes'),v)},
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v)},
@@ -2554,7 +2554,36 @@ function boostLeft(){const t=Math.max(0,Math.ceil((boostEnd()-Date.now())/1000))
  if(d)return P(d,'día','días')+(h?' y '+P(h,'hora','horas'):'');
  if(h)return P(h,'hora','horas')+(m?' y '+m+' min':'');
  return m?m+' min '+String(sc).padStart(2,'0')+' s':sc+' s'}
-function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const nw=(+v.ts||0)>=COIN_NEW_FROM,tr=ecoTier(+v.ts||0),b=tr?(tr.L&&tr.L[v.l]!=null?tr.L[v.l]:tr.d):nw?(COIN_L[v.l]||COIN_DEF):(COIN_L_OLD[v.l]||COIN_DEF_OLD);return boostAt(v.ts)?b*2:b}
+/* ===== Restricción por abuso: votar antes del tiempo mínimo entre batallas para farmear monedas =====
+   Aviso 1 y 2: solo advertencia. A la 3.ª vez: 24 horas con 50% menos de monedas en todo (votos de liga, ruleta, apuestas, moneda voladora,
+   sueldo de la mascota, logros y venta de repetidas del álbum). Los avisos se olvidan tras 7 días sin abusar. Se guarda en users/{uid}.ab = {n,t,u,log:[{s,e}]}. */
+const AB={strikes:3,hours:24,forget:7*864e5};
+function abNow(){const a=S.me&&S.me.ab;return a&&typeof a==='object'?a:null}
+function penOn(){const a=abNow();return !!(a&&(+a.u||0)>Date.now())}
+function penAt(ts){let a;if(S._abo!==undefined&&S._abo!==null)a=S._abo;else if(S._blo)a=null;else a=S.me&&S.me.ab;const l=a&&a.log;if(!Array.isArray(l))return false;ts=+ts||0;return l.some(w=>ts>=w.s&&ts<w.e)}
+function penAmt(n){n=+n||0;return n>0&&penOn()?Math.max(1,Math.floor(n/2)):n}
+function penBet(m,p){return penOn()&&p>m?m+Math.floor((p-m)/2):p}
+function abModal(k){const old=document.getElementById('abov');if(old)old.remove();
+ let g=45;try{g=ecoRule(Date.now()).minGap}catch(e){}
+ const a=abNow()||{},hasta=a.u?new Date(a.u).toLocaleString('es',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+ const T={1:['⚠️','Aviso 1 de 3','Votaste demasiado rápido',`Guardaste un voto antes de que pasaran ${g} segundos desde tu voto anterior, así que esa batalla no sumó monedas. Para ganar monedas ve la batalla completa y deja al menos ${g} segundos entre una y otra.`,'Si sigues guardando puntajes al azar para farmear monedas, a la 3.ª vez tus monedas bajarán a la mitad durante 24 horas.'],
+  2:['⚠️','Aviso 2 de 3','Otra vez demasiado rápido',`Volviste a guardar un voto antes de ${g} segundos y no sumó monedas. Esto cuenta como abuso del truco de puntajes al azar.`,'Te falta 1 aviso: la próxima vez recibirás una restricción de 24 horas con 50% menos de monedas en todo.'],
+  3:['🚫','Restricción activada','Monedas al 50% por 24 horas',`Abusaste 3 veces del truco de votar antes de ${g} segundos. Hasta el ${hasta} ganarás 50% menos monedas en todo: votos de ligas, ruleta, apuestas, moneda voladora, sueldo de la mascota, logros y venta de repetidas del álbum.`,'Cuando termine, tus avisos vuelven a cero. Vota con calma y no te pasará.']}[k]||[];
+ if(!T.length)return;const el=document.createElement('div');el.id='abov';el.className='ov';el.style.cssText='z-index:9000;align-items:center;padding:18px';
+ el.onclick=()=>el.remove();
+ el.innerHTML=`<div class="sh" style="text-align:center;border-radius:26px;max-width:420px" onclick="event.stopPropagation()"><div style="font-size:46px;line-height:1.1;margin-top:8px">${T[0]}</div><div class="kicker" style="margin:6px 0 2px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;font-size:11px;color:${k===3?'#F87171':'#FACC15'}">${T[1]}</div><b style="font-size:20px">${T[2]}</b><div class="mu" style="margin:10px 0 8px">${T[3]}</div><div class="mu" style="margin:0 0 14px;font-size:13px"><b>${T[4]}</b></div><button class="btn" style="margin:0;width:100%" onclick="document.getElementById('abov').remove()">Entendido</button></div>`;
+ document.body.appendChild(el)}
+async function abStrike(){
+ if(!S.me||!FB||S._abBusy)return;S._abBusy=true;
+ try{const now=Date.now(),a=abNow()||{};if((+a.u||0)>now)return;
+  let n=+a.n||0;if(a.t&&now-(+a.t)>AB.forget)n=0;n++;
+  const pen=n>=AB.strikes,nx={n:pen?0:n,t:now,u:pen?now+AB.hours*36e5:(+a.u||0),log:Array.isArray(a.log)?a.log.slice(-29):[]};
+  if(pen)nx.log.push({s:now,e:nx.u});
+  try{await B.updateUser(S.me.uid,{ab:nx})}catch(e){console.error('abStrike',e);return}
+  S.me={...S.me,ab:nx};S._cev=null;abModal(pen?3:n);try{R()}catch(e){}}
+ finally{S._abBusy=false}}
+{const st=document.createElement('style');st.textContent='.abp{font-style:normal;font-size:10px;font-weight:900;color:#F87171;margin-left:3px;letter-spacing:.2px}';document.head.appendChild(st)}
+function coinOf(v){if(!v||v.free)return 0;const l=L.find(x=>x.i===v.l);if(!l)return 0;const nw=(+v.ts||0)>=COIN_NEW_FROM,tr=ecoTier(+v.ts||0),b=tr?(tr.L&&tr.L[v.l]!=null?tr.L[v.l]:tr.d):nw?(COIN_L[v.l]||COIN_DEF):(COIN_L_OLD[v.l]||COIN_DEF_OLD);const r=boostAt(v.ts)?b*2:b;return penAt(v.ts)?Math.max(1,Math.floor(r/2)):r}
 /* Reglas anti-trampa de las monedas por votar (se aplican desde la fecha "from"):
    minGap = segundos mínimos entre un voto de liga y el siguiente · perDay = batallas de liga con monedas por día. */
 const VOTE_RULES={minGap:45,perDay:20,from:Date.parse('2026-11-12T00:00:00-04:00')};
@@ -2661,7 +2690,7 @@ try{FC.t=Math.min(FC.every,Math.max(0,+localStorage.getItem('vfms_fc')||0))}catc
 function fcAmount(){const T=ecoFcT();let r=Math.random()*T.reduce((a,b)=>a+b[1],0);for(const [c,w] of T){if((r-=w)<0)return c}return 30}
 function fcKill(){if(FC.raf)cancelAnimationFrame(FC.raf);FC.raf=0;if(FC.el){FC.el.remove();FC.el=null}}
 function fcSpawn(){
- if(FC.el)return;const amt=fcAmount()*(boostOn()?2:1),W=()=>innerWidth,H=()=>innerHeight;
+ if(FC.el)return;const amt=penAmt(fcAmount()*(boostOn()?2:1)),W=()=>innerWidth,H=()=>innerHeight;
  const el=document.createElement('button');el.type='button';el.className='fcoin';el.setAttribute('aria-label','Agarrar '+amt+' monedas');
  el.innerHTML='<i class="coin"></i><b>+'+amt+'</b><em>'+FC.life+'</em>';document.body.appendChild(el);FC.el=el;
  const top=80,bot=()=>H()-110,pad=40;
@@ -3007,7 +3036,7 @@ function R(){
  {const _o=(S.auth?authM():'')+(S.sheet?sheetH():'')+(S.difSheet?difSheetH():'')+(S.fb?fbM():'')+(S.delAsk?delM():'')+(S.friendsOpen?friendsSheet():'')+(S.pick?pickSheet():'')+(S.ranksOpen?ranksSheet():'')+(S.achOpen?achSheet():'')+(S.favPick?favPickSheet():'')+(S.iaHist?iaHistSheet():'')+(S.stkOpen?stkSheet():'')+(S.plSheet?plSheetH():'')+(S.shopSheet?shopSheetH():'')+(S.chat?chatSheet():'')+(S.inboxOpen?inboxSheet():'')+(S.cfgOpen?cfgSheet():'')+(S.rankUp?rankUpAnim():''),_oe=document.getElementById('ov');if(_o!==_oe._h||(!_o&&_oe.firstChild)){_oe.innerHTML=_o;_oe._h=_o}}
  renderFloat();
 }
-function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div><button class="ib" id="cfgb" onclick="openCfg()" aria-label="Ajustes">${ico('gear',18)}</button>${S.me?`<button class="coinb" id="coinb" onclick="go('tienda')" aria-label="Monedas: ir a la tienda"><i class="coin"></i><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b></button>`:''}${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
+function topH(){return `<div class="brand">${APP_ICON}<b>VotaFMS</b></div><div class="sp"></div><button class="ib" id="cfgb" onclick="openCfg()" aria-label="Ajustes">${ico('gear',18)}</button>${S.me?`<button class="coinb" id="coinb" onclick="go('tienda')" aria-label="Monedas: ir a la tienda"><i class="coin"></i><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b>${penOn()?'<em class="abp">−50%</em>':''}</button>`:''}${S.me?`<button class="ib" onclick="openInbox()" aria-label="Bandeja de entrada">${ico('bell',18)}${S.unread?`<span class="nbadge2">${S.unread}</span>`:''}</button>`:''}${S.me?`<button class="ib" onclick="openFriends()" aria-label="Amigos">${ico('users',18)}${(pendCount()+chatUnreadTotal())?`<span class="nbadge2">${pendCount()+chatUnreadTotal()}</span>`:''}</button>`:''}<button class="ib" onclick="openFb()" aria-label="Enviar comentarios">${ico('chat',18)}</button>${S.me?`<button class="avbtn" onclick="go('perfil')" aria-label="Mi perfil">${avU(S.me,'')}</button>`:`<button class="btn sm" onclick="openAuth('in')">Entrar</button>`}`}
 function navH(){const items=[['home','Ligas','home'],['cal','Calendario','cal'],['comunidad','Comunidad','users'],['ia','IA',''],['search','Buscar','search'],['perfil','Perfil','user']];return items.map(([k,t,ic])=>`<button class="${nk()===k?'on':''}" onclick="go('${k}')" aria-label="${t}"${nk()===k?' aria-current="page"':''}><span class="ni">${ic?ico(ic,20):'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>'}</span><span class="nl">${t}</span></button>`).join('')}
 
 const mesCorto=dt=>{try{const d=new Date(dt+'T12:00:00');return {d:d.getDate(),m:d.toLocaleDateString('es',{month:'short'}).replace('.','').toUpperCase()}}catch(e){return {d:'',m:''}}};
@@ -3522,11 +3551,11 @@ async function pushVote2(v){
  let c={n:0,wa:0,wb:0};try{c=summ(await B.votesKey(v.key))}catch(e){}
  const cw=c.wa>=c.wb?0:1,uw=(()=>{const o=outcomeOf(v);return o.w==null?-1:(o.w==='a'?0:1)})();
  v.msg=uw<0?'Empate':c.n===0?'Primer voto de esta batalla':uw===cw?'Coincide con la mayoría':'Votaste distinto a la mayoría';
- try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}{const _o=ex?mine.find(x=>x.id===ex):null;v.ts0=_o?(_o.ts0||_o.ts||v.ts):v.ts}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
+ try{const mine=await B.votesOfUser(S.me.uid);let ex=S.editId;S.dupNote='';if(!v.free){const f=mine.filter(x=>!x.free&&bkey(x)===bkey(v)).sort((a,b)=>(a.ts||0)-(b.ts||0))[0];if(f&&f.id!==ex){ex=f.id;S.dupNote='Ya habías votado esta batalla, así que se actualizó ese voto. Para votarla otra vez, usa Batalla libre.'}}{const _o=ex?mine.find(x=>x.id===ex):null;v.ts0=_o?(_o.ts0||_o.ts||v.ts):v.ts}prevRank=rankInfo(mine);newRank=rankInfo(mine.filter(x=>x.id!==ex).concat([v]));window._abEd=!!ex;if(ex){await B.updateVote(ex,v)}else{await B.addVote(v)}}catch(e){S.msgP='No se pudo guardar tu voto. Revisa tu conexión y las reglas de Firestore.';R();return}
  notifyFriends(v);try{SFX.vote()}catch(e){}try{shopVoteFx(v)}catch(e){}
  /* Corona animada si planilla Noche de Campeones activa */
  if(S.me&&S.me.pl==='campeones'&&shopOwns('pl_campeones')){try{plcBurst()}catch(_e){}}
- S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine();try{window.pfSyncLv&&window.pfSyncLv()}catch(_e){}}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}try{const _u=rankUniq(S.myVotes||[]),_c=rankCapped(_u),_m=_u.find(x=>+x.ts===+v.ts);if(_m&&_c.has(_m)){S.rankNote=true;R()}}catch(e){}})();
+ S.last=v;S.editId=null;S.v='res';S.comm=null;const _up=!!(prevRank&&newRank&&newRank.lvl>prevRank.lvl);if(_up){S.rankUp={from:prevRank,to:newRank};try{SFX.rankup(.5)}catch(e){}}R();window.scrollTo(0,0);(async()=>{const _e0=coinsEarned(),_b0=coinBal();try{if(_up)await notifyRankUp(newRank);await refreshMine();try{window.pfSyncLv&&window.pfSyncLv()}catch(_e){}try{if(!window._abEd&&coinWhy(v.ts)==='rapido')await abStrike()}catch(_e){console.error('abStrike',_e)}}catch(e){}try{const g=coinsEarned()-_e0;if(g>0){S.coinGain=g;coinCount(_b0,coinBal())}else{const w=coinWhy(v.ts);if(w){S.coinNote=w;R()}}}catch(e){}try{const _u=rankUniq(S.myVotes||[]),_c=rankCapped(_u),_m=_u.find(x=>+x.ts===+v.ts);if(_m&&_c.has(_m)){S.rankNote=true;R()}}catch(e){}})();
  try{S.comm=summ(await B.votesKey(v.key))}catch(e){S.comm={n:0,wa:0,wb:0,sa:0,sb:0}}
  R();
 }
@@ -3870,7 +3899,7 @@ function lbStart(){const B2=S.lb;const a=B2.a.trim(),b=B2.b.trim();
  B2.err='';S.lg=B2.lg;start({a,b,j:'Batalla libre',y,libre:true})}
 
 function myVoteOf(lg,x){const key=lg+'|'+x.a+'|'+x.b;return (S.myVotes||[]).find(v=>!v.free&&(v.temp||'2026')==='2026'&&v.key===key)||null}
-async function refreshMine(){if(!S.me)return;watchInbox();streakTick();try{S.myVotes=await cleanMine();await refreshFriends();await loadInbox();R();await loadAch()}catch(e){}}
+async function refreshMine(){if(!S.me)return;watchInbox();streakTick();try{S.myVotes=await cleanMine()}catch(e){}try{await refreshFriends()}catch(e){}try{await loadInbox()}catch(e){}try{R()}catch(e){console.error('refreshMine R',e)}try{await loadAch()}catch(e){console.error('loadAch',e)}}
 /* ===== Votos guardados con un formato anterior: se adaptan al formato actual al editarlos ===== */
 const mRnm=s=>String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\bmode\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();
 const mKey=s=>{const k=mRnm(s);if(/^random/.test(k))return 'random';if(/^minutos/.test(k))return 'minutos';if(/^deluxe/.test(k))return 'deluxe';if(/^replica/.test(k))return 'replica';if(/^tematica/.test(k))return 'tematicas';return k};
@@ -3928,6 +3957,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-17T16:00:00-04:00'),text:'Actualización 🛠️: 1) El logro «Saludo al Dev» ahora se desbloquea cuando linexs17 acepta tu solicitud de amistad (o tú aceptas la suya). Si ya lo tenías como amigo, te salta solo. 2) Arreglamos el aviso de logros: vuelve a salir arriba de la pantalla cada vez que desbloqueas uno, y si ganas varios salen uno detrás de otro. 3) Nueva restricción anti-trampas 🚫: si guardas votos de liga antes del tiempo mínimo entre batallas para farmear monedas, recibes un aviso. A la 1.ª y 2.ª vez es solo advertencia; a la 3.ª, durante 24 horas ganas 50% menos de monedas en todo: votos de liga, ruleta, apuestas, moneda voladora, sueldo de la mascota, logros y venta de repetidas del álbum. Vota con calma y no pasa nada 😉'},
  {ts:Date.parse('2026-11-16T23:30:00-04:00'),text:'Nuevo: la Ruleta Freestyle 🎰. Ganas 1 ticket por cada batalla de liga que votes y giras con 1 ticket (o con 300 monedas si no tienes). Hay 10 premios que solo salen una vez: la Mascota evolutiva (legendaria, sube hasta el nivel 5 desde el apartado de Racha y te paga un sueldo diario), la Vitrina de trofeos (épica, aparece en tu baúl), la Suerte legendaria (3 días con más probabilidad de cartas legendarias) y marcos, títulos y fondos exclusivos. Tienes el botón de Ruleta arriba en Ligas, y todo lo que ganes va a tu Baúl.'},
   {ts:Date.parse('2026-11-16T12:00:00-04:00'),text:'Actualización 🏆: 10 logros nuevos (ya son 50): completar los álbumes de FMS España 2017, 2018 y 2019, Argentina 2018 y 2019, México 2019 y Chile 2019, comprar un pase élite, comprar 20 objetos de la tienda y enviarle solicitud de amistad al desarrollador. Si ya lo habías hecho, se desbloquean solos. Además los logros ahora dan monedas: 900 por cada logro nuevo, y por los logros que ya tenías antes recibes 100 monedas por cada uno. También: desde el 17 de noviembre solo las primeras 13 batallas de cada día suben tu rango (la 14 ya no da puntos de rango hasta el día siguiente), arreglamos que la planilla antigua te devolvía al inicio de las casillas al votar Téc., Flow y P.Esc, y dentro de cada liga hay un nuevo Ranking de 4s con los MCs a los que más 4s les has puesto.'},
  {ts:Date.parse('2026-11-15T08:10:00-04:00'),text:'Arreglo: en el panel de administrador, «Videos: pegar links y asignar solo» ahora reconoce también las batallas de la temporada 2026 (por ejemplo, Babi vs El Menor de la Jornada 1 de FMS España). Antes decía «no la encuentro» y no dejaba guardar.'},
@@ -4229,7 +4259,7 @@ async function adminDel(id){if(!isAdmin()||!confirm('¿Eliminar este comentario?
 
 
 /* ===== Admin: ver y quitar monedas de usuarios ===== */
-async function admCalcBal(u){const vs=await B.votesOfUser(u.uid);let t=0;const sh=u.shop&&typeof u.shop==='object'?u.shop:{};S._blo=sh;try{coinPass(splitDups(vs).keep).forEach(x=>{t+=x.c})}catch(e){vs.forEach(v=>{t+=coinOf(v)})}finally{S._blo=null}
+async function admCalcBal(u){const vs=await B.votesOfUser(u.uid);let t=0;const sh=u.shop&&typeof u.shop==='object'?u.shop:{};S._blo=sh;S._abo=u.ab||{};try{coinPass(splitDups(vs).keep).forEach(x=>{t+=x.c})}catch(e){vs.forEach(v=>{t+=coinOf(v)})}finally{S._blo=null;S._abo=null}
  u.bal=Math.max(0,t+Math.max(0,+sh.bonus||0)-(+sh.spent||0));return u.bal}
 async function admCoinSearch(all){if(!isAdmin())return;try{const q=((document.getElementById('acq')||{}).value||'').trim().toLowerCase().replace(/^@/,'');S.acQ=q;
  if(!q&&!all){S.acMsg='Escribe un nombre o pulsa «Ver todos».';R();return}
@@ -4474,7 +4504,7 @@ const ACH=[
  {id:'alb_cl19',ic:'🇨🇱',x:'#3B82F6',n:'Álbum CHI 2019',d:'Completa todas las cartas de FMS Chile 2019.'},
  {id:'pase_elite',ic:'🎟️',x:'#FACC15',n:'Pase Élite',d:'Compra al menos un pase élite (completo) de los pases de batalla mensuales.'},
  {id:'tienda20',ic:'🛍️',x:'#EC4899',n:'Cliente Frecuente',d:'Compra al menos 20 objetos de la tienda.'},
- {id:'amigo_dev',ic:'👋',x:'#8B5CF6',n:'Saludo al Dev',d:'Envíale una solicitud de amistad al desarrollador.'}
+ {id:'amigo_dev',ic:'👋',x:'#8B5CF6',n:'Saludo al Dev',d:'Sé amigo del desarrollador: envíale una solicitud a linexs17 y espera a que la acepte (o acepta la suya).'}
 ];
 /* Los 40 logros que ya existían antes de que dieran monedas (por ellos se pagó 100 monedas por única vez). Cada logro nuevo da 900. */
 const ACH_OLD=new Set(ACH.slice(0,40).map(a=>a.id));const ACH_COIN_OLD=100,ACH_COIN_NEW=900,DEV_USER='linexs17';
@@ -4550,8 +4580,10 @@ function achCalc(){
  try{const al=albOwn();_ab.forEach(([id,pf])=>{const c=ALB.filter(x=>x.id.indexOf(pf)===0),n=c.filter(x=>(al[x.id]||0)>0).length;set(id,c.length>0&&n>=c.length,n,Math.max(c.length,1),n+' / '+c.length+' cartas')})}catch(e){_ab.forEach(([id])=>set(id,false,0,10,''))}
  {const pp=shopS().pass;set('pase_elite',!!(pp&&pp.t===2),0,1,'')}
  {let nT=0;try{const ow=shopS().own;if(Array.isArray(ow))nT=SHOP.filter(x=>ow.includes(x.id)).length}catch(e){}set('tienda20',nT>=20,nT,20,nT+' / 20 objetos')}
- set('amigo_dev',!!(me&&(S.fr||[]).some(f=>f.from===me.uid&&String(f.toName||'').toLowerCase()===DEV_USER)),0,1,'');
+ set('amigo_dev',!!(me&&(S.fr||[]).some(f=>f.status==='accepted'&&((f.from===me.uid&&String(f.toName||'').toLowerCase()===DEV_USER)||(f.to===me.uid&&String(f.fromName||'').toLowerCase()===DEV_USER)))),0,1,'');
  return o}
+/* Si tienes una solicitud enviada a linexs17 pendiente, revisa cada minuto si ya la aceptó para que el logro salte al momento */
+setInterval(async()=>{try{if(document.hidden||!S.me||S.ach===null||S.ach.amigo_dev)return;const dv=f=>String(f.to===S.me.uid?f.fromName:f.toName||'').toLowerCase()===DEV_USER;if(!(S.fr||[]).some(f=>f.status==='pending'&&dv(f)))return;await refreshFriends();syncAch()}catch(e){}},60000);
 function achCount(){const o=achCalc();return ACH.filter(a=>o[a.id].done).length}
 function achBtn(){const n=achCount();return `<button class="achc" style="--p:${Math.round(n/ACH_N*100)}" onclick="event.stopPropagation();openAch()" aria-label="Logros: ${n} de ${ACH_N}"><span>🏆</span><i>${n}/${ACH_N}</i></button>`}
 function openAch(){S.achOpen=true;if(S.me&&!S.myVotes){cleanMine().then(v=>{S.myVotes=v;R()}).catch(()=>{})}R()}
@@ -4596,15 +4628,22 @@ function achSheet(){
  ${nearH}${sections}${empty}
  <div class="ach-note">Toca una medalla para ver qué debes hacer 🎙️</div>
  ${det}<button class="btn s" style="margin:14px 0 0" onclick="closeAch()">Cerrar</button></div></div>`}
+/* Avisos de logros: salen arriba de la pantalla, por encima de todo, y si hay varios salen uno detrás de otro */
+const _TQ=[];let _TB=false;
+function toastHost(){let h=document.getElementById('achhost');if(!h){h=document.createElement('div');h.id='achhost';h.style.cssText='position:fixed;left:0;right:0;top:0;height:0;z-index:2147483000;pointer-events:none'}
+ if(document.body&&h.parentNode!==document.body)document.body.appendChild(h);return h}
+function toastPush(inner){_TQ.push(inner);toastNext()}
+function toastNext(){if(_TB||!_TQ.length)return;_TB=true;const inner=_TQ.shift();
+ const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';el.style.pointerEvents='auto';el.innerHTML=inner;let done=false;
+ const fin=()=>{_TB=false;toastNext()};
+ const end=()=>{if(done)return;done=true;el.classList.add('out');setTimeout(()=>{el.remove();fin()},320)};
+ el.onclick=()=>{if(done)return;done=true;el.remove();fin();try{openAch()}catch(e){}};
+ try{toastHost().appendChild(el)}catch(e){_TB=false;return}
+ setTimeout(end,4800)}
 function achToast(items,coins){
  if(!items.length)return;try{SFX.ach()}catch(e){}
- const old=document.getElementById('achtoast');if(old)old.remove();
  const one=items.length===1?items[0]:null;
- const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';
- el.innerHTML=`<div class="tm">${one?one.ic:'🏆'}</div><div><small>${one?'Logro desbloqueado':'Logros desbloqueados'}${coins?' · +'+coins+' monedas':''}</small><b>${one?esc(one.n):'¡Has desbloqueado '+items.length+' logros!'}</b></div>`;
- el.onclick=()=>{el.remove();openAch()};
- document.body.appendChild(el);
- setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4800)}
+ toastPush(`<div class="tm">${one?one.ic:'🏆'}</div><div><small>${one?'Logro desbloqueado':'Logros desbloqueados'}${coins?' · +'+coins+' monedas':''}</small><b>${one?esc(one.n):'¡Has desbloqueado '+items.length+' logros!'}</b></div>`)}
 /* ===== Monedas por logros =====
    Cada logro nuevo da ACH_COIN_NEW monedas. Una sola vez por cuenta (campo lcm) se pagan ACH_COIN_OLD monedas por cada logro de los 40 originales que ya tenía.
    Todo se guarda en una transacción para que nunca se pague dos veces (aunque haya dos pestañas abiertas). */
@@ -4613,20 +4652,16 @@ async function achCommit(ids,ts){const fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.ui
  return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),d=(sn.exists()&&sn.data())||{},lg=d.logros||{},nw=ids.filter(id=>!lg[id]);
   if(!nw.length)return {nw:[],paid:!!(d.lcm||d.lgp)};
   const p={};nw.forEach(id=>{p['logros.'+id]=ts});
-  if(d.lcm||d.lgp)p['shop.bonus']=fm.increment(nw.length*ACH_COIN_NEW);
+  if(d.lcm||d.lgp)p['shop.bonus']=fm.increment(nw.length*penAmt(ACH_COIN_NEW));
   tx.update(ref,p);return {nw,paid:!!(d.lcm||d.lgp)}})}
 async function achSave(ids){
  if(!S.me||!ids.length)return {nw:[],paid:false};const ts=Date.now();S.ach=S.ach||{};let r;
  try{r=await achCommit(ids,ts)}catch(e){console.error('achSave',e);return {nw:[],paid:false}}
  ids.forEach(id=>{if(!S.ach[id])S.ach[id]=ts});
- if(r.paid&&r.nw.length)achBonusLocal(r.nw.length*ACH_COIN_NEW);
+ if(r.paid&&r.nw.length)achBonusLocal(r.nw.length*penAmt(ACH_COIN_NEW));
  return r}
 function achCoinToast(n,amt){try{SFX.ach()}catch(e){}
- const old=document.getElementById('achtoast');if(old)old.remove();
- const el=document.createElement('div');el.id='achtoast';el.className='ach-toast';
- el.innerHTML=`<div class="tm">🪙</div><div><small>Recompensa por tus logros</small><b>+${amt} monedas · ${n} ${n===1?'logro':'logros'} × ${ACH_COIN_OLD}</b></div>`;
- el.onclick=()=>{el.remove();openAch()};document.body.appendChild(el);
- setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},4800)}
+ toastPush(`<div class="tm">🪙</div><div><small>Recompensa por tus logros</small><b>+${amt} monedas · ${n} ${n===1?'logro':'logros'} × ${ACH_COIN_OLD}</b></div>`)}
 async function achMig(o){
  const ts=Date.now(),fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid);let amt=0,olds=[];
  try{const sn=await fm.getDoc(ref),d=(sn.exists()&&sn.data())||{};
@@ -4648,11 +4683,11 @@ async function syncAch(){
   if(S._achFull&&S.lcm===false)late=await achMig(o);
   if(S.lcm){const fresh=ACH.filter(a=>o[a.id].done&&!(S.ach&&S.ach[a.id]));
    if(fresh.length){const b0=coinBal(),r=await achSave(fresh.map(a=>a.id)),got=fresh.filter(a=>r.nw.includes(a.id));
-    if(got.length){const show=()=>{achToast(got,r.paid?got.length*ACH_COIN_NEW:0);if(r.paid){try{coinCount(b0,coinBal())}catch(e){}}};if(late)setTimeout(show,5200);else show()}}}}
+    if(got.length){const show=()=>{achToast(got,r.paid?got.length*penAmt(ACH_COIN_NEW):0);if(r.paid){try{coinCount(b0,coinBal())}catch(e){}}};if(late)setTimeout(show,5200);else show()}}}}
  finally{_achBusy=false}
  if(S.achOpen||S.v==='lg')R()}
 function achMark(id){if(!S.me||S.ach===null)return;if(S.ach&&S.ach[id])return;const a=ACH.find(x=>x.id===id);if(!a)return;const b0=coinBal();
- achSave([id]).then(r=>{if(!r.nw.length)return;achToast([a],r.paid?ACH_COIN_NEW:0);if(r.paid){try{coinCount(b0,coinBal())}catch(e){}}if(S.achOpen||S.v==='lg')R()})}
+ achSave([id]).then(r=>{if(!r.nw.length)return;achToast([a],r.paid?penAmt(ACH_COIN_NEW):0);if(r.paid){try{coinCount(b0,coinBal())}catch(e){}}if(S.achOpen||S.v==='lg')R()})}
 /* ===== Easter egg: toca 7 veces seguidas el logo de VotaFMS ===== */
 let _egT=[],_egOn=false;
 function egBeat(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=new AC(),t0=c.currentTime+.05;
@@ -6892,7 +6927,7 @@ function albCard(c,n,o){o=o||{};const l=L.find(x=>x.i===c.lg)||{c:'#e53935',c2:'
  if(o.locked)return `<div class="alk lock" style="--c1:${a};--c2:${b}"><div class="alk-in"><div class="alk-ph"><span class="alk-q">?</span></div><div class="alk-nm"><b>???</b><span>${c.y}</span></div></div></div>`;
  const [rn,rc]=ALB_RAR[c.r],st=ALB_ST[c.r],stars='★'.repeat(st)+'<u>'+'★'.repeat(4-st)+'</u>';
  return `<div class="alk k-${c.r}${o.big?' big':''}" style="--c1:${a};--c2:${b};--rc:${rc}"><div class="alk-in"><div class="alk-top">${lgi}<span class="alk-rr">${rn}</span></div><div class="alk-ph" style="background-image:url(${c.img})"><i class="alk-foil"></i><i class="alk-shine"></i>${n>1?`<b class="alk-x">x${n}</b>`:''}</div><div class="alk-nm"><b>${esc(c.n)}</b><span>${c.y}</span></div><div class="alk-ft"><span class="alk-st">${stars}</span></div></div></div>`}
-async function albSell(id,fromRev){if(!S.me||S.albBusy)return;const c=ALB.find(x=>x.id===id),s=shopS(),al={...albOwn()};if(!c||(al[id]||0)<2)return;const pr=ALB_SELL[c.r];
+async function albSell(id,fromRev){if(!S.me||S.albBusy)return;const c=ALB.find(x=>x.id===id),s=shopS(),al={...albOwn()};if(!c||(al[id]||0)<2)return;const pr=penAmt(ALB_SELL[c.r]);
  if(!confirm('¿Vender 1 copia repetida de '+c.n+' ('+albFms(c)+') por '+pr+' monedas? Te quedas con '+(al[id]-1)+'.'))return;
  al[id]-=1;S.albBusy=true;const bal=coinBal();
  const ok=await shopSave({...s,alb:al,bonus:Math.max(0,+(s.bonus)||0)+pr},'No se pudo vender la carta.');S.albBusy=false;
@@ -7038,7 +7073,7 @@ function rlV(){
  <div class="rlchips">${RL_P.map((p,i)=>`<span style="--c:${RL_COL[i]}"><i class="coin"></i>${p}</span>`).join('')}</div></div></div>`}
 async function rlSpin(){
  if(!S.me||S.rlSpin||rlLeft()>0)return;
- const rich=!(window.VCFG&&window.VCFG.noAnim),idx=rlIdx(),prize=RL_P[idx],bal=coinBal(),s=shopS();
+ const rich=!(window.VCFG&&window.VCFG.noAnim),idx=rlIdx(),prize=penAmt(RL_P[idx]),bal=coinBal(),s=shopS();
  S.rlSpin=true;S.rlRes=null;S.coinShow=bal;R();
  const ok=await shopSave({...s,bonus:Math.max(0,+(s.bonus)||0)+prize,spinAt:Date.now()},'No se pudo girar la ruleta. Revisa tu conexión.');
  if(!ok){S.rlSpin=false;S.coinShow=null;R();return}
@@ -7109,7 +7144,7 @@ async function betsClaim(){
  for(const id in mine){const o=mine[id];if(!o||o.d)continue;const inL=(S.bets||[]).find(x=>x.id===id);
   if(!inL&&id in miss&&miss[id]===undefined)continue;
   const d=inL||miss[id];let pay=null;
-  if(d){if(d.st==='void'){pay=o.m;back+=o.m}else if(d.st==='done'&&(d.w==='a'||d.w==='b')){pay=d.w===o.s?betPay(o.m,o.x):0;if(pay>0)won+=pay;else lost++}}
+  if(d){if(d.st==='void'){pay=o.m;back+=o.m}else if(d.st==='done'&&(d.w==='a'||d.w==='b')){pay=d.w===o.s?penBet(o.m,betPay(o.m,o.x)):0;if(pay>0)won+=pay;else lost++}}
   else if(now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
   if(pay==null)continue;nb[id]={...o,d:1,r:pay};add+=pay;ch=true}
  if(!ch){S.betClaiming=false;return}
@@ -7376,7 +7411,7 @@ VIEW.pase=function(){const back=`<button class="back" onclick="go('home')">‹ L
 .pftm{margin:6px 0 10px;padding:7px 10px;border-radius:10px;background:rgba(0,0,0,.35);font-size:13px;color:#fde7c8}.pftm b{color:#fde047;font-variant-numeric:tabular-nums}.pfbd{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:5px;background:#fff;color:#111;font:800 9px/1.3 inherit;letter-spacing:.06em;vertical-align:middle}
 .pfbgv{position:relative;width:100%;height:84px;border-radius:12px;overflow:hidden;opacity:.9}.pfbgv.pfbg1{background-color:#3b0f1a}.pfbgv.pfbg2{background-color:#78350f}`;document.head.appendChild(st)}
 /* --- BAÚL: todo lo que has comprado o ganado, por apartados --- */
-const BZ_G=['suit','frame','title','fx','color','pack','card','extra','bg'],BZ_N={suit:'👕 Trajes',frame:'🖼️ Marcos',title:'🏷️ Títulos',fx:'✨ Efectos',color:'🎨 Colores',pack:'📋 Planillas',card:'🪪 Tarjetas',extra:'💎 Extras',bg:'🌸 Fondos animados'},BZ_R=['leg','epi','rar','com'],BZ_RN={leg:'Legendario',epi:'Épico',rar:'Raro',com:'Común'};
+const BZ_G=['suit','frame','title','fx','color','pack','card','extra','bg'],BZ_N={suit:'👕 Trajes',frame:'🖼️ Marcos',title:'🏷️ Títulos',fx:'✨ Efectos',color:'🎨 Colores',pack:'📋 Planillas',card:'🪪 Tarjetas',extra:'💎 Extras',bg:'🌸 Fondos animados'},BZ_R=['leg','epi','rar','com'],BZ_RN={leg:'Legendario',epi:'Épico',rar:'Raro',com:'Común'};window.BZ_G=BZ_G;window.BZ_N=BZ_N;window.BZ_R=BZ_R;window.BZ_RN=BZ_RN;
 function pfBzCard(it,i){const eq=shopS()[KEY[it.k]]===it.id;return `<div class="shi own" style="--i:${i}"><span class="shrar r-${it.r}">${RN[it.r]}</span><span class="shtag">Tuyo</span>${pfPv(it)}<div class="shbd"><b>${it.nm}</b>${eq?`<button class="shbuy eq" onclick="pfEq(${it.n})">✓ En uso · Quitar</button>`:`<button class="shbuy own" onclick="pfEq(${it.n})">Equipar</button>`}</div></div>`}
 function bzList(){const o=[],gm={tt:'title',th:'color',pl:'pack',bn:'card',bg:'bg',ng:'extra',fx:'fx'};
  try{SHOP.filter(x=>shopOwns(x.id)&&x.k!=='boost'&&x.id!=='shield').forEach(x=>o.push({g:BZ_G.includes(x.k)?x.k:'extra',r:shopRar(x.p0||x.p||0)[0],n:x.n||'',h:i=>shopCard(x,i)}))}catch(e){}
@@ -7666,10 +7701,10 @@ function mevoPanel(){if(!S.me)return '';const l=mvLv(),tdy=today();
  const r=lkS(),paid=r.sd===tdy,cost=MV_COST[l+1],ok=bal=>bal>=cost,bal=coinBal();
  const rows=[1,2,3,4,5].map(n=>`<div class="mvr${n===l?' cur':n<l?' ok':' lk'}" style="--mc:${MV_COL[n]}"><b>Nv.${n}</b><span><strong>${MV_NM[n]}</strong> ${MV_FN[n]}</span>${n>l?`<em><i class="coin"></i>${MV_COST[n]}</em>`:'<em>✓</em>'}</div>`).join('');
  return `<div class="mvp mevo-${l}" style="--mc:${MV_COL[l]}"><div class="mvh"><div class="mvart" style="--f1:${MV_COL[l]};--f2:#FDE68A"><div class="mvau"></div>${stkSvg(stkDays()||1,true,(S.me.fit||[]))}</div><div><b>Mascota evolutiva</b><em>Nv.${l} · ${MV_NM[l]}</em><div class="mvd">${[1,2,3,4,5].map(n=>`<i class="${n<=l?'on':''}"></i>`).join('')}</div></div></div>
- <button class="btn sm${paid?' s':''}" style="width:100%;margin:10px 0 6px" ${paid?'disabled':'onclick="mvPay()"'}>${paid?'Sueldo de hoy cobrado ✓':`Cobrar sueldo de hoy · +${MV_PAY[l]} monedas${l>=5?' y 1 ticket':''}`}</button>
+ <button class="btn sm${paid?' s':''}" style="width:100%;margin:10px 0 6px" ${paid?'disabled':'onclick="mvPay()"'}>${paid?'Sueldo de hoy cobrado ✓':`Cobrar sueldo de hoy · +${penAmt(MV_PAY[l])} monedas${l>=5?' y 1 ticket':''}`}</button>
  ${l<5?`<button class="btn sm${ok(bal)?'':' s'}" style="width:100%;margin:0 0 10px" ${ok(bal)?'onclick="mvUp()"':'disabled'}>${ok(bal)?`Mejorar a Nv.${l+1} · <i class="coin"></i>${cost}`:`Mejorar a Nv.${l+1} · te faltan ${cost-bal} monedas`}</button>`:'<div class="mu" style="text-align:center;margin:0 0 10px">¡Nivel máximo!</div>'}
  <div class="mvs">Funciones por nivel</div>${rows}</div>`}
-async function mvPay(){const l=mvLv();if(!l||S.mvBusy)return;const r=lkS(),d=today();if(r.sd===d)return;S.mvBusy=true;const fm=FB.fm,b0=coinBal(),pay=MV_PAY[l],up={'lk.sd':d,'shop.bonus':fm.increment(pay)};if(l>=5)up['lk.bt']=fm.increment(1);
+async function mvPay(){const l=mvLv();if(!l||S.mvBusy)return;const r=lkS(),d=today();if(r.sd===d)return;S.mvBusy=true;const fm=FB.fm,b0=coinBal(),pay=penAmt(MV_PAY[l]),up={'lk.sd':d,'shop.bonus':fm.increment(pay)};if(l>=5)up['lk.bt']=fm.increment(1);
  try{await fm.updateDoc(fm.doc(FB.db,'users',S.me.uid),up)}catch(e){console.error('mvPay',e);S.mvBusy=false;try{achFail('No se pudo cobrar el sueldo.')}catch(_){}return}
  const s=shopS();S.me={...S.me,shop:{...s,bonus:(+s.bonus||0)+pay},lk:{...r,sd:d,bt:(+r.bt||0)+(l>=5?1:0)}};S.mvBusy=false;try{SFX.coin();coinCount(b0,coinBal())}catch(e){}R()}
 async function mvUp(){const l=mvLv();if(!l||l>=5||S.mvBusy)return;const cost=MV_COST[l+1],b0=coinBal();if(b0<cost)return;S.mvBusy=true;const fm=FB.fm;
