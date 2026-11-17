@@ -2650,7 +2650,7 @@ function shopFx(id,v){
 function shopSnd(id){try{if(id==='snd_aplausos')SFX.clap();else if(id==='snd_abucheo')SFX.boo();else if(id==='snd_corneta')SFX.horn()}catch(e){}}
 function shopTry(id){if(id.startsWith('fx_'))shopFx(id);else shopSnd(id)}
 function shopVoteFx(v){const s=shopS();if(s.fx&&shopOwns(s.fx))shopFx(s.fx,v);if(s.snd&&shopOwns(s.snd))shopSnd(s.snd)}
-function bnOf(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return sh.bn==='bn_aurora'?'bn-aurora':sh.bn==='bn_galaxia'?'bn-galaxia':''}
+function bnOf(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return ({bn_aurora:'bn-aurora',bn_galaxia:'bn-galaxia',bn_asfalto:'bn-asfalto',bn_calle:'bn-calle'})[sh.bn]||''}
 function ngCls(u){const sh=u&&u.shop;if(!(sh&&typeof sh==='object'&&sh.v>=2))return '';return sh.ng==='ng_grad'?'ngr':sh.ng==='ng_oro'?'ngr ngg':''}
 function ngOf(u){return !!ngCls(u)}
 /* ===== Moneda voladora: mientras votas (liga, batalla libre, duelos y editor) sale una cada 3:30 minutos y tienes 7 segundos para agarrarla =====
@@ -3106,9 +3106,10 @@ function tablaHTML(rows,l,o){
 }
 function comunidadV(){
  const ct=S.commTab||'tablas';
- const seg=`<div class="seg cm4" style="margin:0 0 14px"><button class="${ct==='tablas'?'on':''}" onclick="S.commTab='tablas';R()">📊 Tablas</button><button class="${ct==='rank'?'on':''}" onclick="S.commTab='rank';R();loadGlobalTop()">🏆 Ranking</button><button class="${ct==='ruleta'?'on':''}" onclick="S.commTab='ruleta';R()">🎡 Ruleta</button><button class="${ct==='apuestas'?'on':''}" onclick="S.commTab='apuestas';R()">🎲 Apuestas${(()=>{const n=(S.bets||[]).filter(x=>(x.st||'open')==='open').length;return n?`<span class="btdot">${n}</span>`:''})()}</button></div>`;
+ const seg=`<div class="seg cm4" style="margin:0 0 14px;overflow-x:auto"><button class="${ct==='tablas'?'on':''}" onclick="S.commTab='tablas';R()">📊 Tablas</button><button class="${ct==='rank'?'on':''}" onclick="S.commTab='rank';R();loadGlobalTop()">🏆 Ranking</button><button class="${ct==='ruleta'?'on':''}" onclick="S.commTab='ruleta';R()">🎡 Ruleta</button><button class="${ct==='luck'?'on':''}" onclick="S.commTab='luck';R()">🎰 Luck Rap</button><button class="${ct==='apuestas'?'on':''}" onclick="S.commTab='apuestas';R()">🎲 Apuestas${(()=>{const n=(S.bets||[]).filter(x=>(x.st||'open')==='open').length;return n?`<span class="btdot">${n}</span>`:''})()}</button></div>`;
  if(ct==='rank')return `<h1 class="pg">Comunidad</h1>${seg}${globalTopH()}`;
   if(ct==='ruleta')return `<h1 class="pg">Comunidad</h1>${seg}${rlV()}`;
+  if(ct==='luck')return `<h1 class="pg">Comunidad</h1>${seg}${lkBody()}`;
   if(ct==='apuestas')return `<h1 class="pg">Comunidad</h1>${seg}${betsV()}`;
  const head=`<h1 class="pg">Comunidad</h1>${seg}<div class="cnote">Promedio de todos los usuarios. Las batallas libres no cuentan.</div>`;
  if(!S.comm5)return head+'<div class="card mu">Cargando tablas…</div>';
@@ -3927,7 +3928,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
- {ts:Date.parse('2026-11-16T12:00:00-04:00'),text:'Actualización 🏆: 10 logros nuevos (ya son 50): completar los álbumes de FMS España 2017, 2018 y 2019, Argentina 2018 y 2019, México 2019 y Chile 2019, comprar un pase élite, comprar 20 objetos de la tienda y enviarle solicitud de amistad al desarrollador. Si ya lo habías hecho, se desbloquean solos. Además los logros ahora dan monedas: 900 por cada logro nuevo, y por los logros que ya tenías antes recibes 100 monedas por cada uno. También: desde el 17 de noviembre solo las primeras 13 batallas de cada día suben tu rango (la 14 ya no da puntos de rango hasta el día siguiente), arreglamos que la planilla antigua te devolvía al inicio de las casillas al votar Téc., Flow y P.Esc, y dentro de cada liga hay un nuevo Ranking de 4s con los MCs a los que más 4s les has puesto.'},
+ {ts:Date.parse('2026-11-16T23:30:00-04:00'),text:'Nuevo: la Ruleta Freestyle 🎰. Ganas 1 ticket por cada batalla de liga que votes y giras con 1 ticket (o con 300 monedas si no tienes). Con 10 tickets giras 10 veces. Hay 10 premios que solo salen una vez: la Mascota evolutiva (legendaria, sube hasta el nivel 5 desde el apartado de Racha y te paga un sueldo diario), la Vitrina de trofeos (épica, aparece en tu baúl), la Suerte legendaria (3 días con más probabilidad de cartas legendarias) y marcos, títulos y fondos exclusivos. Tienes el botón de Ruleta arriba en Ligas, y todo lo que ganes va a tu Baúl.'},
+  {ts:Date.parse('2026-11-16T12:00:00-04:00'),text:'Actualización 🏆: 10 logros nuevos (ya son 50): completar los álbumes de FMS España 2017, 2018 y 2019, Argentina 2018 y 2019, México 2019 y Chile 2019, comprar un pase élite, comprar 20 objetos de la tienda y enviarle solicitud de amistad al desarrollador. Si ya lo habías hecho, se desbloquean solos. Además los logros ahora dan monedas: 900 por cada logro nuevo, y por los logros que ya tenías antes recibes 100 monedas por cada uno. También: desde el 17 de noviembre solo las primeras 13 batallas de cada día suben tu rango (la 14 ya no da puntos de rango hasta el día siguiente), arreglamos que la planilla antigua te devolvía al inicio de las casillas al votar Téc., Flow y P.Esc, y dentro de cada liga hay un nuevo Ranking de 4s con los MCs a los que más 4s les has puesto.'},
  {ts:Date.parse('2026-11-15T08:10:00-04:00'),text:'Arreglo: en el panel de administrador, «Videos: pegar links y asignar solo» ahora reconoce también las batallas de la temporada 2026 (por ejemplo, Babi vs El Menor de la Jornada 1 de FMS España). Antes decía «no la encuentro» y no dejaba guardar.'},
  {ts:Date.parse('2026-11-15T07:50:00-04:00'),text:'Panel de administrador: la plantilla de videos ahora también incluye las batallas de la temporada 2026 (las del calendario, como la Jornada 1 de FMS España), así que ya se pueden cargar sus links por la plantilla igual que los de las temporadas anteriores.'},
  {ts:Date.parse('2026-11-14T23:50:00-04:00'),text:'Arreglos de la tienda 🛠️: el color «Luces de Diciembre» ahora es blanco: toda la app se pone blanca con nieve cayendo y decoraciones de luces, estrellas y dulces (si ya lo tenías, se actualizó solo). Además se quitó la planilla «Noche de Campeones» repetida que salía en Limitado.'},
@@ -6896,7 +6898,7 @@ async function albSell(id,fromRev){if(!S.me||S.albBusy)return;const c=ALB.find(x
  const ok=await shopSave({...s,alb:al,bonus:Math.max(0,+(s.bonus)||0)+pr},'No se pudo vender la carta.');S.albBusy=false;
  if(ok){try{coinCount(bal,coinBal())}catch(e){}try{SFX.coin()}catch(e){}if(fromRev){const o=document.getElementById('alov');if(o)o.remove()}}}
 async function albBuy(){if(!S.me||S.albBusy)return;const bal=coinBal();if(bal<ALB_P){try{achFail('Te faltan '+(ALB_P-bal)+' monedas.')}catch(e){}return}
- const c=ALBP[Math.floor(Math.random()*ALBP.length)],s=shopS(),al={...albOwn()},had=al[c.id]||0;al[c.id]=had+1;S.albBusy=true;
+ const c=albPick(),s=shopS(),al={...albOwn()},had=al[c.id]||0;al[c.id]=had+1;S.albBusy=true;
  const ok=await shopSave({...s,alb:al,spent:(s.spent||0)+ALB_P},'No se pudo abrir el sobre.');S.albBusy=false;if(ok){coinCount(bal,coinBal());albReveal(c,had+1)}}
 function albReveal(c,n){const rich=!(window.VCFG&&window.VCFG.noAnim),old=document.getElementById('alov');if(old)old.remove();const el=document.createElement('div');el.id='alov';el.className='alov '+(rich?'rich':'simple')+' t-'+c.r;
  const k=c.r==='leg'?30:c.r==='epi'?22:14,bal=coinBal();
@@ -6905,7 +6907,7 @@ function albReveal(c,n){const rich=!(window.VCFG&&window.VCFG.noAnim),old=docume
 function albTile(){const bal=coinBal(),ok=bal>=ALB_P,ok10=bal>=ALB_P*10;return `<div class="alt"><div class="alth"><div class="altp"><i></i><i></i><span>?</span></div><div class="alti"><b>Sobre de freestylers</b><div class="mu">1 carta al azar.</div></div></div><div class="albb"><button class="shbuy alby${ok?'':' no'}" ${ok?'onclick="albBuy()"':'disabled'}>${ok?`Abrir 1 · <i class="coin"></i>${ALB_P}`:`Te faltan ${ALB_P-bal}`}</button><button class="shbuy alby${ok10?'':' no'}" ${ok10?'onclick="albBuyN(10)"':'disabled'}>${ok10?`Abrir 10 · <i class="coin"></i>${ALB_P*10}`:`10 sobres · ${ALB_P*10}`}</button></div></div>`}
 async function albBuyN(n){if(!S.me||S.albBusy)return;const cost=ALB_P*n,bal=coinBal();if(bal<cost){try{achFail('Te faltan '+(cost-bal)+' monedas.')}catch(e){}return}
  const s=shopS(),al={...albOwn()},got=[];
- for(let k=0;k<n;k++){const c=ALBP[Math.floor(Math.random()*ALBP.length)],had=al[c.id]||0;al[c.id]=had+1;got.push({c,nw:had===0})}
+ for(let k=0;k<n;k++){const c=albPick(),had=al[c.id]||0;al[c.id]=had+1;got.push({c,nw:had===0})}
  S.albBusy=true;const ok=await shopSave({...s,alb:al,spent:(s.spent||0)+cost},'No se pudo abrir los sobres.');S.albBusy=false;
  if(ok){try{coinCount(bal,coinBal())}catch(e){}albReveal10(got,al)}}
 function albReveal10(got,al){const old=document.getElementById('alov');if(old)old.remove();const o10=document.getElementById('al10');if(o10)o10.remove();
@@ -7451,6 +7453,156 @@ window.collabBd=async function(uid,v){if(!isAdmin())return;const fm=FB.fm,c0=(S.
 /* Insignia también en la foto grande del perfil (ahí el perfil público no trae el uid dentro del usuario, pero sí se conoce por el punto de «activo ahora») */
 {const _wd=withDot;withDot=function(uid,html){const h=_wd(uid,html);return(uid&&S.bdg&&S.bdg[uid]&&String(h).indexOf('vbd')<0)?`<span class="vbw">${h}<i class="vbd" title="Equipo de la página">${window.BD_SVG}</i></span>`:h}}
 {const st=document.createElement('style');st.textContent='.pbn .vbd{width:38px;max-width:38px;top:-3px;left:-3px}.pbn .vbw{overflow:visible}';document.head.appendChild(st)}
+
+/* ===== LUCK RAP + MASCOTA EVOLUTIVA + VITRINA ===== */
+const LK_START=Date.parse('2026-11-16T12:00:00-04:00'),LK_COIN=300,LK_PITY=50;
+const LK_W={leg:1,epi:3,rar:6.5,com:17.5},LK_RN={leg:'Legendario',epi:'Épico',rar:'Raro',com:'Común'},LK_RC={leg:'#F5B301',epi:'#A855F7',rar:'#3B82F6',com:'#9CA3AF'};
+const LK=[
+ {id:'lk_mascota',r:'leg',n:'Mascota evolutiva',ic:'🎤',d:'Tu mascota de la racha sube hasta el nivel 5, cambia de aura y te paga un sueldo diario.'},
+ {id:'frame_barrio',r:'com',n:'Marco Barrio',ic:'🧱',d:'Marco de ladrillo con brillo cálido.'},
+ {id:'frame_calle',r:'rar',n:'Marco Neón Callejero',ic:'💡',d:'Aro que alterna rosa y celeste como un letrero de neón.'},
+ {id:'title_novato',r:'com',n:'Título: Novato del Micro',ic:'🎙️',d:'Título para tu perfil.'},
+ {id:'title_fantasma',r:'rar',n:'Título: Rimador Fantasma',ic:'👻',d:'Título para tu perfil.'},
+ {id:'lk_vitrina',r:'epi',n:'Vitrina de trofeos',ic:'🏆',d:'Una vitrina en tu baúl para lucir los trofeos que te entregue el desarrollador.'},
+ {id:'bn_asfalto',r:'com',n:'Fondo Asfalto',ic:'🛣️',d:'Fondo de perfil con textura de calle.'},
+ {id:'bn_calle',r:'rar',n:'Fondo Neón Calle',ic:'🌃',d:'Fondo de perfil animado con luces de neón.'},
+ {id:'title_voz',r:'com',n:'Título: Voz del Barrio',ic:'🏘️',d:'Título para tu perfil.'},
+ {id:'lk_suerte',r:'rar',n:'Suerte legendaria · 3 días',ic:'🍀',d:'Durante 3 días tienes más probabilidad de sacar cartas legendarias en el álbum.'}];
+TITLES.novato={t:'Novato del Micro',ic:'🎙️'};TITLES.vozbarrio={t:'Voz del Barrio',ic:'🏘️'};TITLES.fantasma={t:'Rimador Fantasma',ic:'👻'};
+TT_TIER.novato='com';TT_TIER.vozbarrio='com';TT_TIER.fantasma='rar';FRAME_IDS.push('barrio','calle');
+SHOP_BASE.push(
+ {id:'frame_barrio',k:'frame',n:'Marco Barrio',d:'Marco de ladrillo con brillo cálido. Solo sale en la ruleta.',p:100,fr:'barrio',nw:1,until:1},
+ {id:'frame_calle',k:'frame',n:'Marco Neón Callejero',d:'Aro que alterna rosa y celeste como un letrero de neón. Solo sale en la ruleta.',p:200,fr:'calle',nw:1,until:1},
+ {id:'title_novato',k:'title',n:'Novato del Micro',d:'Título exclusivo de la ruleta. Aparece debajo de tu nombre.',p:100,tt:'novato',nw:1,until:1},
+ {id:'title_voz',k:'title',n:'Voz del Barrio',d:'Título exclusivo de la ruleta. Aparece debajo de tu nombre.',p:100,tt:'vozbarrio',nw:1,until:1},
+ {id:'title_fantasma',k:'title',n:'Rimador Fantasma',d:'Título exclusivo de la ruleta. Aparece debajo de tu nombre.',p:200,tt:'fantasma',nw:1,until:1},
+ {id:'bn_asfalto',k:'extra',n:'Fondo Asfalto',d:'Tu perfil con textura de calle. Solo sale en la ruleta.',p:100,eq:['bn','bn_asfalto'],bn:'bn-asfalto',nw:1,until:1},
+ {id:'bn_calle',k:'extra',n:'Fondo Neón Calle',d:'Tu perfil con luces de neón que se mueven. Solo sale en la ruleta.',p:200,eq:['bn','bn_calle'],bn:'bn-calle',nw:1,until:1});
+_shopAll=null;
+function lkS(){return (S.me&&S.me.lk)||{}}
+function lkOwn(id){return (lkS().owned||[]).includes(id)||(id.indexOf('lk_')!==0&&shopOwns(id))}
+function lkTickets(){if(!S.me||!S.myVotes)return 0;const n=S.myVotes.filter(v=>isLgVote(v)&&v.ts>=LK_START).length;return Math.max(0,n+(+lkS().bt||0)-(+lkS().spent||0))}
+const tkSvg=(w=26)=>`<svg viewBox="0 0 40 26" width="${w}" height="${Math.round(w*26/40)}" aria-hidden="true" style="vertical-align:middle"><path d="M3 2h34a2 2 0 0 1 2 2v5a4 4 0 0 0 0 8v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-5a4 4 0 0 0 0-8V4a2 2 0 0 1 2-2z" fill="#FACC15" stroke="#CA8A04"/><rect x="17.5" y="5" width="5" height="10" rx="2.5" fill="#422006"/><path d="M14.5 12a5.5 5.5 0 0 0 11 0" fill="none" stroke="#422006" stroke-width="1.6" stroke-linecap="round"/><path d="M20 17.5V21M16.5 21h7" stroke="#422006" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+function lkDraw(own,pity){const pool=LK.filter(x=>!own.has(x.id));if(!pool.length)return null;let p=pool;
+ if(pity>=LK_PITY-1){const hi=pool.filter(x=>x.r==='epi'||x.r==='leg');if(hi.length)p=hi;else{const rr=pool.filter(x=>x.r==='rar');if(rr.length)p=rr}}
+ let k=Math.random()*p.reduce((a,x)=>a+LK_W[x.r],0);for(const x of p){if((k-=LK_W[x.r])<0)return x}return p[p.length-1]}
+function albPick(){const on=S.me&&S.me.lk&&+S.me.lk.lg>Date.now();if(!on)return ALBP[Math.floor(Math.random()*ALBP.length)];const w=ALBP.map(c=>c.r==='leg'?4:1);let k=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<ALBP.length;i++){if((k-=w[i])<0)return ALBP[i]}return ALBP[0]}
+window.lkTog=()=>{if(S.lkBusy)return;S.lkPrem=!S.lkPrem;R()};
+window.lkClose=()=>{const o=document.getElementById('lkov');if(o)o.remove();S.lkBusy=false;R()};
+function lkParts(el,n){const f=['⭐','🎤','🪙','✨','🎶'];for(let i=0;i<n;i++){const s=document.createElement('span');s.className='lkfl';s.textContent=f[i%f.length];s.style.cssText=`left:${Math.random()*94}%;animation-duration:${2.4+Math.random()*2.4}s;animation-delay:${Math.random()*1.4}s`;el.appendChild(s)}}
+function lkResult(got){const old=document.getElementById('lkov');if(old)old.remove();
+ const ord={leg:0,epi:1,rar:2,com:3},l=[...got].sort((a,b)=>ord[a.r]-ord[b.r]),best=l[0],el=document.createElement('div');el.id='lkov';el.className='lkov t-'+best.r;el.style.setProperty('--rc',LK_RC[best.r]);
+ const card=(x,i)=>`<div class="lkc t-${x.r}" style="--rc:${LK_RC[x.r]};--i:${i}"><i>${x.ic}</i><b>${esc(x.n)}</b><span>${LK_RN[x.r]}</span></div>`;
+ el.innerHTML=`<div class="lkrays"></div><div class="lkst"><div class="lktt">${got.length>1?'¡Tus premios!':'¡Desbloqueaste!'}</div><div class="lkgr${l.length>1?' multi':''}">${l.map(card).join('')}</div><div class="lksb">Todo se guardó en tu Baúl 🎒</div><button class="btn" onclick="lkClose()">Seguir</button><button class="btn s" onclick="lkClose();go('baul')">Ver mi baúl</button></div>`;
+ document.body.appendChild(el);lkParts(el,best.r==='leg'||best.r==='epi'?30:14);
+ try{(best.r==='leg'||best.r==='epi')?SFX.ach():SFX.coin()}catch(e){}try{if(best.r==='leg'||best.r==='epi')navigator.vibrate&&navigator.vibrate([60,40,120])}catch(e){}}
+async function lkSpin(n){
+ if(!S.me||S.lkBusy)return;const own=new Set(LK.filter(x=>lkOwn(x.id)).map(x=>x.id)),left=LK.length-own.size;if(left<=0)return;
+ const cnt=Math.min(n,left),tk=lkTickets(),useT=n===1?tk>=1:tk>=10,cost=useT?cnt:LK_COIN*cnt,b0=coinBal();
+ if(!useT&&b0<cost){try{achFail('Te faltan '+(cost-b0)+' monedas.')}catch(e){}return}
+ let pity=+lkS().pity||0;const got=[];for(let i=0;i<cnt;i++){const it=lkDraw(own,pity);own.add(it.id);got.push(it);pity=(it.r==='epi'||it.r==='leg')?0:pity+1}
+ const fm=FB.fm,ref=fm.doc(FB.db,'users',S.me.uid),up={'lk.pity':pity,'lk.pulls':fm.increment(cnt),'lk.owned':fm.arrayUnion(...got.map(x=>x.id))};
+ if(useT)up['lk.spent']=fm.increment(cnt);else up['shop.spent']=fm.increment(cost);
+ const shIds=got.filter(x=>x.id.indexOf('lk_')!==0).map(x=>x.id);if(shIds.length)up['shop.own']=fm.arrayUnion(...shIds);
+ let lg=+lkS().lg||0;if(got.some(x=>x.id==='lk_suerte')){lg=Math.max(Date.now(),lg)+3*864e5;up['lk.lg']=lg}
+ const mv=got.some(x=>x.id==='lk_mascota');if(mv)up['lk.mv']=1;
+ S.lkBusy=true;document.querySelectorAll('.lkb').forEach(b=>b.classList.add('off'));
+ try{await fm.updateDoc(ref,up)}catch(e){console.error('lkSpin',e);S.lkBusy=false;try{achFail('No se pudo girar. Revisa tu conexión.')}catch(_){}R();return}
+ const last=got[got.length-1],idx=LK.findIndex(x=>x.id===last.id),cur=S.lkRot||0,a=idx*36+18+(Math.random()-.5)*20,tgt=cur+360*6+(((-a-cur)%360)+360)%360,fast=document.documentElement.classList.contains('noanim');
+ S.lkRot=tgt;const w=document.getElementById('lkwh');if(w){w.style.transition=fast?'none':'transform 4.4s cubic-bezier(.12,.7,.1,1)';w.style.transform='rotate('+tgt+'deg)'}
+ try{SFX.notif()}catch(e){}
+ setTimeout(()=>{const s=shopS(),r=lkS(),o=[...(r.owned||[]),...got.map(x=>x.id)];
+  S.me={...S.me,shop:{...s,own:[...new Set([...(s.own||[]),...shIds])],spent:(+s.spent||0)+(useT?0:cost)},lk:{...r,pity,pulls:(+r.pulls||0)+cnt,owned:o,spent:(+r.spent||0)+(useT?cnt:0),lg,mv:mv?1:(r.mv||0)}};
+  if(!useT){try{coinCount(b0,coinBal())}catch(e){}}lkResult(got)},fast?150:4700)}
+function lkWheel(){const cx=150,cy=150,r=136,P=(a,q)=>(cx+q*Math.cos(a)).toFixed(1)+' '+(cy+q*Math.sin(a)).toFixed(1);let s='';
+ LK.forEach((x,i)=>{const a0=(-90+i*36)*Math.PI/180,a1=(-90+(i+1)*36)*Math.PI/180,am=(a0+a1)/2,o=lkOwn(x.id),d=`M${cx} ${cy}L${P(a0,r)}A${r} ${r} 0 0 1 ${P(a1,r)}Z`;
+  s+=`<path d="${d}" fill="${LK_RC[x.r]}" stroke="#fff" stroke-width="2"/>`+(o?`<path d="${d}" fill="#000" opacity=".5"/>`:'')+`<text x="${(cx+94*Math.cos(am)).toFixed(1)}" y="${(cy+94*Math.sin(am)+8).toFixed(1)}" text-anchor="middle" font-size="24" opacity="${o?.55:1}">${o?'✓':x.ic}</text>`});
+ let dots='';for(let i=0;i<20;i++){const a=i/20*6.283;dots+=`<circle class="lkd" style="animation-delay:${(i%2)*.5}s" cx="${(cx+144*Math.cos(a)).toFixed(1)}" cy="${(cy+144*Math.sin(a)).toFixed(1)}" r="3"/>`}
+ return `<svg viewBox="0 0 300 300" class="lksv" role="img" aria-label="Ruleta de premios"><circle cx="150" cy="150" r="146" fill="#1c1400" stroke="#FACC15" stroke-width="4"/>${dots}<g id="lkwh" style="transform:rotate(${S.lkRot||0}deg);transform-origin:150px 150px">${s}</g><circle cx="150" cy="150" r="27" fill="#FACC15" stroke="#fff" stroke-width="3"/><rect x="145" y="136" width="10" height="18" rx="5" fill="#422006"/><path d="M139 150a11 11 0 0 0 22 0" fill="none" stroke="#422006" stroke-width="2.2" stroke-linecap="round"/><path d="M150 162v5" stroke="#422006" stroke-width="2.2"/><polygon points="136,0 164,0 150,30" fill="#EF4444" stroke="#fff" stroke-width="2.5"/></svg>`}
+function lkPrem(){const ord={leg:0,epi:1,rar:2,com:3},l=[...LK].sort((a,b)=>ord[a.r]-ord[b.r]);
+ return `<div class="lkpm">${l.map((x,i)=>{const o=lkOwn(x.id);return `<div class="lkpc ${o?'on':'lk'}" style="--rc:${LK_RC[x.r]};--i:${i}"><span class="lkpr">${LK_RN[x.r]}</span><i>${o?x.ic:'🔒'}</i><b>${esc(x.n)}</b><em>${o?'✓ Desbloqueado':'Bloqueado'}</em></div>`}).join('')}<div class="lkod">Probabilidad base: Legendario 1 % · Épico 3 % · Raro 26 % · Común 70 %. Cada premio sale una sola vez.</div></div>`}
+function lkBody(){const back='';
+ if(!S.me)return back+`<div class="hero"><span class="kicker">Ruleta</span><h1>Luck Rap</h1><p>Crea una cuenta para ganar tickets votando y girar la ruleta.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button>`;
+ const tk=lkTickets(),bal=coinBal(),left=LK.filter(x=>!lkOwn(x.id)).length,pity=Math.min(LK_PITY,+lkS().pity||0),hasM=lkOwn('lk_mascota'),lgOn=+lkS().lg>Date.now();
+ const btn=(n,lab)=>{const useT=n===1?tk>=1:tk>=10,c=useT?n:LK_COIN*n,ok=left>0&&(useT||bal>=c);
+  return `<button class="lkb lkb${n}${ok?'':' off'}" ${ok?`onclick="lkSpin(${n})"`:'disabled'}><b>${lab}</b><span>${useT?tkSvg(22)+' ×'+c:'<i class="coin"></i> '+c}</span></button>`};
+ return back+`<div class="lkw"><div class="lkbn"><div class="lkbt"><b>LUCK RAP</b><button class="lkvp" onclick="lkTog()">VER PREMIOS ${S.lkPrem?'⌃':'⌄'}</button></div>
+ <div class="lkart" style="--f1:#FACC15;--f2:#FDE68A"><div class="lkau"></div><div class="lkms">${stkSvg(30,true,['aura'])}</div><div class="lknm">MASCOTA EVOLUTIVA</div><div class="lkrr">${hasM?'✓ YA LA TIENES':'LEGENDARIO'}</div></div>
+ <div class="lksu"><small>SUERTE</small><b>${pity}/${LK_PITY}</b></div></div>
+ ${S.lkPrem?lkPrem():''}
+ <div class="lkbal"><span class="lkch">${tkSvg(26)}<b>${tk}</b> ticket${tk===1?'':'s'}</span><span class="lkch"><i class="coin"></i><b>${bal}</b></span>${lgOn?'<span class="lkch lg">🍀 Suerte activa</span>':''}</div>
+ <div class="lkwd">${lkWheel()}</div>
+ <div class="lkbs">${btn(1,'1 GIRO')}${btn(10,'10 GIROS')}</div>
+ <div class="mu lkin">${left>0?'Ganas 1 ticket por cada batalla de liga que votes. Sin tickets, giras con monedas: 300 por giro. Quedan '+left+' premios por conseguir.':'🎉 ¡Completaste la ruleta! Pronto habrá premios nuevos.'}</div></div><div style="height:24px"></div>`}
+VIEW.luck=function(){return `<button class="back" onclick="go('home')">‹ Ligas</button>`+lkBody()};
+function lkBox(){if(!S.me)return '';const tk=lkTickets(),left=LK.filter(x=>!lkOwn(x.id)).length;return `<button class="lkbox" onclick="go('luck')" aria-label="Abrir Luck Rap"><span class="lkbi">${tkSvg(54)}</span><span class="pftx"><em>PREMIOS EXCLUSIVOS</em><b>LUCK RAP</b><span>${tk} ticket${tk===1?'':'s'} · ${left} premio${left===1?'':'s'} por ganar</span></span><span class="pfgo">›</span></button>`}
+{const _h=VIEW.home;VIEW.home=function(){const h=_h();try{return lkBox()+h}catch(e){return h}}}
+/* ---- Mascota evolutiva ---- */
+const MV_COST=[0,0,800,1600,3000,5000],MV_PAY=[0,10,20,30,40,50],MV_COL=['','#22C55E','#3B82F6','#A855F7','#EC4899','#F5B301'],MV_NM=['','Novato','Callejero','Crack','Leyenda','Mito del Micro'];
+const MV_FN=['','Aura verde y sueldo de 10 monedas al día.','Aura azul y sueldo de 20 monedas al día.','Aura morada y sueldo de 30 monedas al día.','Aura rosa con chispas y sueldo de 40 monedas al día.','Aura dorada con destellos, sueldo de 50 monedas al día y 1 ticket gratis cada vez que cobras.'];
+function mvLv(){return lkOwn('lk_mascota')?Math.max(1,Math.min(5,+lkS().mv||1)):0}
+function mevoPanel(){if(!S.me)return '';const l=mvLv(),tdy=today();
+ if(!l)return `<div class="mvp lock"><div class="mvh"><span class="mvl">🔒</span><div><b>Mascota evolutiva</b><em>Legendaria · sale en la ruleta</em></div></div><div class="mu" style="margin:8px 0">Sube de nivel, cambia de aura y te paga un sueldo diario. Consíguela en la ruleta.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.stkOpen=false;go('luck')">Ir a la ruleta</button></div>`;
+ const r=lkS(),paid=r.sd===tdy,cost=MV_COST[l+1],ok=bal=>bal>=cost,bal=coinBal();
+ const rows=[1,2,3,4,5].map(n=>`<div class="mvr${n===l?' cur':n<l?' ok':' lk'}" style="--mc:${MV_COL[n]}"><b>Nv.${n}</b><span><strong>${MV_NM[n]}</strong> ${MV_FN[n]}</span>${n>l?`<em><i class="coin"></i>${MV_COST[n]}</em>`:'<em>✓</em>'}</div>`).join('');
+ return `<div class="mvp mevo-${l}" style="--mc:${MV_COL[l]}"><div class="mvh"><div class="mvart" style="--f1:${MV_COL[l]};--f2:#FDE68A"><div class="mvau"></div>${stkSvg(stkDays()||1,true,(S.me.fit||[]))}</div><div><b>Mascota evolutiva</b><em>Nv.${l} · ${MV_NM[l]}</em><div class="mvd">${[1,2,3,4,5].map(n=>`<i class="${n<=l?'on':''}"></i>`).join('')}</div></div></div>
+ <button class="btn sm${paid?' s':''}" style="width:100%;margin:10px 0 6px" ${paid?'disabled':'onclick="mvPay()"'}>${paid?'Sueldo de hoy cobrado ✓':`Cobrar sueldo de hoy · +${MV_PAY[l]} monedas${l>=5?' y 1 ticket':''}`}</button>
+ ${l<5?`<button class="btn sm${ok(bal)?'':' s'}" style="width:100%;margin:0 0 10px" ${ok(bal)?'onclick="mvUp()"':'disabled'}>${ok(bal)?`Mejorar a Nv.${l+1} · <i class="coin"></i>${cost}`:`Mejorar a Nv.${l+1} · te faltan ${cost-bal} monedas`}</button>`:'<div class="mu" style="text-align:center;margin:0 0 10px">¡Nivel máximo!</div>'}
+ <div class="mvs">Funciones por nivel</div>${rows}</div>`}
+async function mvPay(){const l=mvLv();if(!l||S.mvBusy)return;const r=lkS(),d=today();if(r.sd===d)return;S.mvBusy=true;const fm=FB.fm,b0=coinBal(),pay=MV_PAY[l],up={'lk.sd':d,'shop.bonus':fm.increment(pay)};if(l>=5)up['lk.bt']=fm.increment(1);
+ try{await fm.updateDoc(fm.doc(FB.db,'users',S.me.uid),up)}catch(e){console.error('mvPay',e);S.mvBusy=false;try{achFail('No se pudo cobrar el sueldo.')}catch(_){}return}
+ const s=shopS();S.me={...S.me,shop:{...s,bonus:(+s.bonus||0)+pay},lk:{...r,sd:d,bt:(+r.bt||0)+(l>=5?1:0)}};S.mvBusy=false;try{SFX.coin();coinCount(b0,coinBal())}catch(e){}R()}
+async function mvUp(){const l=mvLv();if(!l||l>=5||S.mvBusy)return;const cost=MV_COST[l+1],b0=coinBal();if(b0<cost)return;S.mvBusy=true;const fm=FB.fm;
+ try{await fm.updateDoc(fm.doc(FB.db,'users',S.me.uid),{'lk.mv':l+1,'shop.spent':fm.increment(cost)})}catch(e){console.error('mvUp',e);S.mvBusy=false;try{achFail('No se pudo mejorar.')}catch(_){}return}
+ const s=shopS(),r=lkS();S.me={...S.me,shop:{...s,spent:(+s.spent||0)+cost},lk:{...r,mv:l+1}};S.mvBusy=false;try{coinCount(b0,coinBal())}catch(e){}
+ const el=document.createElement('div');el.id='lkov';el.className='lkov mvup t-leg';el.style.setProperty('--rc',MV_COL[l+1]);el.innerHTML=`<div class="lkrays"></div><div class="lkst"><div class="lktt">¡Mascota nivel ${l+1}!</div><div class="mvart big" style="--f1:${MV_COL[l+1]};--f2:#FDE68A"><div class="mvau"></div>${stkSvg(stkDays()||1,true,(S.me.fit||[]))}</div><div class="lksb"><b>${MV_NM[l+1]}</b><br>${MV_FN[l+1]}</div><button class="btn" onclick="lkClose()">Genial</button></div>`;document.body.appendChild(el);lkParts(el,26);try{SFX.ach()}catch(e){}R()}
+{const _sh=streakH;streakH=function(){return _sh()+mevoPanel()}}
+{const _sm=stkMini;stkMini=function(){const h=_sm(),l=mvLv();return l?h.replace('class="card stkc','class="card stkc mevoc mevo-'+l):h}}
+/* ---- Baúl: cartas de ruleta + vitrina ---- */
+BZ_G.push('lk');BZ_N.lk='🎰 Ruleta';
+{const _bz=bzList;bzList=function(){const o=_bz();try{if(mvLv()){const l=mvLv();o.push({g:'lk',r:'leg',n:'Mascota evolutiva',h:i=>`<div class="shi own" style="--i:${i}"><span class="shrar r-leg">Legendario</span><span class="shtag">Tuyo</span><div class="shpv"><div class="mvart" style="--f1:${MV_COL[l]};--f2:#FDE68A;width:92px"><div class="mvau"></div>${stkSvg(stkDays()||1,true,(S.me.fit||[]))}</div></div><div class="shbd"><b>Mascota evolutiva · Nv.${l}</b><button class="shbuy own" onclick="S.stkOpen=true;S.stkTierSel=null;go('perfil')">Subir de nivel</button></div></div>`})}
+ if(lkOwn('lk_suerte')){const lg=+lkS().lg||0,dl=Math.max(0,Math.ceil((lg-Date.now())/864e5));o.push({g:'lk',r:'rar',n:'Suerte legendaria',h:i=>`<div class="shi own" style="--i:${i}"><span class="shrar r-rar">Raro</span><span class="shtag">Tuyo</span><div class="shpv"><div class="fxv">🍀</div></div><div class="shbd"><b>Suerte legendaria</b><small class="mu">${dl?'Activa · quedan '+dl+' día'+(dl===1?'':'s'):'Terminada'}</small></div></div>`})}}catch(e){}return o}}
+function vitrinaH(){if(!S.me||!lkOwn('lk_vitrina'))return '';const t=Array.isArray(S.me.trofeos)?S.me.trofeos:[];let sl='';
+ for(let sh=0;sh<3;sh++){sl+=`<div class="vtsh">${[0,1,2,3].map(c=>{const x=t[sh*4+c];return x?`<div class="vts f"><i>${esc(x.ic||'🏆')}</i><b>${esc(x.n||'Trofeo')}</b></div>`:`<div class="vts"><i>🏆</i><b>Vacío</b></div>`}).join('')}</div>`}
+ return `<div class="bzsec"><h3>🏆 Vitrina de trofeos <em>${Math.min(12,t.length)}/12</em></h3><div class="vtr"><div class="vtl l1"></div><div class="vtl l2"></div><div class="vtpl">VITRINA DE TROFEOS</div><div class="vtgl">${sl}<div class="vtsn"></div></div><div class="vtbs"></div></div><div class="mu" style="text-align:center;margin-top:8px;font-size:13px">Aquí se guardan los trofeos que te entregue el desarrollador. No cuenta en tu colección.</div></div>`}
+{const _b=VIEW.baul;VIEW.baul=function(){const h=_b();if(!S.me)return h;const v=vitrinaH();if(!v)return h;const e='<div style="height:24px"></div>';return h.endsWith(e)?h.slice(0,-e.length)+v+e:h+v}}
+/* ---- Estilos ---- */
+{const st=document.createElement('style');st.textContent=`
+.fr-barrio{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #92400E,0 0 10px 2px rgba(180,83,9,.55)}
+.fr-calle{animation:frCalle 2.2s ease-in-out infinite}@keyframes frCalle{0%,100%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #EC4899,0 0 12px 3px rgba(236,72,153,.75)}50%{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #22D3EE,0 0 12px 3px rgba(34,211,238,.75)}}
+.pbn.bn-asfalto,.bnv.bn-asfalto{background:repeating-linear-gradient(135deg,#1f2937 0 14px,#111827 14px 28px)}
+.pbn.bn-calle,.bnv.bn-calle{background:linear-gradient(120deg,#EC4899,#6366F1,#22D3EE,#EC4899);background-size:300% 300%;animation:bnMove 6s ease infinite}
+.lkbox{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin:0 0 14px;padding:10px 14px 10px 12px;border-radius:22px;border:2px solid #FACC15;background:radial-gradient(120% 140% at 85% 0%,rgba(250,204,21,.4),transparent 55%),linear-gradient(135deg,#1c1400,#3a2a00);color:#fff;text-align:left;cursor:pointer;overflow:hidden;animation:lkGlow 2.6s ease-in-out infinite}.lkbox:active{transform:scale(.985)}
+.lkbox:after{content:'';position:absolute;top:0;bottom:0;width:60px;left:-80px;background:linear-gradient(100deg,transparent,rgba(255,255,255,.3),transparent);transform:skewX(-20deg);animation:pfShine 4s ease-in-out infinite .5s}.lkbi{flex:0 0 58px;animation:lkWob 2.4s ease-in-out infinite}.lkbox .pftx em{color:#FDE047}.lkbox .pftx b{color:#fff;text-shadow:0 2px 0 #1c1400}.lkbox .pfgo{color:#FDE047}.lkbox .pftx>span{color:#FEF3C7}
+@keyframes lkGlow{50%{box-shadow:0 0 26px 2px rgba(250,204,21,.55)}}@keyframes lkWob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg) scale(1.06)}}
+.lkw{color:#fff}.lkbn{position:relative;border-radius:22px;border:2px solid #FACC15;background:radial-gradient(90% 70% at 50% 40%,rgba(250,204,21,.35),transparent 70%),linear-gradient(160deg,#111,#2a1f00);padding:12px 12px 14px;overflow:hidden}
+.lkbt{display:flex;align-items:center;justify-content:space-between;gap:8px}.lkbt b{font:900 20px/1 Impact,'Arial Black',sans-serif;color:#FDE047;letter-spacing:.02em}.lkvp{border:0;border-radius:6px 0 0 6px;background:#FACC15;color:#422006;font:800 12px/1 inherit;padding:8px 10px;cursor:pointer}
+.lkart{position:relative;text-align:center;padding:6px 0 0}.lkms{position:relative;width:130px;margin:0 auto;z-index:1}.lkau{position:absolute;left:50%;top:44%;width:190px;height:190px;margin:-95px 0 0 -95px;border-radius:50%;background:radial-gradient(circle,rgba(250,204,21,.6),transparent 68%);animation:mvPulse 2.4s ease-in-out infinite}
+.lknm{position:relative;z-index:1;margin-top:4px;font:900 26px/1 Impact,'Arial Black',sans-serif;color:#fff;text-shadow:0 3px 0 #000,0 0 18px rgba(250,204,21,.7)}.lkrr{position:relative;z-index:1;display:inline-block;margin-top:6px;padding:4px 14px;border-radius:99px;background:#F5B301;color:#422006;font:800 12px/1.2 inherit}
+.lksu{position:absolute;right:0;bottom:12px;background:#FACC15;color:#422006;padding:6px 12px 6px 16px;border-radius:12px 0 0 12px;text-align:center;z-index:2}.lksu small{display:block;font:800 10px/1 inherit}.lksu b{font:900 22px/1 Impact,'Arial Black',sans-serif}
+.lkpm{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0;padding:12px;border-radius:16px;background:#14110a;border:1px solid #FACC1555}.lkpc{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;padding:14px 8px 10px;border-radius:14px;border:2px solid var(--rc);background:linear-gradient(160deg,var(--rc)33,#0008);animation:lkPop .4s both;animation-delay:calc(var(--i)*40ms)}
+.lkpc i{font-style:normal;font-size:30px}.lkpc b{font-size:13px}.lkpc em{font-style:normal;font-size:11px;font-weight:800;color:#FDE047}.lkpc.on em{color:#4ADE80}.lkpc.lk{filter:grayscale(.7);opacity:.8}.lkpr{position:absolute;top:-8px;left:50%;transform:translateX(-50%);padding:2px 8px;border-radius:99px;background:var(--rc);color:#fff;font:800 10px/1.4 inherit;white-space:nowrap}.lkod{grid-column:1/-1;font-size:11px;color:#a8a29e;text-align:center}
+.lkbal{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 4px}.lkch{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:#1c1400;border:1px solid #FACC1566;font-size:13px;color:#FEF3C7}.lkch b{color:#FDE047;font-size:15px}.lkch.lg{border-color:#4ADE80;color:#86EFAC}
+.lkwd{max-width:320px;margin:6px auto}.lksv{width:100%;height:auto;display:block;overflow:visible}.lkd{fill:#FDE047;animation:lkBl 1s ease-in-out infinite}@keyframes lkBl{50%{opacity:.25}}
+.lkbs{display:flex;gap:10px;margin-top:8px}.lkb{flex:1;border:0;border-radius:10px 4px 10px 4px;padding:10px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;transform:skewX(-6deg);box-shadow:0 4px 0 rgba(0,0,0,.35)}.lkb b{font:900 16px/1 Impact,'Arial Black',sans-serif;letter-spacing:.03em}.lkb span{font-size:14px;font-weight:800;display:flex;align-items:center;gap:4px}
+.lkb1{background:linear-gradient(180deg,#38BDF8,#0284C7);color:#fff}.lkb10{background:linear-gradient(180deg,#FDE047,#F59E0B);color:#422006}.lkb:active{transform:skewX(-6deg) translateY(2px)}.lkb.off{filter:grayscale(1);opacity:.5;cursor:not-allowed;pointer-events:none}.lkin{text-align:center;margin-top:12px;font-size:13px}
+@keyframes lkPop{from{opacity:0;transform:translateY(8px) scale(.9)}}
+.lkov{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);overflow:hidden;animation:lkFade .3s}.lkrays{position:absolute;left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;background:repeating-conic-gradient(from 0deg,var(--rc)55 0 8deg,transparent 8deg 20deg);animation:lkSpinR 14s linear infinite;-webkit-mask:radial-gradient(circle,#000 0,transparent 62%);mask:radial-gradient(circle,#000 0,transparent 62%)}
+.lkst{position:relative;z-index:1;width:min(92vw,380px);max-height:92vh;overflow-y:auto;text-align:center;padding:10px}.lktt{font:900 28px/1.1 Impact,'Arial Black',sans-serif;color:#FDE047;text-shadow:0 3px 0 #000;margin-bottom:12px;animation:lkPop .5s both}.lksb{color:#fff;font-size:14px;margin:12px 0}
+.lkgr{display:grid;gap:10px;justify-items:center}.lkgr.multi{grid-template-columns:repeat(2,1fr)}.lkc{width:100%;max-width:240px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 10px;border-radius:18px;border:3px solid var(--rc);background:linear-gradient(160deg,var(--rc)55,#000c);color:#fff;box-shadow:0 0 30px var(--rc);animation:lkPop .6s both;animation-delay:calc(var(--i)*120ms + .15s)}.lkc i{font-style:normal;font-size:56px;animation:lkWob 2s ease-in-out infinite}.lkgr.multi .lkc i{font-size:34px}.lkc b{font-size:15px}.lkc span{padding:2px 10px;border-radius:99px;background:var(--rc);font:800 11px/1.5 inherit}
+.lkfl{position:absolute;top:-30px;font-size:22px;animation:lkFall linear infinite;pointer-events:none}@keyframes lkFall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes lkFade{from{opacity:0}}@keyframes lkSpinR{to{transform:rotate(360deg)}}
+.lkov.t-leg .lkst,.lkov.t-epi .lkst{animation:lkShake .5s .2s}@keyframes lkShake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.mvp{margin-top:14px;padding:14px;border-radius:18px;border:2px solid var(--mc,#FACC15);background:linear-gradient(160deg,color-mix(in srgb,var(--mc,#FACC15) 22%,transparent),transparent 70%),var(--cd)}.mvp.lock{--mc:#9CA3AF;opacity:.9}.mvh{display:flex;align-items:center;gap:12px}.mvh b{font-size:17px;display:block}.mvh em{font-style:normal;font-size:13px;color:var(--mc,#FACC15);font-weight:800}.mvl{font-size:34px}
+.mvart{position:relative;flex:0 0 84px;width:84px}.mvart.big{width:150px;margin:0 auto 10px}.mvau{position:absolute;left:50%;top:48%;width:130%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--f1)88,transparent 68%);opacity:.55;animation:mvPulse 2.4s ease-in-out infinite}.mvart svg{position:relative;z-index:1}
+@keyframes mvPulse{0%,100%{transform:translate(-50%,-50%) scale(.9);opacity:.4}50%{transform:translate(-50%,-50%) scale(1.1);opacity:.75}}.lkau{animation-name:mvPulse}
+.mvd{display:flex;gap:5px;margin-top:6px}.mvd i{width:18px;height:6px;border-radius:3px;background:var(--cd2)}.mvd i.on{background:var(--mc)}
+.mvs{font:800 12px/1 inherit;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin:6px 0}.mvr{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-bottom:6px;border-radius:12px;border:1px solid var(--bd,#ffffff22);font-size:13px}.mvr b{flex:0 0 40px;color:var(--mc)}.mvr span{flex:1}.mvr em{font-style:normal;font-weight:800;white-space:nowrap}.mvr.cur{border:2px solid var(--mc);background:color-mix(in srgb,var(--mc) 16%,transparent)}.mvr.lk{opacity:.55}
+.mevoc .mm{position:relative}.mevoc .mm:before{content:'';position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(circle,var(--mc),transparent 68%);opacity:.5;animation:mvPulse2 2.4s ease-in-out infinite;pointer-events:none}.mevoc .mm>*{position:relative}.mevo-1{--mc:#22C55E}.mevo-2{--mc:#3B82F6}.mevo-3{--mc:#A855F7}.mevo-4{--mc:#EC4899}.mevo-5{--mc:#F5B301}.mevoc.mevo-4 .mm:after,.mevoc.mevo-5 .mm:after{content:'✨';position:absolute;right:-4px;top:-6px;font-size:18px;animation:lkBl 1.4s ease-in-out infinite}
+@keyframes mvPulse2{0%,100%{transform:scale(.92);opacity:.35}50%{transform:scale(1.08);opacity:.7}}
+.vtr{position:relative;border-radius:14px;padding:30px 12px 22px;background:linear-gradient(180deg,#5b3a1a,#3a2410);border:3px solid #8a5a2b;box-shadow:inset 0 0 0 2px #2b1a0b,0 6px 18px rgba(0,0,0,.4);overflow:hidden}.vtpl{position:absolute;top:6px;left:50%;transform:translateX(-50%);padding:3px 14px;border-radius:6px;background:linear-gradient(180deg,#FDE68A,#B45309);color:#3a2410;font:900 11px/1.3 Impact,'Arial Black',sans-serif;letter-spacing:.08em;white-space:nowrap;z-index:3}
+.vtl{position:absolute;top:0;width:90px;height:100%;background:linear-gradient(180deg,rgba(255,244,200,.35),transparent 75%);clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);z-index:1;animation:lkBl 3.4s ease-in-out infinite}.vtl.l1{left:12%}.vtl.l2{right:12%;animation-delay:1.7s}
+.vtgl{position:relative;border-radius:8px;background:linear-gradient(160deg,rgba(186,230,253,.22),rgba(14,30,50,.55));border:2px solid rgba(186,230,253,.55);padding:6px 4px;z-index:2;overflow:hidden}.vtsn{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:vtSh 5s ease-in-out infinite}@keyframes vtSh{0%,60%{left:-60%}100%{left:130%}}
+.vtsh{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 4px 6px;border-bottom:7px solid #8a5a2b;box-shadow:0 3px 0 #2b1a0b}.vtsh:last-of-type{margin-bottom:2px}.vts{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-height:56px;justify-content:flex-end}.vts i{font-style:normal;font-size:26px;filter:grayscale(1) brightness(.6);opacity:.35}.vts b{font-size:9px;color:#cbd5e1;opacity:.6}.vts.f i{filter:none;opacity:1;animation:lkWob 2.6s ease-in-out infinite}.vts.f b{opacity:1;color:#fff}.vtbs{position:absolute;left:0;right:0;bottom:0;height:12px;background:linear-gradient(180deg,#8a5a2b,#2b1a0b);z-index:3}`;document.head.appendChild(st)}
 </script>
 </body></html>
 
