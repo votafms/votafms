@@ -7508,8 +7508,8 @@ async function lkSpin(n){
  const mv=got.some(x=>x.id==='lk_mascota');if(mv)up['lk.mv']=1;
  S.lkBusy=true;document.querySelectorAll('.lkb').forEach(b=>b.classList.add('off'));
  try{await fm.updateDoc(ref,up)}catch(e){console.error('lkSpin',e);S.lkBusy=false;try{achFail('No se pudo girar. Revisa tu conexión.')}catch(_){}R();return}
- const last=got[got.length-1],idx=LK.findIndex(x=>x.id===last.id),cur=S.lkRot||0,a=idx*36+18+(Math.random()-.5)*20,tgt=cur+360*6+(((-a-cur)%360)+360)%360,fast=document.documentElement.classList.contains('noanim');
- S.lkRot=tgt;const w=document.getElementById('lkwh');if(w){w.style.transition=fast?'none':'transform 4.4s cubic-bezier(.12,.7,.1,1)';w.style.transform='rotate('+tgt+'deg)'}
+ const last=got[got.length-1],idx=LK.findIndex(x=>x.id===last.id),fast=document.documentElement.classList.contains('noanim');
+ lqRun(idx,fast);
  try{SFX.notif()}catch(e){}
  setTimeout(()=>{const s=shopS(),r=lkS(),o=[...(r.owned||[]),...got.map(x=>x.id)];
   S.me={...S.me,shop:{...s,own:[...new Set([...(s.own||[]),...shIds])],spent:(+s.spent||0)+(useT?0:cost)},lk:{...r,pity,pulls:(+r.pulls||0)+cnt,owned:o,spent:(+r.spent||0)+(useT?cnt:0),lg,mv:mv?1:(r.mv||0)}};
@@ -7535,6 +7535,69 @@ function lkBody(){const back='';
  <div class="lkbs">${btn(1,'1 GIRO')}${btn(10,'10 GIROS')}</div>
  <div class="mu lkin">${left>0?'Ganas 1 ticket por cada batalla de liga que votes. Sin tickets, giras con monedas: 300 por giro. Quedan '+left+' premios por conseguir.':'🎉 ¡Completaste la ruleta! Pronto habrá premios nuevos.'}</div></div><div style="height:24px"></div>`}
 VIEW.luck=function(){return `<button class="back" onclick="go('home')">‹ Ligas</button>`+lkBody()};
+
+/* ---- Luck Rap: tablero cuadrado estilo Free Fire (premios reales de la tienda, recompensa sale por fuera) ---- */
+const LQ_RING=[[1,2],[1,3],[1,4],[2,4],[3,4],[4,3],[4,2],[4,1],[3,1],[2,1]];
+function lqPv(x){const it=SHOP.find(s=>s.id===x.id);if(it)return shopPv(it);
+ if(x.id==='lk_mascota')return `<div class="shpv"><div class="lqms">${stkSvg(30,true,['aura'])}</div></div>`;
+ if(x.id==='lk_vitrina')return `<div class="shpv"><div class="lqvt"><i>🏆</i><i>🏆</i><i>🏆</i><i>🏆</i></div></div>`;
+ return `<div class="shpv"><div class="lqlk">🍀<em>3 días</em></div></div>`}
+function lqTile(x,i){const p=LQ_RING[i],o=lkOwn(x.id),hit=S.lkOut&&S.lkHit===i;
+ return `<div class="lqt${o?' own':''}${hit?' hit':''}" style="grid-area:${p[0]}/${p[1]};--rc:${LK_RC[x.r]}"><div class="lqv">${lqPv(x)}</div>${o?'<b class="lqck">✓</b>':''}</div>`}
+function lqBoard(){const hasM=lkOwn('lk_mascota'),pity=Math.min(LK_PITY,+lkS().pity||0);
+ return `<div class="lqb"><div class="lqg">${LK.map(lqTile).join('')}<div class="lqd" style="grid-area:1/1">${tkSvg(32)}</div><div class="lqd" style="grid-area:4/4">🎤</div><div class="lqc" style="grid-area:2/2/4/4"><div class="lqau"></div><div class="lqms2">${stkSvg(30,true,['aura'])}</div><div class="lqnm">MASCOTA<br>EVOLUTIVA</div><div class="lqrr">${hasM?'✓ YA LA TIENES':'LEGENDARIO'}</div><button class="lqmd" onclick="lkTog()">MÁS DETALLES</button></div></div><div class="lqsu"><small>SUERTE</small><b>${pity}/${LK_PITY}</b></div></div>`}
+function lqOut(){const g=S.lkOut;if(!g)return '';const ord={leg:0,epi:1,rar:2,com:3},l=[...g].sort((a,b)=>ord[a.r]-ord[b.r]);
+ return `<div class="lqout">${l.map((x,i)=>`<div class="lqo" style="--rc:${LK_RC[x.r]};--i:${i}"><div class="lqov">${lqPv(x)}</div><div class="lqot"><em>${g.length>1?'¡Tu premio!':'¡Desbloqueaste!'}</em><b>${esc(x.n)}</b><span class="shrar r-${x.r}" style="position:static">${LK_RN[x.r]}</span></div></div>`).join('')}<div class="lqoa"><button class="btn sm" onclick="lkClose()">Seguir</button><button class="btn s sm" onclick="lkClose();go('baul')">Ver mi baúl</button></div></div>`}
+function lqRun(idx,fast){S.lkOut=null;S.lkHit=idx;const old=document.querySelector('.lqout');if(old)old.remove();
+ const T=[...document.querySelectorAll('.lqt')];T.forEach(t=>t.classList.remove('run','hit'));if(!T.length)return;
+ if(fast){T[idx].classList.add('hit');return}
+ const n=T.length,steps=n*2+idx+1;let i=0;
+ (function go(){T.forEach(t=>t.classList.remove('run'));const p=i%n;T[p].classList.add('run');try{SFX.tap()}catch(e){}
+  if(i>=steps-1){setTimeout(()=>{T[p].classList.remove('run');T[p].classList.add('hit')},120);return}
+  const k=i/steps;i++;setTimeout(go,45+Math.pow(k,3)*330)})()}
+lkResult=function(got){S.lkOut=got;S.lkBusy=false;R();
+ const o=document.querySelector('.lqout');if(o&&o.scrollIntoView)try{o.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}
+ const ord={leg:0,epi:1,rar:2,com:3},best=[...got].sort((a,b)=>ord[a.r]-ord[b.r])[0];
+ try{(best.r==='leg'||best.r==='epi')?SFX.ach():SFX.coin()}catch(e){}try{if(best.r==='leg'||best.r==='epi')navigator.vibrate&&navigator.vibrate([60,40,120])}catch(e){}};
+window.lkClose=()=>{const o=document.getElementById('lkov');if(o)o.remove();S.lkOut=null;S.lkBusy=false;R()};
+lkPrem=function(){const ord={leg:0,epi:1,rar:2,com:3},l=[...LK].sort((a,b)=>ord[a.r]-ord[b.r]);
+ return `<div class="lqpm">${l.map((x,i)=>{const o=lkOwn(x.id);return `<div class="shi lqpc${o?' own':''}" style="--i:${i}"><span class="shrar r-${x.r}">${LK_RN[x.r]}</span>${lqPv(x)}<div class="shbd"><b>${esc(x.n)}</b><span class="lqds">${esc(x.d)}</span><em class="${o?'ok':''}">${o?'✓ Desbloqueado':'Por ganar'}</em></div></div>`}).join('')}<div class="lkod" style="grid-column:1/-1">Probabilidad base: Legendario 1 % · Épico 3 % · Raro 26 % · Común 70 %. Cada premio sale una sola vez.</div></div>`};
+lkBody=function(){
+ if(!S.me)return `<div class="hero"><span class="kicker">Ruleta</span><h1>Luck Rap</h1><p>Crea una cuenta para ganar tickets votando y girar la ruleta.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button>`;
+ const tk=lkTickets(),bal=coinBal(),left=LK.filter(x=>!lkOwn(x.id)).length,lgOn=+lkS().lg>Date.now();
+ const btn=(n,lab)=>{const useT=n===1?tk>=1:tk>=10,c=useT?n:LK_COIN*n,ok=left>0&&(useT||bal>=c);
+  return `<button class="lkb lkb${n}${ok?'':' off'}" ${ok?`onclick="lkSpin(${n})"`:'disabled'}><b>${lab}</b><span>${useT?tkSvg(22)+' ×'+c:'<i class="coin"></i> '+c}</span></button>`};
+ return `<div class="lkw"><div class="lqtop"><b>LUCK RAP</b><button class="lkvp" onclick="lkTog()">VER PREMIOS ${S.lkPrem?'⌃':'⌄'}</button></div>${S.lkPrem?lkPrem():''}${lqBoard()}${lqOut()}
+ <div class="lkbal"><span class="lkch">${tkSvg(26)}<b>${tk}</b> ticket${tk===1?'':'s'}</span><span class="lkch"><i class="coin"></i><b>${bal}</b></span>${lgOn?'<span class="lkch lg">🍀 Suerte activa</span>':''}</div>
+ <div class="lkbs">${btn(1,'1 GIRO')}${btn(10,'10 GIROS')}</div>
+ <div class="mu lkin">${left>0?'Ganas 1 ticket por cada batalla de liga que votes. Sin tickets, giras con monedas: 300 por giro. Quedan '+left+' premios por conseguir.':'🎉 ¡Completaste la ruleta! Pronto habrá premios nuevos.'}</div></div><div style="height:24px"></div>`};
+{const st=document.createElement('style');st.textContent=`
+.lkw .lkbs,.lkw .lkbal,.lkw .lkin{max-width:340px;margin-left:auto;margin-right:auto}
+.lqtop{display:flex;align-items:center;justify-content:space-between;max-width:340px;margin:0 auto 4px}.lqtop b{font:900 24px/1 Impact,'Arial Black',sans-serif;color:#FDE047;text-shadow:0 2px 0 #000}
+.lqb{position:relative;max-width:340px;margin:8px auto 20px;padding:8px;border-radius:14px;border:2px solid #FACC15;background:radial-gradient(90% 70% at 50% 45%,rgba(250,204,21,.4),transparent 70%),linear-gradient(160deg,#111,#2a1f00);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.lqg{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:5px;aspect-ratio:1}
+.lqt,.lqd{position:relative;min-width:0;border-radius:9px;border:2px solid var(--rc,#FACC15);background:#14110a;overflow:hidden;display:grid;place-items:center;transition:transform .12s,box-shadow .12s,filter .12s}
+.lqd{--rc:#FACC1566;font-size:26px;opacity:.9}
+.lqv{zoom:.46;pointer-events:none;width:100%}.lqv .shpv{min-height:0;background:none;box-shadow:none;padding:0}
+.lqt.own{filter:grayscale(.6) brightness(.7)}.lqck{position:absolute;right:3px;top:1px;color:#4ADE80;font-size:14px}
+.lqt.run{transform:scale(1.08);box-shadow:0 0 0 3px #FDE047,0 0 16px #FACC15;filter:brightness(1.5);z-index:2}
+.lqt.hit,.lqt.hit.own{transform:scale(1.1);filter:none;z-index:2;box-shadow:0 0 0 3px #fff,0 0 22px var(--rc);animation:lqHit .7s ease-in-out infinite alternate}@keyframes lqHit{to{box-shadow:0 0 0 3px #fff,0 0 34px var(--rc)}}
+.lqc{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:12px;border:2px solid #FACC15;background:radial-gradient(circle at 50% 35%,#FDE68A55,transparent 65%),linear-gradient(160deg,#3b2a00,#0d0a00);overflow:hidden;text-align:center}
+.lqau{position:absolute;left:50%;top:34%;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;background:radial-gradient(circle,rgba(250,204,21,.55),transparent 70%);animation:lqPu 2.4s ease-in-out infinite}@keyframes lqPu{50%{transform:scale(1.15);opacity:.7}}
+.lqms2{position:relative;width:62px;z-index:1}
+.lqnm{position:relative;z-index:1;font:900 15px/1 Impact,'Arial Black',sans-serif;color:#fff;text-shadow:0 2px 0 #000,0 0 12px rgba(250,204,21,.8)}
+.lqrr{position:relative;z-index:1;font:800 10px/1 inherit;background:#F5B301;color:#422006;padding:2px 8px;border-radius:99px}
+.lqmd{position:relative;z-index:1;margin-top:3px;border:0;background:linear-gradient(180deg,#FDE047,#F59E0B);color:#422006;font:900 10px/1 inherit;padding:5px 10px;border-radius:6px;cursor:pointer}
+.lqsu{position:absolute;right:-2px;bottom:-12px;background:#FACC15;color:#422006;padding:4px 10px;border-radius:10px 0 10px 0;text-align:center;z-index:3}.lqsu small{display:block;font:800 9px/1 inherit}.lqsu b{font:900 15px/1.1 Impact,'Arial Black',sans-serif}
+.lqms{width:90px}.lqvt{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:8px;border-radius:10px;background:linear-gradient(#1e3a5f66,#0b132066);border:2px solid #94A3B8;font-size:26px;text-align:center}.lqvt i{font-style:normal}
+.lqlk{font-size:54px;text-align:center;filter:drop-shadow(0 0 12px #4ADE80)}.lqlk em{display:block;font:800 13px/1 inherit;font-style:normal;color:#86EFAC}
+.lqpm{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:340px;margin:8px auto;padding:10px;border-radius:14px;background:#14110a;border:1px solid #FACC1555}
+.lqpc{background:#1a1608;color:#fff;border-color:#FACC1555}.lqpm .shbd b{font-size:13px}.lqds{display:block;font-size:11px;opacity:.75;margin-bottom:6px;line-height:1.25}.lqpc em{font-style:normal;font-size:11px;font-weight:800;color:#FDE047}.lqpc em.ok{color:#4ADE80}.lqpm .shpv{min-height:96px}.lqpm .lkod{font-size:11px;opacity:.7;text-align:center}
+.lqout{max-width:340px;margin:14px auto 4px;display:grid;gap:8px;animation:lqIn .5s cubic-bezier(.2,1.3,.4,1)}@keyframes lqIn{from{opacity:0;transform:translateY(-14px) scale(.9)}}
+.lqo{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;border-radius:12px;border:2px solid var(--rc);background:linear-gradient(90deg,#2b0f4a,#12091f);box-shadow:0 0 18px var(--rc);color:#fff;animation:lqSp .8s cubic-bezier(.2,1,.3,1) both;animation-delay:calc(var(--i,0)*.12s)}@keyframes lqSp{from{opacity:0;transform:perspective(500px) rotateY(-180deg) scale(.5)}}
+.lqov{width:92px;flex:none;zoom:.8}.lqov .shpv{min-height:76px;padding:4px;border-radius:10px}
+.lqot{display:flex;flex-direction:column;gap:3px;align-items:flex-start;min-width:0}.lqot em{font:800 11px/1 inherit;font-style:normal;color:#C4B5FD;text-transform:uppercase}.lqot b{font-size:15px}
+.lqoa{display:flex;gap:8px}.lqoa .btn{margin:0;flex:1}`;document.head.appendChild(st)}
 function lkBox(){if(!S.me)return '';const tk=lkTickets(),left=LK.filter(x=>!lkOwn(x.id)).length;return `<button class="lkbox" onclick="go('luck')" aria-label="Abrir Luck Rap"><span class="lkbi">${tkSvg(54)}</span><span class="pftx"><em>PREMIOS EXCLUSIVOS</em><b>LUCK RAP</b><span>${tk} ticket${tk===1?'':'s'} · ${left} premio${left===1?'':'s'} por ganar</span></span><span class="pfgo">›</span></button>`}
 {const _h=VIEW.home;VIEW.home=function(){const h=_h();try{return lkBox()+h}catch(e){return h}}}
 /* ---- Mascota evolutiva ---- */
