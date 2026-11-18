@@ -2385,6 +2385,27 @@ function watchAuth(){
  });
 }
 
+
+/* ===== Ahorro de lecturas de Firebase =====
+   - Mis votos: se leen UNA vez y se guardan en el teléfono (4 h); al votar se añaden en local en vez de volver a leerlos todos.
+   - Votos de una batalla / de una liga: caché en memoria. - Likes: se cuentan en el servidor (1 lectura en vez de cientos). */
+const _VC={},_KC={},_LC={};
+const VC_TTL_OWN=4*36e5,VC_TTL=15*6e4,KC_TTL=8*6e4,LG_TTL=30*6e4;
+const vcOwn=uid=>!!(S.me&&S.me.uid===uid),vcKey=uid=>'vfms_vc_'+uid;
+function vcSave(uid){if(!vcOwn(uid))return;try{const c=_VC[uid];if(c&&c.v)localStorage.setItem(vcKey(uid),JSON.stringify({at:c.at,v:c.v}))}catch(e){}}
+async function votesCached(uid,fn){let c=_VC[uid];
+ if(!c&&vcOwn(uid)){try{const o=JSON.parse(localStorage.getItem(vcKey(uid))||'null');if(o&&Array.isArray(o.v)&&Date.now()-o.at<VC_TTL_OWN)c=_VC[uid]={at:o.at,v:o.v,p:null}}catch(e){}}
+ const ttl=vcOwn(uid)?VC_TTL_OWN:VC_TTL;
+ if(c&&c.v&&Date.now()-c.at<ttl)return c.v.slice();
+ if(c&&c.p)return c.p.then(v=>v.slice());
+ c=_VC[uid]=c||{at:0,v:null,p:null};
+ c.p=fn().then(v=>{c.v=v;c.at=Date.now();c.p=null;vcSave(uid);return v},e=>{c.p=null;if(c.v)return c.v;throw e});
+ return c.p.then(v=>v.slice())}
+async function memCached(st,key,fn,ttl){const c=st[key];if(c&&c.v&&Date.now()-c.at<ttl)return c.v.slice();if(c&&c.p)return c.p.then(v=>v.slice());
+ const n=st[key]={at:0,v:null,p:null};n.p=fn().then(v=>{n.v=v;n.at=Date.now();n.p=null;return v},e=>{delete st[key];throw e});return n.p.then(v=>v.slice())}
+function vcAdd(v,id){try{const u=v.uid,c=_VC[u];if(c&&c.v){c.v.unshift({id,...v});vcSave(u)}const k=_KC[v.key];if(k&&k.v)k.v.push({...v})}catch(e){}}
+function vcUpd(id,v){try{const u=v.uid||(S.me&&S.me.uid),c=_VC[u];if(c&&c.v){const i=c.v.findIndex(x=>x.id===id);if(i>=0)c.v[i]={...c.v[i],...v,id};vcSave(u)}if(v.key)delete _KC[v.key];else for(const k in _KC)delete _KC[k]}catch(e){}}
+function vcDel(id){try{for(const u in _VC){const c=_VC[u];if(c&&c.v){const n=c.v.length;c.v=c.v.filter(x=>x.id!==id);if(c.v.length!==n)vcSave(u)}}}catch(e){}}
 /* Lista de usuarios: sin tope de 200, con caché compartida (90 s la pública, 15 s la de administrador) y una sola consulta a la vez. Menos lecturas = menos lentitud y menos cuota de Firebase. */
 const _UC={};
 async function usersCached(k,fn,ttl){const c=_UC[k]||(_UC[k]={at:0,v:null,p:null});
@@ -2399,14 +2420,14 @@ const B={
  async createUser(uid,u,prof,skipName){const fm=FB.fm;if(!skipName)await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
  async updateUser(uid,prof){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),prof)},
  async topUsers(n){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.orderBy('rp','desc'),fm.limit(n)));return q.docs.map(d=>({uid:d.id,...pub(d.data())}))},
- async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null}})},15000)},
- async listUsers(){return usersCached('pub',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},90000)},
- async addVote(v){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'votes'),v)},
- async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v)},
- async deleteVote(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'votes',id))},
+ async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null}})},60000)},
+ async listUsers(){return usersCached('pub',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},300000)},
+ async addVote(v){const fm=FB.fm;const r=await fm.addDoc(fm.collection(FB.db,'votes'),v);vcAdd(v,r&&r.id)},
+ async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v);vcUpd(id,v)},
+ async deleteVote(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'votes',id));vcDel(id)},
  async getLinks(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'videos'));const o={};q.docs.forEach(d=>{o[d.id]=d.data().y});return o},
  async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})},
-  async votesOfLeague(l){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('l','==',l),fm.limit(2000)));return s.docs.map(d=>d.data())},
+  async votesOfLeague(l){return memCached(_LC,l,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('l','==',l),fm.limit(2000)));return s.docs.map(d=>d.data())},LG_TTL)},
  async changeUsername(uid,oldU,newU){const fm=FB.fm;const ex=await fm.getDoc(fm.doc(FB.db,'usernames',newU));if(ex.exists())throw new Error('taken');await fm.setDoc(fm.doc(FB.db,'usernames',newU),{uid});await fm.updateDoc(fm.doc(FB.db,'users',uid),{u:newU,unAt:Date.now()});await fm.deleteDoc(fm.doc(FB.db,'usernames',oldU))},
   async getNotifs(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',uid),fm.limit(100)));return q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.type!=='duelinv').sort((a,b)=>b.ts-a.ts)},
  async delNotif(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'notifs',id))},
@@ -2421,13 +2442,15 @@ const B={
  async sendFriend(me,meName,to,toName){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'friends',me+'_'+to),{from:me,to,status:'pending',fromName:meName,toName,ts:Date.now()})},
  async acceptFriend(id){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'friends',id),{status:'accepted'})},
  async removeFriend(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'friends',id))},
- async votesOfUser(uid){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('uid','==',uid),fm.limit(500)));return s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)},
- async votesKey(key){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('key','==',key),fm.limit(1000)));return s.docs.map(d=>d.data())},
+ async votesOfUser(uid){return votesCached(uid,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('uid','==',uid),fm.limit(2000)));return s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)})},
+ async votesKey(key){return memCached(_KC,key,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('key','==',key),fm.limit(1000)));return s.docs.map(d=>d.data())},KC_TTL)},
  async addComment(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'comments'),c)},
  async getAdmin(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'admins',uid));return d.exists()}catch(e){return false}},
  async listComments(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'comments'),fm.limit(300)));return q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
  async deleteComment(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'comments',id))},
- async likesTo(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'likes'),fm.where('to','==',uid),fm.limit(1000)));return q.docs.map(d=>d.data())},
+ async likesTo(uid){const fm=FB.fm;
+  if(fm.getCountFromServer){try{const q0=fm.query(fm.collection(FB.db,'likes'),fm.where('to','==',uid));const [c,mine]=await Promise.all([fm.getCountFromServer(q0),S.me?fm.getDoc(fm.doc(FB.db,'likes',S.me.uid+'_'+uid)):Promise.resolve(null)]);const n=c.data().count;let rows=Array.from({length:n},()=>({from:'?',to:uid}));if(mine&&mine.exists()){if(n>0)rows[0]={from:S.me.uid,to:uid};else rows=[{from:S.me.uid,to:uid}]}return rows}catch(e){}}
+  const q=await fm.getDocs(fm.query(fm.collection(FB.db,'likes'),fm.where('to','==',uid),fm.limit(1000)));return q.docs.map(d=>d.data())},
  async likeGivenAny(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'likes'),fm.where('from','==',uid),fm.limit(1)));return !q.empty},
  async setLike(from,to){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'likes',from+'_'+to),{from,to,ts:Date.now()})},
  async delLike(from,to){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'likes',from+'_'+to))}
@@ -2444,7 +2467,7 @@ function avX(uid,name,cls=''){const f=(S.me&&S.me.uid===uid&&S.me.foto)||(uid&&S
 S.pf=S.pf||{};let _pfQ=new Set(),_pfT=null,_pfAll=0;
 function pfQueue(uid){if(!uid||!S.me||S.pf[uid]!==undefined)return;S.pf[uid]=null;_pfQ.add(uid);clearTimeout(_pfT);_pfT=setTimeout(pfFlush,120)}
 async function pfFlush(){const ids=[..._pfQ];_pfQ=new Set();if(!ids.length||!S.me)return;let ch=false;
- try{if(ids.length>3&&Date.now()-_pfAll>120000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.v>=2&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
+ try{if(ids.length>3&&Date.now()-_pfAll>600000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.v>=2&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
  await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'',fr=(d&&d.shop&&d.shop.v>=2&&d.shop.frame)||'';S.pf[id]={foto:f,fr};if(f||fr)ch=true}catch(e){S.pf[id]={foto:''}}}));
  if(ch)R()}
 /* Rango visible igual en todos lados: si el rp guardado de alguien es de otra versión, se recalcula con sus votos */
@@ -2848,12 +2871,13 @@ function friendOf(uid){return (S.fr||[]).find(x=>x.from===uid||x.to===uid)||null
 const isAdmin=()=>!!(S.me&&S.admin);
 function isFriend(uid){const f=friendOf(uid);return !!(f&&f.status==='accepted')}
 /* ===== Presencia: activo ahora / última conexión ===== */
-const PRES_EVERY=120000,PRES_TTL=270000;let PRES_T=null,PRES_R=null,PRES_UID=null;
-function presBeat(on){if(!S.me||!FB)return;B.beat(S.me.uid,on).catch(()=>{})}
+const PRES_EVERY=300000,PRES_TTL=660000;let PRES_T=null,PRES_R=null,PRES_UID=null;
+let _pbT=0,_pbOn=null;
+function presBeat(on){if(!S.me||!FB)return;const now=Date.now();if(on===_pbOn&&now-_pbT<120000)return;_pbT=now;_pbOn=on;B.beat(S.me.uid,on).catch(()=>{})}
 function startPresence(){if(!S.me||PRES_UID===S.me.uid)return;stopPresence(true);PRES_UID=S.me.uid;
  if(document.visibilityState!=='hidden')presBeat(true);
  PRES_T=setInterval(()=>{if(document.visibilityState==='visible')presBeat(true)},PRES_EVERY);
- PRES_R=setInterval(()=>{if(S.me&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()},30000)}
+ PRES_R=setInterval(()=>{if(document.visibilityState==='visible'&&S.me&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()},isAdmin()?120000:90000)}
 function stopPresence(quiet){if(PRES_T){clearInterval(PRES_T);PRES_T=null}if(PRES_R){clearInterval(PRES_R);PRES_R=null}if(!quiet&&PRES_UID&&FB&&S.me)presBeat(false);PRES_UID=null;S.pres=undefined}
 document.addEventListener('visibilitychange',()=>{if(!S.me)return;presBeat(document.visibilityState==='visible');if(document.visibilityState==='visible'&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()});
 window.addEventListener('pagehide',()=>presBeat(false));
@@ -3977,6 +4001,7 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-18T05:30:00-04:00'),text:'Optimización ⚡: la página ahora gasta muchísimas menos lecturas del servidor, así que debería cargar más rápido y fallar menos con tanta gente. Tus votos se guardan en tu teléfono y ya no se vuelven a descargar enteros cada vez que votas; los resultados de las batallas, los «me gusta» y las apuestas también se piden solo cuando hacen falta. Una cosa a notar: el estado «en línea» y las listas de usuarios pueden tardar unos minutos en actualizarse. Si algo se ve desactualizado, recarga la página. Gracias por la paciencia 💛'},
  {ts:Date.parse('2026-11-18T05:00:00-04:00'),text:'Arreglos por lo que nos contaron 🛠️: 1) Iniciar sesión y crear cuenta ya no se quedan en «Un momento…»: si el servidor tarda, sale un mensaje y puedes reintentar. 2) Si entras desde el navegador interno de Twitter, Instagram o Telegram, te avisamos que Google no funciona ahí y cómo abrirlo en Chrome. 3) Salas: salir de la sala ahora es inmediato, y si una sala tarda en crearse ya no aparece sola de la nada mientras votas (así no pierdes tu puntaje). 4) Añadir amigos avisa si el servidor está lento en vez de fallar sin decir nada. Gracias por reportar 💛'},
  {ts:Date.parse('2026-11-18T04:00:00-04:00'),text:'Arreglos importantes 🔧: 1) Buscar usuarios ya no se queda en 200: ahora aparecen todos los usuarios registrados (se muestran por tandas con el botón «Ver más»). 2) La página carga más rápido y gasta menos datos: la lista de usuarios se guarda unos minutos y ya no se vuelve a pedir en cada pantalla. 3) Ajustamos el estado «en línea» para que se actualice un poco más despacio y no sature el servidor. Gracias por avisar de los fallos 💛 Si algo sigue lento o no te deja iniciar sesión, recarga la página y cuéntanos.'},
  {ts:Date.parse('2026-11-17T19:45:00-04:00'),text:'Actualización 🎴⏱️: 1) Nuevo en el Álbum: FMS Argentina 2020 con 10 cartas: Stuart (legendaria), Papo, Mecha y Klan (épicas), Dtoke y Nacho (raras), y Cacha, Mks, Wolf y Sub (comunes). Hay un logro nuevo (ya son 52): Álbum ARG 2020, por completar todas sus cartas, y da 900 monedas. 2) Cambio en las monedas por votar: ahora, para que una batalla de liga te dé monedas, debes pasar al menos 5 minutos dentro de la votación (antes eran 45 segundos). Si guardas antes de ese tiempo, esa batalla no suma monedas y cuenta para el aviso anti-trampas. Rige desde las 8:00 p. m. de hoy (hora de República Dominicana).'},
@@ -4451,7 +4476,7 @@ async function ecoSave(){if(!isAdmin()||S.ecoBusy)return;const D=S.ecoD;if(!D)re
  try{const fm=FB.fm,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'config','economia'),{cfg:JSON.stringify(cfg),ts,by:S.me.uid});ECO.ts=ts;ecoApply(cfg);S.ecoD=ecoDraft();S.ecoMsg='✓ Guardado. Ya lo ven todos los usuarios.'}
  catch(e){S.ecoMsg='No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste la regla de config/economia en Firestore?'}
  S.ecoBusy=false;R()}
-setInterval(ecoSync,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)ecoSync()});
+setInterval(()=>{if(!document.hidden){window._ecoT=Date.now();ecoSync()}},600000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-(window._ecoT||0)>180000){window._ecoT=Date.now();ecoSync()}});
 async function adminRefundCards(){if(!isAdmin())return;
  if(!confirm('¿Devolver las monedas de los diseños de tarjeta a TODOS los usuarios que los compraron y quitarles el diseño? Los usuarios que entren después se devuelven solos al iniciar sesión.'))return;
  S.admCoinMsg='Cargando usuarios…';R();
@@ -4840,7 +4865,7 @@ function crewTopH(){const T=S.top;
 S.gtop=S.gtop||null;
 async function loadGlobalTop(force){if(!S.me)return;
  if(S.gtop&&S.gtop.loading)return;
- if(!force&&S.gtop&&S.gtop.rows&&Date.now()-S.gtop.at<60000)return;
+ if(!force&&S.gtop&&S.gtop.rows&&Date.now()-S.gtop.at<180000)return;
  S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null,at:0};R();
  try{
   const us=await B.listUsers();
@@ -7157,6 +7182,7 @@ function betsEnsure(){
  if(!S.me){if(BT.un){try{BT.un()}catch(e){}BT.un=null;BT.uid=null;S.bets=[];S.betsReady=false}return}
  if(typeof FB==='undefined'||!FB||!FB.fm||!FB.db)return;
  if(BT.un&&BT.uid===S.me.uid)return;
+ {let need=S.v==='comunidad'||S.v==='admin';if(!need){try{const m=(shopS().bets)||{};need=Object.keys(m).some(id=>m[id]&&!m[id].d)}catch(e){}}if(!need&&!BT.un)return}
  if(BT.un){try{BT.un()}catch(e){}BT.un=null}
  const fm=FB.fm;BT.uid=S.me.uid;S.betsReady=false;S.betsErr='';
  try{BT.un=fm.onSnapshot(fm.query(fm.collection(FB.db,'bets'),fm.limit(500)),snap=>{S.bets=snap.docs.map(d=>({id:d.id,...d.data()}));S.betsReady=true;S.betsErr='';betsClaim();betsRefresh()},err=>{S.betsErr=(err&&err.code)||'error';S.betsReady=true;betsRefresh()})}catch(e){S.betsErr='error'}}
