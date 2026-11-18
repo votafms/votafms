@@ -2385,14 +2385,22 @@ function watchAuth(){
  });
 }
 
+/* Lista de usuarios: sin tope de 200, con caché compartida (90 s la pública, 15 s la de administrador) y una sola consulta a la vez. Menos lecturas = menos lentitud y menos cuota de Firebase. */
+const _UC={};
+async function usersCached(k,fn,ttl){const c=_UC[k]||(_UC[k]={at:0,v:null,p:null});
+ if(c.v&&Date.now()-c.at<ttl)return c.v;if(c.p)return c.p;
+ c.p=fn().then(v=>{c.v=v;c.at=Date.now();c.p=null;return v},e=>{c.p=null;if(c.v)return c.v;throw e});return c.p}
+function usersCacheClear(){for(const k in _UC){_UC[k].at=0}}
+
 const B={
  async getUser(uid){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'users',uid));return s.exists()?s.data():null},
+ async usernameOwner(u){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'usernames',u));return s.exists()?((s.data()||{}).uid||'?'):null},
  async usernameTaken(u){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'usernames',u));return s.exists()},
- async createUser(uid,u,prof){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
+ async createUser(uid,u,prof,skipName){const fm=FB.fm;if(!skipName)await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
  async updateUser(uid,prof){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),prof)},
  async topUsers(n){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.orderBy('rp','desc'),fm.limit(n)));return q.docs.map(d=>({uid:d.id,...pub(d.data())}))},
- async listUsersFull(){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(200)));return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null}})},
- async listUsers(){const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(200)));return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},
+ async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null}})},15000)},
+ async listUsers(){return usersCached('pub',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},90000)},
  async addVote(v){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'votes'),v)},
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v)},
  async deleteVote(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'votes',id))},
@@ -2840,7 +2848,7 @@ function friendOf(uid){return (S.fr||[]).find(x=>x.from===uid||x.to===uid)||null
 const isAdmin=()=>!!(S.me&&S.admin);
 function isFriend(uid){const f=friendOf(uid);return !!(f&&f.status==='accepted')}
 /* ===== Presencia: activo ahora / última conexión ===== */
-const PRES_EVERY=60000,PRES_TTL=150000;let PRES_T=null,PRES_R=null,PRES_UID=null;
+const PRES_EVERY=120000,PRES_TTL=270000;let PRES_T=null,PRES_R=null,PRES_UID=null;
 function presBeat(on){if(!S.me||!FB)return;B.beat(S.me.uid,on).catch(()=>{})}
 function startPresence(){if(!S.me||PRES_UID===S.me.uid)return;stopPresence(true);PRES_UID=S.me.uid;
  if(document.visibilityState!=='hidden')presBeat(true);
@@ -2871,12 +2879,13 @@ async function friendAct(uid,name){
  if(!S.me)return openAuth('in');
  const f=friendOf(uid);
  try{
-  if(!f){await B.sendFriend(S.me.uid,S.me.u,uid,name);S.msgP='Solicitud enviada a '+name}
-  else if(f.status==='pending'&&f.to===S.me.uid){await B.acceptFriend(f.id);S.msgP='Ahora son amigos'}
+  if(S._frBusy&&Date.now()-S._frBusy<15000)return;S._frBusy=Date.now();
+  if(!f){await tmo(B.sendFriend(S.me.uid,S.me.u,uid,name),15000);S.msgP='Solicitud enviada a '+name}
+  else if(f.status==='pending'&&f.to===S.me.uid){await tmo(B.acceptFriend(f.id),15000);S.msgP='Ahora son amigos'}
   else return;
   await refreshFriends();try{syncAch()}catch(_e){}
- }catch(e){S.msgP='No se pudo completar la acción. Revisa las reglas de Firestore.'}
- R();
+ }catch(e){S.msgP=e&&e.message==='timeout'?'El servidor está lento. Espera unos segundos e inténtalo de nuevo.':'No se pudo completar la acción. Inténtalo de nuevo.'}
+ S._frBusy=0;R();
 }
 async function rejectFriend(id){
  try{await B.removeFriend(id);await refreshFriends();S.msgP='Listo'}catch(e){S.msgP='No se pudo completar la acción.'}
@@ -3642,14 +3651,16 @@ function ulist(){const list=S.users||[];
  let strip='';
  if(me&&sf==='all'&&!q){const on=list.filter(x=>x.uid!==me.uid&&ulOnline(x.uid));
   if(on.length)strip=`<div class="sec" style="margin:4px 2px 8px"><span>En línea ahora</span><span>${on.length}</span></div><div class="uon">${on.map(x=>`<button onclick="openU('${esc(x.uid)}')">${withDot(x.uid,avU(x,''))}<span>${esc(x.u)}</span></button>`).join('')}</div>`}
+ const shown=f.slice(0,S.ulN||60);
  let body;
  if(!f.length){const msg=q?'No encontramos ese usuario.':sf==='friends'?'Aún no tienes amigos. Busca a alguien y envíale una solicitud.':sf==='online'?'Ninguno de tus amigos está en línea ahora.':sf==='inc'?'No tienes solicitudes pendientes.':'No hay usuarios.';
   body=`<div class="card mu" style="text-align:center">${msg}</div>`}
  else if(ss==='az'){let cur='',h='';
-  f.forEach(x=>{let l=ulNorm(x.u).charAt(0).toUpperCase();if(!/[A-Z]/.test(l))l='#';if(l!==cur){cur=l;h+=`<div class="ulet"><b>${l}</b><i></i></div>`}h+=ulRow(x)});body=h}
- else body=f.map(ulRow).join('');
+  shown.forEach(x=>{let l=ulNorm(x.u).charAt(0).toUpperCase();if(!/[A-Z]/.test(l))l='#';if(l!==cur){cur=l;h+=`<div class="ulet"><b>${l}</b><i></i></div>`}h+=ulRow(x)});body=h}
+ else body=shown.map(ulRow).join('');
+ if(f.length>shown.length)body+=`<button class="btn" style="width:100%;margin:12px 0" onclick="S.ulN=(S.ulN||60)+60;ulRefresh()">Ver más (${f.length-shown.length} usuarios)</button>`;
  return chips+strip+sortbar+body}
-function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre, ID, país o MC favorito" value="${esc(S.q)}" oninput="S.q=this.value;ulRefresh()" style="margin-bottom:10px"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
+function searchV(){return `<h1 class="pg">Buscar usuarios</h1><input placeholder="Buscar por nombre, ID, país o MC favorito" value="${esc(S.q)}" oninput="S.q=this.value;S.ulN=60;ulRefresh()" style="margin-bottom:10px"><div id="ul">${S.users===null?'<div class="card mu">Cargando usuarios…</div>':ulist()}</div>`}
 function openU(uid){S.uid=uid;go('user');loadLikes(uid);countFriendView(uid)}
 function countFriendView(uid){if(!S.me||S.me.uid===uid||!isFriend(uid))return;const n=((S.me.vf)||0)+1;S.me={...S.me,vf:n};try{B.updateUser(S.me.uid,{vf:n}).catch(()=>{})}catch(e){}syncAch()}
 function profileHead(u,isMe,uid){
@@ -3781,7 +3792,11 @@ async function handleResetLink(){const q=new URLSearchParams(location.search);co
  try{S.auth.email=await FB.am.verifyPasswordResetCode(FB.auth,oob)}catch(e){S.auth.bad=true;S.auth.err=fbErr(e)}
  R()}
 function authErr(msg){if(S.auth){S.auth.err=msg;S.auth.busy=false}R()}
-function fbErr(e){const m={'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de inicio de sesión. Permite ventanas emergentes e intenta de nuevo.','auth/account-exists-with-different-credential':'Ya existe una cuenta con el correo de ese perfil, creada con otro método (Google o correo y contraseña). Inicia sesión con ese método.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.','auth/operation-not-allowed':'El registro con correo y contraseña no está activado en Firebase (Authentication > Método de acceso).','auth/admin-restricted-operation':'El registro de cuentas nuevas está restringido en Firebase.','auth/unauthorized-domain':'Este dominio no está autorizado en Firebase (Authentication > Configuración > Dominios autorizados).','auth/invalid-api-key':'La clave de Firebase no es válida.','permission-denied':'Firebase no permitió guardar tu perfil (reglas de Firestore).'};console.error('fbErr',e);const c=(e&&e.code)||'';return m[c]||('Algo salió mal. Intenta de nuevo.'+(c?' ('+c+')':''))}
+/* Tiempo límite: si Firebase no responde, en vez de quedarse en «Un momento…» se muestra un error y se puede reintentar */
+function tmo(p,ms){return Promise.race([p,new Promise((_,rj)=>setTimeout(()=>rj(new Error('timeout')),ms||20000))])}
+const IN_APP=/FBAN|FBAV|Instagram|Line\/|MicroMessenger|Twitter|TelegramWebview|Snapchat|; wv\)/i.test(navigator.userAgent||'');
+setInterval(()=>{if(S.auth&&S.auth.busy){S._abT=S._abT||Date.now();if(Date.now()-S._abT>75000){S._abT=0;S.authBusy=false;try{authErr('El servidor está tardando demasiado. Intenta de nuevo en unos segundos.')}catch(e){}}}else S._abT=0},3000);
+function fbErr(e){if(e&&e.message==='timeout')return 'El servidor está tardando demasiado. Revisa tu internet e inténtalo de nuevo en unos segundos.';const m={'auth/operation-not-supported-in-this-environment':'Este navegador no permite iniciar sesión con Google. Abre la página en Chrome o Safari, o entra con tu correo.','auth/web-storage-unsupported':'Tu navegador bloquea el almacenamiento y no deja iniciar sesión. Abre la página en Chrome o Safari.','auth/cancelled-popup-request':'Ya hay una ventana de inicio abierta. Ciérrala e inténtalo de nuevo.','auth/internal-error':'Error interno al iniciar sesión. Recarga la página e inténtalo de nuevo.','auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Contraseña incorrecta.','auth/user-not-found':'No hay una cuenta con ese correo.','auth/invalid-email':'El correo no es válido.','auth/email-already-in-use':'Ya existe una cuenta con ese correo.','auth/weak-password':'La contraseña es muy corta (mínimo 6).','auth/popup-closed-by-user':'Cerraste la ventana antes de terminar.','auth/popup-blocked':'Tu navegador bloqueó la ventana de inicio de sesión. Permite ventanas emergentes e intenta de nuevo.','auth/account-exists-with-different-credential':'Ya existe una cuenta con el correo de ese perfil, creada con otro método (Google o correo y contraseña). Inicia sesión con ese método.','auth/too-many-requests':'Demasiados intentos. Espera un momento.','auth/network-request-failed':'Sin conexión. Revisa tu internet.','auth/missing-email':'Escribe tu correo.','auth/expired-action-code':'El enlace venció. Pide uno nuevo.','auth/invalid-action-code':'El enlace no es válido o ya fue usado. Pide uno nuevo.','auth/user-disabled':'Esta cuenta está deshabilitada.','auth/operation-not-allowed':'El registro con correo y contraseña no está activado en Firebase (Authentication > Método de acceso).','auth/admin-restricted-operation':'El registro de cuentas nuevas está restringido en Firebase.','auth/unauthorized-domain':'Este dominio no está autorizado en Firebase (Authentication > Configuración > Dominios autorizados).','auth/invalid-api-key':'La clave de Firebase no es válida.','permission-denied':'Firebase no permitió guardar tu perfil (reglas de Firestore).'};console.error('fbErr',e);const c=(e&&e.code)||'';return m[c]||('Algo salió mal. Intenta de nuevo.'+(c?' ('+c+')':''))}
 function gBadge(){return '<span class="gbadge">G</span>'}
 function fbBadge(){return '<span class="gbadge fbbadge">f</span>'}
 function ovWrap(inner,close){return `<div class="ov" onclick="${close}"><div class="sh" onclick="event.stopPropagation()">${inner}</div></div>`}
@@ -3811,12 +3826,13 @@ function authM(){const A=S.auth;
  ${A.err?`<div class="err">${esc(A.err)}</div>`:''}${sugH(A)}
  <button class="btn" onclick="authSubmit()" ${A.busy?'disabled':''}>${A.busy?'Un momento…':c?'Crear cuenta':'Entrar'}</button>`,'closeAuth()');
 }
-async function googleLogin(){if(S.auth){S.auth.busy=true}S.authBusy=true;R();
- try{const cred=await FB.am.signInWithPopup(FB.auth,new FB.am.GoogleAuthProvider());const prof=await B.getUser(cred.user.uid);S.authBusy=false;
+async function googleLogin(){if(IN_APP){return authErr('Estás dentro de la app de otra red (Twitter, Instagram, Telegram…) y Google no deja iniciar sesión aquí. Abre esta página en Chrome o Safari (menú ⋮ → «Abrir en el navegador») o entra con tu correo.')}
+ if(S.auth){S.auth.busy=true}S.authBusy=true;R();
+ try{const cred=await FB.am.signInWithPopup(FB.auth,new FB.am.GoogleAuthProvider());const prof=await tmo(B.getUser(cred.user.uid),20000);S.authBusy=false;
   if(prof){setMe(cred.user.uid,prof)}else{S.auth={mode:'google',step:'user',un:'',err:'',busy:false};R()}
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
 async function facebookLogin(){if(S.auth){S.auth.busy=true}S.authBusy=true;R();
- try{const pr=new FB.am.FacebookAuthProvider();pr.addScope('email');const cred=await FB.am.signInWithPopup(FB.auth,pr);const prof=await B.getUser(cred.user.uid);S.authBusy=false;
+ try{const pr=new FB.am.FacebookAuthProvider();pr.addScope('email');const cred=await FB.am.signInWithPopup(FB.auth,pr);const prof=await tmo(B.getUser(cred.user.uid),20000);S.authBusy=false;
   if(prof){setMe(cred.user.uid,prof)}else{S.auth={mode:'google',step:'user',un:'',err:'',busy:false};R()}
  }catch(e){S.authBusy=false;if(e&&e.code==='auth/operation-not-allowed'){console.error('fbErr',e);authErr('El inicio con Facebook aún no está activado en Firebase (Authentication > Método de acceso).')}else authErr(fbErr(e))}}
 /* ===== Sugerencias cuando el nombre de usuario ya está en uso ===== */
@@ -3834,8 +3850,9 @@ async function submitUsername(){const A=S.auth;const un=(A.un||'').trim().toLowe
  if(!/^[a-z0-9._]{3,20}$/.test(un))return authErr('Usa de 3 a 20 letras, números, punto o guion bajo.');
  A.sug=null;A.busy=true;R();S.authBusy=true;
  try{const uid=FB.auth.currentUser.uid;
-  if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
-  const prof={p:'',m:'',a:'',joined:today()};await B.createUser(uid,un,prof);try{await B.updateUser(uid,{lcm:Date.now(),lgp:Date.now()})}catch(_e){}S.authBusy=false;setMe(uid,{u:un,...prof});
+  const owner=await tmo(B.usernameOwner(un),20000);
+  if(owner&&owner!==uid){A.sug=await tmo(nameSuggest(un),15000).catch(()=>null);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
+  const prof={p:'',m:'',a:'',joined:today()};await tmo(B.createUser(uid,un,prof,!!owner),20000);B.updateUser(uid,{lcm:Date.now(),lgp:Date.now()}).catch(()=>{});S.authBusy=false;setMe(uid,{u:un,...prof});
  }catch(e){S.authBusy=false;authErr(fbErr(e))}}
 async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
  const email=(A.email||'').trim().toLowerCase(),pw=A.pw||'';
@@ -3847,17 +3864,17 @@ async function authSubmit(){const A=S.auth;if(!A||A.busy)return;
   if(pw!==A.pw2)return authErr('Las contraseñas no coinciden.');
   A.sug=null;A.busy=true;S.authBusy=true;R();
   try{
-   if(await B.usernameTaken(un)){A.sug=await nameSuggest(un);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
-   const cred=await FB.am.createUserWithEmailAndPassword(FB.auth,email,pw);
+   if(await tmo(B.usernameTaken(un),20000)){A.sug=await tmo(nameSuggest(un),15000).catch(()=>null);S.authBusy=false;return authErr('Ese nombre de usuario ya está en uso. Prueba con otro.')}
+   const cred=await tmo(FB.am.createUserWithEmailAndPassword(FB.auth,email,pw),30000);
    const prof={p:'',m:'',a:'',joined:today()};
-   try{await B.createUser(cred.user.uid,un,prof);try{await B.updateUser(cred.user.uid,{lcm:Date.now(),lgp:Date.now()})}catch(_e){}}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
+   try{await tmo(B.createUser(cred.user.uid,un,prof),20000);B.updateUser(cred.user.uid,{lcm:Date.now(),lgp:Date.now()}).catch(()=>{})}catch(e2){S.authBusy=false;console.error('createUser',e2);S.auth={mode:'google',step:'user',un:un,err:fbErr(e2),busy:false};return R()}
    S.authBusy=false;setMe(cred.user.uid,{u:un,...prof});
   }catch(e){S.authBusy=false;authErr(fbErr(e))}
  }else{
   A.busy=true;S.authBusy=true;R();
   try{
-   const cred=await FB.am.signInWithEmailAndPassword(FB.auth,email,pw);
-   const prof=await B.getUser(cred.user.uid);S.authBusy=false;
+   const cred=await tmo(FB.am.signInWithEmailAndPassword(FB.auth,email,pw),30000);
+   const prof=await tmo(B.getUser(cred.user.uid),20000);S.authBusy=false;
    if(!prof){S.auth={mode:'google',step:'user',un:'',err:'',busy:false};return R()}
    setMe(cred.user.uid,prof);
   }catch(e){S.authBusy=false;authErr(fbErr(e))}
@@ -3960,6 +3977,8 @@ async function deleteAccount(){
 }
 
 const AVISOS=[
+ {ts:Date.parse('2026-11-18T05:00:00-04:00'),text:'Arreglos por lo que nos contaron 🛠️: 1) Iniciar sesión y crear cuenta ya no se quedan en «Un momento…»: si el servidor tarda, sale un mensaje y puedes reintentar. 2) Si entras desde el navegador interno de Twitter, Instagram o Telegram, te avisamos que Google no funciona ahí y cómo abrirlo en Chrome. 3) Salas: salir de la sala ahora es inmediato, y si una sala tarda en crearse ya no aparece sola de la nada mientras votas (así no pierdes tu puntaje). 4) Añadir amigos avisa si el servidor está lento en vez de fallar sin decir nada. Gracias por reportar 💛'},
+ {ts:Date.parse('2026-11-18T04:00:00-04:00'),text:'Arreglos importantes 🔧: 1) Buscar usuarios ya no se queda en 200: ahora aparecen todos los usuarios registrados (se muestran por tandas con el botón «Ver más»). 2) La página carga más rápido y gasta menos datos: la lista de usuarios se guarda unos minutos y ya no se vuelve a pedir en cada pantalla. 3) Ajustamos el estado «en línea» para que se actualice un poco más despacio y no sature el servidor. Gracias por avisar de los fallos 💛 Si algo sigue lento o no te deja iniciar sesión, recarga la página y cuéntanos.'},
  {ts:Date.parse('2026-11-17T19:45:00-04:00'),text:'Actualización 🎴⏱️: 1) Nuevo en el Álbum: FMS Argentina 2020 con 10 cartas: Stuart (legendaria), Papo, Mecha y Klan (épicas), Dtoke y Nacho (raras), y Cacha, Mks, Wolf y Sub (comunes). Hay un logro nuevo (ya son 52): Álbum ARG 2020, por completar todas sus cartas, y da 900 monedas. 2) Cambio en las monedas por votar: ahora, para que una batalla de liga te dé monedas, debes pasar al menos 5 minutos dentro de la votación (antes eran 45 segundos). Si guardas antes de ese tiempo, esa batalla no suma monedas y cuenta para el aviso anti-trampas. Rige desde las 8:00 p. m. de hoy (hora de República Dominicana).'},
  {ts:Date.parse('2026-11-17T18:50:00-04:00'),text:'Nuevo en el Álbum 🎴: FMS España 2020 con 10 cartas nuevas: Gazir (épica), Bnet (legendaria), Sweet Pain (épica), Tirpa, Zasko y Mnak (raras), y Khan, Errece, Blon y Mr Ego (comunes). Salen en los sobres como las demás. Además hay un logro nuevo (ya son 51): Álbum ESP 2020, por completar todas sus cartas, y da 900 monedas. Si ya tienes las 10, se desbloquea solo. ¡Gracias por la paciencia durante el mantenimiento!'},
  {ts:Date.parse('2026-11-17T16:00:00-04:00'),text:'Actualización 🛠️: 1) El logro «Saludo al Dev» ahora se desbloquea cuando linexs17 acepta tu solicitud de amistad (o tú aceptas la suya). Si ya lo tenías como amigo, te salta solo. 2) Arreglamos el aviso de logros: vuelve a salir arriba de la pantalla cada vez que desbloqueas uno, y si ganas varios salen uno detrás de otro. 3) Nueva restricción anti-trampas 🚫: si guardas votos de liga antes del tiempo mínimo entre batallas para farmear monedas, recibes un aviso. A la 1.ª y 2.ª vez es solo advertencia; a la 3.ª, durante 24 horas ganas 50% menos de monedas en todo: votos de liga, ruleta, apuestas, moneda voladora, sueldo de la mascota, logros y venta de repetidas del álbum. Vota con calma y no pasa nada 😉'},
@@ -5821,18 +5840,22 @@ async function duCreate(){const c=S.duc,fm=FB.fm;let a,b,y,j;S.dum='';
  else{if(!c.sel){S.dum='Elige la batalla.';return R()}a=c.sel.a;b=c.sel.b;y=ytParse(c.y).join(',')||c.sel.y||'';const jn=(duJors(c.lg,c.temp)[+c.ji]||{}).n||'';j=c.temp==='2026'?jn:L.find(x=>x.i===c.lg).n+' · '+seasonLabel(c.temp)+(jn?' · '+jn:'')}
  if(!a||!b){S.dum='Escribe los dos MCs.';return R()}
  const code=duCode(),d={host:S.me.uid,hu:S.me.u,guest:null,gu:'',pl:{},lg:c.mode==='libre'?(S.duCol||'es'):c.lg,a,b,y,j,mode:c.mode,temp:c.mode==='libre'?'2026':(c.temp||'2026'),fmt:c.fmt==='actual5'?'actual':c.fmt,hf:c.fmt==='actual5'?1:0,tp:(c.fmt==='actual'||c.fmt==='actual5')?'auto':(c.tp||'auto'),st:'wait',rd:1,sv:{},sh:{},pv:{},vid:{st:'pause',t:0,by:'',n:0,ts:0,part:0},ts:Date.now()};
- try{await fm.setDoc(duRef(code),d);duSub(code,'host')}catch(e){S.dum='No se pudo crear la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
+ const tok=S._duTok=(S._duTok||0)+1;
+ try{await tmo(fm.setDoc(duRef(code),d),15000);
+  if(S._duTok!==tok||S.v!=='duel'){fm.deleteDoc(duRef(code)).catch(()=>{});return}
+  duSub(code,'host')}
+ catch(e){S._duTok++;fm.deleteDoc(duRef(code)).catch(()=>{});S.dum=e&&e.message==='timeout'?'El servidor está lento y no se creó la sala. Inténtalo de nuevo en unos segundos.':'No se pudo crear la sala. Inténtalo de nuevo.';if(S.v==='duel')R()}}
 async function duJoin(){const fm=FB.fm,code=String(S.duc.code||'').trim().toUpperCase();S.dum='';if(code.length!==6){S.dum='El código tiene 6 caracteres.';return R()}
- try{const sn=await fm.getDoc(duRef(code));if(!sn.exists()){S.dum='No existe ninguna sala con ese código.';return R()}const d=sn.data();
+ try{const sn=await tmo(fm.getDoc(duRef(code)),15000);if(!sn.exists()){S.dum='No existe ninguna sala con ese código.';return R()}const d=sn.data();
   if(d.st==='done'){S.dum='Esa sala ya se cerró.';return R()}
   if(d.host===S.me.uid)return duSub(code,'host');
   {const pls=duPlayers(d),me=S.me.uid;
    if(!pls.some(x=>x.uid===me)){
     if(pls.length>=DU_MAX){S.dum='Esa sala ya está completa (máximo '+DU_MAX+' jugadores).';return R()}
     const up={['pl.'+me]:{n:S.me.u,t:Date.now()}};if(!d.guest){up.guest=me;up.gu=S.me.u}
-    await fm.updateDoc(duRef(code),up)}
+    await tmo(fm.updateDoc(duRef(code),up),15000)}
    duSub(code,'guest')}}
- catch(e){S.dum='No se pudo entrar a la sala. ¿Publicaste las reglas nuevas de Firestore?';R()}}
+ catch(e){S.dum=e&&e.message==='timeout'?'El servidor está lento. Inténtalo de nuevo en unos segundos.':'No se pudo entrar a la sala. Inténtalo de nuevo.';R()}}
 function duSub(code,role){duStop();S.dul={code,role,d:null,mute:0,lastN:0,ls:null,t:0,lt:0,lts:0,el:null,got:0,live:false,sig:'',open:true,rem:0,saved:0};S.duv='lobby';S.v='duel';
  S.dul.unsub=FB.fm.onSnapshot(duRef(code),sn=>{const D=S.dul;if(!D||D.code!==code)return;if(!sn.exists())return duEnd('La sala ya no existe.');const d=sn.data();D.d=d;if(S.me){const nr=d.host===S.me.uid?'host':'guest';if(nr!==D.role){D.role=nr;D.detach=false;D.mute=Date.now()+1500;if(nr==='host'&&D.live)drToast('👑 Ahora eres el anfitrión')}}
   if(d.st==='done'&&D.role==='guest'&&!D.live)return duEnd('El anfitrión cerró la sala.');
@@ -6852,7 +6875,7 @@ async function duLeave(){const D=S.dul;if(!D)return;if(D.live&&!confirm('¿Salir
  try{const rest=d?duPlayers(d).filter(p=>p.uid!==me):[];let up;
   if(D.role==='host'){if(rest.length){const nx=rest[0];up={host:nx.uid,hu:nx.n,['pl.'+nx.uid]:null,['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null,['sv.'+me]:null};if(d.guest){up.guest=null;up.gu=''}}else up={st:'done'}}
   else{up={['pl.'+me]:null,['sh.'+me]:false,['pv.'+me]:null,['vc.'+me]:null};if(d&&d.guest===me){up.guest=null;up.gu=''}}
-  await FB.fm.updateDoc(duRef(D.code),up)}catch(e){}duEnd('')}
+  FB.fm.updateDoc(duRef(D.code),up).catch(()=>{})}catch(e){}duEnd('')}
 /* 3) Invitar a varios a la vez + enlace de WhatsApp */
 S.diSel=S.diSel||{};
 function diTog(u,on){S.diSel[u]=!!on;const b=document.getElementById('dimb');if(b){const n=Object.values(S.diSel).filter(Boolean).length;b.disabled=!n;b.textContent=n?'Invitar a '+n+' seleccionado'+(n>1?'s':''):'Selecciona amigos'}}
