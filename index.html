@@ -2426,8 +2426,10 @@ const B={
  async addVote(v){const fm=FB.fm;const r=await fm.addDoc(fm.collection(FB.db,'votes'),v);vcAdd(v,r&&r.id)},
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v);vcUpd(id,v)},
  async deleteVote(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'votes',id));vcDel(id)},
- async getLinks(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'videos'));const o={};q.docs.forEach(d=>{o[d.id]=d.data().y});return o},
- async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})},
+ async getLinks(){const now=Date.now();if(window._LKc&&now-window._LKc.at<18e5)return window._LKc.v;
+  try{const j=JSON.parse(localStorage.getItem('vfms_links')||'null');if(j&&j.v&&now-j.at<108e5){window._LKc=j;return j.v}}catch(e){}
+  const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'videos'));const o={};q.docs.forEach(d=>{o[d.id]=d.data().y});window._LKc={at:now,v:o};try{localStorage.setItem('vfms_links',JSON.stringify(window._LKc))}catch(e){}return o},
+ async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by});window._LKc=null;try{localStorage.removeItem('vfms_links')}catch(e){}},
   async votesOfLeague(l){return memCached(_LC,l,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('l','==',l),fm.limit(2000)));return s.docs.map(d=>d.data())},LG_TTL)},
  async changeUsername(uid,oldU,newU){const fm=FB.fm;const ex=await fm.getDoc(fm.doc(FB.db,'usernames',newU));if(ex.exists())throw new Error('taken');await fm.setDoc(fm.doc(FB.db,'usernames',newU),{uid});await fm.updateDoc(fm.doc(FB.db,'users',uid),{u:newU,unAt:Date.now()});await fm.deleteDoc(fm.doc(FB.db,'usernames',oldU))},
   async getNotifs(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',uid),fm.limit(100)));return q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.type!=='duelinv').sort((a,b)=>b.ts-a.ts)},
@@ -2468,7 +2470,7 @@ function avX(uid,name,cls=''){const f=(S.me&&S.me.uid===uid&&S.me.foto)||(uid&&S
 S.pf=S.pf||{};let _pfQ=new Set(),_pfT=null,_pfAll=0;
 function pfQueue(uid){if(!uid||!S.me||S.pf[uid]!==undefined)return;S.pf[uid]=null;_pfQ.add(uid);clearTimeout(_pfT);_pfT=setTimeout(pfFlush,120)}
 async function pfFlush(){const ids=[..._pfQ];_pfQ=new Set();if(!ids.length||!S.me)return;let ch=false;
- try{if(ids.length>3&&Date.now()-_pfAll>600000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.v>=2&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
+ try{if(ids.length>80&&Date.now()-_pfAll>1800000){_pfAll=Date.now();const us=await B.listUsers();us.forEach(u=>{const f=u.foto||'',fr=(u.shop&&u.shop.v>=2&&u.shop.frame)||'';S.pf[u.uid]={foto:f,fr};if((f||fr)&&ids.includes(u.uid))ch=true})}}catch(e){}
  await Promise.all(ids.filter(id=>!S.pf[id]).map(async id=>{try{const d=await B.getUser(id);const f=(d&&d.foto)||'',fr=(d&&d.shop&&d.shop.v>=2&&d.shop.frame)||'';S.pf[id]={foto:f,fr};if(f||fr)ch=true}catch(e){S.pf[id]={foto:''}}}));
  if(ch)R()}
 /* Rango visible igual en todos lados: si el rp guardado de alguien es de otra versión, se recalcula con sus votos */
@@ -2476,7 +2478,7 @@ S.rkc=S.rkc||{};let _rkQ=[],_rkRun=0,_rkT=null;
 function rkQueue(uid){if(S.rkc[uid])return;S.rkc[uid]={n:null};_rkQ.push(uid);rkPump()}
 function rkPump(){while(_rkRun<5&&_rkQ.length){const uid=_rkQ.shift();_rkRun++;B.votesOfUser(uid).then(v=>{S.rkc[uid]={n:rankInfo(splitDups(v).keep).n,at:Date.now()}}).catch(()=>{S.rkc[uid]={n:null}}).finally(()=>{_rkRun--;clearTimeout(_rkT);_rkT=setTimeout(()=>{if(S.v==='search')ulRefresh();else if(S.v==='comunidad')R()},250);rkPump()})}}
 function rkN(x){if(S.me&&x.uid===S.me.uid){if(S.myVotes)return rankInfo(S.myVotes).n;return x.rv===RANK_V?(x.rp||0):(S.me.rp||0)}
- if(x.rv===RANK_V)return x.rp||0;const c=S.rkc[x.uid];if(c&&c.n!=null)return c.n;rkQueue(x.uid);return x.rp||0}
+ if(x.rv===RANK_V||typeof x.rp==='number')return x.rp||0;const c=S.rkc[x.uid];if(c&&c.n!=null)return c.n;rkQueue(x.uid);return 0}
 const nk=()=>({libre:'home',home:'home',lg:'home',vote:'home',res:'home',cal:'cal',search:'search',user:'search',vd:S.vb==='perfil'?'perfil':'search',perfil:'perfil',album:'album',tienda:'perfil',admin:'perfil',editor:'perfil',comunidad:'comunidad',ia:'ia'})[S.v]||'home';
 /* ===== Monedas y tienda =====
    Las monedas se calculan con tus votos de liga (una vez por batalla): World Series 100, Internacional 90, España 85 y las demás 80.
@@ -2884,9 +2886,9 @@ function presBeat(on){if(!S.me||!FB)return;const now=Date.now();if(on===_pbOn&&n
 function startPresence(){if(!S.me||PRES_UID===S.me.uid)return;stopPresence(true);PRES_UID=S.me.uid;
  if(document.visibilityState!=='hidden')presBeat(true);
  PRES_T=setInterval(()=>{if(document.visibilityState==='visible')presBeat(true)},PRES_EVERY);
- PRES_R=setInterval(()=>{if(document.visibilityState==='visible'&&S.me&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()},isAdmin()?120000:90000)}
+ PRES_R=setInterval(()=>{if(document.visibilityState==='visible'&&S.me&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()},isAdmin()?300000:180000)}
 function stopPresence(quiet){if(PRES_T){clearInterval(PRES_T);PRES_T=null}if(PRES_R){clearInterval(PRES_R);PRES_R=null}if(!quiet&&PRES_UID&&FB&&S.me)presBeat(false);PRES_UID=null;S.pres=undefined}
-document.addEventListener('visibilitychange',()=>{if(!S.me)return;presBeat(document.visibilityState==='visible');if(document.visibilityState==='visible'&&(S.v==='search'||S.v==='user'||S.friendsOpen))refreshPres()});
+document.addEventListener('visibilitychange',()=>{if(!S.me)return;presBeat(document.visibilityState==='visible');if(document.visibilityState==='visible'&&(S.v==='search'||S.v==='user'||S.friendsOpen)&&Date.now()-(window._prT||0)>90000){window._prT=Date.now();refreshPres()}});
 window.addEventListener('pagehide',()=>presBeat(false));
 async function loadPres(){if(!S.me)return;
  if(isAdmin()){S.pres=await B.listPres();return}
@@ -4022,6 +4024,7 @@ async function deleteAccount(){
 
 /* Avisos de la bandeja (actualizaciones). Vacío por ahora: cada actualización nueva se añade aquí con {ts:Date.parse('...'),text:'...'} */
 const AVISOS=[
+ {ts:Date.parse('2026-11-18T22:30:00-04:00'),text:'Mejoras de velocidad ⚡: la página ahora hace muchas menos consultas al servidor (rankings, enlaces de videos, insignias y notificaciones), así que debería cargar más rápido y gastar menos. Si ves algún dato desactualizado, recarga la página.'},
  {ts:Date.parse('2026-11-18T17:00:00-04:00'),text:'Apoya VotaFMS 💛: mantener los servidores cuesta dinero y el creador es menor de edad, así que añadimos un botón de donación voluntaria por PayPal (lo encuentras en tu Perfil, pestaña Cuenta). No da monedas ni ventajas y la página seguirá siendo gratis. ¡Gracias por usarla!'},
  {ts:Date.parse('2026-11-18T15:45:00-04:00'),text:'Nuevo en la tienda ⭐ (edición limitada): Traje Neón Miami, por el estreno de GTA 6 🌴. Trae gorra tropical, lentes de atardecer, cadena con $, capa con palmeras y aura neón rosa y turquesa para tu mascota de racha. Cuesta 1000 monedas, se equipa completo con un toque y estará disponible hasta el 29 de noviembre. ¡Corre por el tuyo!'},
 ];
@@ -4035,6 +4038,7 @@ function watchInbox(){
  const fm=FB.fm;_inboxUid=S.me.uid;S._nuPrev=null;
  try{_inboxUnsub=fm.onSnapshot(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',S.me.uid),fm.limit(100)),snap=>{
   if(!S.me)return;
+  try{snap.docChanges().forEach(ch=>{if(ch.type!=='added')return;const x={id:ch.doc.id,...ch.doc.data()};if(x.type==='duelinv')diIncoming(x)})}catch(e){}
   const n=snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.type!=='duelinv').sort((a,b)=>(b.ts||0)-(a.ts||0));
   const a=avisosVisibles();S.inbox={notifs:n,avisos:a};const vis=S.me.avisosVistos||0;
   {const _nu=n.filter(x=>!x.read).length;if(S._nuPrev!=null&&_nu>S._nuPrev){try{SFX.notif()}catch(e){}}S._nuPrev=_nu}
@@ -4769,17 +4773,17 @@ S.gtop=S.gtop||null;
 async function loadGlobalTop(force){if(!S.me)return;
  if(S.gtop&&S.gtop.loading)return;
  if(!force&&S.gtop&&S.gtop.rows&&Date.now()-S.gtop.at<180000)return;
- S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null,at:0};R();
+ S._gN=0;S.gtop={loading:true,rows:(S.gtop&&S.gtop.rows)||null,at:0};R();
  try{
   const us=await B.listUsers();
   S.gcache=S.gcache||{};us.forEach(u=>{S.pf[u.uid]={foto:u.foto||''}});
   /* Los usuarios que aún no tienen el campo rp guardado (no han abierto la app desde esa actualización) se calculan con sus votos */
   const all=await Promise.all(us.map(async u=>{
-   let n=u.rv===RANK_V?(u.rp||0):-1;
+   let n=(u.rv===RANK_V||typeof u.rp==='number')?(u.rp||0):-1;
    if(S.me&&u.uid===S.me.uid&&S.myVotes)n=rankInfo(S.myVotes).n;
    if(n<0){const c=S.gcache[u.uid];
     if(c&&Date.now()-c.at<300000)n=c.n;
-    else{try{const v=splitDups(await B.votesOfUser(u.uid)).keep;n=rankInfo(v).n;S.gcache[u.uid]={n,at:Date.now()}}catch(e){n=0}}}
+    else if((S._gN=(S._gN||0)+1)>15)n=0;else{try{const v=splitDups(await B.votesOfUser(u.uid)).keep;n=rankInfo(v).n;S.gcache[u.uid]={n,at:Date.now()}}catch(e){n=0}}}
    return {uid:u.uid,u:u.u||u.uid,r:rankFromTotal(n)}}));
   const rows=all;
   rows.sort((a,b)=>b.r.n-a.r.n||String(a.u).localeCompare(String(b.u),'es'));
@@ -5358,7 +5362,7 @@ Object.assign(B,{
  async listCollabs(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'collabs'));return q.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
  async grantCollab(un,by){const fm=FB.fm;const s=await fm.getDoc(fm.doc(FB.db,'usernames',un));if(!s.exists())throw new Error('nouser');const uid=s.data().uid,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'collabs',uid),{u:un,ts,by});return {uid,u:un,ts,by}},
  async revokeCollab(uid){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'collabs',uid))},
- async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by})}});
+ async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by});window._LKc=null;try{localStorage.removeItem('vfms_links')}catch(e){}}});
 const _start1=start;start=function(b){S.lkEdit=false;return _start1(b)};
 const _adminV1=adminV;
 adminV=function(){let h=_adminV1();if(!isAdmin())return h;
@@ -5512,7 +5516,7 @@ async function vidImpSave(){const V=S.vimp;if(!V||V.busy||!isAdmin())return;
  V.busy=true;V.done=0;V.fail=0;V.err='';R();
  const fm=FB.fm,by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;
  for(let i=0;i<todo.length;i+=10){const ch=todo.slice(i,i+10);
-  const rs=await Promise.allSettled(ch.map(x=>fm.setDoc(fm.doc(FB.db,'videos',x.key),{y:x.id,ts:Date.now(),by})));
+  const rs=await Promise.allSettled(ch.map(x=>fm.setDoc(fm.doc(FB.db,'videos',x.key),{y:x.id,ts:Date.now(),by})));window._LKc=null;try{localStorage.removeItem('vfms_links')}catch(e){}
   rs.forEach((r,j)=>{const x=ch[j];if(r.status==='fulfilled'){S.links=S.links||{};S.links[x.key]=x.id;x.st='same';V.done++}else{console.error('vidImp',x.key,r.reason);V.fail++;V.err=(r.reason&&(r.reason.code||r.reason.message))||'error'}});
   R()}
  V.busy=false;V.fin=true;R()}
@@ -5581,7 +5585,7 @@ async function vlkSave(){const V=S.vlk;if(!isAdmin()||V.busy)return;
  if(!todo.length)return;V.busy=true;V.done=0;V.fail=0;V.err='';R();
  const fm=FB.fm,by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;
  for(let i=0;i<todo.length;i+=10){const ch=todo.slice(i,i+10);
-  const rs=await Promise.allSettled(ch.map(it=>fm.setDoc(fm.doc(FB.db,'videos',it.c[it.sel].key),{y:it.y,ts:Date.now(),by})));
+  const rs=await Promise.allSettled(ch.map(it=>fm.setDoc(fm.doc(FB.db,'videos',it.c[it.sel].key),{y:it.y,ts:Date.now(),by})));window._LKc=null;try{localStorage.removeItem('vfms_links')}catch(e){}
   rs.forEach((r,j)=>{const it=ch[j],k=it.c[it.sel].key;if(r.status==='fulfilled'){it.saved=true;V.cur[k]=it.y;S.links=S.links||{};S.links[k]=it.y;V.done++}else{console.error('vlk',k,r.reason);V.fail++;V.err=(r.reason&&(r.reason.code||r.reason.message))||'error'}});R()}
  V.busy=false;V.fin=true;R()}
 function vlkRow(it,i,n,cur){const c=it.c[it.sel],ex=c?cur[c.key]:'';
@@ -5675,7 +5679,7 @@ async function djSave(){const D=S.dj;if(!isAdmin()||D.busy||!D.rows.length)retur
  D.sk={sinT,malT,yaE};D.busy=true;D.done=0;D.fail=0;D.err='';R();
  const fm=FB.fm,by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||null;
  for(let i=0;i<todo.length;i+=10){const ch=todo.slice(i,i+10);
-  const rs=await Promise.allSettled(ch.map(o=>fm.setDoc(fm.doc(FB.db,'videos',o.r.key),{y:o.y,ts:Date.now(),by})));
+  const rs=await Promise.allSettled(ch.map(o=>fm.setDoc(fm.doc(FB.db,'videos',o.r.key),{y:o.y,ts:Date.now(),by})));window._LKc=null;try{localStorage.removeItem('vfms_links')}catch(e){}
   rs.forEach((x,j)=>{const o=ch[j];if(x.status==='fulfilled'){o.r.saved=true;D.cur[o.r.key]=o.y;S.links=S.links||{};S.links[o.r.key]=o.y;D.done++}else{console.error('dj',o.r.key,x.reason);D.fail++;D.err=(x.reason&&(x.reason.code||x.reason.message))||'error'}});R()}
  D.busy=false;D.fin=true;R()}
 const DJS='width:100%;margin-bottom:8px;padding:10px;border-radius:12px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit';
@@ -5955,7 +5959,7 @@ function watchDuelInv(){
  try{_diUnsub=fm.onSnapshot(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',S.me.uid),fm.limit(100)),snap=>{
   snap.docChanges().forEach(ch=>{if(ch.type!=='added')return;const x={id:ch.doc.id,...ch.doc.data()};if(x.type==='duelinv')diIncoming(x)})
  },e=>console.error('duelinv',e))}catch(e){console.error(e)}}
-const _wi1=watchInbox;watchInbox=function(){_wi1();watchDuelInv()};
+const _wi1=watchInbox;watchInbox=function(){_wi1();if(!S.me||!FB){watchDuelInv();return}if(_diUnsub){try{_diUnsub()}catch(e){}_diUnsub=null;_diUid=null}try{duRjCheck()}catch(e){}};
 const _duSub0=duSub;duSub=function(c,r){_duSub0(c,r);if(r==='host'){refreshFriends().then(()=>{try{refreshPres()}catch(e){}R()}).catch(()=>{})}};
 if(S.me)watchDuelInv();
 
@@ -7452,7 +7456,7 @@ function actSync(l,t){const ws=!!l&&l.i==='ws'&&t==='2025';
 {const _fr=fmtRounds;fmtRounds=function(f,l){actSync(l,S.temp);const r=_fr(f,l);return(f!=='actual'&&!S.libre&&!S.duelOn&&l&&l.i==='ws'&&S.temp==='2025')?[{n:'12x12',p:[{c:6}]}].concat(r):r}}
 {const _a=applyTheme;applyTheme=function(){if(S.v!=='vote'&&ACT_BASE)actSync(null,'');_a();try{bdLoad()}catch(e){}}}
 /* --- insignia: micrófono dentro de un hexágono dorado, solo para quien tú le des desde Equipo --- */
-function bdLoad(){if(S.bdg!==undefined||!S.me)return;S.bdg={};try{const fm=FB.fm;fm.getDocs(fm.collection(FB.db,'insignias')).then(q=>{const o={};q.docs.forEach(d=>{o[d.id]=1});S.bdg=o;R()}).catch(()=>{})}catch(e){}}
+function bdLoad(){if(S.bdg!==undefined||!S.me)return;S.bdg={};try{const j=JSON.parse(localStorage.getItem('vfms_bdg')||'null');if(j&&j.o&&Date.now()-j.at<216e5){S.bdg=j.o;return}}catch(e){}try{const fm=FB.fm;fm.getDocs(fm.collection(FB.db,'insignias')).then(q=>{const o={};q.docs.forEach(d=>{o[d.id]=1});S.bdg=o;try{localStorage.setItem('vfms_bdg',JSON.stringify({at:Date.now(),o}))}catch(e){}R()}).catch(()=>{})}catch(e){}}
 const BD_SVG=window.BD_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="bdg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#f5c542"/><stop offset="1" stop-color="#a16207"/></linearGradient></defs><polygon points="12,1 21.5,6.5 21.5,17.5 12,23 2.5,17.5 2.5,6.5" fill="url(#bdg)"/><polygon points="12,3.6 19.3,7.8 19.3,16.2 12,20.4 4.7,16.2 4.7,7.8" fill="#15110a"/><polygon points="12,5 18,8.5 18,15.5 12,19 6,15.5 6,8.5" fill="none" stroke="#fff" stroke-width=".7" opacity=".9"/><rect x="10" y="7.2" width="4" height="7" rx="2" fill="#fde047"/><path d="M8.3 12.6a3.7 3.7 0 0 0 7.4 0M12 16.3v2" fill="none" stroke="#fde047" stroke-width="1.3" stroke-linecap="round"/></svg>';
 {const _af=avFr;avFr=function(u,cls,fr){const h=_af(u,cls,fr);return(u&&u.uid&&S.bdg&&S.bdg[u.uid])?`<span class="vbw">${h}<i class="vbd" title="Equipo de la página">${BD_SVG}</i></span>`:h}}
 window.collabBd=async function(uid,v){if(!isAdmin())return;const fm=FB.fm,c0=(S.collabs||[]).find(x=>x.uid===uid);
