@@ -4024,7 +4024,7 @@ async function deleteAccount(){
 
 /* Avisos de la bandeja (actualizaciones). Vacío por ahora: cada actualización nueva se añade aquí con {ts:Date.parse('...'),text:'...'} */
 const AVISOS=[
- {ts:Date.parse('2026-11-20T16:10:00-04:00'),text:'Nuevo en la planilla antigua ✅: en los minutos (Minuto 1 y Minuto 2) ahora aparecen 6 casillas para el MC que responde. Cada vez que responda, toca una casilla: sale ✅ y sube el contador de respuestas (ej. 3/6). Funciona en todas las ligas y temporadas con planilla antigua. Si cambias «¿Quién empieza?», las casillas pasan solas al MC que responde. Ojo: las casillas solo cuentan las respuestas, no cambian los puntos ni los totales. Se guardan con tu votación.'},
+ {ts:Date.parse('2026-11-20T16:10:00-04:00'),text:'Nuevo en la planilla antigua ✅: en los minutos (Minuto 1 y Minuto 2) ahora salen 6 casillas pequeñas justo debajo de las del MC que responde. Cada vez que responda, toca una casilla: sale ✅ y suma 1 punto a ese round y al total del MC. Funciona en todas las ligas y temporadas con planilla antigua. Si cambias «¿Quién empieza?», las casillas pasan solas al MC que responde. Se guardan con tu votación.'},
  {ts:Date.parse('2026-11-20T15:00:00-04:00'),text:'Actualización ⏱️: FMS Argentina · Jornada 2 ya tiene hora de inicio (sábado 21 de noviembre, 5:30 p. m. hora de RD). La cuenta regresiva de Ligas muestra cuánto falta y, al tocar «Hora de inicio y hora actual en cada país», ves a qué hora empieza y qué hora es ahora en cada país. Además arreglamos el botón de importar votaciones 📥: ahora sí aparece dentro de la planilla de votación, justo encima de las casillas.'},
  {ts:Date.parse('2026-11-19T20:00:00-04:00'),text:'Nuevo: importar votaciones 📥. Si votaste una batalla en otro sitio o en tu cuaderno, entra a esa batalla y toca «¿Tienes una votación de otro sitio? Impórtala aquí». Sube una captura o una foto desde la galería o la cámara, la página lee los números, tú los confirmas y se guarda en tu perfil. Las votaciones importadas no dan monedas. Además, el aviso de apoyo con PayPal ya no sale al entrar: lo encuentras solo en Perfil → Cuenta.'},
  {ts:Date.parse('2026-11-18T22:30:00-04:00'),text:'Mejoras de velocidad ⚡: la página ahora hace muchas menos consultas al servidor (rankings, enlaces de videos, insignias y notificaciones), así que debería cargar más rápido y gastar menos. Si ves algún dato desactualizado, recarga la página.'},
@@ -6832,27 +6832,39 @@ function impCardH(){if(S.editId||S.duelOn||document.body.classList.contains('pan
   else if(h.indexOf('<div id="plan"')>=0)h=h.replace('<div id="plan"',c+'<div id="plan"')}catch(e){}return h};VIEW.vote=voteV}
 
 /* ===== Planilla antigua: casillas de respuestas en los minutos (✅ = una respuesta del que responde) =====
-   Solo cuenta las respuestas: NO cambia los puntos ni los totales. Se guardan por MC (no por orden),
-   así que si se invierte «¿Quién empieza?» no se pierden; en pantalla solo cuenta el que responde ahora. */
+   Cada ✅ suma 1 punto al round y al total del MC que responde. Se guardan por MC (no por orden),
+   así que si se invierte «¿Quién empieza?» no se pierden; solo cuenta el MC que responde en ese paso. */
 S.rsp=S.rsp||{};
 const RSP_N=6;
+const rspIsMin=part=>/^Minuto \d$/.test((part&&part.t)||'');
 const rspKey=()=>S.ri+'_'+S.pi;
 const rspGet=(k,m)=>{const o=(S.rsp&&S.rsp[k]&&S.rsp[k][m])||[];return Array.from({length:RSP_N},(_,j)=>!!o[j])};
+const rspResp=i=>((i+(S.first||0))%2===0)?1:0;
+function rspPts(k,m){const rd=S.rounds&&S.rounds[k];if(!rd||rd.rep||S.fmt==='actual'||!S.rsp)return 0;let n=0;
+ stepsList().forEach((x,i)=>{if(x.ri!==k||!rspIsMin(rd.p[x.pi])||rspResp(i)!==m)return;n+=rspGet(k+'_'+x.pi,m).filter(Boolean).length});return n}
 function rspParse(r){const o={};if(r&&typeof r==='object')Object.keys(r).forEach(k=>{const v=r[k]||{};o[k]={0:String(v.a||'').split('').map(x=>x==='1'),1:String(v.b||'').split('').map(x=>x==='1')}});return o}
 function rspPack(){const o={};Object.keys(S.rsp||{}).forEach(k=>{const a=rspGet(k,0).map(x=>x?'1':'0').join(''),b=rspGet(k,1).map(x=>x?'1':'0').join('');if(a.indexOf('1')>=0||b.indexOf('1')>=0)o[k]={a,b}});return Object.keys(o).length?o:null}
 function rspTap(m,j){const k=rspKey();S.rsp=S.rsp||{};const cur=rspGet(k,m);cur[j]=!cur[j];S.rsp[k]=S.rsp[k]||{};S.rsp[k][m]=cur;R()}
-function rspClear(m){const k=rspKey();if(S.rsp&&S.rsp[k])S.rsp[k][m]=[];R()}
-function rspBlock(){
- if(S.fmt==='actual'||!S.rounds||S.ri>=S.rounds.length)return '';
- const rd=S.rounds[S.ri],part=rd&&rd.p[S.pi];if(!part||rd.rep||!/^Minuto \d$/.test(part.t||''))return '';
- const i=curStep(),order=((i+(S.first||0))%2===0)?[0,1]:[1,0],att=order[0],m=order[1],k=rspKey(),on=rspGet(k,m),n=on.filter(Boolean).length;
- const nm=x=>esc(x?S.bt.b:S.bt.a);
- return `<div class="rspb"><div class="rsph"><span><b>Respuestas de <span style="color:${m?'var(--ac2)':'var(--ac)'}">${nm(m)}</span></b><small>Ataca ${nm(att)} · toca una casilla cada vez que responde</small></span><em>${n}/${RSP_N}</em></div><div class="rspr">${on.map((v,j)=>`<button class="rspc${v?' on':''}" onclick="rspTap(${m},${j})" aria-label="Respuesta ${j+1}${v?' marcada':''}">${v?'✅':''}</button>`).join('')}</div>${n?`<button class="rspx" onclick="rspClear(${m})">Borrar marcas</button>`:''}</div>`}
-{const _rv=roundV;roundV=function(){const h=_rv.apply(this,arguments);try{const b=rspBlock();return b?h.replace('<div class="pl-foot">',b+'<div class="pl-foot">'):h}catch(e){return h}}}
+{const _sr=sumR;sumR=function(k,m){return _sr(k,m)+rspPts(k,m)}}
+{const _rv=roundV;roundV=function(){const h=_rv.apply(this,arguments);
+ try{if(S.fmt==='actual'||!S.rounds||S.ri>=S.rounds.length)return h;
+  const rd=S.rounds[S.ri],part=rd&&rd.p[S.pi];if(!part||rd.rep||!rspIsMin(part))return h;
+  const i=curStep(),m=rspResp(i),k=rspKey(),on=rspGet(k,m),n=on.filter(Boolean).length,vals=part.c+3;
+  const tp=document.createElement('template');tp.innerHTML=h;
+  const rows=[...tp.content.querySelectorAll('.pgrid')].filter(x=>x.querySelector('.pname'));
+  const row=rows[1];if(!row)return h;
+  const tot=row.querySelector('.tot');
+  if(tot&&tot.textContent.trim()!=='·'){const base=sum(S.sc[S.ri][m].slice(rspOff(),rspOff()+vals));tot.textContent=fmt(base+n)}
+  const grid=`grid-template-columns:108px repeat(${vals},minmax(42px,1fr)) 54px`;
+  const ln=document.createElement('div');ln.className='pgrid rspl';ln.setAttribute('style',grid);
+  ln.innerHTML=`<span class="rspt">Respuestas</span>${Array.from({length:vals},(_,j)=>j<RSP_N?`<span class="rspw"><button class="rspc${on[j]?' on':''}" onclick="rspTap(${m},${j})" aria-label="Respuesta ${j+1}${on[j]?' marcada':''}">${on[j]?'✅':''}</button></span>`:'<span></span>').join('')}<span class="rspn">${n?'+'+n:''}</span>`;
+  row.insertAdjacentElement('afterend',ln);
+  return tp.innerHTML}catch(e){return h}}}
+function rspOff(){let off=0;const rd=S.rounds[S.ri];for(let q=0;q<S.pi;q++)off+=rd.p[q].c+3;return off}
 {const _bv=buildVote;buildVote=function(){const v=_bv.apply(this,arguments);try{if(v&&v.fmt==='antigua'){const r=rspPack();if(r)v.rsp=r}}catch(e){}return v}}
 {const _se=startEdit;startEdit=function(v){S.rsp=rspParse(v&&v.rsp);return _se.apply(this,arguments)}}
 {const _s0=start;start=function(){S.rsp={};return _s0.apply(this,arguments)}}
-{const st=document.createElement('style');st.textContent=`.rspb{margin:12px 0 4px;padding:10px 12px;border-radius:16px;border:1px dashed var(--bd);background:rgba(var(--acr),.06)}.rsph{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px}.rsph small{display:block;opacity:.7;font-weight:600;font-size:11px;margin-top:2px}.rsph em{font-style:normal;font-weight:900;font-size:16px;padding:3px 10px;border-radius:99px;background:rgba(var(--acr),.18);color:var(--ac);white-space:nowrap}.rspr{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}.rspc{aspect-ratio:1;min-height:40px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:19px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.rspc.on{border-color:var(--ac);background:rgba(var(--acr),.2)}.rspx{margin-top:8px;background:none;border:0;color:var(--mu);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:2px}`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=`.rspl{margin-top:3px;align-items:center}.rspt{font-size:10.5px;font-weight:700;opacity:.65;padding-left:2px}.rspw{display:flex;justify-content:center}.rspc{width:22px;height:22px;min-height:0;border-radius:6px;border:1.5px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:13px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.rspc.on{border-color:var(--ac);background:rgba(var(--acr),.22)}.rspn{text-align:center;font-size:12px;font-weight:900;color:var(--ac)}`;document.head.appendChild(st)}
 window.impOpen=impOpen;window.impClose=impClose;window.impPick=impPick;window.impEdit=impEdit;window.impSwap=impSwap;window.impSave=impSave;
 
 const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return h};
