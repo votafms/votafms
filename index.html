@@ -5726,17 +5726,18 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
 /* Panel de administrador ordenado en pestañas (solo agrupa lo que ya existe) */
-const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['pase','🏡 Pase'],['col','👥 Equipo'],['com','💬 Comentarios']];
+const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['pase','🏡 Pase'],['col','👥 Equipo'],['ban','🚫 Baneos'],['com','💬 Comentarios']];
 function admTab(k){S.admTab=k;R()}
 const _adminV6=adminV;
 adminV=function(){const h=_adminV6();if(!isAdmin())return h;
- const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[],eco:[],pase:[]};let cur=null;
+ const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[],eco:[],pase:[],ban:[]};let cur=null;
  const kind=s=>/monedas/i.test(s)?'coins':/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
  kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col'||m==='coins')return}}if(cur===null)head.push(k);else g[cur].push(k)});
  const tab=ADM_TABS.some(x=>x[0]===S.admTab)?S.admTab:'cal';
  const bar=`<div class="seg" style="flex-wrap:wrap;gap:4px">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')" style="font-size:12px;padding:9px 6px;flex:1 1 30%">${x[1]}</button>`).join('')}</div>`;
  try{if(typeof betAdminV==='function'){const t2=document.createElement('template');t2.innerHTML=betAdminV();g.bets=[...t2.content.children]}}catch(e){}
  try{if(typeof sorteoV==='function'&&tab==='sorteo'){const t3=document.createElement('template');t3.innerHTML=sorteoV();g.sorteo=[...t3.content.children]}}catch(e){}
+ try{if(tab==='ban'&&typeof banAdminV==='function'){const t6=document.createElement('template');t6.innerHTML=banAdminV();g.ban=[...t6.content.children]}}catch(e){}
  try{if(tab==='pase'&&typeof paseAdmV==='function'){const t5=document.createElement('template');t5.innerHTML=paseAdmV();g.pase=[...t5.content.children]}}catch(e){}
  try{if(typeof ecoV==='function'&&tab==='eco'){const t4=document.createElement('template');t4.innerHTML=ecoV();g.eco=[...t4.content.children]}}catch(e){}
  return head.map(k=>k.outerHTML).join('')+bar+(g[tab].length?g[tab].map(k=>k.outerHTML).join(''):'<div class="card mu" style="text-align:center">Nada por aquí todavía.</div>')};
@@ -6889,11 +6890,11 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* --- Panel de administrador --- */
 const banFmt=ts=>ts?new Date(ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—';
-{const _ab=adminV;adminV=function(){let h=_ab();if(!isAdmin())return h;
+function banAdminV(){if(!isAdmin())return '';
  if(S.banL===undefined){S.banL=null;B.listUsersFull().then(us=>{S.banL=us.filter(x=>x.ban).map(x=>({uid:x.uid,u:x.u,ban:x.ban})).sort((a,b)=>(b.ban.ts||0)-(a.ban.ts||0));R()}).catch(()=>{S.banL=[];R()})}
  const L2=S.banL,ist='width:100%;box-sizing:border-box;margin-bottom:8px';
  const box=`<div class="sec"><span>Baneo de usuarios</span><span>${L2?L2.length:'…'}</span></div><div class="card"><b style="display:block;margin-bottom:4px">🚫 Banear a un usuario</b><div class="mu" style="margin:0 0 10px;font-size:13px">Escribe el usuario (sin @) y el motivo. La persona verá una pantalla con el motivo y <b>no podrá usar la página</b> hasta que la desbanees aquí abajo. No se envía a la bandeja de entrada.</div><input id="bnu" class="alq" placeholder="Usuario a banear, por ejemplo linexs17" autocapitalize="none" autocomplete="off" value="${esc(S.banU||'')}" oninput="S.banU=this.value" style="${ist}"><textarea id="bnr" class="alq" rows="3" maxlength="300" placeholder="Motivo del baneo (lo verá el usuario)" oninput="S.banR=this.value" style="${ist};resize:vertical;font:inherit">${esc(S.banR||'')}</textarea><button class="btn sm" style="width:100%;background:#E5484D;color:#fff" onclick="banDo()">🚫 Banear usuario</button>${S.banMsg?`<div class="mu" style="margin-top:8px">${esc(S.banMsg)}</div>`:''}</div>${L2===null?'<div class="mu" style="text-align:center;padding:10px">Cargando baneados…</div>':L2.length?L2.map(x=>`<div class="card"><div class="row" style="align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><b>@${esc(x.u||x.uid)}</b><div class="mu" style="font-size:12px">Baneado el ${banFmt(x.ban.ts)}${x.ban.by?' por '+esc(x.ban.by):''}</div></div><button class="btn s sm" style="margin:0" onclick="banLift('${esc(x.uid)}')">Desbanear</button></div><div style="white-space:pre-wrap;word-break:break-word;margin-top:8px;font-size:13.5px"><span class="mu">Motivo:</span> ${esc(x.ban.r||'—')}</div></div>`).join(''):'<div class="mu" style="text-align:center;padding:10px">No hay usuarios baneados.</div>'}`;
- return h.replace('<div class="sec"><span>Reinicios (cuidado)</span></div>',box+'<div class="sec"><span>Reinicios (cuidado)</span></div>')}}
+ return box}
 async function banDo(){if(!isAdmin())return;
  const un=String(S.banU||'').trim().toLowerCase().replace(/^@/,''),r=String(S.banR||'').trim();
  if(!un){S.banMsg='Escribe el usuario a banear.';return R()}
