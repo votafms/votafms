@@ -7081,6 +7081,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 async function msgSync(){try{MSG_LAST=Date.now();const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','mensaje'));if(!d.exists())return;const m=d.data();
  if(!m||!m.on||!m.id||!m.b||msgSeen(String(m.id)))return;const cur=document.getElementById('msgov');if(cur&&!cur.dataset.pre)return;msgShow(m,false)}catch(e){}}
 {const _sm2=setMe;setMe=function(uid,prof){try{S._msgSeenRemote=(prof&&prof.msgSeen)?String(prof.msgSeen):null;const o=document.getElementById('msgov');if(o&&!o.dataset.pre&&S._msgSeenRemote===o.dataset.id){o.remove();if(!S.banned)document.body.style.overflow=''}}catch(e){}const r=_sm2.apply(this,arguments);try{if(uid&&S._msgUid!==uid){S._msgUid=uid;{const o2=document.getElementById('msgov');if(o2&&!o2.dataset.pre){o2.remove();if(!S.banned)document.body.style.overflow=''}}setTimeout(()=>{try{msgSync()}catch(e){}},900)}}catch(e){}return r}}
+/* Mantener la cuenta sincronizada entre dispositivos (PC y celular): monedas, objetos y apuestas se actualizan solos */
+{const _smLive=setMe;setMe=function(uid,prof){const r=_smLive.apply(this,arguments);try{if(uid&&S._liveUid!==uid){S._liveUid=uid;if(S._liveUn){try{S._liveUn()}catch(e){}S._liveUn=null}
+ const fm=FB.fm;
+ const apply=()=>{const d=S._liveLast;if(!d||!S.me||S.me.uid!==uid)return;
+  if(SHQ.n>0||S.betClaiming||S.betBusy||S.shopBusy){clearTimeout(S._liveT);S._liveT=setTimeout(apply,1200);return}
+  const J=JSON.stringify,nm={...S.me};let ch=false;
+  for(const k of ['shop','lk','logros']){if(d[k]!==undefined&&J(d[k])!==J(S.me[k])){nm[k]=d[k];ch=true}}
+  if(!ch)return;S.me=nm;
+  const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))setTimeout(()=>{try{R()}catch(e){}},1500);else{try{R()}catch(e){}}
+  try{betsClaim()}catch(e){}};
+ S._liveUn=fm.onSnapshot(fm.doc(FB.db,'users',uid),sn=>{
+  if(!S.me||S.me.uid!==uid){try{S._liveUn&&S._liveUn()}catch(e){}S._liveUn=null;S._liveUid=null;return}
+  if(!sn.exists())return;S._liveLast=sn.data();apply()},e=>{console.error('liveSync',e)})}}catch(e){console.error('liveSync',e)}return r}}
 setInterval(()=>{if(document.visibilityState==='visible')msgSync()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-MSG_LAST>180000)msgSync()});
 {const st=document.createElement('style');st.textContent=`#msgov{position:fixed;inset:0;z-index:2147482000;display:flex;align-items:center;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));background:rgba(5,5,12,.78);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);overflow:auto;animation:mgf .25s ease}.mgb{position:relative;width:min(100%,440px);box-sizing:border-box;text-align:center;color:#fff;padding:34px 22px 22px;border-radius:26px;background:linear-gradient(160deg,#242438,#12121c 70%);border:1px solid rgba(255,255,255,.14);box-shadow:0 0 0 1px rgba(124,92,255,.35),0 24px 70px rgba(0,0,0,.6),0 0 60px rgba(124,92,255,.25);animation:mgp .35s cubic-bezier(.2,1.2,.3,1)}.mgx{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:16px;cursor:pointer}.mgi{font-size:52px;line-height:1}.mgl{margin-top:12px;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#b7a6ff}.mgt{margin-top:14px;font-size:19px;line-height:1.5;font-weight:600;white-space:pre-wrap;word-break:break-word;text-align:left;max-height:52vh;overflow:auto}.mgp{margin-top:12px;font-size:12px;color:#ffd166}.mgo{margin-top:20px;width:100%;padding:14px;border-radius:14px;border:0;font:inherit;font-weight:800;font-size:16px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#7c5cff,#c04cff)}@keyframes mgf{from{opacity:0}to{opacity:1}}@keyframes mgp{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){#msgov,.mgb{animation:none}}`;document.head.appendChild(st)}
@@ -7575,28 +7588,52 @@ async function betsClaim(){
   for(const id in miss){try{const g=await FB.fm.getDocFromServer(FB.fm.doc(FB.db,'bets',id));miss[id]=g.exists()?{id,...g.data()}:null}catch(e){miss[id]=undefined}}}catch(e){}
  if(!S.me){S.betClaiming=false;return}
  const s=shopS(),mine=s.bets;if(!mine||typeof mine!=='object'){S.betClaiming=false;return}
- const nb={...mine},now=Date.now();let add=0,ch=false,won=0,lost=0,back=0;
- for(const id in mine){const o=mine[id];if(!o||o.d)continue;const inL=(S.bets||[]).find(x=>x.id===id);
-  if(!inL&&id in miss&&miss[id]===undefined)continue;
-  const d=inL||miss[id];let pay=null;
-  if(d){if(d.st==='void'){pay=o.m;back+=o.m}else if(d.st==='done'&&(d.w==='a'||d.w==='b')){pay=d.w===o.s?penBet(o.m,betPay(o.m,o.x)):0;if(pay>0)won+=pay;else lost++}}
-  else if(now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
-  if(pay==null)continue;nb[id]={...o,d:1,r:pay};add+=pay;ch=true}
- if(!ch){S.betClaiming=false;return}
- for(const id in nb){if(nb[id].d&&now-(+nb[id].ts||0)>30*864e5)delete nb[id]}
- const bal=coinBal();
- const ok=await shopSave({...s,bonus:Math.max(0,+(s.bonus)||0)+add,bets:nb},'No se pudieron cobrar tus apuestas.');
- S.betClaiming=false;
- if(ok){if(won>0)drToast('🎉 ¡Acertaste! +'+won+' monedas');else if(back>0)drToast('↩️ Apuesta anulada: te devolvimos '+back+' monedas');else if(lost>0)drToast('😬 Esta vez no hubo suerte. ¡Sigue intentando!');
-  if(add>0)coinCount(bal,coinBal());else R()}}
+  const now=Date.now(),cand={};
+  for(const id in mine){const o=mine[id];if(!o||o.d)continue;const inL=(S.bets||[]).find(x=>x.id===id);
+   if(!inL&&id in miss&&miss[id]===undefined)continue;
+   const d=inL||miss[id];
+   if(d){if(d.st==='void'||(d.st==='done'&&(d.w==='a'||d.w==='b')))cand[id]={d:{st:d.st,w:d.w}}}
+   else cand[id]={gone:1}}
+  if(!Object.keys(cand).length){S.betClaiming=false;return}
+  const bal=coinBal(),uid=S.me.uid;
+  /* Cobro atómico: se lee la cuenta en el servidor y solo se paga si la apuesta sigue sin cobrar (evita cobrar dos veces desde PC y celular) */
+  const run=async()=>{const fm=FB.fm,ref=fm.doc(FB.db,'users',uid);
+   return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),sh=(sn.exists()&&sn.data().shop)||{},bs=sh.bets||{};
+    let add=0,won=0,lost=0,back=0;const nb={...bs},fl=[];
+    for(const id in cand){const o=bs[id];if(!o||o.d)continue;const c=cand[id];let pay=null;
+     if(c.d){if(c.d.st==='void'){pay=o.m;back+=o.m}else{pay=c.d.w===o.s?penBet(o.m,betPay(o.m,o.x)):0;if(pay>0)won+=pay;else lost++}}
+     else if(now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
+     if(pay==null)continue;nb[id]={...o,d:1,r:pay};add+=pay;fl.push(new fm.FieldPath('shop','bets',id,'d'),1,new fm.FieldPath('shop','bets',id,'r'),pay)}
+    if(!fl.length)return null;
+    for(const id in bs){if(bs[id]&&bs[id].d&&now-(+bs[id].ts||0)>30*864e5){delete nb[id];fl.push(new fm.FieldPath('shop','bets',id),fm.deleteField())}}
+    tx.update(ref,'shop.bonus',fm.increment(add),...fl);
+    return {add,won,lost,back,sh:{...sh,bonus:Math.max(0,+(sh.bonus)||0)+add,bets:nb}}})};
+  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
+  let res=null,ok=true;try{res=await job}catch(e){ok=false;console.error('betsClaim',e);try{achFail('No se pudieron cobrar tus apuestas.'+(e&&e.code?' ('+e.code+')':''))}catch(_){}}finally{SHQ.n--}
+  S.betClaiming=false;
+  if(!ok)return;
+  if(!res){try{const pr=await B.getUser(uid);if(S.me&&S.me.uid===uid&&pr&&pr.shop){S.me={...S.me,shop:pr.shop};R()}}catch(_){}return}
+  if(S.me&&S.me.uid===uid)S.me={...S.me,shop:res.sh};
+  const add=res.add,won=res.won,lost=res.lost,back=res.back;
+  if(won>0)drToast('🎉 ¡Acertaste! +'+won+' monedas');else if(back>0)drToast('↩️ Apuesta anulada: te devolvimos '+back+' monedas');else if(lost>0)drToast('😬 Esta vez no hubo suerte. ¡Sigue intentando!');
+  if(add>0)coinCount(bal,coinBal());else R()}
 function betGoAdm(){S.admTab='bets';go('admin');setTimeout(()=>{const e=document.querySelector('.btadm');if(e)e.scrollIntoView({behavior:'smooth'})},350)}
 async function betCancel(id){
  if(!S.me||S.betBusy)return;const d=(S.bets||[]).find(x=>x.id===id),s=shopS(),o=(s.bets||{})[id];
  if(!o||o.d||!d||!(d.st==='open'||d.st==='draft'))return bfail('Ya no puedes quitar esta apuesta.');
  if(!confirm('¿Quitar tu apuesta de '+o.m+' monedas? Te devolvemos las monedas.'))return;
- S.betBusy=true;const bal=coinBal(),nb={...s.bets};delete nb[id];
- const ok=await shopSave({...s,spent:Math.max(0,(s.spent||0)-o.m),bets:nb},'No se pudo quitar la apuesta.');S.betBusy=false;
- if(ok){try{SFX.coin()}catch(e){}drToast('↩️ Apuesta quitada: recuperaste '+o.m+' monedas');coinCount(bal,coinBal())}}
+  S.betBusy=true;const bal=coinBal(),uid=S.me.uid;
+  const run=async()=>{const fm=FB.fm,ref=fm.doc(FB.db,'users',uid);
+   return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),sh=(sn.exists()&&sn.data().shop)||{},o2=sh.bets&&sh.bets[id];
+    if(!o2||o2.d)return {gone:1,sh};
+    const nb={...sh.bets};delete nb[id];
+    tx.update(ref,'shop.spent',fm.increment(-o2.m),new fm.FieldPath('shop','bets',id),fm.deleteField());
+    return {ok:1,m:o2.m,sh:{...sh,spent:Math.max(0,(+sh.spent||0)-o2.m),bets:nb}}})};
+  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
+  let r=null;try{r=await job}catch(e){console.error('betCancel',e);try{achFail('No se pudo quitar la apuesta.'+(e&&e.code?' ('+e.code+')':''))}catch(_){}}finally{SHQ.n--}
+  S.betBusy=false;
+  if(r&&r.sh&&S.me&&S.me.uid===uid)S.me={...S.me,shop:r.sh};
+  if(r&&r.ok){try{SFX.coin()}catch(e){}drToast('↩️ Apuesta quitada: recuperaste '+r.m+' monedas');coinCount(bal,coinBal())}else{R();if(r&&r.gone)bfail('Esa apuesta ya no se puede quitar.')}}
 function betPick(id,s){if(!S.me)return;S.bsel=(S.bsel&&S.bsel.id===id&&S.bsel.s===s)?null:{id,s};if(!S.bamt)S.bamt=50;try{SFX.tap()}catch(e){}R()}
 function betAmt(v){S.bamt=Math.max(0,Math.floor(+v||0));betUpd()}
 function betStep(n){const d=(S.bets||[]).find(x=>x.id===(S.bsel||{}).id),mx=Math.min(+(d&&d.mx)||500,coinBal());S.bamt=Math.max(0,Math.min(mx,(+S.bamt||0)+n));const e=document.getElementById('bamt');if(e)e.value=S.bamt;betUpd()}
@@ -7610,9 +7647,20 @@ async function betPlace(id){
  const m=Math.floor(+S.bamt||0),bal=coinBal(),mx=+d.mx||500;
  if(m<10)return bfail('La apuesta mínima es de 10 monedas.');if(m>mx)return bfail('El máximo por apuesta es de '+mx+' monedas.');if(m>bal)return bfail('No te alcanzan las monedas.');
  const x=betMult(d,side);S.betBusy=true;
- const nx={...s,spent:(s.spent||0)+m,bets:{...(s.bets||{}),[id]:{s:side,m,x,ts:Date.now(),n:d.a+' vs '+d.b,pk:side==='a'?d.a:d.b,d:0}}};
- const ok=await shopSave(nx,'No se pudo guardar tu apuesta. Revisa tu conexión.');S.betBusy=false;
- if(ok){S.bsel=null;try{SFX.coin()}catch(e){}coinCount(bal,coinBal())}}
+  const ent={s:side,m,x,ts:Date.now(),n:d.a+' vs '+d.b,pk:side==='a'?d.a:d.b,d:0},uid=S.me.uid;
+  const run=async()=>{const fm=FB.fm,ref=fm.doc(FB.db,'users',uid);
+   return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),sh=(sn.exists()&&sn.data().shop)||{};
+    if(sh.bets&&sh.bets[id])return {dup:1,sh};
+    if(Math.max(0,coinsEarned()-((+sh.spent)||0))<m)return {low:1,sh};
+    tx.update(ref,'shop.spent',fm.increment(m),new fm.FieldPath('shop','bets',id),ent);
+    return {ok:1,sh:{...sh,spent:(+sh.spent||0)+m,bets:{...(sh.bets||{}),[id]:ent}}}})};
+  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
+  let r=null;try{r=await job}catch(e){console.error('betPlace',e);try{achFail('No se pudo guardar tu apuesta. Revisa tu conexión.'+(e&&e.code?' ('+e.code+')':''))}catch(_){}}finally{SHQ.n--}
+  S.betBusy=false;
+  if(r&&r.sh&&S.me&&S.me.uid===uid)S.me={...S.me,shop:r.sh};
+  if(r&&r.dup){R();return bfail('Ya apostaste en esta batalla desde otro dispositivo.')}
+  if(r&&r.low){R();return bfail('No te alcanzan las monedas.')}
+  if(r&&r.ok){S.bsel=null;try{SFX.coin()}catch(e){}coinCount(bal,coinBal())}else R()}
 
 /* ===== Apuestas: ver por quién apostó cada usuario (sin cantidades) ===== */
 S.btWho=S.btWho||{};
