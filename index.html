@@ -4024,6 +4024,7 @@ async function deleteAccount(){
 
 /* Avisos de la bandeja (actualizaciones). Vacío por ahora: cada actualización nueva se añade aquí con {ts:Date.parse('...'),text:'...'} */
 const AVISOS=[
+ {ts:Date.parse('2026-11-21T12:00:00-04:00'),text:'Importar votaciones mejorado 📥: ahora la página coloca cada número según su posición en la captura (por encabezado, fila o columna) en vez de rellenar en orden, así un número que no lea ya no corre todo lo demás. Además descarta valores imposibles, marca en naranja las casillas que no tiene claras, te avisa si la captura parece de otro formato de planilla y compara el total de la imagen con el tuyo. Si algo no lo puede ubicar, lo deja vacío y te enseña lo que leyó para que lo escribas.'},
  {ts:Date.parse('2026-11-20T16:10:00-04:00'),text:'Nuevo en la planilla antigua ✅: en los minutos (Minuto 1 y Minuto 2) ahora salen 6 casillas pequeñas justo debajo de las del MC que responde. Cada vez que responda, toca una casilla: sale ✅ y suma 1 punto a ese round y al total del MC. Funciona en todas las ligas y temporadas con planilla antigua. Si cambias «¿Quién empieza?», las casillas pasan solas al MC que responde. Se guardan con tu votación.'},
  {ts:Date.parse('2026-11-20T15:00:00-04:00'),text:'Actualización ⏱️: FMS Argentina · Jornada 2 ya tiene hora de inicio (sábado 21 de noviembre, 5:30 p. m. hora de RD). La cuenta regresiva de Ligas muestra cuánto falta y, al tocar «Hora de inicio y hora actual en cada país», ves a qué hora empieza y qué hora es ahora en cada país. Además arreglamos el botón de importar votaciones 📥: ahora sí aparece dentro de la planilla de votación, justo encima de las casillas.'},
  {ts:Date.parse('2026-11-19T20:00:00-04:00'),text:'Nuevo: importar votaciones 📥. Si votaste una batalla en otro sitio o en tu cuaderno, entra a esa batalla y toca «¿Tienes una votación de otro sitio? Impórtala aquí». Sube una captura o una foto desde la galería o la cámara, la página lee los números, tú los confirmas y se guarda en tu perfil. Las votaciones importadas no dan monedas. Además, el aviso de apoyo con PayPal ya no sale al entrar: lo encuentras solo en Perfil → Cuenta.'},
@@ -6678,7 +6679,7 @@ function impNum(t){let s=String(t||'').trim().replace(/[,;:]/g,'.').replace(/^[^
 function impWords(d){let w=[];
  if(d&&Array.isArray(d.words)&&d.words.length)w=d.words;
  else if(d&&Array.isArray(d.blocks))d.blocks.forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>(l.words||[]).forEach(x=>w.push(x)))));
- return w.map(x=>{const b=x.bbox||{};return {t:x.text,x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1}}).filter(x=>x.t&&x.x1>x.x0)}
+ return w.map(x=>{const b=x.bbox||{};return {t:x.text,x0:b.x0,y0:b.y0,x1:b.x1,y1:b.y1,c:x.confidence}}).filter(x=>x.t&&x.x1>x.x0)}
 /* Interpreta las palabras leídas: reparte los números entre los dos MCs y detecta liga, temporada y jornada */
 function impParse(words,bt){
  const W=(words||[]).filter(w=>w&&String(w.t||'').trim()&&w.x1>w.x0);
@@ -6764,9 +6765,154 @@ async function impRun(file){const I=S.imp;if(!I)return;I.busy=true;I.step='read'
   const r=await _impWorker.recognize(pr.canvas,{},{blocks:true,text:true});
   const words=impWords(r.data);
   if(!S.imp)return;
-  const res=impParse(words,S.bt);I.res=res;impFillGrid(res);I.step='edit';I.busy=false;impRender()}
+  const res=impAnalyze(words,S.bt);I.res=res;impApply(res);I.step='edit';I.busy=false;impRender()}
  catch(e){console.error('import',e);if(!S.imp)return;I.busy=false;I.step='err';I.err=(e&&e.message==='lib')?'No se pudo cargar el lector de imágenes. Revisa tu conexión e inténtalo otra vez.':(e&&e.message==='img')?'No pude abrir esa imagen. Prueba con otra.':'No pude leer la imagen. Prueba con una foto más nítida y de frente.';impRender()}}
 function impProg(){const e=document.getElementById('impmsg');if(e&&S.imp)e.textContent=S.imp.msg+(S.imp.pct?' '+S.imp.pct+'%':'');const b=document.getElementById('impbar');if(b&&S.imp)b.style.width=(S.imp.pct||4)+'%'}
+/* ===== Importar v2: coloca cada número por su posición (encabezado / fila / columna), valida y marca lo dudoso en naranja ===== */
+const IMP_HDR=[['random','rand'],['ida'],['vuelta'],['acapella','acapela','acapell'],['deluxe','delux']];
+function impHdrIdx(w){const n=impNorm(w);if(n.length<3)return -1;
+ for(let i=0;i<IMP_HDR.length;i++)for(const h of IMP_HDR[i]){if(n===h)return i;if(h.length>=5&&impLev(n,h)<=1)return i}
+ return -1}
+const impSumV=a=>a.reduce((s,x)=>s+x,0);
+const impMed=a=>{if(!a.length)return 0;const s=[...a].sort((p,q)=>p-q);return s[Math.floor(s.length/2)]};
+/* Quita el total de una fila si es el último número y es la suma de los anteriores */
+function impStrip(it){if(it.length>=3&&Math.abs(it[it.length-1].v-impSumV(it.slice(0,-1).map(x=>x.v)))<.01)return {it:it.slice(0,-1),tot:it[it.length-1].v};return {it,tot:null}}
+/* Coloca los números de una fila en las columnas de referencia (deja huecos donde falte uno) */
+function impAlign(it,cols,n){if(!cols||cols.length!==n||n<2)return null;
+ const sp=impMed(cols.slice(1).map((c,i)=>c-cols[i]));if(!(sp>0))return null;const tol=sp*.5,out=Array(n).fill(null);let extra=0;
+ it.forEach(x=>{let bi=0,bd=1e9;cols.forEach((c,i)=>{const d=Math.abs(x.xc-c);if(d<bd){bd=d;bi=i}});
+  if(bd>tol){extra++;return}
+  if(out[bi]==null||bd<Math.abs(out[bi].xc-cols[bi]))out[bi]=x;else extra++});
+ return {out,extra}}
+function impAnalyze(words,bt){
+ const base=impParse(words,bt);
+ const W=(words||[]).filter(w=>w&&String(w.t||'').trim()&&w.x1>w.x0);
+ const hs=W.map(w=>w.y1-w.y0).sort((a,b)=>a-b),mh=hs.length?hs[Math.floor(hs.length/2)]:20;
+ const blocks=impBlocks(),nb=blocks.length;
+ const isAct=nb===1&&blocks[0].lab.join('|')===ACT.map(x=>x.k).join('|');
+ const res=Object.assign({},base,{cells:blocks.map(bk=>[0,1].map(()=>Array(bk.lab.length).fill(null))),doubt:{},hints:[],fmtSeen:'',fmtApp:isAct?'actual':'antigua',layout:'',imgTot:[null,null]});
+ const nt=impNorm(W.map(w=>w.t).join(' '));
+ /* encabezados de la planilla actual (RANDOM, IDA, VUELTA, ACAPELLA, DELUXE) */
+ const hdr=[];W.forEach(w=>{const i=impHdrIdx(w.t);if(i>=0)hdr.push({i,xc:(w.x0+w.x1)/2,yc:(w.y0+w.y1)/2})});
+ const hset=new Set(hdr.map(h=>h.i));
+ res.fmtSeen=hset.size>=3?'actual':(/flow|tecnic|escena|minuto|replica/.test(nt)?'antigua':'');
+ /* números, nombres y totales grandes */
+ const items=[],bigs=[];
+ W.forEach(w=>{const v=impNum(w.t),nw=impNorm(w.t),xc=(w.x0+w.x1)/2,yc=(w.y0+w.y1)/2;let nm=null;
+  if(v==null&&nw&&impHdrIdx(w.t)<0){const da=impNameDist(nw,bt.a),db=impNameDist(nw,bt.b);if(da<99||db<99)nm=da<=db?0:1}
+  const raw=String(w.t).trim().replace(/[,;:]/g,'.').replace(/^[^\d]+|[^\d.]+$/g,'');
+  if(v!=null||nm!=null)items.push({v,nm,xc,yc,c:w.c==null?100:w.c,raw,dd:v!=null&&/^\d{2}$/.test(raw)&&raw!=='10'});
+  else{const s=String(w.t).trim().replace(',','.');if(/^\d{2,3}(\.5)?$/.test(s)&&parseFloat(s)>10)bigs.push({tv:parseFloat(s),xc,yc})}});
+ res.foundA=items.some(i=>i.nm===0);res.foundB=items.some(i=>i.nm===1);
+ const expLens=new Set(blocks.map(b=>b.lab.length));
+ /* filas por altura */
+ const its=[...items].sort((a,b)=>a.yc-b.yc),rows=[];
+ its.forEach(i=>{const r=rows[rows.length-1];if(r&&Math.abs(i.yc-r.yc)<=mh*.7){r.it.push(i);r.yc=(r.yc*(r.it.length-1)+i.yc)/r.it.length}else rows.push({yc:i.yc,it:[i]})});
+ rows.forEach(r=>{r.it.sort((a,b)=>a.xc-b.xc);const ms=new Set(r.it.filter(i=>i.nm!=null).map(i=>i.nm));r.m=ms.size===1?[...ms][0]:-1;r.nums=r.it.filter(i=>i.v!=null);
+  const bg=bigs.filter(b=>Math.abs(b.yc-r.yc)<=mh*.7&&(!r.nums.length||b.xc>r.nums[r.nums.length-1].xc)).sort((a,b)=>b.xc-a.xc)[0];r.big=bg?bg.tv:null;
+  /* «35» al final de la fila es un total, no 3,5: el lector viejo lo confundía */
+  const L=r.nums,last=L[L.length-1];if(last&&last.dd&&r.big==null&&expLens.has(L.length-1)){r.nums=L.slice(0,-1);r.big=parseFloat(last.raw)}});
+ const numRows=rows.filter(r=>r.nums.length),named=numRows.filter(r=>r.m>=0);
+ const per=[[],[]];
+ if(named.some(r=>r.m===0)&&named.some(r=>r.m===1)){
+  res.layout='filas';
+  const pitch=impMed(numRows.slice(1).map((r,i)=>r.yc-numRows[i].yc))||mh*2;
+  numRows.forEach(r=>{let m=r.m,inf=false;
+   if(m<0&&r.nums.length>=2){let best=null,bd=1e9;named.forEach(n=>{const d=Math.abs(n.yc-r.yc);if(d<bd){bd=d;best=n}});if(best&&bd<=pitch*1.6){m=best.m;inf=true}}
+   if(m>=0){const st=impStrip(r.nums);per[m].push({it:st.it,tot:st.tot!=null?st.tot:r.big,inf,yc:r.yc})}})}
+ else{
+  res.layout='columnas';
+  const nums=items.filter(i=>i.v!=null);
+  if(nums.length){
+   const avg=a=>a.reduce((s,x)=>s+x,0)/a.length;let cut=null;
+   const xa=items.filter(i=>i.nm===0).map(i=>i.xc),xb=items.filter(i=>i.nm===1).map(i=>i.xc);
+   if(xa.length&&xb.length&&Math.abs(avg(xa)-avg(xb))>mh*3)cut={a:avg(xa),b:avg(xb)};
+   else{const xs=nums.map(i=>i.xc).sort((p,q)=>p-q);let g=0,gi=-1;for(let k=1;k<xs.length;k++){if(xs[k]-xs[k-1]>g){g=xs[k]-xs[k-1];gi=k}}
+    if(gi>0&&g>mh*2){const l=xs.slice(0,gi),r=xs.slice(gi);cut={a:avg(l),b:avg(r)}}}
+   const byY=l=>l.sort((p,q)=>p.yc-q.yc||p.xc-q.xc);
+   if(!cut)per[0]=[{it:byY(nums),tot:null,inf:false,col:1}];
+   else{const A=[],B=[];nums.forEach(i=>{(Math.abs(i.xc-cut.a)<=Math.abs(i.xc-cut.b)?A:B).push(i)});
+    const left=cut.a<=cut.b;let la=byY(left?A:B),lb=byY(left?B:A);
+    if(!left&&!(res.foundA&&res.foundB)){const t=la;la=lb;lb=t}
+    per[0]=[{it:la,tot:null,inf:false,col:1}];per[1]=[{it:lb,tot:null,inf:false,col:1}]}}}
+ /* utilidades para escribir en las casillas */
+ const keyOf=(bi,m,j)=>blocks[bi].k+'_'+m+'_'+(blocks[bi].off+j);
+ const nameOf=m=>m?bt.b:bt.a;
+ const hint=(m,bi,vals,why)=>res.hints.push({m,t:blocks[bi]?blocks[bi].title:'',v:vals.map(x=>x.v!=null?x.v:x),why});
+ function put(bi,m,j,x,doubt){const bk=blocks[bi];if(x.v>bk.max[j]){res.hints.push({m,t:bk.title,v:[x.v],why:'sobrepasa el máximo ('+bk.max[j]+') de «'+bk.lab[j]+'»'});return}
+  res.cells[bi][m][j]=x.v;if(doubt||x.c<60)res.doubt[keyOf(bi,m,j)]=1}
+ function chkTot(bi,m,idxs,tot){if(tot==null)return;const vals=idxs.map(j=>res.cells[bi][m][j]);if(vals.some(v=>v==null))return;
+  if(Math.abs(impSumV(vals)-tot)>.01){idxs.forEach(j=>res.doubt[keyOf(bi,m,j)]=1);res.hints.push({m,t:blocks[bi].title,v:vals,why:'la suma ('+impSumV(vals)+') no coincide con el total de la imagen ('+tot+')'})}}
+ /* ---------- planilla actual ---------- */
+ if(isAct){
+  const bk=blocks[0];
+  /* orientación de los encabezados */
+  let sdx=0,sdy=0,pit=[];
+  for(let i=0;i<4;i++){let best=null;hdr.filter(h=>h.i===i).forEach(a=>hdr.filter(h=>h.i===i+1).forEach(b=>{const d=Math.hypot(a.xc-b.xc,a.yc-b.yc);if(!best||d<best.d)best={d,dx:Math.abs(a.xc-b.xc),dy:Math.abs(a.yc-b.yc)}}));if(best){sdx+=best.dx;sdy+=best.dy;pit.push(best.dx>best.dy?best.dx:best.dy)}}
+  const horiz=sdx>=sdy,pitch=impMed(pit);
+  [0,1].forEach(m=>{
+   const rr=per[m];if(!rr.length)return;
+   let it=[];rr.forEach(r=>it.push(...r.it));
+   let tot=rr.length===1?rr[0].tot:null;
+   const inf=rr.some(r=>r.inf);
+   if(hset.size>=3&&pitch>0){
+    const slot=Array.from({length:5},()=>[]);let extra=0;
+    it.forEach(x=>{let bi=-1,bd=1e9;hdr.forEach(h=>{const key=horiz?Math.abs(x.xc-h.xc):Math.abs(x.yc-h.yc),sec=horiz?Math.abs(x.yc-h.yc):Math.abs(x.xc-h.xc),d=key+sec*.15;if(key<=pitch*.6&&d<bd){bd=d;bi=h.i}});
+     if(bi<0){if(x.dd&&tot==null)tot=parseFloat(x.raw);else if(!x.dd)extra++}else slot[bi].push({x,d:bd})});
+    slot.forEach((c,j)=>{if(!c.length)return;c.sort((p,q)=>p.d-q.d);put(0,m,j,c[0].x,c.length>1||inf)});
+    if(extra||slot.some(c=>c.length>1))res.hints.push({m,t:bk.title,v:it.map(x=>x.v),why:'sobraron números que no encajan en ninguna columna'});
+    chkTot(0,m,[0,1,2,3,4],tot);if(tot!=null&&res.layout==='filas')res.imgTot[m]=tot;
+   }else if(it.length===5){it.forEach((x,j)=>put(0,m,j,x,inf));chkTot(0,m,[0,1,2,3,4],tot);if(tot!=null&&res.layout==='filas')res.imgTot[m]=tot}
+   else hint(m,0,it,'leí '+it.length+' números y la planilla tiene 5 casillas; no pude ubicarlos con seguridad');
+  });
+  return res}
+ /* ---------- planilla antigua ---------- */
+ const total=blocks.reduce((s,b)=>s+b.lab.length,0);
+ if(res.layout==='columnas'){
+  [0,1].forEach(m=>{const rr=per[m];if(!rr.length)return;const it=rr[0].it;
+   if(it.length===total){let p=0;blocks.forEach((bk,bi)=>bk.lab.forEach((_,j)=>put(bi,m,j,it[p++],false)))}
+   else if(it.length)res.hints.push({m,t:'',v:it.map(x=>x.v),why:'leí '+it.length+' números y la planilla tiene '+total+' casillas; no pude ubicarlos con seguridad'})});
+  return res}
+ /* por filas: cada fila de un MC es un bloque */
+ const assign=[[],[]];
+ [0,1].forEach(m=>{const rr=per[m];
+  if(rr.length===nb)rr.forEach((r,bi)=>assign[m][bi]=r);
+  else if(rr.length===1&&nb>1){const it=rr[0].it;
+   if(it.length===total){let p=0;blocks.forEach((bk,bi)=>{assign[m][bi]={it:it.slice(p,p+bk.lab.length),tot:null,inf:rr[0].inf};p+=bk.lab.length})}
+   else res.hints.push({m,t:'',v:it.map(x=>x.v),why:'leí '+it.length+' números en una fila y la planilla tiene '+total+' casillas'})}
+  else{let p=0;rr.forEach(r=>{let f=-1;for(let q=p;q<nb;q++)if(blocks[q].lab.length===r.it.length){f=q;break}
+    if(f>=0){assign[m][f]=r;p=f+1}else res.hints.push({m,t:'',v:r.it.map(x=>x.v),why:'una fila de '+r.it.length+' números no encaja con ninguna casilla libre'})})}});
+ /* columnas de referencia: filas con la cantidad exacta de números */
+ const ref={};
+ [0,1].forEach(m=>assign[m].forEach((r,bi)=>{if(r&&r.it.length===blocks[bi].lab.length){const n=r.it.length;(ref[n]=ref[n]||[]).push(r.it.map(x=>x.xc))}}));
+ const refCols={};Object.keys(ref).forEach(n=>{refCols[n]=Array.from({length:+n},(_,i)=>impSumV(ref[n].map(c=>c[i]))/ref[n].length)});
+ const rowTots=[[],[]];
+ [0,1].forEach(m=>blocks.forEach((bk,bi)=>{const r=assign[m][bi];if(!r)return;const n=bk.lab.length;
+  if(r.tot!=null)rowTots[m].push(r.tot);else rowTots[m].push(null);
+  if(r.it.length===n){r.it.forEach((x,j)=>put(bi,m,j,x,r.inf));chkTot(bi,m,r.it.map((_,j)=>j),r.tot)}
+  else{const al=impAlign(r.it,refCols[n],n);
+   if(al&&(al.out.filter(Boolean).length>=Math.min(n-1,r.it.length))){al.out.forEach((x,j)=>{if(x)put(bi,m,j,x,true)});if(al.extra)res.hints.push({m,t:bk.title,v:r.it.map(x=>x.v),why:'sobraron '+al.extra+' números al colocar la fila'})}
+   else hint(m,bi,r.it,'leí '+r.it.length+' números y este bloque tiene '+n+' casillas; no pude ubicarlos con seguridad')}}));
+ [0,1].forEach(m=>{const t=rowTots[m];if(t.length&&t.every(x=>x!=null))res.imgTot[m]=impSumV(t)});
+ return res}
+/* Vuelca el resultado en la planilla de importación (solo las casillas que la planilla tiene) */
+function impApply(res){const I=S.imp;I.sc=S.sc.map(r=>[r[0].map(()=>null),r[1].map(()=>null)]);
+ const blocks=impBlocks();let total=0,f=[0,0];
+ blocks.forEach((bk,bi)=>{total+=bk.lab.length;[0,1].forEach(m=>res.cells[bi][m].forEach((v,j)=>{I.sc[bk.k][m][bk.off+j]=v;if(v!=null)f[m]++}))});
+ I.found=f;I.total=total;I.doubt=res.doubt||{};I.hints=res.hints||[];I.imgTot=res.imgTot||[null,null]}
+
+function impChkV2(chk,R0,b){const I=S.imp;if(!I)return;
+ if(R0.fmtSeen&&R0.fmtSeen!==R0.fmtApp)chk.push(`⚠️ La imagen parece de la <b>planilla ${R0.fmtSeen==='actual'?'actual':'antigua'}</b> y esta votación está en la ${R0.fmtApp==='actual'?'actual':'antigua'}. Revisa que sea el mismo formato`);
+ const nd=Object.keys(I.doubt||{}).length;if(nd)chk.push(`🟠 ${nd} casilla${nd>1?'s':''} en naranja: la página no está segura. Compárala${nd>1?'s':''} con tu captura`)}
+function impHintsV(){const I=S.imp;if(!I||!I.hints||!I.hints.length)return '';const b=S.bt||{a:'',b:''};
+ return `<div style="margin:8px 0;padding:8px 10px;border-radius:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);font-size:12px;line-height:1.5"><b>Esto no lo pude ubicar con seguridad:</b>${I.hints.slice(0,6).map(h=>`<div>• ${esc(h.m?b.b:b.a)}${h.t?' · '+esc(h.t):''}: leí ${esc((h.v||[]).join(' · '))} (${esc(h.why)}). Escríbelos tú en su casilla.</div>`).join('')}</div>`}
+{const _ie=impEdit;impEdit=function(el){_ie.apply(this,arguments);try{const I=S.imp;if(!I||!I.doubt)return;const k=el.dataset.k+'_'+el.dataset.m+'_'+el.dataset.i;
+ if(I.doubt[k]&&I.sc[+el.dataset.k][+el.dataset.m][+el.dataset.i]!=null){delete I.doubt[k];el.style.border='1px solid rgba(127,127,127,.4)';el.style.background='rgba(127,127,127,.12)'}}catch(e){}}}
+{const _sw=impSwap;impSwap=function(){const I=S.imp;if(I&&I.sc){if(I.doubt){const d={};Object.keys(I.doubt).forEach(k=>{const p=k.split('_');p[1]=p[1]==='0'?'1':'0';d[p.join('_')]=1});I.doubt=d}
+ if(I.imgTot)I.imgTot=[I.imgTot[1],I.imgTot[0]];if(I.hints)I.hints=I.hints.map(h=>Object.assign({},h,{m:h.m?0:1}))}return _sw.apply(this,arguments)}}
+{const _it=impTot;impTot=function(){_it.apply(this,arguments);try{const I=S.imp,e=document.getElementById('imptc');if(!I||!e)return;const g=I.imgTot;
+ if(!g||g[0]==null||g[1]==null){e.innerHTML='';return}const t=impTotals(),ok=Math.abs(t[0]-g[0])<.01&&Math.abs(t[1]-g[1])<.01;
+ e.innerHTML=ok?`✅ Cuadra con el total de la imagen (${fmt(g[0])} – ${fmt(g[1])})`:`⚠️ La imagen dice ${fmt(g[0])} – ${fmt(g[1])} y aquí suman ${fmt(t[0])} – ${fmt(t[1])}. Revisa las casillas`}catch(e){}}}
 function impEdit(el){const I=S.imp;if(!I||!I.sc)return;const k=+el.dataset.k,m=+el.dataset.m,i=+el.dataset.i,mx=+el.dataset.mx;
  const raw=String(el.value||'').trim().replace(',','.');let v=null,bad=false;
  if(raw!==''){v=Number(raw);if(isNaN(v)||v<0||v>mx||Math.round(v*2)!==v*2){bad=true;v=null}}
@@ -6789,7 +6935,7 @@ function impRender(){const I=S.imp;let el=document.getElementById('impov');
  let body='';
  if(I.step==='pick'){
   body=`<div style="font-size:40px;text-align:center;margin-top:4px">📥</div><b style="font-size:19px;display:block;text-align:center">Importar una votación</b>
-  <div class="mu" style="margin:8px 0 14px;font-size:13.5px;line-height:1.5;text-align:center">¿Votaste <b>${esc(b.a)} vs ${esc(b.b)}</b> en otro sitio o en tu cuaderno? Sube una captura o una foto de esa votación. La página lee los números y tú los confirmas antes de guardar.</div>
+  <div class="mu" style="margin:8px 0 14px;font-size:13.5px;line-height:1.5;text-align:center">¿Votaste <b>${esc(b.a)} vs ${esc(b.b)}</b> en otro sitio o en tu cuaderno? Sube una captura o una foto de esa votación. La página lee los números y tú los confirmas antes de guardar. Lo que no tenga claro lo marca en naranja.</div>
   <button class="btn" style="width:100%;margin:0 0 8px" onclick="impPick(false)">🖼️ Elegir de la galería</button>
   <button class="btn s" style="width:100%;margin:0 0 12px" onclick="impPick(true)">📷 Tomar foto</button>
   <div class="mu" style="font-size:12px;line-height:1.45">Tips: que se vea la planilla completa, de frente, con buena luz y con los nombres de los MCs. La imagen se lee en tu teléfono y no se sube a ningún lado. Las votaciones importadas <b>no dan monedas</b>.</div>`}
@@ -6809,17 +6955,19 @@ function impRender(){const I=S.imp;let el=document.getElementById('impov');
    const bj=String(b.j||'').match(/jornada\s*(\d+)/i);if(R0.jornada)chk.push(bj?(bj[1]===R0.jornada?`✅ Jornada ${esc(R0.jornada)}`:`⚠️ La imagen dice jornada ${esc(R0.jornada)} y esta batalla es la jornada ${esc(bj[1])}`):`ℹ️ La imagen dice jornada ${esc(R0.jornada)}`)}catch(e){}
   const filled=I.found[0]+I.found[1],full=I.total*2;
   chk.push(filled>=full?`✅ Leí todos los números (${I.total} por MC)`:filled?`⚠️ Leí ${I.found[0]} números de ${esc(b.a)} y ${I.found[1]} de ${esc(b.b)}; esta planilla tiene ${I.total} por MC. Completa los que falten`:`⚠️ No pude leer números. Puedes escribirlos tú en las casillas`);
+  try{impChkV2(chk,R0,b)}catch(e){}
   const blocks=impBlocks();
   const grid=blocks.map(bk=>{const hd=`<div style="display:grid;grid-template-columns:78px repeat(${bk.lab.length},38px);gap:4px;align-items:center;min-width:max-content"><span></span>${bk.lab.map(l=>`<span class="mu" style="font-size:10px;text-align:center">${esc(l)}</span>`).join('')}</div>`;
-   const row=m=>`<div style="display:grid;grid-template-columns:78px repeat(${bk.lab.length},38px);gap:4px;align-items:center;min-width:max-content;margin-top:4px"><b style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${m?'var(--ac2)':'var(--ac)'}">${esc(m?b.b:b.a)}</b>${bk.lab.map((_,j)=>{const v=I.sc[bk.k][m][bk.off+j];return `<input inputmode="decimal" autocomplete="off" data-k="${bk.k}" data-m="${m}" data-i="${bk.off+j}" data-mx="${bk.max[j]}" value="${v==null?'':fmt(v)}" oninput="impEdit(this)" style="width:38px;height:34px;box-sizing:border-box;text-align:center;border-radius:8px;border:1px solid rgba(127,127,127,.4);background:rgba(127,127,127,.12);color:inherit;font:inherit;font-size:14px;padding:0">`}).join('')}</div>`;
+   const row=m=>`<div style="display:grid;grid-template-columns:78px repeat(${bk.lab.length},38px);gap:4px;align-items:center;min-width:max-content;margin-top:4px"><b style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${m?'var(--ac2)':'var(--ac)'}">${esc(m?b.b:b.a)}</b>${bk.lab.map((_,j)=>{const v=I.sc[bk.k][m][bk.off+j];return `<input inputmode="decimal" autocomplete="off" data-k="${bk.k}" data-m="${m}" data-i="${bk.off+j}" data-mx="${bk.max[j]}" value="${v==null?'':fmt(v)}" oninput="impEdit(this)" style="width:38px;height:34px;box-sizing:border-box;text-align:center;border-radius:8px;${I.doubt&&I.doubt[bk.k+'_'+m+'_'+(bk.off+j)]?'border:1.5px solid #F59E0B;background:rgba(245,158,11,.18)':'border:1px solid rgba(127,127,127,.4);background:rgba(127,127,127,.12)'};color:inherit;font:inherit;font-size:14px;padding:0">`}).join('')}</div>`;
    return `<div style="margin-top:12px"><div style="font-weight:800;font-size:13px;margin-bottom:4px">${esc(bk.title)}</div><div style="overflow-x:auto;padding-bottom:4px">${hd}${row(0)}${row(1)}</div></div>`}).join('');
   const t=impTotals();
   body=`<b style="font-size:18px;display:block;text-align:center;padding:0 30px">Revisa la votación</b>
   <div style="display:flex;gap:10px;align-items:center;margin:10px 0">${I.thumb?`<img src="${I.thumb}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px">`:''}<div class="mu" style="font-size:12.5px;line-height:1.5">${chk.join('<br>')}</div></div>
   <div class="mu" style="font-size:12.5px;margin-bottom:2px">Corrige cualquier número que la página haya leído mal. Se aceptan valores de 0 al máximo de la casilla, con medio punto (3,5).</div>
-  ${grid}
+  ${impHintsV()}${grid}
   <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 4px"><span id="impcnt" class="mu" style="font-size:12px"></span><span class="score" style="margin:0"><span style="color:var(--ac);font-weight:800;font-size:13px">${esc(b.a)}</span> <span id="imptot"><b>${fmt(t[0])}</b> – <b>${fmt(t[1])}</b></span> <span style="color:var(--b2);font-weight:800;font-size:13px">${esc(b.b)}</span></span></div>
   ${I.warn?`<div style="color:#F87171;font-size:13px;margin:6px 0">${esc(I.warn)}</div>`:''}
+  <div id="imptc" class="mu" style="font-size:12px;text-align:center;margin:6px 0 0"></div>
   <button class="btn s" style="width:100%;margin:8px 0 0" onclick="impSwap()">⇄ Intercambiar lados (${esc(b.a)} ↔ ${esc(b.b)})</button>
   <button class="btn" style="width:100%;margin:8px 0 0" onclick="impSave()">Guardar votación importada</button>
   <div class="mu" style="font-size:11.5px;margin-top:8px;text-align:center">Las votaciones importadas no suman monedas.</div>`}
