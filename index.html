@@ -2421,7 +2421,7 @@ const B={
  async createUser(uid,u,prof,skipName){const fm=FB.fm;if(!skipName)await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
  async updateUser(uid,prof){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),prof)},
  async topUsers(n){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.orderBy('rp','desc'),fm.limit(n)));return q.docs.map(d=>({uid:d.id,...pub(d.data())}))},
- async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null}})},60000)},
+ async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null,ban:(r.ban&&typeof r.ban==='object')?r.ban:null}})},60000)},
  async listUsers(){return usersCached('pub',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},300000)},
  async addVote(v){const fm=FB.fm;const r=await fm.addDoc(fm.collection(FB.db,'votes'),v);vcAdd(v,r&&r.id)},
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v);vcUpd(id,v)},
@@ -6865,6 +6865,52 @@ function rspOff(){let off=0;const rd=S.rounds[S.ri];for(let q=0;q<S.pi;q++)off+=
 {const _se=startEdit;startEdit=function(v){S.rsp=rspParse(v&&v.rsp);return _se.apply(this,arguments)}}
 {const _s0=start;start=function(){S.rsp={};return _s0.apply(this,arguments)}}
 {const st=document.createElement('style');st.textContent=`.rspl{margin-top:3px;align-items:center}.rspt{font-size:10.5px;font-weight:700;opacity:.65;padding-left:2px}.rspw{display:flex;justify-content:center}.rspc{width:22px;height:22px;min-height:0;border-radius:6px;border:1.5px solid var(--bd);background:var(--bg2);color:var(--tx);font-size:13px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.rspc.on{border-color:var(--ac);background:rgba(var(--acr),.22)}.rspn{text-align:center;font-size:12px;font-weight:900;color:var(--ac)}`;document.head.appendChild(st)}
+
+/* ===== Baneo de usuarios (panel de administrador). El baneo se guarda en el documento del usuario: users/{uid}.ban = {r:motivo, ts, by}.
+   El usuario baneado ve una pantalla completa con el motivo y no puede usar la página hasta que lo desbanees. No va a la bandeja de entrada. ===== */
+let BAN_T=null,BAN_LAST=0;
+function banHide(){S.banned=null;if(BAN_T){clearInterval(BAN_T);BAN_T=null}const o=document.getElementById('banov');if(o)o.remove();try{document.documentElement.style.overflow='';document.body.style.overflow=''}catch(e){}}
+function banShow(b,uid){
+ S.banned=b;S.pend=null;try{stopPresence(true)}catch(e){}
+ let o=document.getElementById('banov');if(!o){o=document.createElement('div');o.id='banov';document.body.appendChild(o)}
+ o.setAttribute('style','position:fixed;inset:0;z-index:2147483000;background:#0b0b10;color:#fff;overflow:auto;display:flex;align-items:center;justify-content:center;padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom))');
+ const d=b.ts?new Date(b.ts).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}):'';
+ o.innerHTML=`<div style="max-width:420px;width:100%;text-align:center"><div style="font-size:54px;line-height:1">🚫</div><h1 style="font-size:24px;margin:14px 0 6px">Tu cuenta ha sido baneada</h1><div style="opacity:.7;font-size:14px;margin-bottom:18px">Ya no puedes usar la página${d?' desde el '+esc(d):''}.</div><div style="text-align:left;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:14px 16px"><div style="font-size:12px;opacity:.6;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px">Motivo del baneo</div><div style="white-space:pre-wrap;word-break:break-word;font-size:15.5px;line-height:1.45">${esc(b.r||'No se indicó un motivo.')}</div></div><div style="opacity:.6;font-size:12.5px;margin-top:16px">Tendrás acceso de nuevo cuando el administrador te desbanee.</div><button id="banrt" style="margin-top:16px;padding:11px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font:inherit;font-weight:700;cursor:pointer" onclick="banRecheck()">Comprobar si ya me desbanearon</button><div id="banmsg" style="font-size:12.5px;opacity:.75;margin-top:10px;min-height:16px"></div></div>`;
+ try{document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden'}catch(e){}
+ if(!BAN_T)BAN_T=setInterval(()=>{if(S.me&&S.banned)banCheck(S.me.uid,true)},60000)}
+function banCheck(uid,quiet){return B.getUser(uid).then(p=>{if(!S.me||S.me.uid!==uid)return;BAN_LAST=Date.now();const b=p&&p.ban&&typeof p.ban==='object'?p.ban:null;
+ if(b)banShow(b,uid);else if(S.banned){banHide();S.me={...S.me,ban:null};R()}
+ return !!b}).catch(()=>{if(!quiet){const m=document.getElementById('banmsg');if(m)m.textContent='No se pudo comprobar. Revisa tu conexión.'}return null})}
+function banRecheck(){if(!S.me)return;const m=document.getElementById('banmsg');if(m)m.textContent='Comprobando…';banCheck(S.me.uid).then(r=>{const m2=document.getElementById('banmsg');if(m2&&r===true)m2.textContent='Todavía estás baneado.'})}
+{const _sm=setMe;setMe=function(uid,prof){const b=prof&&prof.ban&&typeof prof.ban==='object'?prof.ban:null;if(b)S.pend=null;const r=_sm.apply(this,arguments);try{if(b)banShow(b,uid);else{BAN_LAST=Date.now();if(S.banned)banHide()}}catch(e){}return b?undefined:r}}
+/* Si le banean mientras tiene la página abierta: se comprueba al volver a la pestaña y cada 5 minutos */
+setInterval(()=>{if(document.visibilityState==='visible'&&S.me&&!S.banned)banCheck(S.me.uid,true)},300000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.me&&!S.banned&&Date.now()-BAN_LAST>60000)banCheck(S.me.uid,true)});
+
+/* --- Panel de administrador --- */
+const banFmt=ts=>ts?new Date(ts).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}):'—';
+{const _ab=adminV;adminV=function(){let h=_ab();if(!isAdmin())return h;
+ if(S.banL===undefined){S.banL=null;B.listUsersFull().then(us=>{S.banL=us.filter(x=>x.ban).map(x=>({uid:x.uid,u:x.u,ban:x.ban})).sort((a,b)=>(b.ban.ts||0)-(a.ban.ts||0));R()}).catch(()=>{S.banL=[];R()})}
+ const L2=S.banL,ist='width:100%;box-sizing:border-box;margin-bottom:8px';
+ const box=`<div class="sec"><span>Baneo de usuarios</span><span>${L2?L2.length:'…'}</span></div><div class="card"><b style="display:block;margin-bottom:4px">🚫 Banear a un usuario</b><div class="mu" style="margin:0 0 10px;font-size:13px">Escribe el usuario (sin @) y el motivo. La persona verá una pantalla con el motivo y <b>no podrá usar la página</b> hasta que la desbanees aquí abajo. No se envía a la bandeja de entrada.</div><input id="bnu" class="alq" placeholder="Usuario a banear, por ejemplo linexs17" autocapitalize="none" autocomplete="off" value="${esc(S.banU||'')}" oninput="S.banU=this.value" style="${ist}"><textarea id="bnr" class="alq" rows="3" maxlength="300" placeholder="Motivo del baneo (lo verá el usuario)" oninput="S.banR=this.value" style="${ist};resize:vertical;font:inherit">${esc(S.banR||'')}</textarea><button class="btn sm" style="width:100%;background:#E5484D;color:#fff" onclick="banDo()">🚫 Banear usuario</button>${S.banMsg?`<div class="mu" style="margin-top:8px">${esc(S.banMsg)}</div>`:''}</div>${L2===null?'<div class="mu" style="text-align:center;padding:10px">Cargando baneados…</div>':L2.length?L2.map(x=>`<div class="card"><div class="row" style="align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><b>@${esc(x.u||x.uid)}</b><div class="mu" style="font-size:12px">Baneado el ${banFmt(x.ban.ts)}${x.ban.by?' por '+esc(x.ban.by):''}</div></div><button class="btn s sm" style="margin:0" onclick="banLift('${esc(x.uid)}')">Desbanear</button></div><div style="white-space:pre-wrap;word-break:break-word;margin-top:8px;font-size:13.5px"><span class="mu">Motivo:</span> ${esc(x.ban.r||'—')}</div></div>`).join(''):'<div class="mu" style="text-align:center;padding:10px">No hay usuarios baneados.</div>'}`;
+ return h.replace('<div class="sec"><span>Reinicios (cuidado)</span></div>',box+'<div class="sec"><span>Reinicios (cuidado)</span></div>')}}
+async function banDo(){if(!isAdmin())return;
+ const un=String(S.banU||'').trim().toLowerCase().replace(/^@/,''),r=String(S.banR||'').trim();
+ if(!un){S.banMsg='Escribe el usuario a banear.';return R()}
+ if(r.length<3){S.banMsg='Escribe el motivo del baneo (mínimo 3 letras).';return R()}
+ try{S.banMsg='Buscando…';R();const uid=await B.usernameOwner(un);if(!uid||uid==='?'){S.banMsg='No encontré al usuario «'+un+'».';return R()}
+  if(S.me&&uid===S.me.uid){S.banMsg='No puedes banearte a ti mismo.';return R()}
+  if(await B.getAdmin(uid)){S.banMsg='No se puede banear a un administrador.';return R()}
+  const old=await B.getUser(uid);if(old&&old.ban){S.banMsg='@'+un+' ya está baneado. Desbanéalo primero si quieres cambiar el motivo.';return R()}
+  if(!confirm('¿Banear a @'+un+'?\n\nMotivo: '+r+'\n\nNo podrá usar la página hasta que lo desbanees.')){S.banMsg='';return R()}
+  const ban={r:r.slice(0,300),ts:Date.now(),by:(S.me&&S.me.u)||'admin'};
+  await B.updateUser(uid,{ban});usersCacheClear();
+  S.banL=[{uid,u:(old&&old.u)||un,ban},...(S.banL||[]).filter(x=>x.uid!==uid)];S.banU='';S.banR='';
+  S.banMsg='✓ @'+un+' fue baneado. Si tiene la página abierta, el bloqueo le llega en unos minutos (o al volver a la pestaña).'}
+ catch(e){S.banMsg='No se pudo banear: '+(/permission|insufficient/i.test(String(e&&(e.code||e.message)))?'Firestore no te deja editar a otros usuarios. Revisa las reglas.':(e&&e.message||'error desconocido'))}R()}
+async function banLift(uid){if(!isAdmin())return;const x=(S.banL||[]).find(y=>y.uid===uid);if(!confirm('¿Desbanear a @'+((x&&x.u)||uid)+'?'))return;
+ try{await B.updateUser(uid,{ban:null});usersCacheClear();S.banL=(S.banL||[]).filter(y=>y.uid!==uid);S.banMsg='✓ @'+((x&&x.u)||uid)+' fue desbaneado. Ya puede volver a usar la página.'}
+ catch(e){S.banMsg='No se pudo desbanear: '+(e&&e.message||'error desconocido')}R()}
 window.impOpen=impOpen;window.impClose=impClose;window.impPick=impPick;window.impEdit=impEdit;window.impSwap=impSwap;window.impSave=impSave;
 
 const _homeV9=homeV;homeV=function(){const h=_homeV9();const re=/(<button class="card libre"[\s\S]*?<\/button>)\s*(<button class="card libre"[\s\S]*?<\/button>)/;return h};
