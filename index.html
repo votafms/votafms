@@ -7066,7 +7066,8 @@ async function banLift(uid){if(!isAdmin())return;const x=(S.banL||[]).find(y=>y.
 
 /* ===== Mensaje del desarrollador: lo escribe el admin (config/mensaje) y sale una sola vez a cada usuario ===== */
 let MSG_LAST=0;
-function msgSeen(id){try{if(localStorage.getItem('vfms_msg_seen')===id)return true}catch(e){}return S._msgSeenRemote===id}
+function msgKey(){return 'vfms_msg_seen_'+((S.me&&S.me.uid)||'anon')}
+function msgSeen(id){try{if(localStorage.getItem(msgKey())===id)return true}catch(e){}return S._msgSeenRemote===id}
 function msgShow(m,pre){
  if(S.banned||document.body.classList.contains('panel'))return;
  const old=document.getElementById('msgov');if(old)old.remove();
@@ -7074,12 +7075,12 @@ function msgShow(m,pre){
  o.innerHTML=`<div class="mgb" role="dialog" aria-modal="true"><button class="mgx" aria-label="Cerrar" onclick="msgClose()">✕</button><div class="mgi">📢</div><div class="mgl">${esc(m.t||'Mensaje del desarrollador')}</div><div class="mgt">${esc(m.b||'')}</div>${pre?'<div class="mgp">Vista previa: así lo verán todos</div>':''}<button class="mgo" onclick="msgClose()">Entendido</button></div>`;
  document.body.appendChild(o);document.body.style.overflow='hidden'}
 function msgClose(){const o=document.getElementById('msgov');if(!o)return;const id=o.dataset.id,pre=!!o.dataset.pre;o.remove();if(!S.banned)document.body.style.overflow='';
- if(pre)return;try{localStorage.setItem('vfms_msg_seen',id)}catch(e){}
+ if(pre)return;try{localStorage.setItem(msgKey(),id)}catch(e){}
  S._msgSeenRemote=id;try{if(S.me&&S.me.uid)B.updateUser(S.me.uid,{msgSeen:id}).catch(()=>{})}catch(e){}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('msgov'))msgClose()});
 async function msgSync(){try{MSG_LAST=Date.now();const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','mensaje'));if(!d.exists())return;const m=d.data();
  if(!m||!m.on||!m.id||!m.b||msgSeen(String(m.id)))return;const cur=document.getElementById('msgov');if(cur&&!cur.dataset.pre)return;msgShow(m,false)}catch(e){}}
-{const _sm2=setMe;setMe=function(uid,prof){try{S._msgSeenRemote=(prof&&prof.msgSeen)?String(prof.msgSeen):null;const o=document.getElementById('msgov');if(o&&!o.dataset.pre&&S._msgSeenRemote===o.dataset.id)o.remove()}catch(e){}return _sm2.apply(this,arguments)}}
+{const _sm2=setMe;setMe=function(uid,prof){try{S._msgSeenRemote=(prof&&prof.msgSeen)?String(prof.msgSeen):null;const o=document.getElementById('msgov');if(o&&!o.dataset.pre&&S._msgSeenRemote===o.dataset.id)o.remove()}catch(e){}const r=_sm2.apply(this,arguments);try{if(uid&&S._msgUid!==uid){S._msgUid=uid;setTimeout(()=>{try{msgSync()}catch(e){}},900)}}catch(e){}return r}}
 setInterval(()=>{if(document.visibilityState==='visible')msgSync()},600000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-MSG_LAST>180000)msgSync()});
 {const st=document.createElement('style');st.textContent=`#msgov{position:fixed;inset:0;z-index:2147482000;display:flex;align-items:center;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));background:rgba(5,5,12,.78);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);overflow:auto;animation:mgf .25s ease}.mgb{position:relative;width:min(100%,440px);box-sizing:border-box;text-align:center;color:#fff;padding:34px 22px 22px;border-radius:26px;background:linear-gradient(160deg,#242438,#12121c 70%);border:1px solid rgba(255,255,255,.14);box-shadow:0 0 0 1px rgba(124,92,255,.35),0 24px 70px rgba(0,0,0,.6),0 0 60px rgba(124,92,255,.25);animation:mgp .35s cubic-bezier(.2,1.2,.3,1)}.mgx{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:16px;cursor:pointer}.mgi{font-size:52px;line-height:1}.mgl{margin-top:12px;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#b7a6ff}.mgt{margin-top:14px;font-size:19px;line-height:1.5;font-weight:600;white-space:pre-wrap;word-break:break-word;text-align:left;max-height:52vh;overflow:auto}.mgp{margin-top:12px;font-size:12px;color:#ffd166}.mgo{margin-top:20px;width:100%;padding:14px;border-radius:14px;border:0;font:inherit;font-weight:800;font-size:16px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#7c5cff,#c04cff)}@keyframes mgf{from{opacity:0}to{opacity:1}}@keyframes mgp{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){#msgov,.mgb{animation:none}}`;document.head.appendChild(st)}
@@ -7096,7 +7097,7 @@ async function msgSend(){if(!isAdmin())return;const t=((S.mgT===undefined?'Mensa
  if(b.length<5){S.mgMsg='Escribe el mensaje (mínimo 5 letras).';return R()}
  if(!confirm('¿Enviar este mensaje a TODOS los usuarios?\n\n'+t+'\n\n'+b))return;
  try{const fm=FB.fm,m={id:String(Date.now()),t,b:b.slice(0,800),on:true,ts:Date.now(),by:S.me.uid};await fm.setDoc(fm.doc(FB.db,'config','mensaje'),m);
-  S.mgCur=m;try{localStorage.setItem('vfms_msg_seen',m.id)}catch(e){}S._msgSeenRemote=m.id;S.mgB='';S.mgMsg='✓ Mensaje enviado. Cada usuario lo verá una sola vez.'}catch(e){S.mgMsg=msgErr(e)}R()}
+  S.mgCur=m;try{localStorage.setItem(msgKey(),m.id)}catch(e){}S._msgSeenRemote=m.id;S.mgB='';S.mgMsg='✓ Mensaje enviado. Cada usuario lo verá una sola vez.'}catch(e){S.mgMsg=msgErr(e)}R()}
 async function msgOff(){if(!isAdmin()||!S.mgCur)return;if(!confirm('¿Quitar el mensaje? Los que no lo hayan visto ya no lo verán.'))return;
  try{const fm=FB.fm,c=S.mgCur,m={id:String(c.id),t:c.t||'',b:c.b||'',on:false,ts:Date.now(),by:S.me.uid};await fm.setDoc(fm.doc(FB.db,'config','mensaje'),m);S.mgCur=m;S.mgMsg='✓ Mensaje quitado.'}catch(e){S.mgMsg=msgErr(e)}R()}
 window.impOpen=impOpen;window.impClose=impClose;window.impPick=impPick;window.impEdit=impEdit;window.impSwap=impSwap;window.impSave=impSave;
