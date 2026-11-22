@@ -2345,6 +2345,12 @@ S.lb={yt:'',a:'',b:'',lg:null,err:''};S.libre=false;S.pi=0;S.hideTot=false;S.hid
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sum=a=>a.reduce((x,y)=>x+(y||0),0);
 const ck=(l,a,b)=>l+'|'+a+'|'+b;
+/* Correccion de nombres 2026: los votos guardados con un nombre viejo (ej. "1Tobi") se leen con el nombre actual ("Tobi"), sin que nadie tenga que votar de nuevo */
+const NAME_FIX26={'1tobi':'Tobi'},NAME_OLD26={'Tobi':['1Tobi']};
+const _fxNorm=n=>String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'');
+const fxN=n=>NAME_FIX26[_fxNorm(n)]||n;
+function vFix(v){try{if(!v||v.free||(v.temp||'2026')!=='2026')return v;const a=fxN(v.a),b=fxN(v.b);if(a===v.a&&b===v.b)return v;return {...v,a,b,key:ck(v.l,a,b)}}catch(e){return v}}
+function keyAlts(key){try{const p=String(key||'').split('|');if(p.length!==3||p[0]==='libre')return [];const o=[];(NAME_OLD26[p[1]]||[]).forEach(x=>o.push(p[0]+'|'+x+'|'+p[2]));(NAME_OLD26[p[2]]||[]).forEach(x=>o.push(p[0]+'|'+p[1]+'|'+x));return o}catch(e){return []}}
 const curL=()=>L.find(x=>x.i===S.lg);
 const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
@@ -2430,7 +2436,7 @@ const B={
   try{const j=JSON.parse(localStorage.getItem('vfms_links')||'null');if(j&&j.v&&now-j.at<108e5){window._LKc=j;return j.v}}catch(e){}
   const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'videos'));const o={};q.docs.forEach(d=>{o[d.id]=d.data().y});window._LKc={at:now,v:o};try{localStorage.setItem('vfms_links',JSON.stringify(window._LKc))}catch(e){}return o},
  async setLink(id,y){const fm=FB.fm;const by=(FB.auth&&FB.auth.currentUser&&FB.auth.currentUser.uid)||'';await fm.setDoc(fm.doc(FB.db,'videos',id),{y,ts:Date.now(),by});window._LKc=null;try{localStorage.removeItem('vfms_links')}catch(e){}},
-  async votesOfLeague(l){return memCached(_LC,l,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('l','==',l),fm.limit(2000)));return s.docs.map(d=>d.data())},LG_TTL)},
+  async votesOfLeague(l){return (await memCached(_LC,l,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('l','==',l),fm.limit(2000)));return s.docs.map(d=>d.data())},LG_TTL)).map(vFix)},
  async changeUsername(uid,oldU,newU){const fm=FB.fm;const ex=await fm.getDoc(fm.doc(FB.db,'usernames',newU));if(ex.exists())throw new Error('taken');await fm.setDoc(fm.doc(FB.db,'usernames',newU),{uid});await fm.updateDoc(fm.doc(FB.db,'users',uid),{u:newU,unAt:Date.now()});await fm.deleteDoc(fm.doc(FB.db,'usernames',oldU))},
   async getNotifs(uid){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'notifs'),fm.where('to','==',uid),fm.limit(100)));return q.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.type!=='duelinv').sort((a,b)=>b.ts-a.ts)},
  async delNotif(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'notifs',id))},
@@ -2445,8 +2451,8 @@ const B={
  async sendFriend(me,meName,to,toName){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'friends',me+'_'+to),{from:me,to,status:'pending',fromName:meName,toName,ts:Date.now()})},
  async acceptFriend(id){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'friends',id),{status:'accepted'})},
  async removeFriend(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'friends',id))},
- async votesOfUser(uid){return votesCached(uid,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('uid','==',uid),fm.limit(2000)));return s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)})},
- async votesKey(key){return memCached(_KC,key,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('key','==',key),fm.limit(1000)));return s.docs.map(d=>d.data())},KC_TTL)},
+ async votesOfUser(uid){return (await votesCached(uid,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('uid','==',uid),fm.limit(2000)));return s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts)})).map(vFix)},
+ async votesKey(key){const q=k=>memCached(_KC,k,async()=>{const fm=FB.fm;const s=await fm.getDocs(fm.query(fm.collection(FB.db,'votes'),fm.where('key','==',k),fm.limit(1000)));return s.docs.map(d=>d.data())},KC_TTL);let r=await q(key);for(const k2 of keyAlts(key)){try{r=r.concat((await q(k2)).filter(v=>(v.temp||'2026')==='2026'))}catch(e){}}return r.map(vFix)},
  async addComment(c){const fm=FB.fm;await fm.addDoc(fm.collection(FB.db,'comments'),c)},
  async getAdmin(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'admins',uid));return d.exists()}catch(e){return false}},
  async listComments(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'comments'),fm.limit(300)));return q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0))},
