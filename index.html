@@ -2427,8 +2427,8 @@ const B={
  async createUser(uid,u,prof,skipName){const fm=FB.fm;if(!skipName)await fm.setDoc(fm.doc(FB.db,'usernames',u),{uid});await fm.setDoc(fm.doc(FB.db,'users',uid),{u,...prof})},
  async updateUser(uid,prof){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'users',uid),prof)},
  async topUsers(n){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.orderBy('rp','desc'),fm.limit(n)));return q.docs.map(d=>({uid:d.id,...pub(d.data())}))},
- async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null,ban:(r.ban&&typeof r.ban==='object')?r.ban:null}})},60000)},
- async listUsers(){return usersCached('pub',async()=>{const fm=FB.fm;let s;try{s=await fm.getDocs(fm.collection(FB.db,'users'))}catch(e){s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(5000)))}return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},300000)},
+ async listUsersFull(){return usersCached('full',async()=>{const fm=FB.fm;let s;s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(2000)));return s.docs.map(d=>{const r=d.data();return {uid:d.id,...pub(r),shop:(r.shop&&typeof r.shop==='object')?r.shop:null,ab:(r.ab&&typeof r.ab==='object')?r.ab:null,ban:(r.ban&&typeof r.ban==='object')?r.ban:null}})},180000)},
+ async listUsers(){return usersCached('pub',async()=>{const fm=FB.fm;let s;s=await fm.getDocs(fm.query(fm.collection(FB.db,'users'),fm.limit(2000)));return s.docs.map(d=>({uid:d.id,...pub(d.data())}))},900000)},
  async addVote(v){const fm=FB.fm;const r=await fm.addDoc(fm.collection(FB.db,'votes'),v);vcAdd(v,r&&r.id)},
  async updateVote(id,v){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'votes',id),v);vcUpd(id,v)},
  async deleteVote(id){const fm=FB.fm;await fm.deleteDoc(fm.doc(FB.db,'votes',id));vcDel(id)},
@@ -2446,7 +2446,7 @@ const B={
  async deleteUserDoc(uid,u){const fm=FB.fm;try{await fm.deleteDoc(fm.doc(FB.db,'presence',uid))}catch(e){}await fm.deleteDoc(fm.doc(FB.db,'users',uid));await fm.deleteDoc(fm.doc(FB.db,'usernames',u))},
  async beat(uid,on){const fm=FB.fm;const hid=!!(S.me&&S.me.uid===uid&&S.me.hidePres);await fm.setDoc(fm.doc(FB.db,'presence',uid),hid?{t:Date.now(),on:!!on,hid:true}:{t:Date.now(),on:!!on})},
  async getPres(uid){const fm=FB.fm;try{const d=await fm.getDoc(fm.doc(FB.db,'presence',uid));return d.exists()?d.data():null}catch(e){return null}},
- async listPres(){const fm=FB.fm;const q=await fm.getDocs(fm.collection(FB.db,'presence'));const m={};q.docs.forEach(d=>{m[d.id]=d.data()});return m},
+ async listPres(){const fm=FB.fm;const q=await fm.getDocs(fm.query(fm.collection(FB.db,'presence'),fm.where('t','>',Date.now()-36e5)));const m={};q.docs.forEach(d=>{m[d.id]=d.data()});return m},
  async listFriendDocs(uid){const fm=FB.fm;const [a,b]=await Promise.all([fm.getDocs(fm.query(fm.collection(FB.db,'friends'),fm.where('from','==',uid))),fm.getDocs(fm.query(fm.collection(FB.db,'friends'),fm.where('to','==',uid)))]);const out=[];a.docs.concat(b.docs).forEach(d=>{if(!out.find(x=>x.id===d.id))out.push({id:d.id,...d.data()})});return out},
  async sendFriend(me,meName,to,toName){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'friends',me+'_'+to),{from:me,to,status:'pending',fromName:meName,toName,ts:Date.now()})},
  async acceptFriend(id){const fm=FB.fm;await fm.updateDoc(fm.doc(FB.db,'friends',id),{status:'accepted'})},
@@ -8165,6 +8165,22 @@ mevoPanel=function(){if(!S.me)return '';const l=mvLv();if(!l)return '';
 .mv2-sv{animation:mv2f 3s ease-in-out infinite}.mv2-au{transform-origin:80px 92px;animation:mv2p 2.4s ease-in-out infinite}.mv2-ey{transform-origin:80px 66px;animation:mv2b 4s infinite}.mv2-orb{transform-origin:80px 92px;animation:mv2o 8s linear infinite}.mv2-ry{transform-origin:80px 92px;animation:mv2o 14s linear infinite reverse}.mv2-cp{transform-origin:80px 98px;animation:mv2c 2.6s ease-in-out infinite}.mv2-wv{transform-origin:112px 112px;animation:mv2w 1.8s ease-in-out infinite}.mv2-tw{transform-box:fill-box;transform-origin:center;animation:mv2t 1.6s ease-in-out infinite}
 @keyframes mv2f{50%{transform:translateY(-7px)}}@keyframes mv2p{50%{transform:scale(1.12);opacity:.7}}@keyframes mv2b{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}@keyframes mv2o{to{transform:rotate(360deg)}}@keyframes mv2c{50%{transform:skewX(-4deg) scaleY(1.03)}}@keyframes mv2w{50%{transform:rotate(-20deg)}}@keyframes mv2t{50%{opacity:.15;transform:scale(.4)}}@keyframes mv2g{50%{box-shadow:0 4px 0 #92400E,0 0 22px 2px rgba(250,204,21,.7)}}
 @media (prefers-reduced-motion:reduce){.mv2 *{animation:none!important}}html.noanim .mv2 *{animation:none!important}`;document.head.appendChild(st)}
+
+/* ===== Modo rendimiento: quita lo que más hace lag en celular ===== */
+(function(){
+ if(window.__perfOn)return;window.__perfOn=1;
+ const HV=/^(box-shadow|text-shadow|filter|backdrop-filter|background|background-position|background-size|width|height|top|left|right|bottom|inset|margin.*|padding.*|border.*|outline.*|clip-path|stroke-dashoffset|stroke-dasharray|font-size|letter-spacing|line-height)$/;
+ const done=new Set();let el=null,t=0;
+ function heavyNames(rules,out){for(const r of rules){try{if(r.type===7){let h=false;for(const kf of r.cssRules){const s=kf.style;for(let i=0;i<s.length;i++)if(HV.test(s[i])){h=true;break}if(h)break}if(h)out.add(r.name)}else if(r.cssRules)heavyNames(r.cssRules,out)}catch(e){}}}
+ function kill(rules,hv,acc){for(const r of rules){try{if(r.type===1){const s=r.style,nm=s.animationName;if(nm&&nm!=='none'&&/infinite/.test(s.animationIterationCount||'')&&nm.split(',').some(n=>hv.has(n.trim()))&&!done.has(r.selectorText)){done.add(r.selectorText);acc.push(r.selectorText+'{animation:none!important}')}}else if(r.cssRules&&r.type!==7)kill(r.cssRules,hv,acc)}catch(e){}}}
+ function run(){const hv=new Set(),acc=[];for(const sh of document.styleSheets){if(sh.ownerNode&&sh.ownerNode.id==='perfst')continue;let rs;try{rs=sh.cssRules}catch(e){continue}heavyNames(rs,hv)}
+  for(const sh of document.styleSheets){if(sh.ownerNode&&sh.ownerNode.id==='perfst')continue;let rs;try{rs=sh.cssRules}catch(e){continue}kill(rs,hv,acc)}
+  if(!el){el=document.createElement('style');el.id='perfst';el.textContent='*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}.nav{background-color:color-mix(in srgb,var(--navbg) 94%,transparent)!important}.top{background-color:color-mix(in srgb,var(--navbg) 92%,transparent)!important}';document.head.appendChild(el)}
+  if(acc.length)el.textContent+=acc.join('')}
+ const later=()=>{clearTimeout(t);t=setTimeout(run,400)};
+ run();window.addEventListener('load',()=>setTimeout(run,800));
+ try{new MutationObserver(m=>{if(m.some(x=>[...x.addedNodes].some(n=>n.tagName==='STYLE'&&n.id!=='perfst')))later()}).observe(document.head,{childList:true})}catch(e){}
+})();
 </script>
 </body></html>
 
