@@ -2513,6 +2513,7 @@ function ecoApply(c){c=c||{};ECO.prices=c.prices&&typeof c.prices==='object'?c.p
  if(c.pass&&window.pfPrices)window.pfPrices(Math.floor(c.pass.f),Math.floor(c.pass.h));
  _shopAll=null;S._cev=null;S._ce=0}
 async function ecoSync(){try{const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','economia'));
+ if(d.exists()){try{limSync(d.data())}catch(e){}}
  if(d.exists()&&d.data().ts!==ECO.ts){const c=JSON.parse(d.data().cfg||'{}');ECO.ts=d.data().ts;ecoApply(c);if(!(S.v==='admin'&&S.admTab==='eco'))R()}}catch(e){}}
 const SHOP_BASE=[
  {id:'boost',k:'boost',n:'Boost x2',d:'Durante 1 hora todo va al doble: votar World Series da 200 monedas en vez de 100, y la moneda voladora también trae el doble. Lo puedes comprar las veces que quieras; si lo compras con el Boost activo, se suma otra hora.',p:250},
@@ -2548,20 +2549,20 @@ const SHOP_PRICE={...NEW_PRICE,
  th_pe:80,th_cl:80,th_ar:100,th_mx:100,th_ca:120,th_es:140,th_in:170,th_ws:200,
  dz_mic:150,dz_vinyl:170,dz_spray:190,dz_boombox:210,dz_beats:230,dz_cypher:250,dz_fire:300,dz_crown:400,
  pl_asfalto:60,pl_cemento:80,pl_barrio:100,'pl_nx-cian':120,'pl_nx-rosa':120,'pl_nx-lima':120,'pl_nx-naranja':120,pl_cypher:120,pl_plata:130,pl_neon:140,pl_vinilo:150,pl_graffiti:160,pl_sunset:180,pl_escenario:200,pl_oro:260,pl_ambar:280,pl_cristal:300,pl_aurora:340,pl_rey:450};
-const SUIT_START=Date.parse('2026-11-14T00:00:00-04:00'),SUIT_END=SUIT_START+10*864e5,SUIT_IDS=['fam_gorro','fam_lentes','fam_bufanda','fam_capa','fam_aura'];
-const PACK_LIMIT_START=Date.parse('2026-11-14T00:00:00-04:00'),PACK_LIMIT_END=PACK_LIMIT_START+10*864e5;
-const packLimitLive=()=>Date.now()<PACK_LIMIT_END;
+let SUIT_START=Date.parse('2026-11-14T00:00:00-04:00'),SUIT_END=SUIT_START+10*864e5,SUIT_IDS=['fam_gorro','fam_lentes','fam_bufanda','fam_capa','fam_aura'];
+let PACK_LIMIT_START=Date.parse('2026-11-14T00:00:00-04:00'),PACK_LIMIT_END=PACK_LIMIT_START+10*864e5;
+const packLimitLive=()=>Date.now()>=PACK_LIMIT_START&&Date.now()<PACK_LIMIT_END;
 /* Segundo traje limitado: Neón Miami (estreno de GTA 6). Cambia SUIT2_START/SUIT2_END para ajustar cuándo sale y cuándo se va de la tienda. */
-const SUIT2_START=Date.parse('2026-11-18T00:00:00-04:00'),SUIT2_END=Date.parse('2026-11-30T00:00:00-04:00'),SUIT2_IDS=['gta_gorra','gta_lentes','gta_cadena','gta_capa','gta_aura'];
+let SUIT2_START=Date.parse('2026-11-18T00:00:00-04:00'),SUIT2_END=Date.parse('2026-11-30T00:00:00-04:00'),SUIT2_IDS=['gta_gorra','gta_lentes','gta_cadena','gta_capa','gta_aura'];
 const SUITS={suit_familia:{ids:SUIT_IDS,end:SUIT_END,f1:'#FB923C',f2:'#FDE047'},suit_neon:{ids:SUIT2_IDS,end:SUIT2_END,f1:'#F472B6',f2:'#22D3EE'}};
 const suitIds=sid=>(SUITS[sid]||SUITS.suit_familia).ids;
-const suitLive=()=>Date.now()<SUIT_END||(Date.now()>=SUIT2_START&&Date.now()<SUIT2_END);
+const suitLive=()=>(Date.now()>=SUIT_START&&Date.now()<SUIT_END)||(Date.now()>=SUIT2_START&&Date.now()<SUIT2_END);
 const fitOk=o=>o.set?shopOwns(o.set):stkDays()>=o.need;
 SHOP_BASE.push({id:'suit_neon',k:'suit',n:'Traje Neón Miami',d:'Edición limitada por el estreno de GTA 6: gorra tropical, lentes de atardecer, cadena con $, capa con palmeras y aura neón rosa y turquesa para tu mascota de racha. Se equipa completo con un toque.',p:1000,nw:1,until:SUIT2_END});
 SHOP_BASE.push({id:'suit_familia',k:'suit',n:'Traje Noche en Familia',d:'Edición limitada de noviembre: gorro, lentes, bufanda, manta, y aura de hojas y corazones para tu mascota de racha. Se equipa completo con un toque.',p:1000,nw:1,until:SUIT_END});
 SHOP_BASE.push({id:'pl_campeones',k:'pack',n:'Noche de Campeones',d:'Edición limitada: planilla oscura con bordes dorados animados, destellos al seleccionar celdas y corona al enviar tus puntajes.',p:1200,nw:1,until:PACK_LIMIT_END,pl:'campeones'});
-const LUZ_END=Date.parse('2026-12-06T00:00:00-04:00');
-const luzLive=()=>Date.now()<LUZ_END;
+let LUZ_START=0,LUZ_END=Date.parse('2026-12-06T00:00:00-04:00');
+const luzLive=()=>Date.now()>=LUZ_START&&Date.now()<LUZ_END;
 SHOP_BASE.push({id:'th_luz',k:'color',n:'Luces de Diciembre',d:'Edición limitada (21 días): toda la app se vuelve blanca, con nieve cayendo, luces de colores parpadeando arriba, estrellas y dulces que brillan y botones con destellos de hielo. Los demás ven tu tarjeta de perfil en azul hielo.',p:950,nw:1,until:LUZ_END,th:'luz'});
 SHOP_BASE.push({id:'fx_graffiti',k:'fx',n:'Graffiti al votar',d:'Al enviar tus puntajes, un spray pinta en la pantalla el resultado que diste, con trazos, gotas de pintura y salpicaduras.',p:260,nw:1,eq:['fx','fx_graffiti'],ic:'🎨'});
 SHOP_BASE.push({id:'shield',k:'boost',n:'Escudo de racha',d:'Si un día no entras, el escudo se gasta solo y tu racha y tu mascota no se pierden. Es de un solo uso, funciona con un día perdido y puedes guardar hasta 3. Se suma a la oportunidad gratis de cada 10 días: primero se usa esa y luego el escudo.',p:450,nw:1,sh:1});
@@ -2787,7 +2788,7 @@ async function shopSave(nx,msg){const prev=S.me.shop,uid=S.me.uid;S.me={...S.me,
  try{await job;return true}catch(e){try{const pr=await B.getUser(uid);if(S.me&&S.me.uid===uid){S.me={...S.me,shop:(pr&&pr.shop)||prev};R()}}catch(_){S.me={...S.me,shop:prev};R()}console.error('shopSave',e);try{achFail(msg+(e&&e.code?' ('+e.code+')':''))}catch(_){}return false}finally{SHQ.n--}}
 function shopOpen(id){S.shopSheet=id;S.shopDone=false;R()}
 function shopClose(){S.shopSheet=null;S.shopDone=false;R()}
-async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me||S.shopBusy)return;if(shopOwns(it.id))return shopClose();if(it.until&&Date.now()>=it.until){try{achFail('Este objeto ya salió de la tienda.')}catch(e){}return}
+async function shopBuy(){const it=SHOP.find(x=>x.id===S.shopSheet);if(!it||!S.me||S.shopBusy)return;if(shopOwns(it.id))return shopClose();if(it.until&&Date.now()>=it.until){try{achFail('Este objeto ya salió de la tienda.')}catch(e){}return}if(it.from&&Date.now()<it.from){try{achFail('Este objeto todavía no sale a la venta.')}catch(e){}return}
  const bal=coinBal();if(bal<it.p){try{achFail('Te faltan '+(it.p-bal)+' monedas.')}catch(e){}return}
  S.shopBusy=true;const s=shopS();let nx;
  if(it.id==='shield'){if((+s.shields||0)>=3){S.shopBusy=false;try{achFail('Ya tienes 3 escudos guardados.')}catch(e){}return}nx={...s,spent:(s.spent||0)+it.p,shields:(+s.shields||0)+1}}
@@ -2803,7 +2804,7 @@ function avFr(u,cls,fr){let f=u&&u.foto;if(!f&&u&&u.uid){f=S.pf&&S.pf[u.uid]&&S.
  return g?`<span class="frw frw-${fr}">${inner}</span>`:inner}
 function suitBannerOne(sid){const it=SHOP.find(x=>x.id===sid);if(!it)return '';const own=shopOwns(sid),S0=SUITS[sid],d=Math.max(1,Math.ceil((S0.end-Date.now())/864e5)),neon=sid==='suit_neon';
  return `<button class="suitb${neon?' neon':''}" onclick="shopOpen('${sid}')"><div class="suitm">${stkSvg(30,true,S0.ids)}</div><div class="suitt"><em>⏳ Limitado · ${own?'Ya es tuyo':d+(d===1?' día':' días')}</em><b>${neon?'Neón Miami':'Noche en Familia'}</b><span>Traje completo para tu mascota</span></div><span class="suitp">${own?'✓':'<i class="coin"></i>'+it.p}</span></button>`}
-function suitBanner(){let h='';if(Date.now()>=SUIT2_START&&Date.now()<SUIT2_END)h+=suitBannerOne('suit_neon');if(Date.now()<SUIT_END)h+=suitBannerOne('suit_familia');return h}
+function suitBanner(){let h='';if(Date.now()>=SUIT2_START&&Date.now()<SUIT2_END)h+=suitBannerOne('suit_neon');if(Date.now()>=SUIT_START&&Date.now()<SUIT_END)h+=suitBannerOne('suit_familia');return h}
 function plcBurst(){if(document.documentElement.classList.contains('noanim'))return;const w=document.createElement('div');w.className='plc-burst';let h='<div class="plc-flash"></div><span class="plc-crown-big">👑</span>';const em=['✨','⭐','✦','🪙','✨','💛'];for(let i=0;i<22;i++){const a=i/22*Math.PI*2+Math.random()*.3,r=90+Math.random()*130;h+=`<span class="plc-sp" style="--dx:${Math.round(Math.cos(a)*r)}px;--dy:${Math.round(Math.sin(a)*r-40)}px;--rot:${Math.round(Math.random()*360-180)}deg;animation-delay:${Math.round(Math.random()*120)}ms;font-size:${12+Math.round(Math.random()*12)}px">${em[i%em.length]}</span>`}w.innerHTML=h;document.body.appendChild(w);setTimeout(()=>w.remove(),1900)}
 function plMiniH(id){const d=PL_D.find(x=>x.id===id);if(!d)return '🏆';return `<div class="${plCls(d)}" style="${plVars(d)}"><div class="plv"><div class="plvh"><span>${esc(d.n)}</span></div><div class="plvb"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="plvt"><b></b><b></b></div></div></div>`}
 function luzBanner(){const it=SHOP.find(x=>x.id==='th_luz');if(!it)return '';const own=shopOwns(it.id),d=Math.max(1,Math.ceil((LUZ_END-Date.now())/864e5));
@@ -2851,7 +2852,7 @@ function tiendaV(){
  <div class="shp"><div class="shbal"><i class="coin bigc"></i><div style="flex:1;min-width:0"><small>Tu saldo</small><b class="n coinv">${S.coinShow!=null?S.coinShow:bal}</b><div class="sub">${S.myVotes?`Ganadas ${coinsEarned()} · Gastadas ${sp}`:'Calculando tus monedas…'}</div>${boostOn()?`<span class="bstp">⚡ Boost x2 activo · <span id="bstt">${boostLeft()}</span></span>`:''}</div></div>
  <button class="shhw${S.shopHow?' on':''}" onclick="S.shopHow=!S.shopHow;R()"><span>💡 ¿Cómo gano monedas?</span><i>${S.shopHow?'▴':'▾'}</i></button>${S.shopHow?shopHowH():''}
  <div class="shtabs">${tabs}</div>${tab==='all'&&suitLive()?suitBanner():''}${tab==='all'&&packLimitLive()?packLimitBanner():''}${tab==='all'&&luzLive()?luzBanner():''}
- ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>(x.k===k||(tab==='suit'&&k==='suit'&&(x.id==='pl_campeones'||x.id==='th_luz')))&&(!x.until||x.until>Date.now()||shopOwns(x.id))).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'Boost y escudo':ow+'/'+l.length+' tuyos'}</em></div></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
+ ${(tab==='all'?SHOP_ORD:[tab]).map(k=>{const l=SHOP.filter(x=>(x.k===k||(tab==='suit'&&k==='suit'&&(x.id==='pl_campeones'||x.id==='th_luz')))&&(!x.until||x.until>Date.now()||shopOwns(x.id))&&(!x.from||x.from<=Date.now()||shopOwns(x.id))).sort((a,b)=>a.p-b.p);if(!l.length)return '';const ow=l.filter(x=>shopOwns(x.id)).length;return `<div class="shhd"><div class="shh"><b>${SHOP_NM[k]}</b><em>${k==='boost'?'Boost y escudo':ow+'/'+l.length+' tuyos'}</em></div></div><div class="shg">${l.map((it,i)=>shopCard(it,Math.min(i,8))).join('')}</div>`}).join('')}
  <button class="pfap" onclick="S.stkOpen=true;S.stkTierSel=null;R()"><span><b>🔥 Atuendos de la mascota</b><em>Se desbloquean con días de racha, no con monedas</em></span><i>›</i></button></div>`}
 function shopMiniH(){if(!S.me)return '';return `<button class="shmini" onclick="go('tienda')"><i class="coin"></i><span><b class="coinv">${S.coinShow!=null?S.coinShow:coinBal()}</b> monedas</span><em>Ir a la tienda ›</em></button>`}
 function cgainH(){const g=S.coinGain||0;if(g<=0&&S.coinNote)return cnoteH();return g>0?`<div class="cgain"><i class="coin bigc" style="width:40px;height:40px"></i><div style="flex:1"><b>+${g} monedas</b><div class="mu" style="margin:0;font-size:12px">Por votar esta batalla de liga</div></div><button class="btn s sm" style="margin:0;width:auto" onclick="go('tienda')">Tienda</button></div>`:''}
@@ -3186,11 +3187,9 @@ function tablaHTML(rows,l,o){
 }
 function comunidadV(){
  const ct=S.commTab||'tablas';
- const seg=`<div class="seg cm4" style="margin:0 0 14px;overflow-x:auto"><button class="${ct==='tablas'?'on':''}" onclick="S.commTab='tablas';R()">📊 Tablas</button><button class="${ct==='rank'?'on':''}" onclick="S.commTab='rank';R();loadGlobalTop()">🏆 Ranking</button><button class="${ct==='ruleta'?'on':''}" onclick="S.commTab='ruleta';R()">🎡 Ruleta</button><button class="${ct==='luck'?'on':''}" onclick="S.commTab='luck';R()">🎰 Luck Rap</button><button class="${ct==='apuestas'?'on':''}" onclick="S.commTab='apuestas';R()">🎲 Apuestas${(()=>{const n=(S.bets||[]).filter(x=>(x.st||'open')==='open').length;return n?`<span class="btdot">${n}</span>`:''})()}</button></div>`;
+ const seg=`<div class="seg cm4" style="margin:0 0 14px;overflow-x:auto"><button class="${ct==='tablas'?'on':''}" onclick="S.commTab='tablas';R()">📊 Tablas</button><button class="${ct==='rank'?'on':''}" onclick="S.commTab='rank';R();loadGlobalTop()">🏆 Ranking</button><button class="${ct==='ruleta'?'on':''}" onclick="S.commTab='ruleta';R()">🎡 Ruleta</button></div>`;
  if(ct==='rank')return `<h1 class="pg">Comunidad</h1>${seg}${globalTopH()}`;
   if(ct==='ruleta')return `<h1 class="pg">Comunidad</h1>${seg}${rlV()}`;
-  if(ct==='luck')return `<h1 class="pg">Comunidad</h1>${seg}${lkBody()}`;
-  if(ct==='apuestas')return `<h1 class="pg">Comunidad</h1>${seg}${betsV()}`;
  const head=`<h1 class="pg">Comunidad</h1>${seg}<div class="cnote">Promedio de todos los usuarios. Las batallas libres no cuentan.</div>`;
  if(!S.comm5)return head+'<div class="card mu">Cargando tablas…</div>';
  return head+COMUN.map(id=>{const l=L.find(x=>x.i===id);const votes=(S.comm5[id]||[]).filter(v=>!v.free&&(v.temp||'2026')==='2026');const [a1]=accentOf(l);
@@ -4392,7 +4391,7 @@ async function ecoSave(){if(!isAdmin()||S.ecoBusy)return;const D=S.ecoD;if(!D)re
  const effR={};Object.keys(LP).forEach(k=>{effR[k]=leaguePts(k,Date.now())});const rk=[...ECO.rk];if(JSON.stringify(effR)!==JSON.stringify(Rv))rk.push({f:Date.now(),L:Rv});
  const cfg={prices,alb:{p:ap,sell},pass:{f:pf,h:ph},tiers:tiers.slice(-60),rk:rk.slice(-60),fc:{every:ev,life:lf,T}};
  S.ecoBusy=true;S.ecoMsg='Guardando…';R();
- try{const fm=FB.fm,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'config','economia'),{cfg:JSON.stringify(cfg),ts,by:S.me.uid});ECO.ts=ts;ecoApply(cfg);S.ecoD=ecoDraft();S.ecoMsg='✓ Guardado. Ya lo ven todos los usuarios.'}
+ try{const fm=FB.fm,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'config','economia'),{cfg:JSON.stringify(cfg),ts,by:S.me.uid},{merge:true});ECO.ts=ts;ecoApply(cfg);S.ecoD=ecoDraft();S.ecoMsg='✓ Guardado. Ya lo ven todos los usuarios.'}
  catch(e){S.ecoMsg='No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste la regla de config/economia en Firestore?'}
  S.ecoBusy=false;R()}
 setInterval(()=>{if(!document.hidden){window._ecoT=Date.now();ecoSync()}},600000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-(window._ecoT||0)>180000){window._ecoT=Date.now();ecoSync()}});
@@ -5751,16 +5750,16 @@ function calEditV(){const D=S.ce=S.ce||{msg:'',lg:'es',busy:false};
 const _adminV5=adminV;
 adminV=function(){const h=_adminV5();if(!isAdmin())return h;const mk='<div class="sec"><span>Directo de una jornada</span></div>';return h.includes(mk)?h.replace(mk,calEditV()+mk):h+calEditV()};
 /* Panel de administrador ordenado en pestañas (solo agrupa lo que ya existe) */
-const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['bets','🎲 Apuestas'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['pase','🏡 Pase'],['col','👥 Equipo'],['msg','📢 Mensaje'],['ban','🚫 Baneos'],['com','💬 Comentarios']];
+const ADM_TABS=[['cal','📅 Calendario'],['vid','🎬 Videos'],['coins','🎤 Monedas'],['sorteo','🎰 Sorteo'],['eco','💰 Economía'],['pase','🏡 Pase'],['lim','⏳ Tipo límite de eventos'],['col','👥 Equipo'],['msg','📢 Mensaje'],['ban','🚫 Baneos'],['com','💬 Comentarios']];
 function admTab(k){S.admTab=k;R()}
 const _adminV6=adminV;
 adminV=function(){const h=_adminV6();if(!isAdmin())return h;
- const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],bets:[],sorteo:[],eco:[],pase:[],ban:[],msg:[]};let cur=null;
+ const tp=document.createElement('template');tp.innerHTML=h;const kids=[...tp.content.children],head=[],g={cal:[],vid:[],col:[],com:[],coins:[],lim:[],sorteo:[],eco:[],pase:[],ban:[],msg:[]};let cur=null;
  const kind=s=>/monedas/i.test(s)?'coins':/colaborador/i.test(s)?'col':/calendario/i.test(s)?'cal':/directo|videos/i.test(s)?'vid':/comentario/i.test(s)?'com':null;
  kids.forEach(k=>{if(k.classList.contains('sec')){const m=kind(k.textContent);if(m){cur=m;if(m==='cal'||m==='col'||m==='coins')return}}if(cur===null)head.push(k);else g[cur].push(k)});
  const tab=ADM_TABS.some(x=>x[0]===S.admTab)?S.admTab:'cal';
  const bar=`<div class="seg" style="flex-wrap:wrap;gap:4px">${ADM_TABS.map(x=>`<button class="${tab===x[0]?'on':''}" onclick="admTab('${x[0]}')" style="font-size:12px;padding:9px 6px;flex:1 1 30%">${x[1]}</button>`).join('')}</div>`;
- try{if(typeof betAdminV==='function'){const t2=document.createElement('template');t2.innerHTML=betAdminV();g.bets=[...t2.content.children]}}catch(e){}
+ try{if(tab==='lim'&&typeof limV==='function'){const t8=document.createElement('template');t8.innerHTML=limV();g.lim=[...t8.content.children]}}catch(e){}
  try{if(typeof sorteoV==='function'&&tab==='sorteo'){const t3=document.createElement('template');t3.innerHTML=sorteoV();g.sorteo=[...t3.content.children]}}catch(e){}
  try{if(tab==='ban'&&typeof banAdminV==='function'){const t6=document.createElement('template');t6.innerHTML=banAdminV();g.ban=[...t6.content.children]}}catch(e){}
  try{if(tab==='msg'&&typeof msgAdminV==='function'){const t7=document.createElement('template');t7.innerHTML=msgAdminV();g.msg=[...t7.content.children]}}catch(e){}
@@ -7113,7 +7112,7 @@ async function msgSync(){try{MSG_LAST=Date.now();const fm=FB.fm,d=await fm.getDo
   for(const k of ['shop','lk','logros']){if(d[k]!==undefined&&J(d[k])!==J(S.me[k])){nm[k]=d[k];ch=true}}
   if(!ch)return;S.me=nm;
   const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))setTimeout(()=>{try{R()}catch(e){}},1500);else{try{R()}catch(e){}}
-  try{betsClaim()}catch(e){}};
+  };
  S._liveUn=fm.onSnapshot(fm.doc(FB.db,'users',uid),sn=>{
   if(!S.me||S.me.uid!==uid){try{S._liveUn&&S._liveUn()}catch(e){}S._liveUn=null;S._liveUid=null;return}
   if(!sn.exists())return;S._liveLast=sn.data();apply()},e=>{console.error('liveSync',e)})}}catch(e){console.error('liveSync',e)}return r}}
@@ -7581,200 +7580,6 @@ function kickTable(k){const base=dayT(k,'America/Santo_Domingo'),mine=myTz();
  return h.replace('<div class="cdet">','<div class="cdet">'+kickTable(k))}}
 {const st=document.createElement('style');st.textContent=`.cdzs{margin-top:10px;border-top:1px dashed var(--bd);padding-top:8px}.cdzs summary{cursor:pointer;font-size:12.5px;font-weight:800;list-style:none}.cdzs summary::-webkit-details-marker{display:none}.cdz{display:flex;flex-direction:column;align-items:flex-end;line-height:1.25}.cdz small{opacity:.7;font-weight:600;font-size:11px}.cdz i{font-style:normal;font-variant-numeric:tabular-nums}.ckick{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:6px;font-size:12.5px;font-weight:800}.ckick small{font-weight:600;opacity:.65}.ckick .ksep{opacity:.4}.ckick em{font-style:normal;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:rgba(var(--acr),.18);color:var(--ac)}.ktab{border-top:1px dashed var(--bd);margin-top:10px}.ktr{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-radius:10px;font-size:13px}.ktr:nth-child(even){background:rgba(127,127,127,.07)}.ktr.me{background:rgba(var(--acr),.18);font-weight:800}.ktr b{font-variant-numeric:tabular-nums;white-space:nowrap}.ktr small{opacity:.7;font-weight:600}`;document.head.appendChild(st)}
 
-/* ===== Apuestas en vivo (Comunidad → Apuestas). Las batallas las publica el administrador ===== */
-const BT={un:null,uid:null,rt:0};
-S.bets=S.bets||[];S.bf=S.bf||{id:'',lg:'es',a:'',b:'',f:'',p:70,mx:500};
-const bfail=m=>{try{achFail(m)}catch(e){}};
-const btIni=n=>String(n||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
-function betPr(d,s){const f=d.f||'',p=Math.min(.95,Math.max(.5,+d.p||.5));const pa=f==='a'?p:f==='b'?1-p:.5;return s==='a'?pa:1-pa}
-function betMult(d,s){if(!d.f)return 1.8;const p=Math.min(.9,Math.max(.5,+d.p||.5)),k=(p-.5)/.4;return Math.round((d.f===s?1.8-.5*k:1.8+1.7*k)*100)/100}
-const betPay=(m,x)=>Math.floor(m*x);
-function betsEnsure(){
- if(!S.me){if(BT.un){try{BT.un()}catch(e){}BT.un=null;BT.uid=null;S.bets=[];S.betsReady=false}return}
- if(typeof FB==='undefined'||!FB||!FB.fm||!FB.db)return;
- if(BT.un&&BT.uid===S.me.uid)return;
- {let need=S.v==='comunidad'||S.v==='admin';if(!need){try{const m=(shopS().bets)||{};need=Object.keys(m).some(id=>m[id]&&!m[id].d)}catch(e){}}if(!need&&!BT.un)return}
- if(BT.un){try{BT.un()}catch(e){}BT.un=null}
- const fm=FB.fm;BT.uid=S.me.uid;S.betsReady=false;S.betsErr='';
- try{BT.un=fm.onSnapshot(fm.query(fm.collection(FB.db,'bets'),fm.limit(500)),snap=>{S.bets=snap.docs.map(d=>({id:d.id,...d.data()}));S.betsReady=true;S.betsErr='';betsClaim();betsRefresh()},err=>{S.betsErr=(err&&err.code)||'error';S.betsReady=true;betsRefresh()})}catch(e){S.betsErr='error'}}
-setInterval(betsEnsure,2000);
-function betsRefresh(){const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){clearTimeout(BT.rt);BT.rt=setTimeout(betsRefresh,1500);return}
- if((S.v==='comunidad'&&S.commTab==='apuestas')||S.v==='admin')R()}
-async function betsClaim(){
- if(!S.me||S.betClaiming||!S.betsReady||S.betsErr)return;
- const m0=shopS().bets;if(!m0||typeof m0!=='object')return;
- S.betClaiming=true;
- /* Antes de devolver una apuesta, confirmar en el servidor que la batalla de verdad ya no existe
-    (al recargar, la lista local puede venir incompleta y antes se devolvía la apuesta por error) */
- const miss={};
- try{for(const id in m0){const o=m0[id];if(o&&!o.d&&!(S.bets||[]).some(x=>x.id===id))miss[id]=undefined}
-  for(const id in miss){try{const g=await FB.fm.getDocFromServer(FB.fm.doc(FB.db,'bets',id));miss[id]=g.exists()?{id,...g.data()}:null}catch(e){miss[id]=undefined}}}catch(e){}
- if(!S.me){S.betClaiming=false;return}
- const s=shopS(),mine=s.bets;if(!mine||typeof mine!=='object'){S.betClaiming=false;return}
-  const now=Date.now(),cand={};
-  for(const id in mine){const o=mine[id];if(!o||o.d)continue;const inL=(S.bets||[]).find(x=>x.id===id);
-   if(!inL&&id in miss&&miss[id]===undefined)continue;
-   const d=inL||miss[id];
-   if(d){if(d.st==='void'||(d.st==='done'&&(d.w==='a'||d.w==='b')))cand[id]={d:{st:d.st,w:d.w}}}
-   else cand[id]={gone:1}}
-  if(!Object.keys(cand).length){S.betClaiming=false;return}
-  const bal=coinBal(),uid=S.me.uid;
-  /* Cobro atómico: se lee la cuenta en el servidor y solo se paga si la apuesta sigue sin cobrar (evita cobrar dos veces desde PC y celular) */
-  const run=async()=>{const fm=FB.fm,ref=fm.doc(FB.db,'users',uid);
-   return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),sh=(sn.exists()&&sn.data().shop)||{},bs=sh.bets||{};
-    let add=0,won=0,lost=0,back=0;const nb={...bs},fl=[];
-    for(const id in cand){const o=bs[id];if(!o||o.d)continue;const c=cand[id];let pay=null;
-     if(c.d){if(c.d.st==='void'){pay=o.m;back+=o.m}else{pay=c.d.w===o.s?penBet(o.m,betPay(o.m,o.x)):0;if(pay>0)won+=pay;else lost++}}
-     else if(now-(+o.ts||0)<10*864e5){pay=o.m;back+=o.m}
-     if(pay==null)continue;nb[id]={...o,d:1,r:pay};add+=pay;fl.push(new fm.FieldPath('shop','bets',id,'d'),1,new fm.FieldPath('shop','bets',id,'r'),pay)}
-    if(!fl.length)return null;
-    for(const id in bs){if(bs[id]&&bs[id].d&&now-(+bs[id].ts||0)>30*864e5){delete nb[id];fl.push(new fm.FieldPath('shop','bets',id),fm.deleteField())}}
-    tx.update(ref,'shop.bonus',fm.increment(add),...fl);
-    return {add,won,lost,back,sh:{...sh,bonus:Math.max(0,+(sh.bonus)||0)+add,bets:nb}}})};
-  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
-  let res=null,ok=true;try{res=await job}catch(e){ok=false;console.error('betsClaim',e);try{achFail('No se pudieron cobrar tus apuestas.'+(e&&e.code?' ('+e.code+')':''))}catch(_){}}finally{SHQ.n--}
-  S.betClaiming=false;
-  if(!ok)return;
-  if(!res){try{const pr=await B.getUser(uid);if(S.me&&S.me.uid===uid&&pr&&pr.shop){S.me={...S.me,shop:pr.shop};R()}}catch(_){}return}
-  if(S.me&&S.me.uid===uid)S.me={...S.me,shop:res.sh};
-  const add=res.add,won=res.won,lost=res.lost,back=res.back;
-  if(won>0)drToast('🎉 ¡Acertaste! +'+won+' monedas');else if(back>0)drToast('↩️ Apuesta anulada: te devolvimos '+back+' monedas');else if(lost>0)drToast('😬 Esta vez no hubo suerte. ¡Sigue intentando!');
-  if(add>0)coinCount(bal,coinBal());else R()}
-function betGoAdm(){S.admTab='bets';go('admin');setTimeout(()=>{const e=document.querySelector('.btadm');if(e)e.scrollIntoView({behavior:'smooth'})},350)}
-async function betCancel(id){
- if(!S.me||S.betBusy)return;const d=(S.bets||[]).find(x=>x.id===id),s=shopS(),o=(s.bets||{})[id];
- if(!o||o.d||!d||!(d.st==='open'||d.st==='draft'))return bfail('Ya no puedes quitar esta apuesta.');
- if(!confirm('¿Quitar tu apuesta de '+o.m+' monedas? Te devolvemos las monedas.'))return;
-  S.betBusy=true;const bal=coinBal(),uid=S.me.uid;
-  const run=async()=>{const fm=FB.fm,ref=fm.doc(FB.db,'users',uid);
-   return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),sh=(sn.exists()&&sn.data().shop)||{},o2=sh.bets&&sh.bets[id];
-    if(!o2||o2.d)return {gone:1,sh};
-    const nb={...sh.bets};delete nb[id];
-    tx.update(ref,'shop.spent',fm.increment(-o2.m),new fm.FieldPath('shop','bets',id),fm.deleteField());
-    return {ok:1,m:o2.m,sh:{...sh,spent:Math.max(0,(+sh.spent||0)-o2.m),bets:nb}}})};
-  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
-  let r=null;try{r=await job}catch(e){console.error('betCancel',e);try{achFail('No se pudo quitar la apuesta.'+(e&&e.code?' ('+e.code+')':''))}catch(_){}}finally{SHQ.n--}
-  S.betBusy=false;
-  if(r&&r.sh&&S.me&&S.me.uid===uid)S.me={...S.me,shop:r.sh};
-  if(r&&r.ok){try{SFX.coin()}catch(e){}drToast('↩️ Apuesta quitada: recuperaste '+r.m+' monedas');coinCount(bal,coinBal())}else{R();if(r&&r.gone)bfail('Esa apuesta ya no se puede quitar.')}}
-function betPick(id,s){if(!S.me)return;S.bsel=(S.bsel&&S.bsel.id===id&&S.bsel.s===s)?null:{id,s};if(!S.bamt)S.bamt=50;try{SFX.tap()}catch(e){}R()}
-function betAmt(v){S.bamt=Math.max(0,Math.floor(+v||0));betUpd()}
-function betStep(n){const d=(S.bets||[]).find(x=>x.id===(S.bsel||{}).id),mx=Math.min(+(d&&d.mx)||500,coinBal());S.bamt=Math.max(0,Math.min(mx,(+S.bamt||0)+n));const e=document.getElementById('bamt');if(e)e.value=S.bamt;betUpd()}
-function betSet(v){const d=(S.bets||[]).find(x=>x.id===(S.bsel||{}).id),mx=Math.min(+(d&&d.mx)||500,coinBal());S.bamt=v==='max'?mx:v;const e=document.getElementById('bamt');if(e)e.value=S.bamt;betUpd()}
-function betUpd(){const sel=S.bsel;if(!sel)return;const d=(S.bets||[]).find(x=>x.id===sel.id);if(!d)return;const x=betMult(d,sel.s),m=+S.bamt||0,w=document.getElementById('bwin'),g=document.getElementById('bgo');
- if(w)w.innerHTML=m>0?`Si aciertas recibes <b><i class="coin"></i> ${betPay(m,x)}</b> <em>(+${betPay(m,x)-m})</em>`:'Escribe cuántas monedas quieres apostar';if(g)g.innerHTML='Apostar <i class="coin"></i> '+m}
-async function betPlace(id){
- if(!S.me||S.betBusy)return;const d=(S.bets||[]).find(x=>x.id===id),side=S.bsel&&S.bsel.id===id?S.bsel.s:null;
- if(!d||d.st!=='open'||!side)return bfail('Las apuestas de esta batalla ya están cerradas.');
- const s=shopS();if(s.bets&&s.bets[id])return;
- const m=Math.floor(+S.bamt||0),bal=coinBal(),mx=+d.mx||500;
- if(m<10)return bfail('La apuesta mínima es de 10 monedas.');if(m>mx)return bfail('El máximo por apuesta es de '+mx+' monedas.');if(m>bal)return bfail('No te alcanzan las monedas.');
- const x=betMult(d,side);S.betBusy=true;
-  const ent={s:side,m,x,ts:Date.now(),n:d.a+' vs '+d.b,pk:side==='a'?d.a:d.b,d:0},uid=S.me.uid;
-  const run=async()=>{const fm=FB.fm,ref=fm.doc(FB.db,'users',uid);
-   return fm.runTransaction(FB.db,async tx=>{const sn=await tx.get(ref),sh=(sn.exists()&&sn.data().shop)||{};
-    if(sh.bets&&sh.bets[id])return {dup:1,sh};
-    if(Math.max(0,coinsEarned()-((+sh.spent)||0))<m)return {low:1,sh};
-    tx.update(ref,'shop.spent',fm.increment(m),new fm.FieldPath('shop','bets',id),ent);
-    return {ok:1,sh:{...sh,spent:(+sh.spent||0)+m,bets:{...(sh.bets||{}),[id]:ent}}}})};
-  SHQ.n++;const job=SHQ.p.then(run);SHQ.p=job.catch(()=>{});
-  let r=null;try{r=await job}catch(e){console.error('betPlace',e);try{achFail('No se pudo guardar tu apuesta. Revisa tu conexión.'+(e&&e.code?' ('+e.code+')':''))}catch(_){}}finally{SHQ.n--}
-  S.betBusy=false;
-  if(r&&r.sh&&S.me&&S.me.uid===uid)S.me={...S.me,shop:r.sh};
-  if(r&&r.dup){R();return bfail('Ya apostaste en esta batalla desde otro dispositivo.')}
-  if(r&&r.low){R();return bfail('No te alcanzan las monedas.')}
-  if(r&&r.ok){S.bsel=null;try{SFX.coin()}catch(e){}coinCount(bal,coinBal())}else R()}
-
-/* ===== Apuestas: ver por quién apostó cada usuario (sin cantidades) ===== */
-S.btWho=S.btWho||{};
-async function btWhoLoad(force){const now=Date.now();if(!force&&S._btU&&now-S._btUat<45000)return S._btU;const us=await B.listUsersFull();S._btU=us;S._btUat=Date.now();return us}
-S.btWhoN=S.btWhoN||{};S.btWhoQ=S.btWhoQ||{};
-async function btWhoToggle(id){if(S.btWho[id]){delete S.btWho[id];R();return}S.btWho[id]={ld:1};S.btWhoN[id]=30;S.btWhoQ[id]='';R();
- try{const us=await btWhoLoad(false),w={a:[],b:[]};us.forEach(u=>{const o=u.shop&&u.shop.bets&&u.shop.bets[id];if(o&&(o.s==='a'||o.s==='b'))w[o.s].push({uid:u.uid,u:u.u||'?',m:+o.m||0})});
-  ['a','b'].forEach(k=>{w[k].sort((x,y)=>y.m-x.m||x.u.localeCompare(y.u));w[k+'t']=w[k].reduce((t,x)=>t+x.m,0)});S.btWho[id]=w}catch(e){S.btWho[id]={err:1}}R()}
-function btWhoMore(id){S.btWhoN[id]=(S.btWhoN[id]||30)+30;R()}
-function btWhoQ(id,v){S.btWhoQ[id]=String(v||'').trim().toLowerCase().replace(/^@/,'');S.btWhoN[id]=30;R()}
-function btWhoH(d){const w=S.btWho&&S.btWho[d.id],op=!!w;
- const btn=`<button class="btn s sm" style="width:100%;margin-top:10px" onclick="btWhoToggle('${d.id}')">${op?'Ocultar apostadores':'👥 Ver quién apostó'}</button>`;
- if(!op)return btn;if(w.ld)return btn+'<div class="mu" style="text-align:center;margin-top:8px">Cargando…</div>';if(w.err)return btn+'<div class="mu" style="text-align:center;margin-top:8px">No se pudo cargar.</div>';
- const q=S.btWhoQ[d.id]||'',n=S.btWhoN[d.id]||30,tot=w.a.length+w.b.length;
- const sum=`<div class="mu" style="margin-top:10px;font-size:12.5px;text-align:center">${tot} apostador${tot===1?'':'es'} · ${(w.at+w.bt).toLocaleString('es')} <i class="coin"></i> apostadas</div>`;
- const col=(k,nm)=>{const all=w[k],f=q?all.filter(x=>x.u.toLowerCase().includes(q)):all,sh=f.slice(0,n);
-  return `<div style="flex:1;min-width:0"><b style="display:block;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nm)} <span class="mu">(${all.length})</span></b><div class="mu" style="font-size:11.5px;margin-bottom:6px">${w[k+'t'].toLocaleString('es')} <i class="coin"></i></div>${sh.length?sh.map(x=>`<button class="mu" style="display:block;background:none;border:0;padding:3px 0;color:inherit;text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="openU('${esc(x.uid)}')">@${esc(x.u)} <span style="opacity:.6">· ${x.m}</span></button>`).join(''):`<span class="mu">${q?'Sin resultados':'Nadie todavía'}</span>`}${f.length>sh.length?`<button class="btn s sm" style="margin-top:6px" onclick="btWhoMore('${d.id}')">+${f.length-sh.length} más</button>`:''}</div>`};
- return btn+sum+`<input class="alq" placeholder="Buscar apostador y pulsa Enter" value="${esc(q)}" onchange="btWhoQ('${d.id}',this.value)" autocapitalize="none" autocomplete="off" style="margin-top:8px;width:100%;box-sizing:border-box"><div class="row" style="gap:12px;align-items:flex-start;margin-top:10px">${col('a',d.a)}${col('b',d.b)}</div>`}
-function betCard(d){
- const l=L.find(x=>x.i===d.lg)||{i:'x',n:'FMS',c:'#e53935',c2:'#b71c1c'},[c1,c2]=accentOf(l),own=(shopS().bets||{})[d.id],st=d.st||'open';
- const xa=betMult(d,'a'),xb=betMult(d,'b'),pa=Math.round(betPr(d,'a')*100),pb=100-pa,sel=S.bsel&&S.bsel.id===d.id?S.bsel.s:null,canBet=st==='open'&&!own&&!!S.me;
- const stl={open:['🟢','ABIERTA','open'],closed:['🔴','EN CURSO','closed'],done:['🏁','FINAL','done'],void:['↩️','ANULADA','void']}[st]||['🟢','ABIERTA','open'];
- const sd=(k,n)=>{const win=st==='done'&&d.w===k,lose=st==='done'&&d.w&&d.w!==k,pk=own&&own.s===k,fav=d.f===k,x=k==='a'?xa:xb;
-  return `<button class="bts ${k}${sel===k?' on':''}${win?' win':''}${lose?' lose':''}${pk?' pk':''}" ${canBet?`onclick="betPick('${d.id}','${k}')"`:'disabled'}>${win?'<span class="btcr">👑</span>':''}<span class="btav">${esc(btIni(n))}</span><b class="btn">${esc(n)}</b>${d.f?`<em class="${fav?'btfav':'btdog'}">${fav?'⭐ Favorito':'🐺 Sorpresa'}</em>`:''}<span class="btx">x${x.toFixed(2)}</span></button>`};
- const smp=sel?(+S.bamt||100):100;
- const sample=false?`<div class="btsm">Con <b><i class="coin"></i>${smp}</b>: ${esc(d.a)} te da <b>${betPay(smp,xa)}</b> · ${esc(d.b)} te da <b>${betPay(smp,xb)}</b></div>`:'';
- let panel='';
- if(sel&&canBet){const nm=sel==='a'?d.a:d.b,x=sel==='a'?xa:xb,m=+S.bamt||0,mx=Math.min(+d.mx||500,coinBal());
-  panel=`<div class="btp"><div class="btpt">Apuestas por <b>${esc(nm)}</b> · <span>x${x.toFixed(2)}</span></div><div class="btch">${[10,50,100,250].map(v=>`<button onclick="betSet(${v})">${v}</button>`).join('')}<button onclick="betSet('max')">MAX</button></div><div class="btin"><button onclick="betStep(-10)" aria-label="Menos">−</button><input id="bamt" type="number" inputmode="numeric" min="10" value="${m}" oninput="betAmt(this.value)"><button onclick="betStep(10)" aria-label="Más">+</button></div><div class="btwin" id="bwin">${m>0?`Si aciertas recibes <b><i class="coin"></i> ${betPay(m,x)}</b> <em>(+${betPay(m,x)-m})</em>`:'Escribe cuántas monedas quieres apostar'}</div><button class="btgo" id="bgo" onclick="betPlace('${d.id}')">Apostar <i class="coin"></i> ${m}</button></div>`}
- let tk='';
- if(own){const pot=betPay(own.m,own.x),w=st==='done'?(d.w===own.s?'win':'lose'):st==='void'?'void':'wait';
-  const rs={win:`🎉 ¡Acertaste! +${own.d?own.r:pot}`,lose:'💔 Fallaste',void:'↩️ Reembolsada',wait:st==='closed'?'⏳ En juego…':'🎟️ Apuesta hecha'}[w];
-  tk=`<div class="btk ${w}">${w==='win'?'<div class="btrain">'+Array.from({length:8},(_,i)=>`<i class="coin" style="left:${6+i*12}%;animation-delay:${(i%4)*.25}s"></i>`).join('')+'</div>':''}<div class="btkl"><b>${esc(own.pk)}</b></div><div class="btkm"><i class="coin"></i>${own.m}<i>→</i><i class="coin"></i>${pot}</div><div class="btkr">${rs}</div>${w==='wait'&&st==='open'?`<button class="btq" onclick="betCancel('${d.id}')">✖ Quitar apuesta</button>`:''}</div>`}
- return `<div class="btc s-${stl[2]}" style="--c1:${c1};--c2:${c2}"><div class="bth"><span class="btlg">${logo(l,16)}<b>${esc(l.n)}</b></span><span class="btst s-${stl[2]}"><i></i>${stl[0]} ${stl[1]}</span></div><div class="btv">${sd('a',d.a)}<div class="btvs"><span>VS</span></div>${sd('b',d.b)}</div><div class="btbar"><i style="width:${pa}%"></i><span>${pa}%</span><span>${pb}%</span></div>${st==='done'&&d.w?`<div style="margin:8px 0 0;font-weight:800;font-size:13px;text-align:center">🏆 Ganó ${esc(d.w==='a'?d.a:d.b)}</div>`:''}${sample}${panel}${tk}${S.me?btWhoH(d):''}</div>`}
-function betsV(){
- betsEnsure();
- const head=`<div class="bthero"><div class="btlive"><i></i>EN VIVO</div><h2>Apuestas</h2></div>`;
- if(!S.me)return head+`<button class="btn" onclick="openAuth('create')">Crear cuenta para apostar</button>`;
- if(S.betsErr)return head+`<div class="card mu" style="text-align:center">Apuestas no disponibles ahora${isAdmin()?' ('+esc(S.betsErr)+'). Revisa las reglas de Firestore.':'.'}</div>`;
- if(!S.betsReady)return head+'<div class="card mu">Cargando apuestas…</div>';
- const all=(S.bets||[]).filter(x=>x.st!=='draft'),ord=(a,b)=>(+a.o||+a.ts||0)-(+b.o||+b.ts||0),
-  live=all.filter(x=>x.st==='closed').sort(ord),opn=all.filter(x=>(x.st||'open')==='open').sort(ord),
-  fin=all.filter(x=>x.st==='done'||x.st==='void').sort((a,b)=>(+b.tsd||+b.ts||0)-(+a.tsd||+a.ts||0));
- const mine=shopS().bets||{},my=Object.keys(mine).map(k=>mine[k]),act=my.filter(o=>!o.d).length,net=my.filter(o=>o.d).reduce((t,o)=>t+(+o.r||0)-(+o.m||0),0);
- const strip=my.length?`<div class="btsum"><div><b>${act}</b><span>activas</span></div><div><b class="${net>=0?'up':'dn'}">${net>=0?'+':''}${net}</b><span>neto <i class="coin"></i></span></div></div>`:'';
- const sec=(t,a)=>a.length?`<div class="sec"><span>${t}</span><span>${a.length}</span></div>`+a.map(betCard).join(''):'';
- const empty=!live.length&&!opn.length&&!fin.length?`<div class="card mu" style="text-align:center"><div style="font-size:42px" class="btdice">🎲</div>Aún no hay enfrentamientos.</div>`:'';
- return head+strip+sec('🔴 En curso',live)+sec('🟢 Apuestas abiertas',opn)+empty+sec('🏁 Terminadas',fin)+(isAdmin()?'<button class="btn s sm" style="width:100%" onclick="betGoAdm()">🛠 Ir al gestor de apuestas</button>':'')}
-/* --- gestor del administrador --- */
-const bfLvl=p=>p<=55?'Muy parejo':p<=65?'Ligero':p<=75?'Claro':p<=85?'Fuerte':'Aplastante';
-function bfSet(k,v){S.bf[k]=v;if(k==='a'||k==='b'||k==='p'||k==='mx')bfPrev()}
-function bfPrev(){const e=document.getElementById('bfprev');if(e)e.innerHTML=bfPrevH();const l=document.getElementById('bflv');if(l)l.textContent=S.bf.f?S.bf.p+'% · '+bfLvl(+S.bf.p):'50% · Parejo'}
-function bfPrevH(){const F=S.bf,d={f:F.f,p:(+F.p||50)/100},xa=betMult(d,'a'),xb=betMult(d,'b'),a=F.a||'A',b=F.b||'B';return `<div class="bfp"><div><b>${esc(a)}</b><span>x${xa.toFixed(2)}</span><small>100 → ${betPay(100,xa)} · 500 → ${betPay(500,xa)}</small></div><div><b>${esc(b)}</b><span>x${xb.toFixed(2)}</span><small>100 → ${betPay(100,xb)} · 500 → ${betPay(500,xb)}</small></div></div>`}
-function betAdminV(){
- if(!isAdmin())return '';
- const F=S.bf,sty='width:100%;margin:0 0 8px;padding:12px;border-radius:14px;background:var(--bg2);color:var(--tx);border:1px solid var(--bd);font:inherit',
-  imp=CAL.map((e,i)=>({e,i})).filter(x=>x.e.k!=='done'&&(x.e.b||[]).some(b=>typeof b==='string')),
-  rows=(S.bets||[]).slice().sort((a,b)=>(+b.o||+b.ts||0)-(+a.o||+a.ts||0)).map(d=>{const st=d.st||'open',fin=st==='done'||st==='void';
-   return `<div class="btar"><div class="btart"><b>${esc(d.a)} <span style="opacity:.5">vs</span> ${esc(d.b)}</b><span class="btst s-${st}"><i></i>${{draft:'Borrador (oculta)',open:'Abierta',closed:'Cerrada',done:'Ganó '+esc(d.w==='a'?d.a:d.b),void:'Anulada'}[st]||st}</span></div><div class="mu" style="margin:0 0 8px;font-size:12px">${d.f?'Favorito: '+esc(d.f==='a'?d.a:d.b)+' ('+Math.round(100*(+d.p||.5))+'%)':'Parejo'}</div><div class="btab">${fin?'':`<button onclick="betEdit('${d.id}')">✏️ Editar</button>${st==='draft'?`<button class="g" onclick="betState('${d.id}','open')">📢 Publicar</button>`:`<button onclick="betState('${d.id}','${st==='open'?'closed':'open'}')">${st==='open'?'🔒 Cerrar':'🟢 Abrir'}</button>${st==='open'?`<button onclick="betState('${d.id}','draft')">🙈 Ocultar</button>`:''}`}<button class="g" onclick="betWin('${d.id}','a')">🏆 Ganó ${esc(d.a)}</button><button class="g" onclick="betWin('${d.id}','b')">🏆 Ganó ${esc(d.b)}</button><button onclick="betVoid('${d.id}')">↩️ Anular</button>`}<button class="r" onclick="betDel('${d.id}')">🗑</button></div></div>`}).join('');
- return `<div class="btadm"><div class="sec"><span>🛠 Gestor de apuestas</span><span>solo tú</span></div>${S.bmsg?`<div class="card" style="margin-bottom:10px;font-weight:700">${esc(S.bmsg)}</div>`:''}
- <div class="card"><b>${F.id?'Editar enfrentamiento':'Nuevo enfrentamiento'}</b><div style="height:8px"></div>
- <select onchange="bfSet('lg',this.value)" style="${sty}">${L.map(l=>`<option value="${l.i}" ${l.i===F.lg?'selected':''}>${esc(l.n)}</option>`).join('')}</select>
- <div class="row" style="gap:8px"><input placeholder="MC A (ej: Marithea)" value="${esc(F.a)}" oninput="bfSet('a',this.value)" style="flex:1;margin:0 0 8px"><input placeholder="MC B (ej: Babi)" value="${esc(F.b)}" oninput="bfSet('b',this.value)" style="flex:1;margin:0 0 8px"></div>
- <div class="mu" style="margin:0 0 6px;font-weight:700">¿Quién es el favorito?</div>
- <div class="seg" style="margin:0 0 10px"><button class="${F.f==='a'?'on':''}" onclick="bfSet('f','a');R()">${esc(F.a||'A')}</button><button class="${!F.f?'on':''}" onclick="bfSet('f','');R()">Parejo</button><button class="${F.f==='b'?'on':''}" onclick="bfSet('f','b');R()">${esc(F.b||'B')}</button></div>
- ${F.f?`<div class="mu" style="margin:0 0 4px;font-weight:700">Qué tan favorito: <span id="bflv" style="color:var(--ac)">${F.p}% · ${bfLvl(+F.p)}</span></div><input type="range" min="55" max="90" value="${F.p}" oninput="bfSet('p',+this.value)" style="width:100%;margin:0 0 10px">`:'<span id="bflv" hidden></span>'}
- <div class="mu" style="margin:0 0 4px;font-weight:700">Máximo por apuesta</div><input type="number" inputmode="numeric" value="${F.mx}" oninput="bfSet('mx',+this.value)" style="width:100%;margin:0 0 10px">
- <div id="bfprev">${bfPrevH()}</div>
- <button class="btn sm" style="width:100%;margin-top:10px" onclick="betSave()">${F.id?'Guardar cambios':'Publicar enfrentamiento'}</button>${F.id?`<button class="btn s sm" style="width:100%;margin-top:8px" onclick="S.bf={id:'',lg:S.bf.lg,a:'',b:'',f:'',p:70,mx:500};R()">Cancelar edición</button>`:''}</div>
- ${imp.length?`<div class="card"><b>Importar batallas de una jornada</b><div class="row" style="gap:8px"><select id="bimp" style="${sty};flex:1;margin:0">${imp.map(x=>`<option value="${x.i}">${esc(x.e.n)} · ${(x.e.b||[]).filter(b=>typeof b==='string').length}</option>`).join('')}</select><button class="btn s sm" style="width:auto;margin:0" onclick="betImport()">Importar</button></div></div>`:''}
- ${rows||'<div class="card mu" style="text-align:center">Aún no has publicado enfrentamientos.</div>'}</div>`}
-const betRef=id=>FB.fm.doc(FB.db,'bets',id);
-async function betWrite(fn,ok){if(!isAdmin())return;try{await fn();S.bmsg=ok||''}catch(e){S.bmsg='No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste las reglas de la colección bets?'}R()}
-async function betSave(){const F=S.bf,a=(F.a||'').trim(),b=(F.b||'').trim();if(!a||!b||a.toLowerCase()===b.toLowerCase()){S.bmsg='Escribe los dos nombres (distintos).';return R()}
- const old=F.id?(S.bets||[]).find(x=>x.id===F.id):null,id=F.id||'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),now=Date.now();
- const data={lg:F.lg,a,b,f:F.f||'',p:F.f?(+F.p||70)/100:.5,mx:Math.max(10,Math.floor(+F.mx||500))};
- if(!old){data.st='draft';data.ts=now;data.o=now}
- await betWrite(()=>FB.fm.setDoc(betRef(id),data,{merge:true}),old?'✓ Cambios guardados.':'✓ Enfrentamiento publicado: ya lo ven todos.');
- if(!S.bmsg.startsWith('No se'))S.bf={id:'',lg:F.lg,a:'',b:'',f:'',p:70,mx:F.mx};R()}
-function betEdit(id){const d=(S.bets||[]).find(x=>x.id===id);if(!d)return;S.bf={id,lg:d.lg||'es',a:d.a,b:d.b,f:d.f||'',p:Math.round(100*(+d.p||.7)),mx:+d.mx||500};S.bmsg='';R();setTimeout(()=>{const e=document.querySelector('.btadm');if(e)e.scrollIntoView({behavior:'smooth'})},50)}
-const betState=(id,st)=>betWrite(()=>FB.fm.setDoc(betRef(id),{st},{merge:true}),st==='closed'?'🔒 Apuestas cerradas.':st==='draft'?'🙈 Oculta: los usuarios ya no la ven.':'📢 Publicada: ya pueden apostar.');
-function betWin(id,s){const d=(S.bets||[]).find(x=>x.id===id);if(d&&d.st==='draft'){S.bmsg='Primero publica la batalla.';return R()}if(!d||!confirm('¿Confirmas que ganó '+(s==='a'?d.a:d.b)+'? Se pagará a quienes acertaron y no se puede deshacer.'))return;betWrite(()=>FB.fm.setDoc(betRef(id),{st:'done',w:s,tsd:Date.now()},{merge:true}),'🏆 Ganó '+(s==='a'?d.a:d.b)+'. Las monedas se reparten solas.')}
-function betVoid(id){if(!confirm('¿Anular esta batalla? Todos recuperan sus monedas.'))return;betWrite(()=>FB.fm.setDoc(betRef(id),{st:'void',tsd:Date.now()},{merge:true}),'↩️ Anulada: se devuelven las monedas.')}
-function betDel(id){const d=(S.bets||[]).find(x=>x.id===id);if(!d||!confirm('¿Borrar este enfrentamiento?'+((d.st||'open')==='open'||d.st==='closed'?' Quienes apostaron recuperarán sus monedas.':'')))return;betWrite(()=>FB.fm.deleteDoc(betRef(id)),'🗑 Borrado.')}
-async function betImport(){const i=(document.getElementById('bimp')||{}).value;const x=CAL.find((e,k)=>String(k)===String(i));const e=x||CAL[+i];if(!e)return;
- const base=Date.now(),have=new Set((S.bets||[]).map(x=>x.id));let n=0;
- await betWrite(async()=>{const ps=[];(e.b||[]).forEach((s,k)=>{if(typeof s!=='string')return;const m=s.split(/\s+vs\.?\s+/i);if(m.length!==2)return;const id='imp_'+e.i+'_'+(e.dt||'x').replace(/-/g,'')+'_'+k;if(have.has(id))return;n++;ps.push(FB.fm.setDoc(betRef(id),{lg:e.i,a:m[0].trim(),b:m[1].trim(),f:'',p:.5,mx:500,st:'draft',ts:base,o:base+k},{merge:true}))});await Promise.all(ps)},'');
- if(!S.bmsg)S.bmsg=n?'✓ '+n+' batallas importadas. Edita cada una para marcar al favorito.':'No había batallas nuevas para importar.';R()}
-{const st=document.createElement('style');st.textContent=`.bthero{position:relative;overflow:hidden;border-radius:22px;padding:18px 16px;margin-bottom:14px;color:#fff;background:linear-gradient(135deg,#7c3aed,#db2777 55%,#f59e0b);box-shadow:0 10px 30px -10px rgba(219,39,119,.6)}.bthero h2{margin:6px 0 2px;font-size:28px;font-weight:900;letter-spacing:.5px}.bthero p{margin:0;font-size:13px;opacity:.92}.bthero:after{content:'🎲';position:absolute;right:10px;top:4px;font-size:64px;opacity:.22;transform:rotate(18deg);animation:btdice 5s ease-in-out infinite}.btlive{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:900;letter-spacing:1.5px;background:#0006;padding:4px 10px;border-radius:99px}.btlive i,.btst i{width:8px;height:8px;border-radius:50%;background:#ef4444;animation:btp 1.1s infinite}@keyframes btp{0%{box-shadow:0 0 0 0 rgba(239,68,68,.8)}100%{box-shadow:0 0 0 9px rgba(239,68,68,0)}}@keyframes btdice{0%,100%{transform:rotate(18deg) translateY(0)}50%{transform:rotate(-8deg) translateY(-6px)}}.btdice{display:inline-block;animation:btdice 3s ease-in-out infinite}.btsum{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:6px}.btsum div{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:10px 6px;text-align:center}.btsum b{display:block;font-size:20px;font-weight:900}.btsum b.up{color:#22c55e}.btsum b.dn{color:#ef4444}.btsum span{font-size:11px;color:var(--mu)}.btc{position:relative;overflow:hidden;margin:0 0 14px;padding:12px;border-radius:22px;border:1px solid var(--bd);background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--c1) 22%,transparent),transparent 60%),radial-gradient(120% 90% at 100% 100%,color-mix(in srgb,var(--c2) 18%,transparent),transparent 60%),var(--cd);animation:btin .45s var(--ease,ease)}@keyframes btin{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}.btc.s-closed{border-color:rgba(239,68,68,.55)}.bth{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.btlg{display:flex;align-items:center;gap:6px;font-size:12px;min-width:0}.btlg b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btst{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:900;letter-spacing:.6px;padding:4px 9px;border-radius:99px;background:rgba(127,127,127,.18);white-space:nowrap}.btst.s-open i{background:#22c55e;animation:none}.btst.s-done i,.btst.s-void i{display:none}.btst.s-closed{background:rgba(239,68,68,.2);color:#ef4444}.btv{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:stretch}.bts{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 6px 10px;border-radius:18px;border:2px solid transparent;background:rgba(127,127,127,.10);color:var(--tx);cursor:pointer;transition:transform .25s var(--spring,ease),border-color .2s,background .2s,filter .3s;font:inherit}.bts:disabled{cursor:default}.bts:not(:disabled):hover{transform:translateY(-3px)}.bts.on{border-color:var(--c1);background:color-mix(in srgb,var(--c1) 22%,transparent);transform:scale(1.04);animation:btglow 1.6s ease-in-out infinite}@keyframes btglow{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c1) 60%,transparent)}50%{box-shadow:0 0 18px 2px color-mix(in srgb,var(--c1) 60%,transparent)}}.bts.pk{border-color:#fde047}.bts.win{border-color:#fde047;background:linear-gradient(160deg,rgba(253,224,71,.28),rgba(245,158,11,.12));box-shadow:0 0 22px -4px #fde047}.bts.lose{filter:grayscale(1) brightness(.7);opacity:.7}.btcr{position:absolute;top:-6px;font-size:22px;animation:btcrw 1.4s ease-in-out infinite}@keyframes btcrw{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-4px) rotate(8deg)}}.btav{display:flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:50%;font-weight:900;font-size:19px;color:#fff;background:linear-gradient(145deg,var(--c1),var(--c2));box-shadow:0 6px 14px -4px rgba(0,0,0,.5),inset 0 2px 3px rgba(255,255,255,.35)}.btn{font-size:14px;font-weight:900;text-align:center;line-height:1.15;word-break:break-word}.bts em{font-style:normal;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px}.btfav{background:rgba(250,204,21,.2);color:#facc15}.btdog{background:rgba(168,85,247,.2);color:#c084fc}.btev{background:rgba(127,127,127,.2);color:var(--mu)}.btx{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--ac2)}.btpk{position:absolute;bottom:-1px;font-size:9px;font-weight:900;letter-spacing:1px;background:#fde047;color:#422006;padding:1px 8px;border-radius:8px 8px 0 0}.btvs{display:flex;align-items:center}.btvs span{font-weight:900;font-size:13px;color:var(--mu);background:var(--bg2);border:1px solid var(--bd);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center}.btbar{position:relative;display:flex;justify-content:space-between;height:22px;margin-top:10px;border-radius:99px;overflow:hidden;background:color-mix(in srgb,var(--c2) 45%,#222);font-size:11px;font-weight:900;color:#fff;align-items:center;padding:0 10px}.btbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--c1),color-mix(in srgb,var(--c1) 60%,#fff));animation:btbar 1s var(--ease,ease)}@keyframes btbar{from{width:50%}}.btbar span{position:relative;z-index:1;text-shadow:0 1px 2px #0008}.btsm{margin-top:8px;text-align:center;font-size:12px;color:var(--mu)}.btsm b{color:var(--tx)}.btp{margin-top:12px;padding:12px;border-radius:16px;background:var(--bg2);border:1px solid var(--c1);animation:btin .3s ease}.btpt{text-align:center;font-size:13px;margin-bottom:10px}.btpt span{color:var(--ac2);font-weight:900}.btch{display:flex;gap:6px;margin-bottom:10px}.btch button{flex:1;padding:8px 0;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);font-weight:800;cursor:pointer}.btin{display:flex;gap:8px;margin-bottom:10px}.btin button{width:46px;border-radius:12px;border:1px solid var(--bd);background:var(--cd);color:var(--tx);font-size:22px;font-weight:900;cursor:pointer}.btin input{flex:1;min-width:0;margin:0;text-align:center;font-size:22px;font-weight:900}.btwin{text-align:center;margin-bottom:6px;font-size:14px}.btwin b{color:var(--ac2);font-size:18px}.btwin em{font-style:normal;color:#22c55e;font-weight:800}.btgo{width:100%;padding:14px;border:0;border-radius:14px;font-weight:900;font-size:16px;color:#fff;cursor:pointer;background:linear-gradient(90deg,#7c3aed,#db2777);box-shadow:0 8px 20px -6px rgba(219,39,119,.7)}.btgo:active{scale:.97}.btk{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;margin-top:12px;padding:10px 14px;border-radius:14px;border:2px dashed #fde04788;background:linear-gradient(135deg,rgba(253,224,71,.16),rgba(245,158,11,.06))}.btk:before,.btk:after{content:'';position:absolute;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--bg)}.btk:before{left:-8px}.btk:after{right:-8px}.btkl small{display:block;font-size:9px;letter-spacing:1.5px;opacity:.65;font-weight:800}.btkl b{font-size:15px}.btkm{font-weight:900;font-variant-numeric:tabular-nums}.btkm i{font-style:normal;opacity:.5;margin:0 5px}.btkr{grid-column:1/-1;font-size:12px;font-weight:800}.btk.win{border-color:#22c55e;background:linear-gradient(135deg,rgba(34,197,94,.22),rgba(253,224,71,.12))}.btk.lose{border-color:#ef444466;filter:saturate(.5)}.btk.void{border-color:#94a3b8}.btrain{position:absolute;inset:0;pointer-events:none}.btrain i{position:absolute;bottom:-14px;width:14px;height:14px;opacity:0;animation:btrise 1.6s ease-out 2}@keyframes btrise{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-70px);opacity:0}}.btadm{margin-top:18px}.bfp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bfp div{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:8px;text-align:center}.bfp b{display:block;font-size:13px}.bfp span{display:block;font-size:22px;font-weight:900;color:var(--ac2)}.bfp small{font-size:11px;color:var(--mu)}.btar{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:12px;margin-bottom:10px}.btart{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}.btab{display:flex;flex-wrap:wrap;gap:6px}.btab button{padding:8px 10px;border-radius:10px;border:1px solid var(--bd);background:var(--bg2);color:var(--tx);font-weight:800;font-size:12px;cursor:pointer}.btab .g{border-color:#22c55e88;color:#22c55e}.btab .r{color:#ef4444}.seg.cm4 button{padding:9px 2px;font-size:11.5px;letter-spacing:0}.btdot{display:inline-block;min-width:16px;padding:0 4px;margin-left:3px;border-radius:99px;background:#ef4444;color:#fff;font-size:10px;line-height:16px}.btq{grid-column:1/-1;margin-top:6px;padding:8px;border-radius:10px;border:1px solid #ef444488;background:transparent;color:#ef4444;font-weight:800;cursor:pointer}html.noanim .btc,html.noanim .btp{animation:none!important}`;document.head.appendChild(st)}
-
-
 /* ===== Navegación rediseñada: dock flotante de cristal (móvil) y menú lateral limpio (PC) ===== */
 {const st=document.createElement('style');st.textContent=`
 @media not all and (min-width:1100px) and (hover:hover) and (pointer:fine){
@@ -7819,7 +7624,7 @@ const PF=[
 {n:15,id:'fx_pf15',k:'fx',nm:'Llegó la Familia',tp:'Efecto',r:'leg',ic:'👨‍👩‍👧‍👦',ds:'La familia entra corriendo, aplaude y cae confeti dorado.'}];
 PF.push({n:16,id:'pf_16',k:'al',nm:'Teorema 2019',tp:'Carta · FMS Chile 2019',r:'leg',ic:'🎴',ds:'Carta legendaria del Álbum.'});
 TITLES.pf_1={t:'El Primo',ic:'🧑'};TITLES.pf_9={t:'Sobrino Estrella',ic:'⭐'};TT_TIER.pf_1='com';TT_TIER.pf_9='com';
-const live=()=>MK()===PASS_M;
+const live=()=>{const c=window.LIM_PASS;if(c&&(c.s||c.e)){const n=Date.now();return (!c.s||n>=c.s)&&(!c.e||n<c.e)}return MK()===PASS_M};
 const ps=()=>{const p=shopS().pass;return p&&p.m===PASS_M&&p.t&&live()?p:null};
 const votes=()=>{const mv=S.myVotes;if(!mv)return S._pfv||0;if(S._pfvs===mv)return S._pfv;const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);let n=0;try{n=splitDups(mv).keep.filter(v=>v&&!v.free&&(+v.ts||0)>=m0.getTime()).length}catch(e){}S._pfvs=mv;S._pfv=n;return n};
 const lvl=()=>Math.min(N,Math.floor(votes()/VPL));
@@ -7897,7 +7702,9 @@ function pfBox(){if(!live())return '';const p=ps(),L=lvl();try{setTimeout(pfSync
  return `<button class="pfbox" onclick="go('pase')" aria-label="Abrir el pase de batalla"><svg class="pfsv" viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="60" cy="112" rx="44" ry="5" fill="#0006"/><g class="pfbx"><rect x="22" y="56" width="76" height="54" rx="6" fill="#b4232f"/><g fill="#fde7c8" opacity=".55"><rect x="22" y="56" width="76" height="9"/><rect x="22" y="74" width="76" height="9"/><rect x="22" y="92" width="76" height="9"/></g><rect x="54" y="56" width="12" height="54" fill="#f5c542"/><path d="M60 98c-8-6-12-10-12-15a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 5-4 9-12 15z" fill="#fff" opacity=".9"/></g><g class="pfhs"><path d="M60 8 84 28v10H36V28z" fill="#f5c542"/><rect x="44" y="30" width="32" height="26" fill="#fde7c8"/><rect x="55" y="40" width="10" height="16" fill="#7c1d2e"/><circle cx="60" cy="24" r="4" fill="#b4232f"/></g><g class="pfld"><rect x="16" y="44" width="88" height="16" rx="5" fill="#d92d3a"/><rect x="54" y="44" width="12" height="16" fill="#f5c542"/><path d="M60 44c-10-14-26-6-18 2 5 4 18 0 18-2zM60 44c10-14 26-6 18 2-5 4-18 0-18-2z" fill="#f5c542"/></g><g class="pfst" fill="#fde047"><path d="M12 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M108 22l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/></g></svg><span class="pftx"><em>${p?(p.t===2?'PASE COMPLETO':'PASE BÁSICO'):'NUEVO · NOVIEMBRE'}</em><b>PASE DE BATALLA</b><span>${sub}</span><span class="pfbar"><i style="width:${Math.round(L*100/N)}%"></i></span></span><span class="pfgo">›</span></button>`}
 {const _h=VIEW.home;VIEW.home=function(){const h=_h();try{return pfBox()+bzBox()+h}catch(e){return h}}}
 /* --- pantalla del pase --- */
-const pfTm=()=>{const d=new Date(),t=Math.max(0,new Date(d.getFullYear(),d.getMonth()+1,1)-d),D=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4),s=Math.floor(t%6e4/1e3),p=n=>String(n).padStart(2,'0');return D+'d '+p(h)+':'+p(m)+':'+p(s)};
+const pfEnd=()=>{const c=window.LIM_PASS;if(c&&c.e)return c.e;const d=new Date();return new Date(d.getFullYear(),d.getMonth()+1,1).getTime()};
+const pfEndTxt=()=>{try{return new Intl.DateTimeFormat('es',{day:'numeric',month:'long',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Santo_Domingo'}).format(pfEnd())+' (hora RD)'}catch(e){return 'fin de mes'}};
+const pfTm=()=>{const d=new Date(),t=Math.max(0,pfEnd()-d),D=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4),s=Math.floor(t%6e4/1e3),p=n=>String(n).padStart(2,'0');return D+'d '+p(h)+':'+p(m)+':'+p(s)};
 setInterval(()=>{const e=document.getElementById('pftm');if(e)e.textContent=pfTm()},1000);
 function pfPv(it){const u=esc((S.me&&S.me.u)||'Tu nombre');
  if(it.k==='al'){const c=ALB.find(x=>x.id==='cl19_teorema');return `<div class="shpv pfal">${albCard(c,1)}</div>`}
@@ -7921,7 +7728,7 @@ VIEW.pase=function(){const back=`<button class="back" onclick="go('home')">‹ L
  const buy=(t,t1,t2,pr)=>{const ok=bal>=pr;return `<div class="pfpc${t===2?' best':''}"><b>${t1}</b><div class="mu">${t2}</div><button class="btn${ok?'':' s'}" ${ok?`onclick="pfBuy(${t})"`:'disabled'}>${ok?`Comprar · <i class="coin"></i>${pr}`:`Te faltan ${pr-bal}`}</button></div>`};
  const shop=!p?`<div class="pfpcs">${buy(2,'Pase completo','Todos los premios desbloqueados al instante.',PRICE_FULL)}${buy(1,'Pase básico',`Premios 1 al ${HALF} al instante; del ${HALF+1} al ${N} votando.`,PRICE_HALF)}</div>`:p.t===1?`<div class="pfpcs">${buy(2,'Desbloquear todo','Mejora al pase completo pagando solo la diferencia.',PRICE_FULL-PRICE_HALF)}</div>`:'';
  const side=`<div class="pfside"><div class="pfsi">${p?'🔓':'🔒'}</div><b>${p?(p.t===2?'PASE COMPLETO':'PASE BÁSICO'):'PASE BLOQUEADO'}</b><span>Desliza →</span></div>`;
- return back+`<div class="pfhero"><div class="pfh1">PASE DE BATALLA</div><div class="pfh2">La Familia · Noviembre <span class="pfbd">EDICIÓN LIMITADA</span></div><div class="pftm">⏳ Termina el 1 de diciembre · <b id="pftm">${pfTm()}</b></div><div class="pfst2"><b>Nv. ${L}/${N}</b><span>${votes()} batallas este mes${nx?` · ${nx} para el nivel ${L+1}`:' · ¡Completado!'}</span></div><div class="pfbar big"><i style="width:${Math.round(L*100/N)}%"></i></div><div class="mu">Cada batalla votada, de cualquier liga, suma lo mismo: ${VPL} batallas = 1 nivel.</div></div>${shop}<div class="pftrk">${side}${PF.map(pfTile).join('')}</div><div class="mu" style="margin:6px 2px 20px">Los premios reclamados se quedan en tu cuenta al terminar el mes; los que no reclames desaparecen. Son solo cosméticos.</div>`};
+ return back+`<div class="pfhero"><div class="pfh1">PASE DE BATALLA</div><div class="pfh2">La Familia · Noviembre <span class="pfbd">EDICIÓN LIMITADA</span></div><div class="pftm">⏳ Termina el ${pfEndTxt()} · <b id="pftm">${pfTm()}</b></div><div class="pfst2"><b>Nv. ${L}/${N}</b><span>${votes()} batallas este mes${nx?` · ${nx} para el nivel ${L+1}`:' · ¡Completado!'}</span></div><div class="pfbar big"><i style="width:${Math.round(L*100/N)}%"></i></div><div class="mu">Cada batalla votada, de cualquier liga, suma lo mismo: ${VPL} batallas = 1 nivel.</div></div>${shop}<div class="pftrk">${side}${PF.map(pfTile).join('')}</div><div class="mu" style="margin:6px 2px 20px">Los premios reclamados se quedan en tu cuenta al terminar el mes; los que no reclames desaparecen. Son solo cosméticos.</div>`};
 {const st=document.createElement('style');st.textContent=`.pfal .alk{width:96px}.pfal .alk-nm b{font-size:11px}.pfc.pfalc.lk .shpv{filter:none}.pftrk{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:14px 4px 14px;margin:0 -4px 8px;scrollbar-width:thin}.pftrk>*{scroll-snap-align:start}.pfc{flex:0 0 158px;display:flex;flex-direction:column;gap:6px}.pfc .shi{flex:1;width:auto}.pflv{align-self:flex-start;padding:3px 12px 3px 8px;border-radius:6px 14px 6px 6px;background:#334155;color:#fff;font:900 13px/1.2 Impact,'Arial Black',sans-serif;letter-spacing:.04em}.pflv.r{background:linear-gradient(90deg,#fde047,#f59e0b);color:#3b2a00}.pflv.d{background:#16a34a}.pfc.lk .shpv{filter:grayscale(.8) brightness(.65)}.shi.pfrdy{border-color:#fde047;box-shadow:0 0 18px -2px rgba(253,224,71,.7);animation:pfRdy 1.4s ease-in-out infinite}.pfc .shi{animation:none}
 .pfside{flex:0 0 110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;border-radius:18px;border:2px solid #f5c542;background:linear-gradient(160deg,#7c1d2e,#3b0f1a);color:#fff;padding:10px}.pfsi{font-size:38px}.pfside b{font:900 14px/1.1 Impact,'Arial Black',sans-serif;color:#fde047}.pfside span{font-size:11px;color:#fde7c8}
 .pftm{margin:6px 0 10px;padding:7px 10px;border-radius:10px;background:rgba(0,0,0,.35);font-size:13px;color:#fde7c8}.pftm b{color:#fde047;font-variant-numeric:tabular-nums}.pfbd{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:5px;background:#fff;color:#111;font:800 9px/1.3 inherit;letter-spacing:.06em;vertical-align:middle}
@@ -8047,7 +7854,7 @@ function lkResult(got){const old=document.getElementById('lkov');if(old)old.remo
  el.innerHTML=`<div class="lkrays"></div><div class="lkst"><div class="lktt">${got.length>1?'¡Tus premios!':'¡Desbloqueaste!'}</div><div class="lkgr${l.length>1?' multi':''}">${l.map(card).join('')}</div><div class="lksb">Todo se guardó en tu Baúl 🎒</div><button class="btn" onclick="lkClose()">Seguir</button><button class="btn s" onclick="lkClose();go('baul')">Ver mi baúl</button></div>`;
  document.body.appendChild(el);lkParts(el,best.r==='leg'||best.r==='epi'?30:14);
  try{(best.r==='leg'||best.r==='epi')?SFX.ach():SFX.coin()}catch(e){}try{if(best.r==='leg'||best.r==='epi')navigator.vibrate&&navigator.vibrate([60,40,120])}catch(e){}}
-async function lkSpin(n){
+async function lkSpin(n){return;/* Luck Rap eliminada */
  if(!S.me||S.lkBusy)return;const own=new Set(LK.filter(x=>lkOwn(x.id)).map(x=>x.id)),left=LK.length-own.size;if(left<=0)return;
  const cnt=1,tk=lkTickets(),useT=tk>=1,cost=useT?cnt:LK_COIN,b0=coinBal();
  if(!useT&&b0<cost){try{achFail('Te faltan '+(cost-b0)+' monedas.')}catch(e){}return}
@@ -8085,7 +7892,7 @@ function lkBody(){const back='';
  <div class="lkwd">${lkWheel()}</div>
  <div class="lkbs">${btn(1,'1 GIRO')}${btn(10,'10 GIROS')}</div>
  <div class="mu lkin">${left>0?'Ganas 1 ticket por cada batalla de liga que votes. Sin tickets, giras con monedas: 300 por giro. Quedan '+left+' premios por conseguir.':'🎉 ¡Completaste la ruleta! Pronto habrá premios nuevos.'}</div></div><div style="height:24px"></div>`}
-VIEW.luck=function(){return `<button class="back" onclick="go('home')">‹ Ligas</button>`+lkBody()};
+VIEW.luck=function(){return `<button class="back" onclick="go('home')">‹ Ligas</button><div class="card mu" style="text-align:center">Luck Rap ya no está disponible.</div>`};
 
 /* ---- Luck Rap: tablero cuadrado estilo Free Fire (premios reales de la tienda, recompensa sale por fuera) ---- */
 const LQ_RING=[[1,2],[1,3],[1,4],[2,4],[3,4],[4,3],[4,2],[4,1],[3,1],[2,1]];
@@ -8150,7 +7957,6 @@ lkBody=function(){
 .lqot{display:flex;flex-direction:column;gap:3px;align-items:flex-start;min-width:0}.lqot em{font:800 11px/1 inherit;font-style:normal;color:#C4B5FD;text-transform:uppercase}.lqot b{font-size:15px}
 .lqoa{display:flex;gap:8px}.lqoa .btn{margin:0;flex:1}`;document.head.appendChild(st)}
 function lkBox(){if(!S.me)return '';const tk=lkTickets(),left=LK.filter(x=>!lkOwn(x.id)).length;return `<button class="lkbox" onclick="go('luck')" aria-label="Abrir Luck Rap"><span class="lkbi">${tkSvg(54)}</span><span class="pftx"><em>PREMIOS EXCLUSIVOS</em><b>LUCK RAP</b><span>${tk} ticket${tk===1?'':'s'} · ${left} premio${left===1?'':'s'} por ganar</span></span><span class="pfgo">›</span></button>`}
-{const _h=VIEW.home;VIEW.home=function(){const h=_h();try{return lkBox()+h}catch(e){return h}}}
 /* ---- Luck Rap v2: ruleta circular, un solo botón de giro, atajo nuevo y objetos con diseño propio ---- */
 const lqPt=(cx,cy,r,deg)=>{const a=(deg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)]};
 const lqSl=(cx,cy,r,i,n)=>{const s=360/n,p=lqPt(cx,cy,r,i*s),q=lqPt(cx,cy,r,(i+1)*s);return `M${cx} ${cy}L${p[0].toFixed(1)} ${p[1].toFixed(1)}A${r} ${r} 0 0 1 ${q[0].toFixed(1)} ${q[1].toFixed(1)}Z`};
@@ -8213,7 +8019,7 @@ const MV_COST=[0,0,800,1600,3000,5000],MV_PAY=[0,10,20,30,40,50],MV_COL=['','#22
 const MV_FN=['','Aura verde y sueldo de 10 monedas al día.','Aura azul y sueldo de 20 monedas al día.','Aura morada y sueldo de 30 monedas al día.','Aura rosa con chispas y sueldo de 40 monedas al día.','Aura dorada con destellos, sueldo de 50 monedas al día y 1 ticket gratis cada vez que cobras.'];
 function mvLv(){return lkOwn('lk_mascota')?Math.max(1,Math.min(5,+lkS().mv||1)):0}
 function mevoPanel(){if(!S.me)return '';const l=mvLv(),tdy=today();
- if(!l)return `<div class="mvp lock"><div class="mvh"><span class="mvl">🔒</span><div><b>Mascota evolutiva</b><em>Legendaria · sale en la ruleta</em></div></div><div class="mu" style="margin:8px 0">Sube de nivel, cambia de aura y te paga un sueldo diario. Consíguela en la ruleta.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.stkOpen=false;go('luck')">Ir a la ruleta</button></div>`;
+ if(!l)return '';if(0)return `<div class="mvp lock"><div class="mvh"><span class="mvl">🔒</span><div><b>Mascota evolutiva</b><em>Legendaria · sale en la ruleta</em></div></div><div class="mu" style="margin:8px 0">Sube de nivel, cambia de aura y te paga un sueldo diario. Consíguela en la ruleta.</div><button class="btn sm" style="width:100%;margin:0" onclick="S.stkOpen=false;go('luck')">Ir a la ruleta</button></div>`;
  const r=lkS(),paid=r.sd===tdy,cost=MV_COST[l+1],ok=bal=>bal>=cost,bal=coinBal();
  const rows=[1,2,3,4,5].map(n=>`<div class="mvr${n===l?' cur':n<l?' ok':' lk'}" style="--mc:${MV_COL[n]}"><b>Nv.${n}</b><span><strong>${MV_NM[n]}</strong> ${MV_FN[n]}</span>${n>l?`<em><i class="coin"></i>${MV_COST[n]}</em>`:'<em>✓</em>'}</div>`).join('');
  return `<div class="mvp mevo-${l}" style="--mc:${MV_COL[l]}"><div class="mvh"><div class="mvart" style="--f1:${MV_COL[l]};--f2:#FDE68A"><div class="mvau"></div>${stkSvg(stkDays()||1,true,(S.me.fit||[]))}</div><div><b>Mascota evolutiva</b><em>Nv.${l} · ${MV_NM[l]}</em><div class="mvd">${[1,2,3,4,5].map(n=>`<i class="${n<=l?'on':''}"></i>`).join('')}</div></div></div>
@@ -8274,6 +8080,51 @@ function vitrinaH(){if(!S.me||!lkOwn('lk_vitrina'))return '';const t=Array.isArr
 .vtl{position:absolute;top:0;width:90px;height:100%;background:linear-gradient(180deg,rgba(255,244,200,.35),transparent 75%);clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);z-index:1;animation:lkBl 3.4s ease-in-out infinite}.vtl.l1{left:12%}.vtl.l2{right:12%;animation-delay:1.7s}
 .vtgl{position:relative;border-radius:8px;background:linear-gradient(160deg,rgba(186,230,253,.22),rgba(14,30,50,.55));border:2px solid rgba(186,230,253,.55);padding:6px 4px;z-index:2;overflow:hidden}.vtsn{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:vtSh 5s ease-in-out infinite}@keyframes vtSh{0%,60%{left:-60%}100%{left:130%}}
 .vtsh{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 4px 6px;border-bottom:7px solid #8a5a2b;box-shadow:0 3px 0 #2b1a0b}.vtsh:last-of-type{margin-bottom:2px}.vts{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-height:56px;justify-content:flex-end}.vts i{font-style:normal;font-size:26px;filter:grayscale(1) brightness(.6);opacity:.35}.vts b{font-size:9px;color:#cbd5e1;opacity:.6}.vts.f i{filter:none;opacity:1;animation:lkWob 2.6s ease-in-out infinite}.vts.f b{opacity:1;color:#fff}.vtbs{position:absolute;left:0;right:0;bottom:0;height:12px;background:linear-gradient(180deg,#8a5a2b,#2b1a0b);z-index:3}`;document.head.appendChild(st)}
+
+/* ===== Tipo límite de eventos: el administrador cambia cuándo sale y cuándo se va cada artículo limitado ===== */
+const LIM_ITEMS=[{id:'suit_familia',n:'Traje Noche en Familia',ic:'👕'},{id:'suit_neon',n:'Traje Neón Miami',ic:'🕶️'},{id:'pl_campeones',n:'Planilla Noche de Campeones',ic:'📋'},{id:'th_luz',n:'Luces de Diciembre (color)',ic:'❄️'},{id:'pase',n:'Pase de batalla',ic:'🏡'}];
+const LIM_DEF={suit_familia:{s:SUIT_START,e:SUIT_END},suit_neon:{s:SUIT2_START,e:SUIT2_END},pl_campeones:{s:PACK_LIMIT_START,e:PACK_LIMIT_END},th_luz:{s:LUZ_START,e:LUZ_END},pase:{s:Date.parse('2026-11-01T00:00:00-04:00'),e:Date.parse('2026-12-01T00:00:00-04:00')}};
+const LIM={ts:0,c:{}};
+const limEff=id=>{const o=LIM.c[id],d=LIM_DEF[id];return o&&o.e>0?{s:+o.s||0,e:+o.e}:{s:d.s,e:d.e}};
+function limApplyAll(){const g=id=>limEff(id);let e;
+ e=g('suit_familia');SUIT_START=e.s;SUIT_END=e.e;SUITS.suit_familia.end=e.e;
+ e=g('suit_neon');SUIT2_START=e.s;SUIT2_END=e.e;SUITS.suit_neon.end=e.e;
+ e=g('pl_campeones');PACK_LIMIT_START=e.s;PACK_LIMIT_END=e.e;
+ e=g('th_luz');LUZ_START=e.s;LUZ_END=e.e;
+ SHOP_BASE.forEach(it=>{if(LIM_DEF[it.id]&&it.id!=='pase'){const k=g(it.id);it.until=k.e;it.from=k.s||0}});
+ const p=LIM.c.pase;window.LIM_PASS=p&&p.e>0?{s:+p.s||0,e:+p.e}:null;
+ _shopAll=null;S._cev=null;S._ce=0}
+function limSync(d){if(!d||d.limTs===undefined||d.limTs===LIM.ts)return;let c={};try{c=JSON.parse(d.lim||'{}')||{}}catch(e){}
+ LIM.ts=d.limTs;LIM.c=c;limApplyAll();S.lim=null;if(!(S.v==='admin'&&S.admTab==='lim'))R()}
+const limRD=ms=>ms>0?new Date(ms-4*3600e3).toISOString().slice(0,16):'';
+const limMs=v=>v?Date.parse(v+':00-04:00'):0;
+function limDur(ms){const m=Math.max(0,Math.floor(ms/6e4)),D=Math.floor(m/1440),H=Math.floor(m%1440/60);return (D?D+(D===1?' día ':' días '):'')+H+' h '+(m%60)+' min'}
+function limStat(d){const n=Date.now();if(d.s&&n<d.s)return ['⏳ Aún no sale','Sale en '+limDur(d.s-n),'#f59e0b'];if(n>=d.e)return ['⛔ Ya salió de la tienda','Terminó hace '+limDur(n-d.e),'#ef4444'];return ['🟢 En la tienda','Se va en '+limDur(d.e-n),'#22c55e']}
+function limDraft(id){const D=S.lim=S.lim||{d:{},rel:{},msg:'',busy:false};return D.d[id]||(D.d[id]={...limEff(id)})}
+function limSet(id,f,v){const d=limDraft(id);if(f==='s')d.s=limMs(v);else if(v)d.e=limMs(v);S.lim.msg='Cambio sin guardar. Toca «Guardar límites» para publicarlo.';R()}
+function limRel(id,f,v){const D=S.lim=S.lim||{d:{},rel:{},msg:'',busy:false};D.rel[id]=D.rel[id]||{};D.rel[id][f]=Math.max(0,parseInt(v,10)||0)}
+function limApplyRel(id){const D=S.lim=S.lim||{d:{},rel:{},msg:'',busy:false},r=D.rel[id]||{},mins=(r.d||0)*1440+(r.h||0)*60+(r.m||0);if(mins<=0){D.msg='Pon días, horas o minutos (más de 0).';return R()}
+ limDraft(id).e=Date.now()+mins*60000;D.msg='Terminará en '+limDur(mins*6e4)+'. Toca «Guardar límites» para publicarlo.';R()}
+function limNow(id){limDraft(id).e=Date.now();S.lim.msg='Se quitará de la tienda al guardar.';R()}
+function limReset(id){S.lim=S.lim||{d:{},rel:{},msg:'',busy:false};S.lim.d[id]={...LIM_DEF[id]};S.lim.msg='Horario original restablecido. Toca «Guardar límites» para publicarlo.';R()}
+async function limSave(){if(!isAdmin()||(S.lim&&S.lim.busy))return;const D=S.lim=S.lim||{d:{},rel:{},msg:'',busy:false},c={};
+ for(const x of LIM_ITEMS){const d=D.d[x.id],df=LIM_DEF[x.id];if(!d)continue;if(!(d.e>0)){D.msg='Falta la hora en que se va «'+x.n+'».';return R()}if(d.s&&d.s>=d.e){D.msg='En «'+x.n+'» la salida debe ser antes de que se vaya.';return R()}if(d.s!==df.s||d.e!==df.e)c[x.id]={s:d.s||0,e:d.e}}
+ D.busy=true;D.msg='Guardando…';R();
+ try{const fm=FB.fm,ts=Date.now();await fm.setDoc(fm.doc(FB.db,'config','economia'),{lim:JSON.stringify(c),limTs:ts,limBy:S.me.uid},{merge:true});LIM.ts=ts;LIM.c=c;limApplyAll();D.d={};D.msg='✓ Guardado. Los usuarios lo ven en unos minutos (al abrir la app o cada 10 min).'}
+ catch(e){D.msg='No se pudo guardar ('+((e&&e.code)||'error')+'). ¿Publicaste la regla de config/economia en Firestore?'}
+ D.busy=false;R()}
+function limV(){const D=S.lim=S.lim||{d:{},rel:{},msg:'',busy:false};
+ const inp='width:100%;margin:0 0 8px';
+ const rows=LIM_ITEMS.map(x=>{const d=limDraft(x.id),r=D.rel[x.id]||{},st=limStat(d);
+  const num=(f,ph)=>`<input type="number" min="0" inputmode="numeric" placeholder="${ph}" value="${r[f]||''}" oninput="limRel('${x.id}','${f}',this.value)" style="flex:1;min-width:0;margin:0;text-align:center">`;
+  return `<div class="card"><div class="row" style="gap:8px;align-items:center;margin-bottom:6px"><b style="flex:1;min-width:0">${x.ic} ${esc(x.n)}</b><span class="pill" style="background:${st[2]};color:#fff">${st[0]}</span></div>
+<div class="mu" style="margin:0 0 8px;font-size:12px">${esc(st[1])}</div>
+<div class="mu" style="margin:0 0 4px;font-size:12px">🛒 Sale de la tienda (hora de República Dominicana; vacío = ya disponible)</div><input type="datetime-local" value="${limRD(d.s)}" onchange="limSet('${x.id}','s',this.value)" style="${inp}">
+<div class="mu" style="margin:0 0 4px;font-size:12px">⛔ Se va de la tienda (hora RD)</div><input type="datetime-local" value="${limRD(d.e)}" onchange="limSet('${x.id}','e',this.value)" style="${inp}">
+<div class="mu" style="margin:0 0 4px;font-size:12px">⏱️ O termina en… (cuenta desde ahora)</div><div class="row" style="gap:6px;margin:0 0 8px">${num('d','Días')}${num('h','Horas')}${num('m','Min')}<button class="btn s sm" style="width:auto;flex:0 0 auto;margin:0" onclick="limApplyRel('${x.id}')">Aplicar</button></div>
+<div class="row" style="gap:8px"><button class="btn s sm" style="flex:1;margin:0" onclick="limNow('${x.id}')">Quitar ya</button><button class="btn s sm" style="flex:1;margin:0" onclick="limReset('${x.id}')">Horario original</button></div></div>`}).join('');
+ return `<div class="sec"><span>⏳ Tipo límite de eventos</span><span>${LIM_ITEMS.length}</span></div><div class="mu" style="margin:0 2px 10px">Aquí cambias cuándo sale y cuándo se va cada artículo limitado de la tienda y el pase. Cuando llega la hora de irse, desaparece de la tienda: quien no lo consiguió ya no puede comprarlo y quien lo compró lo conserva.</div>${rows}<div class="card"><button class="btn sm" style="width:100%" onclick="limSave()" ${D.busy?'disabled':''}>Guardar límites</button>${D.msg?`<div class="mu" style="margin-top:8px">${esc(D.msg)}</div>`:''}</div>`}
+{let sig='';setInterval(()=>{try{if(document.hidden)return;const n=Date.now(),g=LIM_ITEMS.map(x=>{const c=limEff(x.id);return c.s&&n<c.s?0:n<c.e?1:2}).join('');if(sig&&g!==sig){_shopAll=null;const a=document.activeElement;if(!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))R()}sig=g}catch(e){}},5000)}
 </script>
 </body></html>
 
