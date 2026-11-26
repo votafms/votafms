@@ -3135,7 +3135,12 @@ function outcomeText(v,o){const nv=voteNorm(v),d=Math.abs(nv.ta-nv.tb),nm=x=>x==
 function commCount(vs){const seen=new Set(),us=new Set();(vs||[]).forEach(v=>{const u=v.uid||v.u||'';us.add(u);seen.add(u+'#'+[nrm(v.a),nrm(v.b)].sort().join('|'))});return seen.size+(seen.size===1?' voto':' votos')+' · '+us.size+(us.size===1?' usuario':' usuarios')}
 const COMUN=['es','ar','mx','cl','co','pe'];
 const NAME_ALIAS={'toylokazo(jaze)':'jaze'};const al=x=>NAME_ALIAS[x]||x;
+/* Sustituciones: [suplente, titular, rivales de las batallas en las que sustituyó] */
+const SUBS={'es|2024':[['Pitu Dood','Michu',['Mnak']]],'mx|2024':[['Xhavez','Dominic',['Maquiavélico','Azuky']]],'cl|2025':[['Nexus','Pepe Grillo',['Kodigo']],['Rodamiento','Drose',['Acertijo','Elemece']]],'ws|2025':[['Fat N','Lokillo',['Dani','Azuky']],['Kaiser','El Menor',['Gazir','Azuky','Aczino']]]};
+/* Titulares que no volvieron: así salen en la tabla */
+const SUB_LBL={'mx|2024':{'Dominic':'Dominic (Xhavez)'},'ws|2025':{'Lokillo':'Lokillo (Fat N)','El Menor':'El Menor (Kaiser)'}};
 function standings(lg,votes,temp,names0){
+ const subM={};(SUBS[lg+'|'+temp]||[]).forEach(([s,t,r])=>r.forEach(o=>{subM[nrm(s)+'|'+nrm(o)]=nrm(t)}));
  const A24=(temp==='2024'&&({pe:{elmenor:'arkano'},ca:{eroseq:'exodolirical'}})[lg])||{};const al=x=>A24[x]||NAME_ALIAS[x]||x;
  const names=names0||seasonLineup(lg,temp);const idx={};names.forEach(n=>idx[nrm(temp==='2024'?n.replace(/\s*\(.*\)\s*$/,''):n)]=n);
  const T={};names.forEach(n=>T[n]={n,pts:0,w:0,l:0,ptb:0});
@@ -3145,7 +3150,7 @@ function standings(lg,votes,temp,names0){
  ordered.forEach(v=>{const pk=[nrm(v.a),nrm(v.b)].sort().join('|');const k=(v.uid||'')+'#'+v.l+'#'+pk;if(seen.has(k))return;seen.add(k);uniq.push(v)});
  const G={};
  uniq.forEach(v=>{
-  const na=al(nrm(v.a)),nb=al(nrm(v.b));if(!na||!nb||na===nb)return;
+  let na=al(nrm(v.a)),nb=al(nrm(v.b));{const x=subM[na+'|'+nb],y=subM[nb+'|'+na];if(x)na=x;if(y)nb=y}if(!na||!nb||na===nb)return;
   const pk=[na,nb].sort();const k=pk.join('|');if(exhSet(lg,temp).has(k))return;
   const g=G[k]||(G[k]={p:pk[0],q:pk[1],n:0,sp:0,sq:0,nAct:0,nr:0,rp:0,rq:0,dn:0,ds:0});if(v.dif){g.dn++;g.ds+=v.dif}
   const nv=voteNorm(v);const flip=na!==g.p;
@@ -3175,7 +3180,7 @@ function standings(lg,votes,temp,names0){
   if(wIn){T[wIn].w++;T[wIn].pts+=kind==='d'?3:2}
   if(lIn){T[lIn].l++;T[lIn].pts+=kind==='d'?0:1}
  });
- return Object.values(T).sort((x,y)=>y.pts-x.pts||y.w-x.w||y.ptb-x.ptb||x.n.localeCompare(y.n));
+ const lbl=SUB_LBL[lg+'|'+temp]||{};return Object.values(T).sort((x,y)=>y.pts-x.pts||y.w-x.w||y.ptb-x.ptb||x.n.localeCompare(y.n)).map(r=>lbl[r.n]?{...r,n:lbl[r.n]}:r);
 }
 function tablaHTML(rows,l,o){
  const [a1,a2]=accentOf(l);
