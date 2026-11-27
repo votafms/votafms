@@ -8424,6 +8424,21 @@ function albUserV(){if(!isAdmin())return '';const r=S.auR;
  ${r?`<div><b>${esc(r.u)}</b> tiene <b>${r.n}/${r.t}</b> cartas</div><div class="alpb" style="display:block;height:8px;border-radius:6px;background:var(--cd2);overflow:hidden"><i style="display:block;height:100%;width:${r.t?Math.round(r.n*100/r.t):0}%;background:var(--ac,#22c55e)"></i></div><div class="mu">Repetidas: ${r.dup} · ${r.rar.map(x=>x[0]+' '+x[1]+'/'+x[2]).join(' · ')}</div>`:''}</div>`}
 function cartasAdminV(){return albUserV()+pfAdmV()+cartasAdminV0()}
 ADM_TABS.splice(ADM_TABS.length-1,0,['cartas','🎴 Cartas']);
+/* ===== Admin · Cartas: ver a todos los usuarios y cuántas cartas tiene cada uno (de 50 en 50) ===== */
+// Cuenta las cartas de un usuario leyendo su campo shop.alb (los datos ya vienen en listUsersFull, no hay lecturas extra)
+function albCount(u){const sh=u.shop&&typeof u.shop==='object'?u.shop:{},al={...(sh.alb&&typeof sh.alb==='object'?sh.alb:{})};if(al.es17_walls){al.es17_bta=(al.es17_bta||0)+al.es17_walls;delete al.es17_walls}const have=ALB.filter(c=>(+al[c.id]||0)>0);return {n:have.length,dup:have.reduce((t,c)=>t+(+al[c.id]-1),0)}}
+async function albAllLoad(force){if(!isAdmin())return;S.aaMsg='Cargando usuarios…';S.aaRows=null;R();
+ try{if(force)usersCacheClear();const us=await B.listUsersFull();
+  const rows=us.map(u=>({uid:u.uid,u:u.u||'?',...albCount(u)}));
+  rows.sort((a,b)=>b.n-a.n||String(a.u).localeCompare(String(b.u)));
+  S.aaRows=rows;S.aaShow=50;S.aaMsg=''}catch(e){S.aaMsg='Error: '+(e&&e.message||'desconocido')}R()}
+function albAllV(){if(!isAdmin())return '';const rows=S.aaRows,show=S.aaShow||50,t=ALB.length;
+ const list=rows?rows.slice(0,show).map((r,i)=>`<div class="row" style="gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><span class="mu" style="min-width:28px">${i+1}</span><b style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(r.u)}</b><span style="white-space:nowrap">🎴 <b>${r.n}</b>/${t}</span><span class="mu" style="white-space:nowrap;font-size:12px">rep. ${r.dup}</span></div>`).join(''):'';
+ const more=rows&&rows.length>show?`<button class="btn s" style="width:100%;margin-top:10px" onclick="S.aaShow=(S.aaShow||50)+50;R()">Ver 50 más (${rows.length-show} restantes)</button>`:'';
+ const sum=rows?`<div class="mu" style="font-size:13px;margin-top:8px">${rows.length} usuarios · mostrando ${Math.min(show,rows.length)} · ordenados de más a menos cartas.</div>`:'';
+ return `<div class="card"><b style="display:block;margin-bottom:4px">👥 Todos los usuarios y sus cartas</b><div class="mu" style="margin:0 0 10px;font-size:13px">Pulsa «Ver todos» para ver a todos los usuarios con cuántas cartas tienen (y cuántas repetidas). Salen 50 y puedes pulsar «Ver 50 más».</div><div class="row" style="gap:8px"><button class="btn s" style="flex:1" onclick="albAllLoad(false)">👥 Ver todos</button>${rows?`<button class="btn s" style="flex:1" onclick="albAllLoad(true)">🔄 Actualizar</button>`:''}</div>${S.aaMsg?`<div class="mu" style="font-size:13px;margin-top:8px">${esc(S.aaMsg)}</div>`:''}${sum}${list}${more}</div>`}
+const _cartasAdminV_prev=cartasAdminV;
+cartasAdminV=function(){return albAllV()+_cartasAdminV_prev()};
 </script>
 </body></html>
 
