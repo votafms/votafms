@@ -3143,7 +3143,7 @@ function standings(lg,votes,temp,names0){
  const subM={};(SUBS[lg+'|'+temp]||[]).forEach(([s,t,r])=>r.forEach(o=>{subM[nrm(s)+'|'+nrm(o)]=nrm(t)}));
  const A24=(temp==='2024'&&({pe:{elmenor:'arkano'},ca:{eroseq:'exodolirical'}})[lg])||{};const al=x=>A24[x]||NAME_ALIAS[x]||x;
  const names=names0||seasonLineup(lg,temp);const idx={};names.forEach(n=>idx[nrm(temp==='2024'?n.replace(/\s*\(.*\)\s*$/,''):n)]=n);
- const T={};names.forEach(n=>T[n]={n,pts:0,w:0,l:0,ptb:0});
+ const T={};names.forEach(n=>T[n]={n,pts:0,w:0,l:0,ptb:0,j:0});
  // Solo cuenta la primera votación de cada usuario en cada batalla
  const ordered=(votes||[]).filter(v=>!v.free).sort((x,y)=>(x.ts||0)-(y.ts||0));
  const seen=new Set();const uniq=[];
@@ -3162,6 +3162,7 @@ function standings(lg,votes,temp,names0){
  Object.values(G).forEach(g=>{
   let pIn=idx[g.p],qIn=idx[g.q];const xn=(temp==='2024'||temp==='2025')?ex24(lg,g.p+'|'+g.q,temp):null;if(xn){if(g.p===xn)pIn=undefined;if(g.q===xn)qIn=undefined}
   if(!pIn&&!qIn)return;                 // dos invitados: no afecta la tabla
+  if(pIn)T[pIn].j++;if(qIn)T[qIn].j++;  // J: batallas votadas de este MC
   const ap=g.sp/g.n,aq=g.sq/g.n,d=Math.abs(ap-aq);
   if(pIn)T[pIn].ptb+=ap;                // el PTB del lineup siempre suma, aunque el rival sea invitado
   if(qIn)T[qIn].ptb+=aq;
@@ -3185,13 +3186,14 @@ function standings(lg,votes,temp,names0){
 function tablaHTML(rows,l,o){
  const [a1,a2]=accentOf(l);
  const live=!(o&&o.noTags)&&l.i!=='in'&&rows.some(x=>x.pts>0);
+ const hasJ=rows.some(x=>x.j!=null);
  return `<div class="card" style="padding:12px 8px;overflow-x:auto;--ac:${a1};--ac2:${a2};border-color:color-mix(in srgb,var(--ac) 55%,transparent);background:linear-gradient(160deg,color-mix(in srgb,var(--ac) 18%,var(--cd)),var(--cd) 60%)">
  <div class="row" style="padding:0 6px 10px">${logo(l,34)}<b style="font-size:15px;color:var(--ac)">${esc(l.n)}${o&&o.title?' · '+esc(o.title):''}</b>${impBtn({k:'t',lg:l,title:(o&&o.title)||'',rows,live,last:(o&&o.last)||'PTB'},'Importar','imp')}</div>
- <div class="stbl">
- <div class="sth">Pos</div><div class="sth" style="text-align:left">Participante</div><div class="sth">Pts</div><div class="sth">G</div><div class="sth">P</div><div class="sth">${(o&&o.last)||'PTB'}</div>
+ <div class="stbl"${hasJ?' style="grid-template-columns:40px 1fr 42px 46px 34px 34px 56px;min-width:345px"':''}>
+ <div class="sth">Pos</div><div class="sth" style="text-align:left">Participante</div>${hasJ?'<div class="sth">J</div>':''}<div class="sth">Pts</div><div class="sth">G</div><div class="sth">P</div><div class="sth">${(o&&o.last)||'PTB'}</div>
  ${rows.map((r,i)=>{const n=rows.length,dn=live&&n>=5&&i>=n-2,ch=live&&i===0;
   const tag=ch?'<span class="stag champ"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V17h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3V3zM6 7v1a2 2 0 0 0 2 2V7H6zm12 0h-2v3a2 2 0 0 0 2-2V7z"/></svg> Campeón</span>':dn?'<span class="stag desc"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg> Descenso</span>':'';const c=ch?' ch':'';
-  return `<div class="std fc${i<3?' tp3':''}${dn?' dn':''}${c}">${i+1}</div><div class="std n${tag?' has-tag':''}${dn?' dn':''}${c}"><span class="nm">${esc(r.n)}</span>${tag}</div><div class="std b${dn?' dn':''}${c}">${r.pts}</div><div class="std${dn?' dn':''}${c}">${r.w}</div><div class="std${dn?' dn':''}${c}">${r.l}</div><div class="std${dn?' dn':''}${c}">${fmt(Math.round(r.ptb*10)/10)}</div>`}).join('')}
+  return `<div class="std fc${i<3?' tp3':''}${dn?' dn':''}${c}">${i+1}</div><div class="std n${tag?' has-tag':''}${dn?' dn':''}${c}"><span class="nm">${esc(r.n)}</span>${tag}</div>${hasJ?`<div class="std${dn?' dn':''}${c}" style="font-size:12px;font-weight:800${r.j?'':';opacity:.45'}">J${r.j||0}</div>`:''}<div class="std b${dn?' dn':''}${c}">${r.pts}</div><div class="std${dn?' dn':''}${c}">${r.w}</div><div class="std${dn?' dn':''}${c}">${r.l}</div><div class="std${dn?' dn':''}${c}">${fmt(Math.round(r.ptb*10)/10)}</div>`}).join('')}
  </div>${live?'<div class="stleg"><span><i class="g"></i>Campeón</span>'+(rows.length>=5?'<span><i class="r"></i>Descenso · 2 últimos puestos</span>':'')+'</div>':''}</div>`;
 }
 function comSeg(on){return `<div class="seg cm4" style="margin:0 0 14px;overflow-x:auto">${[['tablas','📊 Tablas'],['rank','🏆 Ranking'],['ruleta','🎡 Ruleta'],['search','🔍 Buscar']].map(([k,t])=>`<button class="${on===k?'on':''}" onclick="comTab('${k}')">${t}</button>`).join('')}</div>`}
@@ -6545,12 +6547,12 @@ function xVotA(g){return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}<
 function xVot(g){if(xAuto(g))return xVotA(g);return g.jors.map((j,ji)=>`<div class="sec"><span>${esc(j.n)}</span><span>${j.bats.length}</span></div>${j.bats.map((b,bi)=>{const v=xBk(g,b);return `<button class="bat" onclick="xVote(${ji},${bi})"><span class="side">${esc(b.a)}</span><span class="vs">${v?fmt(v.ta)+'–'+fmt(v.tb):'VS'}</span><span class="side r">${esc(b.b)}</span></button>`}).join('')||'<div class="card mu">Sin batallas. Añádelas en Editar.</div>'}${xImpJ(g,j)}`).join('')||'<div class="card mu">Aún no hay jornadas.</div>'}
 const xTb=g=>xAuto(g)||g.tabla!==false;
 function xTabOn(v){const g=xCur();g.tabla=!!v;if(!v&&S.mx.t==='t')S.mx.t='e';xReg(g);R()}
-function xTabA(g){const m={},add=n=>m[n]=m[n]||{n,pts:0,w:0,l:0,ptb:0};(g.parts||[]).forEach(add);
- g.jors.forEach(j=>j.bats.forEach(b=>{const r=xRs(g,b);if(!r)return;const A=add(b.a),Z=add(b.b);A.pts+=r.a;Z.pts+=r.b;if(r.a>r.b){A.w++;Z.l++}else if(r.b>r.a){Z.w++;A.l++}else{A.ptb++;Z.ptb++}}));
+function xTabA(g){const m={},add=n=>m[n]=m[n]||{n,pts:0,w:0,l:0,ptb:0,j:0};(g.parts||[]).forEach(add);
+ g.jors.forEach(j=>j.bats.forEach(b=>{const r=xRs(g,b);if(!r)return;const A=add(b.a),Z=add(b.b);A.j++;Z.j++;A.pts+=r.a;Z.pts+=r.b;if(r.a>r.b){A.w++;Z.l++}else if(r.b>r.a){Z.w++;A.l++}else{A.ptb++;Z.ptb++}}));
  const rows=Object.values(m).sort((x,y)=>y.pts-x.pts||y.w-x.w||x.n.localeCompare(y.n));
  return rows.length?tablaHTML(rows,LX.find(x=>x.i===g.id),{noTags:true,last:'E'})+'<div class="mu" style="text-align:center">Gana 3-0 = 3 pts · gana 2-1 = 2 pts (el rival suma 1) · empate 1-1 · G ganadas, P perdidas, E empates.</div>':'<div class="card mu">Añade participantes para ver la tabla.</div>'}
-function xTab(g){if(xAuto(g))return xTabA(g);const m={},add=n=>m[n]=m[n]||{n,pts:0,w:0,l:0,ptb:0};
- g.jors.forEach(j=>j.bats.forEach(b=>{const A=add(b.a),Z=add(b.b),v=xBk(g,b);if(!v)return;const o=outcomeOf(v);A.ptb+=v.ta||0;Z.ptb+=v.tb||0;if(o.w==='a'){A.w++;A.pts+=3;Z.l++}else if(o.w==='b'){Z.w++;Z.pts+=3;A.l++}else{A.pts++;Z.pts++}}));
+function xTab(g){if(xAuto(g))return xTabA(g);const m={},add=n=>m[n]=m[n]||{n,pts:0,w:0,l:0,ptb:0,j:0};
+ g.jors.forEach(j=>j.bats.forEach(b=>{const A=add(b.a),Z=add(b.b),v=xBk(g,b);if(!v)return;A.j++;Z.j++;const o=outcomeOf(v);A.ptb+=v.ta||0;Z.ptb+=v.tb||0;if(o.w==='a'){A.w++;A.pts+=3;Z.l++}else if(o.w==='b'){Z.w++;Z.pts+=3;A.l++}else{A.pts++;Z.pts++}}));
  const r=Object.values(m).sort((x,y)=>y.pts-x.pts||y.w-x.w||y.ptb-x.ptb);
  return r.length?tablaHTML(r,LX.find(x=>x.i===g.id),{noTags:true})+'<div class="mu" style="text-align:center">Victoria 3 · empate 1 · PTB = puntos totales de tus votos.</div>':'<div class="card mu">Añade batallas y vota para ver la tabla.</div>'}
 function xEdit(g){const m=S.mx,A=xAuto(g),names=xNames(g),l=LX.find(x=>x.i===g.id)||{i:g.id,n:g.n,t:'ED',c:g.c,tx:'#fff'},
