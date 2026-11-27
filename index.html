@@ -7422,7 +7422,10 @@ const ALB_ST={com:1,rar:2,epi:3,leg:4};
 const albOwn=()=>{const a=shopS().alb;if(!a||typeof a!=='object')return {};if(!a.es17_walls)return a;const r={...a},w=r.es17_walls;delete r.es17_walls;r.es17_bta=(r.es17_bta||0)+w;return r};
 function albFix(){const s=shopS();if(!S.me||S.albFixed||!s.alb||!s.alb.es17_walls)return;S.albFixed=true;setTimeout(()=>{shopSave({...shopS(),alb:albOwn()},'No se pudo actualizar tu álbum.')},300)}
 const albFms=c=>((L.find(x=>x.i===c.lg)||{}).n||'FMS')+' '+c.y;
-function albCard(c,n,o){o=o||{};const l=L.find(x=>x.i===c.lg)||{c:'#e53935',c2:'#b71c1c',i:''},[a,b]=c.col?[c.col,c.col]:accentOf(l);
+/* Color de la carta: sin color propio (o con el color suelto viejo de su liga) usa el degradado original de la liga, igual que las cartas 2017-2020 */
+function albCols(c,l){const d=accentOf(l),k=String(c.col||'').toLowerCase(),k2=String(c.col2||'').toLowerCase(),hx=/^#[0-9a-f]{6}$/i,own=[d[0].toLowerCase(),d[1].toLowerCase()];
+ if(!hx.test(k)||(own.includes(k)&&(!hx.test(k2)||own.includes(k2))))return d;return [c.col,hx.test(k2)?c.col2:c.col]}
+function albCard(c,n,o){o=o||{};const l=L.find(x=>x.i===c.lg)||{c:'#e53935',c2:'#b71c1c',i:''},[a,b]=albCols(c,l);
  const lgi=LOGO[c.lg]?`<img class="alk-lgi" src="${LOGO[c.lg]}" alt="">`:'';
  if(o.locked)return `<div class="alk lock" style="--c1:${a};--c2:${b}"><div class="alk-in"><div class="alk-ph"><span class="alk-q">?</span></div><div class="alk-nm"><b>???</b><span>${c.y}</span></div></div></div>`;
  const [rn,rc]=ALB_RAR[c.r],st=ALB_ST[c.r],stars='★'.repeat(st)+'<u>'+'★'.repeat(4-st)+'</u>';
@@ -7645,7 +7648,7 @@ function kickTable(k){const base=dayT(k,'America/Santo_Domingo'),mine=myTz();
 
 /* ===== PASE DE BATALLA mensual: La Familia (noviembre 2026) ===== */
 {
-const PASS_M='2026-11',VPL=4,N=16,HALF=7;let PRICE_FULL=4000,PRICE_HALF=2500;window.pfPrices=(f,h)=>{if(f>0)PRICE_FULL=f;if(h>0)PRICE_HALF=h};window.pfPricesGet=()=>[PRICE_FULL,PRICE_HALF];window.pfPricesDef=[4000,2500];
+let N=16;const PASS_M='2026-11',VPL=4,HALF=7;let PRICE_FULL=4000,PRICE_HALF=2500;window.pfPrices=(f,h)=>{if(f>0)PRICE_FULL=f;if(h>0)PRICE_HALF=h};window.pfPricesGet=()=>[PRICE_FULL,PRICE_HALF];window.pfPricesDef=[4000,2500];
 const MK=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const RN={com:'Común',rar:'Raro',epi:'Épico',leg:'Legendario'};
 const KEY={tt:'title',th:'pfth',pl:'pfpl',bn:'bn',bg:'pfbg',ng:'ng',fx:'fx'};
@@ -7665,7 +7668,7 @@ const PF=[
 {n:13,id:'fx_pf13',k:'fx',nm:'Foto de Grupo',tp:'Efecto',r:'rar',ic:'📸',ds:'Flash de cámara y una polaroid con tu resultado.'},
 {n:14,id:'pf_14',k:'bg',nm:'Sobremesa',tp:'Fondo animado',r:'epi',ic:'☕',ds:'Vapor de café y luz de cocina detrás de la app.'},
 {n:15,id:'fx_pf15',k:'fx',nm:'Llegó la Familia',tp:'Efecto',r:'leg',ic:'👨‍👩‍👧‍👦',ds:'La familia entra corriendo, aplaude y cae confeti dorado.'}];
-PF.push({n:16,id:'pf_16',k:'al',nm:'Teorema 2019',tp:'Carta · FMS Chile 2019',r:'leg',ic:'🎴',ds:'Carta legendaria del Álbum.'});
+PF.push({n:16,id:'pf_16',k:'al',card:'cl19_teorema',nm:'Teorema 2019',tp:'Carta · FMS Chile 2019',r:'leg',ic:'🎴',ds:'Carta legendaria del Álbum.'});
 TITLES.pf_1={t:'El Primo',ic:'🧑'};TITLES.pf_9={t:'Sobrino Estrella',ic:'⭐'};TT_TIER.pf_1='com';TT_TIER.pf_9='com';
 const live=()=>{const c=window.LIM_PASS;if(c&&(c.s||c.e)){const n=Date.now();return (!c.s||n>=c.s)&&(!c.e||n<c.e)}return MK()===PASS_M};
 const ps=()=>{const p=shopS().pass;return p&&p.m===PASS_M&&p.t&&live()?p:null};
@@ -7673,6 +7676,13 @@ const votes=()=>{const mv=S.myVotes;if(!mv)return S._pfv||0;if(S._pfvs===mv)retu
 const lvl=()=>Math.min(N,Math.floor(votes()/VPL));
 const open=n=>{const p=ps();return !!p&&(p.t===2||n<=HALF||lvl()>=Math.min(n,N))};
 const effLv=()=>{const p=ps();return !p?0:p.t===2?N:Math.max(HALF,lvl())};
+window.pfLive=live;window.pfMonth=PASS_M;window.pfFixedCards=()=>PF.filter(x=>x.k==='al'&&!x.dyn).map(x=>x.card);
+/* Cartas que el admin mete al pase activo (config/pasecartas): se añaden como premios extra al final del pase */
+window.PASS_CARDS_CFG=null;
+window.pfCardsApply=function(){for(let i=PF.length-1;i>=0;i--)if(PF[i].dyn)PF.splice(i,1);const cfg=window.PASS_CARDS_CFG;
+ if(cfg&&cfg.m===PASS_M&&Array.isArray(cfg.c))cfg.c.slice(0,6).forEach(id=>{const c=ALB.find(x=>x.id===id);if(!c||PF.some(x=>x.card===id))return;PF.push({n:PF.length+1,id:'pfc_'+PASS_M+'_'+id,k:'al',card:id,nm:c.n,tp:'Carta · '+albFms(c),r:c.r,ic:'🎴',ds:'Carta '+ALB_RAR[c.r][0].toLowerCase()+' del Álbum.',dyn:1})});
+ N=PF.length;if(['pase','home'].includes(S.v))R()};
+window.pfCardsLoad=async function(){const fm=FB.fm,d=await fm.getDoc(fm.doc(FB.db,'config','pasecartas'));window.PASS_CARDS_CFG=d.exists()?d.data():null;pfCardsApply()};
 window.pfLvNow=effLv;window.pfSyncLv=()=>pfSyncLv();
 const pfSyncLv=()=>{const p=ps();if(!p||!S.me||S.pfBusy||S._pfLvB)return;const L=effLv();if(L>(+p.lv||0)){S._pfLvB=true;shopSave({...shopS(),pass:{...p,lv:L}},'No se pudo guardar tu nivel del pase.').finally(()=>{S._pfLvB=false})}};
 const daysLeft=()=>{const d=new Date();return Math.max(1,Math.ceil((new Date(d.getFullYear(),d.getMonth()+1,1)-d)/864e5))};
@@ -7680,7 +7690,7 @@ const daysLeft=()=>{const d=new Date();return Math.max(1,Math.ceil((new Date(d.g
 window.pfBuy=async function(t){if(!S.me){openAuth('create');return}if(S.pfBusy||!live())return;const p=ps(),paid=p?(p.t===2?PRICE_FULL:PRICE_HALF):0,price=(t===2?PRICE_FULL:PRICE_HALF)-paid;if(price<=0)return;const bal=coinBal();if(bal<price){try{achFail('Te faltan '+(price-bal)+' monedas.')}catch(e){}return}
  S.pfBusy=true;const s=shopS();const ok=await shopSave({...s,spent:(s.spent||0)+price,pass:{m:PASS_M,t,lv:t===2?N:Math.max(HALF,lvl())}},'No se pudo comprar el pase.');S.pfBusy=false;if(ok){try{coinCount(bal,coinBal())}catch(e){}try{SFX.notif()}catch(e){}pfBurst('¡Pase desbloqueado!',t===2?'Tienes todos los premios listos para reclamar.':'Los premios 1 al '+HALF+' ya están listos. El resto se gana votando.')}};
 window.pfClaim=async function(n){const it=PF[n-1];if(!it||!S.me||S.pfBusy||!open(n)||shopOwns(it.id))return;S.pfBusy=true;const s=shopS();
- if(it.k==='al'){const c=ALB.find(x=>x.id==='cl19_teorema'),al={...albOwn()};al[c.id]=(al[c.id]||0)+1;const ok=await shopSave({...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],alb:al},'No se pudo reclamar el premio.');S.pfBusy=false;if(ok){try{albReveal(c,al[c.id])}catch(e){}}return}
+ if(it.k==='al'){const c=ALB.find(x=>x.id===(it.card||'cl19_teorema'));if(!c){S.pfBusy=false;return}const al={...albOwn()};al[c.id]=(al[c.id]||0)+1;const ok=await shopSave({...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id],alb:al},'No se pudo reclamar el premio.');S.pfBusy=false;if(ok){try{albReveal(c,al[c.id])}catch(e){}}return}
  const ok=await shopSave({...s,own:[...(Array.isArray(s.own)?s.own:[]),it.id]},'No se pudo reclamar el premio.');S.pfBusy=false;if(ok)pfReveal(it)};
 window.pfEq=async function(n){const it=PF[n-1];if(!it||!shopOwns(it.id))return;const s=shopS(),k=KEY[it.k];await shopSave({...s,[k]:s[k]===it.id?'':it.id},'No se pudo equipar.')};
 /* --- ganadores: animación al reclamar --- */
@@ -7750,7 +7760,7 @@ const pfEndTxt=()=>{try{return new Intl.DateTimeFormat('es',{day:'numeric',month
 const pfTm=()=>{const d=new Date(),t=Math.max(0,pfEnd()-d),D=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4),s=Math.floor(t%6e4/1e3),p=n=>String(n).padStart(2,'0');return D+'d '+p(h)+':'+p(m)+':'+p(s)};
 setInterval(()=>{const e=document.getElementById('pftm');if(e)e.textContent=pfTm()},1000);
 function pfPv(it){const u=esc((S.me&&S.me.u)||'Tu nombre');
- if(it.k==='al'){const c=ALB.find(x=>x.id==='cl19_teorema');return `<div class="shpv pfal">${albCard(c,1)}</div>`}
+ if(it.k==='al'){const c=ALB.find(x=>x.id===(it.card||'cl19_teorema'));if(!c)return '<div class="shpv"></div>';return `<div class="shpv pfal">${albCard(c,1)}</div>`}
  if(it.k==='tt'){const T=TITLES[it.id];return `<div class="shpv"><div class="ptt tr-com"><span>${T.ic}</span>${esc(T.t)}</div></div>`}
  if(it.k==='fx')return `<div class="shpv"><div class="fxv">${it.ic}</div><button class="shtry" onclick="event.stopPropagation();shopFx('${it.id}')">▶ Probar</button></div>`;
  if(it.k==='ng')return `<div class="shpv"><div class="ngr ngg pfng" style="font-size:24px;font-weight:900">${u}</div></div>`;
@@ -8337,45 +8347,82 @@ window.CARTAS={};window.ALB_DYN=[];
 const cdOk=c=>c&&c.id&&c.n&&ALB_RAR[c.r]&&CD_T[c.y]&&/^data:image\/jpeg;base64,/.test(c.img||'');
 function cartasApply(){[ALB,ALBP].forEach(a=>{for(let i=a.length-1;i>=0;i--)if(a[i].dyn)a.splice(i,1)});
  const cat=ACH_CATS.find(c=>c.k==='alb');window.ALB_DYN.forEach(([id])=>{const i=ACH.findIndex(a=>a.id===id);if(i>=0)ACH.splice(i,1);const j=cat.ids.indexOf(id);if(j>=0)cat.ids.splice(j,1)});window.ALB_DYN=[];
- Object.keys(window.CARTAS).sort().forEach(k=>{const list=(window.CARTAS[k]||[]).filter(cdOk).map(c=>({...c,col:/^#[0-9a-f]{6}$/i.test(c.col||'')?c.col:'',dyn:1}));if(!list.length)return;ALB.push(...list);ALBP.push(...list);
+ Object.keys(window.CARTAS).sort().forEach(k=>{const list=(window.CARTAS[k]||[]).filter(cdOk).map(c=>({...c,col:c.cv===1&&/^#[0-9a-f]{6}$/i.test(c.col||'')?c.col:'',col2:c.cv===1&&/^#[0-9a-f]{6}$/i.test(c.col2||'')?c.col2:'',dyn:1}));if(!list.length)return;ALB.push(...list);ALBP.push(...list.filter(c=>!c.x));
   const c=list[0];if(list.length<CD_T[c.y])return;const id='alb_dx_'+k,l=L.find(x=>x.i===c.lg)||{c:'#e53935'};
   ACH.push({id,ic:'🎴',x:l.c,n:'Álbum '+albFms(c).replace('FMS ',''),d:'Completa todas las cartas de '+albFms(c)+'.'});cat.ids.push(id);window.ALB_DYN.push([id,'c_'+k+'_'])});
- ACH_N=ACH.length;if(['album','admin','perfil'].includes(S.v))R()}
+ ACH_N=ACH.length;try{window.pfCardsApply&&pfCardsApply()}catch(e){}if(['album','admin','perfil'].includes(S.v))R()}
 function cdDb(mode,fn){return new Promise(res=>{try{const o=indexedDB.open('votafms-cartas',1);o.onupgradeneeded=()=>o.result.createObjectStore('d');o.onerror=()=>res(null);o.onsuccess=()=>{try{const r=fn(o.result.transaction('d',mode).objectStore('d'));r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}}}catch(e){res(null)}})}
 async function cartasSync(){try{const fm=FB.fm,i=await fm.getDoc(fm.doc(FB.db,'config','cartasIdx'));const idx=(i.exists()&&i.data().s)||{};
- await Promise.all(Object.entries(idx).map(async([k,ts])=>{let h=await cdDb('readonly',s=>s.get(k));if(!h||h.ts!==ts){try{const d=await fm.getDoc(fm.doc(FB.db,'cartas',k));h={ts,c:(d.exists()&&d.data().c)||[]};await cdDb('readwrite',s=>s.put(h,k))}catch(e){if(!h)return}}window.CARTAS[k]=h.c}));cartasApply()}catch(e){console.error('cartas',e)}}
+ await Promise.all(Object.entries(idx).map(async([k,ts])=>{let h=await cdDb('readonly',s=>s.get(k));if(!h||h.ts!==ts){try{const d=await fm.getDoc(fm.doc(FB.db,'cartas',k));h={ts,c:(d.exists()&&d.data().c)||[]};await cdDb('readwrite',s=>s.put(h,k))}catch(e){if(!h)return}}window.CARTAS[k]=h.c}));cartasApply()}catch(e){console.error('cartas',e)}try{await pfCardsLoad()}catch(e){}}
 {let n=0;const t=setInterval(()=>{if(typeof FB!=='undefined'&&FB&&FB.db){clearInterval(t);cartasSync()}else if(++n>120)clearInterval(t)},500)}
-const cdNew=o=>({id:'',n:'',lg:'es',y:'2021-2022',r:'com',col:'',img:'',z:1,px:50,py:30,...o});
-const cdCard=()=>{const d=S.cd;return albCard({id:'prev',n:d.n||'Nombre',r:d.r,y:d.y,lg:d.lg,col:d.col,img:d.img},1,{big:1})};
+const cdNew=o=>({id:'',n:'',lg:'es',y:'2021-2022',r:'com',col:'',col2:'',x:0,img:'',z:1,px:50,py:30,...o});
+const cdCard=()=>{const d=S.cd;return albCard({id:'prev',n:d.n||'Nombre',r:d.r,y:d.y,lg:d.lg,col:d.col,col2:d.col2,img:d.img},1,{big:1})};
 function cdPrev(){const e=document.getElementById('cdprev');if(e)e.innerHTML=cdCard()}
 function cdDraw(){const im=window._cdI,d=S.cd;if(!im)return;const cv=document.createElement('canvas');cv.width=300;cv.height=420;const k=Math.max(300/im.width,420/im.height)*d.z,w=im.width*k,h=im.height*k;cv.getContext('2d').drawImage(im,(300-w)*d.px/100,(420-h)*d.py/100,w,h);d.img=cv.toDataURL('image/jpeg',.8);cdPrev()}
 function cdFile(f){if(!f)return;const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{window._cdI=im;Object.assign(S.cd,{z:1,px:50,py:30});cdDraw();URL.revokeObjectURL(u);R()};im.onerror=()=>{S.cdMsg='No se pudo abrir esa imagen.';R()};im.src=u}
 function cdSet(k,v){S.cd[k]=v;if(k==='lg'||k==='y'){S.cdMsg='';R()}else cdPrev()}
 function cdReset(o){window._cdI=null;S.cd=cdNew(o);R()}
-function cdEdit(id){const d=S.cd,c=(window.CARTAS[d.lg+'_'+d.y]||[]).find(x=>x.id===id);if(c){S.cdMsg='';cdReset({...c});window.scrollTo(0,0)}}
+function cdEdit(id){const d=S.cd,c=(window.CARTAS[d.lg+'_'+d.y]||[]).find(x=>x.id===id);if(c){S.cdMsg='';cdReset({...c,col:c.cv===1?c.col:'',col2:c.cv===1?c.col2:''});window.scrollTo(0,0)}}
 async function cdWrite(k,change){const fm=FB.fm,ref=fm.doc(FB.db,'cartas',k),d=await fm.getDoc(ref),arr=change(((d.exists()&&d.data().c)||[]).slice()),ts=Date.now();await fm.setDoc(ref,{c:arr,ts,by:S.me.uid});await fm.setDoc(fm.doc(FB.db,'config','cartasIdx'),{s:{[k]:ts}},{merge:true});window.CARTAS[k]=arr;await cdDb('readwrite',s=>s.put({ts,c:arr},k));cartasApply();return arr}
 async function cdSave(){if(!isAdmin()||S.cdBusy)return;const d={...S.cd},n=d.n.trim().slice(0,30),k=d.lg+'_'+d.y,slug=n.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
  if(!slug||!d.img){S.cdMsg='Falta el nombre o la imagen.';R();return}S.cdBusy=true;S.cdMsg='Guardando…';R();
- try{const arr=await cdWrite(k,a=>{const id=d.id||'c_'+k+'_'+slug,c={id,n,lg:d.lg,y:d.y,r:d.r,col:d.col,img:d.img},i=a.findIndex(x=>x.id===id);
+ try{const arr=await cdWrite(k,a=>{const id=d.id||'c_'+k+'_'+slug,c={id,n,lg:d.lg,y:d.y,r:d.r,col:d.col||'',col2:d.col2||'',cv:d.col?1:0,x:d.x?1:0,img:d.img},i=a.findIndex(x=>x.id===id);
    if(d.id&&i>=0)a[i]=c;else{if(i>=0)throw new Error('Ese MC ya tiene carta en esta colección.');if(a.length>=CD_T[d.y])throw new Error('Esta colección ya está completa.');a.push(c)}return a});
   window._cdI=null;S.cd=cdNew({lg:d.lg,y:d.y});S.cdMsg=arr.length>=CD_T[d.y]?'Guardada. Colección completa: logro activado.':'Guardada ('+arr.length+' / '+CD_T[d.y]+').'}
  catch(e){S.cdMsg=/permission/i.test(e.code||e.message)?'Falta publicar la regla de cartas en Firebase.':(e.message||'No se pudo guardar.')}S.cdBusy=false;R()}
 async function cdDel(id){const d=S.cd;if(!isAdmin()||S.cdBusy||!confirm('¿Borrar esta carta? Dejará de verse en todos los álbumes y la colección quedará incompleta.'))return;S.cdBusy=true;
  try{await cdWrite(d.lg+'_'+d.y,a=>a.filter(x=>x.id!==id));S.cdMsg='Carta borrada.'}catch(e){S.cdMsg='No se pudo borrar.'}S.cdBusy=false;R()}
-function cartasAdminV(){const d=S.cd||(S.cd=cdNew()),l=L.find(x=>x.i===d.lg)||L[0],list=window.CARTAS[d.lg+'_'+d.y]||[],ed=!!d.id,op=(a,v)=>a.map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${esc(t)}</option>`).join(''),
+function cartasAdminV0(){const d=S.cd||(S.cd=cdNew()),l=L.find(x=>x.i===d.lg)||L[0],list=window.CARTAS[d.lg+'_'+d.y]||[],ed=!!d.id,op=(a,v)=>a.map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${esc(t)}</option>`).join(''),
  rg=(k,t,a,b,s)=>`<label class="mu" style="display:block">${t}<input type="range" min="${a}" max="${b}" step="${s}" value="${d[k]}" style="width:100%" oninput="S.cd.${k}=+this.value;cdDraw()"></label>`;
  return `<div class="card" style="display:flex;flex-direction:column;gap:10px"><b>${ed?'Editar carta':'Nueva carta'}</b>
  <select class="alq" aria-label="Liga" ${ed?'disabled':''} onchange="S.cd.col='';cdSet('lg',this.value)">${op(L.map(x=>[x.i,x.n]),d.lg)}</select>
  <select class="alq" aria-label="Temporada" ${ed?'disabled':''} onchange="cdSet('y',this.value)">${op(Object.keys(CD_T).sort().map(t=>[t,'Temporada '+t]),d.y)}</select>
  <input class="alq" maxlength="30" placeholder="Nombre del MC" value="${esc(d.n)}" oninput="cdSet('n',this.value)">
  <select class="alq" aria-label="Rareza" onchange="cdSet('r',this.value)">${op(Object.entries(ALB_RAR).map(([k,v])=>[k,v[0]]),d.r)}</select>
- <div class="row" style="gap:10px;align-items:center"><span class="mu">Borde</span><input type="color" value="${d.col||accentOf(l)[0]}" oninput="cdSet('col',this.value)"><button class="btn s sm" onclick="S.cd.col='';R()">Color de la liga</button></div>
+ <label class="mu" style="display:flex;gap:8px;align-items:center"><input type="checkbox" ${d.x?'checked':''} onchange="S.cd.x=this.checked?1:0"> Exclusiva del pase (no sale en sobres)</label>
+ <div class="row" style="gap:10px;align-items:center"><span class="mu">Borde</span><input type="color" value="${albCols({col:d.col,col2:d.col2},l)[0]}" oninput="S.cd.col2='';cdSet('col',this.value)"><button class="btn s sm" onclick="cdSug(-1)">Color original</button></div>
+ <div class="mu">Sugerencias · colores originales de cada liga (2017-2020):</div>
+ <div style="display:flex;flex-wrap:wrap;gap:8px">${L.map((x,i)=>{const g=accentOf(x),cur=albCols({col:d.col,col2:d.col2},l),on=cur[0].toLowerCase()===g[0].toLowerCase()&&cur[1].toLowerCase()===g[1].toLowerCase();return `<button type="button" title="${esc(x.n)}" onclick="cdSug(${i})" style="width:46px;height:46px;border-radius:12px;border:3px solid ${on?'#fff':'transparent'};outline:${on?'2px solid #888':'0'};background:linear-gradient(135deg,${g[0]},${g[1]});color:${x.tx};font:800 12px/1 inherit;cursor:pointer">${x.t}</button>`}).join('')}</div>
+ <div class="mu" style="font-size:11px">${L.map(x=>x.t+' = '+esc(x.n.replace('FMS ',''))).join(' · ')}</div>
  <input type="file" accept="image/*" onchange="cdFile(this.files[0])">
  ${window._cdI?rg('z','Zoom',1,3,.01)+rg('px','Mover a los lados',0,100,1)+rg('py','Mover arriba o abajo',0,100,1):''}
  <div id="cdprev" style="display:flex;justify-content:center">${cdCard()}</div>
  <button class="btn" ${S.cdBusy?'disabled':''} onclick="cdSave()">${ed?'Guardar cambios':'Añadir carta'}</button>${ed?`<button class="btn s" onclick="cdReset({lg:S.cd.lg,y:S.cd.y})">Cancelar</button>`:''}
  ${S.cdMsg?`<div class="mu">${esc(S.cdMsg)}</div>`:''}</div>
- <div class="card"><b>${list.length} / ${CD_T[d.y]} cartas</b>${list.map(c=>`<div class="row" style="gap:8px;align-items:center;margin-top:8px"><img src="${c.img}" alt="" style="width:36px;height:50px;border-radius:6px"><span style="flex:1">${esc(c.n)} · ${ALB_RAR[c.r][0]}</span><button class="btn s sm" onclick="cdEdit('${c.id}')">Editar</button><button class="btn s sm" style="color:#FF6B7A" onclick="cdDel('${c.id}')">Borrar</button></div>`).join('')}</div>`}
+ <div class="card"><b>${list.length} / ${CD_T[d.y]} cartas</b>${list.length?`<div><button class="btn s sm" style="margin-top:6px" onclick="cdFixCol()">Restaurar color original a toda la colección</button></div>`:''}${list.map(c=>`<div class="row" style="gap:8px;align-items:center;margin-top:8px"><img src="${c.img}" alt="" style="width:36px;height:50px;border-radius:6px"><span style="flex:1">${esc(c.n)} · ${ALB_RAR[c.r][0]}</span><button class="btn s sm" onclick="cdEdit('${c.id}')">Editar</button><button class="btn s sm" style="color:#FF6B7A" onclick="cdDel('${c.id}')">Borrar</button></div>`).join('')}</div>`}
+
+/* ===== Cartas: colores sugeridos, cartas del pase y álbum de un usuario ===== */
+function cdSug(i){const x=i<0?L.find(y=>y.i===S.cd.lg):L[i];if(!x)return;if(i<0||x.i===S.cd.lg){S.cd.col='';S.cd.col2=''}else{const g=accentOf(x);S.cd.col=g[0];S.cd.col2=g[1]}R()}
+async function cdFixCol(){const d=S.cd;if(!isAdmin()||S.cdBusy||!confirm('¿Poner el color original de la liga a TODAS las cartas de esta colección?'))return;S.cdBusy=true;S.cdMsg='Guardando…';R();
+ try{await cdWrite(d.lg+'_'+d.y,a=>a.map(c=>({...c,col:'',col2:''})));S.cdMsg='Listo: toda la colección usa el color original.'}catch(e){S.cdMsg='No se pudo guardar.'}S.cdBusy=false;R()}
+async function pfAdmSet(arr){const fm=FB.fm;await fm.setDoc(fm.doc(FB.db,'config','pasecartas'),{m:window.pfMonth,c:arr,ts:Date.now(),by:S.me.uid});window.PASS_CARDS_CFG={m:window.pfMonth,c:arr};pfCardsApply()}
+const pfAdmIds=()=>{const g=window.PASS_CARDS_CFG;return g&&g.m===window.pfMonth&&Array.isArray(g.c)?g.c:[]};
+async function pfAdmAdd(){const id=S.pfSel;if(!isAdmin()||!id||S.pfAdmBusy)return;const ids=pfAdmIds();if(ids.includes(id)||ids.length>=6)return;S.pfAdmBusy=true;S.pfMsg='Guardando…';R();
+ try{await pfAdmSet([...ids,id]);S.pfSel='';S.pfMsg='Carta añadida al pase.'}catch(e){S.pfMsg=/permission/i.test(e.code||e.message)?'Falta publicar la regla config/pasecartas en Firebase.':'No se pudo guardar.'}S.pfAdmBusy=false;R()}
+async function pfAdmDel(id){if(!isAdmin()||S.pfAdmBusy||!confirm('¿Quitar esta carta del pase?'))return;S.pfAdmBusy=true;
+ try{await pfAdmSet(pfAdmIds().filter(x=>x!==id));S.pfMsg='Carta quitada del pase.'}catch(e){S.pfMsg='No se pudo quitar.'}S.pfAdmBusy=false;R()}
+function pfAdmV(){if(!isAdmin())return '';
+ if(!(window.pfLive&&pfLive()))return `<div class="card"><b>🏡 Cartas del pase</b><div class="mu" style="margin-top:6px">Ahora mismo no hay un pase activo. Cuando lo haya, aquí podrás añadirle cartas como recompensa.</div></div>`;
+ const ids=pfAdmIds(),fixed=(window.pfFixedCards&&pfFixedCards())||[],pool=ALB.filter(c=>!ids.includes(c.id)&&!fixed.includes(c.id)).sort((a,b)=>albFms(a).localeCompare(albFms(b))||a.n.localeCompare(b.n));
+ return `<div class="card" style="display:flex;flex-direction:column;gap:10px"><b>🏡 Cartas del pase (${esc(window.pfMonth)})</b>
+ <div class="mu">Elige cualquier carta (de cualquier liga o temporada). Se añade al final del pase como premio de desbloqueo.</div>
+ ${ids.map(id=>{const c=ALB.find(x=>x.id===id);return `<div class="row" style="gap:8px;align-items:center"><span style="flex:1">${c?esc(c.n)+' · '+esc(albFms(c)):esc(id)+' (aún no cargada)'}</span><button class="btn s sm" style="color:#FF6B7A" onclick="pfAdmDel('${id}')">Quitar</button></div>`}).join('')}
+ <select class="alq" aria-label="Carta" onchange="S.pfSel=this.value"><option value="">Elige una carta…</option>${pool.map(c=>`<option value="${c.id}"${S.pfSel===c.id?' selected':''}>${esc(c.n)} · ${esc(albFms(c))} · ${ALB_RAR[c.r][0]}</option>`).join('')}</select>
+ <button class="btn" ${S.pfAdmBusy||ids.length>=6?'disabled':''} onclick="pfAdmAdd()">Añadir al pase</button>
+ ${S.pfMsg?`<div class="mu">${esc(S.pfMsg)}</div>`:''}</div>`}
+async function albUserFind(){if(!isAdmin())return;const q=((document.getElementById('aut')||{}).value||'').trim().replace(/^@/,'');S.auQ=q;S.auR=null;
+ if(!q||/\//.test(q)){S.auMsg='Escribe un usuario o ID válido.';R();return}S.auMsg='Buscando…';R();
+ try{const fm=FB.fm;let uid=null;try{const o=await B.usernameOwner(q.toLowerCase());if(o&&o!=='?')uid=o}catch(e){}if(!uid)uid=q;
+  const d=await fm.getDoc(fm.doc(FB.db,'users',uid));if(!d.exists()){S.auMsg='No encontré al usuario «'+q+'».';R();return}
+  const u=d.data(),sh=u.shop&&typeof u.shop==='object'?u.shop:{},al={...(sh.alb&&typeof sh.alb==='object'?sh.alb:{})};if(al.es17_walls){al.es17_bta=(al.es17_bta||0)+al.es17_walls;delete al.es17_walls}
+  const have=ALB.filter(c=>(+al[c.id]||0)>0),dup=have.reduce((t,c)=>t+(+al[c.id]-1),0),rar=Object.entries(ALB_RAR).map(([k,v])=>[v[0],have.filter(c=>c.r===k).length,ALB.filter(c=>c.r===k).length]);
+  S.auR={u:u.u||q,n:have.length,t:ALB.length,dup,rar};S.auMsg=''}catch(e){S.auMsg='Error: '+(e&&e.message||'desconocido')}R()}
+function albUserV(){if(!isAdmin())return '';const r=S.auR;
+ return `<div class="card" style="display:flex;flex-direction:column;gap:10px"><b>🔎 Álbum de un usuario</b>
+ <input id="aut" class="alq" placeholder="Nombre de usuario o ID" value="${esc(S.auQ||'')}" onkeydown="if(event.key==='Enter')albUserFind()">
+ <button class="btn" onclick="albUserFind()">Ver cartas</button>${S.auMsg?`<div class="mu">${esc(S.auMsg)}</div>`:''}
+ ${r?`<div><b>${esc(r.u)}</b> tiene <b>${r.n}/${r.t}</b> cartas</div><div class="alpb" style="display:block;height:8px;border-radius:6px;background:var(--cd2);overflow:hidden"><i style="display:block;height:100%;width:${r.t?Math.round(r.n*100/r.t):0}%;background:var(--ac,#22c55e)"></i></div><div class="mu">Repetidas: ${r.dup} · ${r.rar.map(x=>x[0]+' '+x[1]+'/'+x[2]).join(' · ')}</div>`:''}</div>`}
+function cartasAdminV(){return albUserV()+pfAdmV()+cartasAdminV0()}
 ADM_TABS.splice(ADM_TABS.length-1,0,['cartas','🎴 Cartas']);
 </script>
 </body></html>
