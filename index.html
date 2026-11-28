@@ -7452,8 +7452,11 @@ function albReveal10(got,al){const old=document.getElementById('alov');if(old)ol
  el.innerHTML=`<div class="al10in"><div class="al10h"><b>Abriste ${got.length} sobres</b><span>${nw} nueva${nw===1?'':'s'} · ${got.length-nw} repetida${got.length-nw===1?'':'s'}</span></div><div class="al10g">${list.map(g=>`<div class="al10c">${albCard(g.c,al[g.c.id])}<div class="altag al10t${g.nw?' nw':''}">${g.nw?'¡Nueva!':'Repetida'}</div></div>`).join('')}</div><div class="alact" style="opacity:1;position:sticky;bottom:0"><button class="btn" onclick="document.getElementById('al10').remove()">Aceptar</button><button class="btn s" ${bal>=ALB_P*10?'':'disabled'} onclick="document.getElementById('al10').remove();albBuyN(10)">Abrir 10 más · <i class="coin"></i>${ALB_P*10}</button></div></div>`;
  document.body.appendChild(el);try{SFX.notif()}catch(e){}if(best==='leg'||best==='epi')setTimeout(()=>{try{navigator.vibrate&&navigator.vibrate([60,40,120])}catch(e){}},200)}
 function albGrid(){const own=albOwn(),y=S.alY||'all',f=S.alF||'all',q=(S.alQ||'').trim().toLowerCase();
- const l=ALB.filter(c=>(y==='all'||String(c.y)===String(y))&&(f==='all'||albFms(c)===f)).filter(c=>!q||(own[c.id]&&c.n.toLowerCase().includes(q)));
+ const l=ALB.filter(c=>(y==='all'||String(c.y)===String(y))&&(f==='all'||albFms(c)===f)).filter(c=>!q||(own[c.id]&&c.n.toLowerCase().includes(q))).filter(c=>!S.alR||c.r===S.alR);
+ if(S.alR)l.sort(cardSort);
  return l.length?l.map(c=>own[c.id]?`<div class="alw">${albCard(c,own[c.id])}${own[c.id]>1?`<button class="alsell" onclick="albSell('${c.id}')">Vender ${own[c.id]>2?'repetidas ('+(own[c.id]-1)+')':'repetida'} · <i class="coin"></i>${penAmt(ALB_SELL[c.r])*(own[c.id]-1)}</button>`:''}</div>`:(q?'':`<div class="alw">${albCard(c,0,{locked:1})}</div>`)).join(''):'<div class="mu" style="grid-column:1/-1">No hay cartas con ese filtro.</div>'}
+const cardSort=(a,b)=>String(b.y).localeCompare(String(a.y))||albFms(a).localeCompare(albFms(b))||a.n.localeCompare(b.n,'es');
+function rarH(sel,open,tog,pick){const v=ALB_RAR[sel];return `<div class="rarf"><button type="button" class="rarb" data-t="1" onclick="${tog}" style="--rc:${v?v[1]:'var(--bd)'}">${v?v[0]:'Buscar rareza'} ${open?'▴':'▾'}</button>${open?`<div class="raro">${[['',['Todas','var(--mu)']],...Object.entries(ALB_RAR)].map(([k,r])=>`<button type="button" class="${(sel||'')===k?'on':''}" data-r="${k}" onclick="${pick(k)}" style="--rc:${r[1]}">${r[0]}</button>`).join('')}</div>`:''}</div>`}
 function albF(k,v){S[k]=v;if(k==='alY')S.alF='all';R()}
 function albumV(){albFix();if(!S.me)return `<div class="hero"><span class="kicker">Álbum</span><h1>Colecciona freestylers</h1><p>Crea una cuenta para abrir sobres y completar tu álbum.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button>`;
  const own=albOwn(),y=S.alY||'all',yrs=[...new Set(ALB.map(c=>c.y))].sort(),fl=[...new Set(ALB.filter(c=>y==='all'||String(c.y)===String(y)).map(albFms))],f=fl.includes(S.alF)?S.alF:'all',
@@ -7464,6 +7467,7 @@ function albumV(){albFix();if(!S.me)return `<div class="hero"><span class="kicke
  ${y==='all'?'':`<div class="alch">${chip('alF','all','Todas las FMS de '+y,f==='all')}${fl.map(t=>chip('alF',t,esc(t),f===t)).join('')}</div>`}
  ${albSellBar()}
  <input class="alq" placeholder="Buscar freestyler…" value="${esc(S.alQ||'')}" oninput="S.alQ=this.value;document.getElementById('algrid').innerHTML=albGrid()">
+ ${rarH(S.alR,S.alRo,'S.alRo=!S.alRo;R()',k=>`S.alR='${k}';S.alRo=false;R()`)}
  <div class="algr" id="algrid">${albGrid()}</div>`}
 VIEW.album=albumV;
 {const _t=tiendaV;tiendaV=function(){const h=_t();return S.me?h.replace('<div class="shtabs">',albTile()+'<div class="shtabs">'):h}}
@@ -8340,8 +8344,9 @@ function cartasApply(){[ALB,ALBP].forEach(a=>{for(let i=a.length-1;i>=0;i--)if(a
  const cat=ACH_CATS.find(c=>c.k==='alb');window.ALB_DYN.forEach(([id])=>{const i=ACH.findIndex(a=>a.id===id);if(i>=0)ACH.splice(i,1);const j=cat.ids.indexOf(id);if(j>=0)cat.ids.splice(j,1)});window.ALB_DYN=[];
  Object.keys(window.CARTAS).sort().forEach(k=>{const list=(window.CARTAS[k]||[]).filter(cdOk).map(c=>({...c,col:c.cv===1&&/^#[0-9a-f]{6}$/i.test(c.col||'')?c.col:'',col2:c.cv===1&&/^#[0-9a-f]{6}$/i.test(c.col2||'')?c.col2:'',dyn:1}));if(!list.length)return;ALB.push(...list);ALBP.push(...list.filter(c=>!c.x));
   const c=list[0];if(list.length<CD_T[c.y])return;const id='alb_dx_'+k,l=L.find(x=>x.i===c.lg)||{c:'#e53935'};
-  ACH.push({id,ic:'🎴',x:l.c,n:'Álbum '+albFms(c).replace('FMS ',''),d:'Completa todas las cartas de '+albFms(c)+'.'});cat.ids.push(id);window.ALB_DYN.push([id,'c_'+k+'_'])});
- ACH_N=ACH.length;try{window.pfCardsApply&&pfCardsApply()}catch(e){}if(['album','admin','perfil'].includes(S.v))R()}
+  const pa=albFms(c).replace('FMS ','').replace(' '+c.y,''),f=[[/espa/i,'🇪🇸','ESP'],[/argentina/i,'🇦🇷','ARG'],[/m[eé]xico/i,'🇲🇽','MEX'],[/chile/i,'🇨🇱','CHI'],[/per[uú]/i,'🇵🇪','PER'],[/colombia/i,'🇨🇴','COL'],[/caribe/i,'🌴','CAR'],[/internacional/i,'🌎','INT']].find(v=>v[0].test(pa))||[0,'🌎',pa];
+  ACH.push({id,ic:f[1],x:l.c,n:'Álbum '+f[2]+' '+c.y,d:'Completa todas las cartas de '+albFms(c)+'.'});cat.ids.push(id);window.ALB_DYN.push([id,'c_'+k+'_'])});
+ ACH_N=ACH.length;try{window.pfCardsApply&&pfCardsApply()}catch(e){}if(['album','admin','perfil','user'].includes(S.v))R()}
 function cdDb(mode,fn){return new Promise(res=>{try{const o=indexedDB.open('votafms-cartas',1);o.onupgradeneeded=()=>o.result.createObjectStore('d');o.onerror=()=>res(null);o.onsuccess=()=>{try{const r=fn(o.result.transaction('d',mode).objectStore('d'));r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}}}catch(e){res(null)}})}
 async function cartasSync(){try{const fm=FB.fm,i=await fm.getDoc(fm.doc(FB.db,'config','cartasIdx'));const idx=(i.exists()&&i.data().s)||{};
  await Promise.all(Object.entries(idx).map(async([k,ts])=>{let h=await cdDb('readonly',s=>s.get(k));if(!h||h.ts!==ts){try{const d=await fm.getDoc(fm.doc(FB.db,'cartas',k));h={ts,c:(d.exists()&&d.data().c)||[]};await cdDb('readwrite',s=>s.put(h,k))}catch(e){if(!h)return}}window.CARTAS[k]=h.c}));cartasApply()}catch(e){console.error('cartas',e)}try{await pfCardsLoad()}catch(e){}}
@@ -8496,11 +8501,18 @@ function vitH(u,me){const s=u&&u.shop;if(!s||!VIT.includes(s.vit))return '';cons
  const sl=[0,1,2].map(i=>{const c=ALB.find(x=>x.id===sel[i]);return `<${me?'button':'div'} class="nxsl"${me?` onclick="nxPick(${i})"`:''}>${c?`<div>${albCard(c,1)}</div>`:`<b>${me?'＋':'—'}</b>`}</${me?'button':'div'}>`}).join('');
  if(!me&&!sel.some(id=>ALB.some(c=>c.id===id)))return '';return `<div class="pv-h">Vitrina</div><div class="nxvit ${s.vit}">${sl}</div>`}
 const _ph=profileHead;profileHead=function(u,isMe,uid){return _ph(u,isMe,uid)+(isMe?'':vitH(u,false))};window.nxVitMe=()=>vitH(S.me,true);
-window.nxPick=i=>{const own=albOwn(),sel=shopS().vitc||[],o=document.createElement('div');o.className='ov';o.style.zIndex=9000;
- const l=ALB.filter(c=>own[c.id]>0&&(!sel.includes(c.id)||sel[i]===c.id));
- o.innerHTML=`<div class="sh" style="max-height:80vh;overflow:auto"><b>Elige una carta</b><div class="nxpk">${l.map(c=>`<button data-c="${c.id}"><div>${albCard(c,1)}</div></button>`).join('')||'<span class="mu">Aún no tienes cartas.</span>'}</div><button class="btn s" data-c="">Dejar vacío</button><button class="btn s" data-x="1">Cancelar</button></div>`;
- o.onclick=e=>{const b=e.target.closest('[data-c]');if(b){const v=[0,1,2].map(j=>(shopS().vitc||[])[j]||'');v[i]=b.dataset.c;o.remove();shopSave({...shopS(),vitc:v},'No se pudo guardar la vitrina.')}else if(e.target===o||e.target.closest('[data-x]'))o.remove()};
- document.body.appendChild(o)};
+window.nxPick=i=>{const o=document.createElement('div');o.className='ov';o.style.zIndex=9000;let q='',r='',open=false;
+ const norm=t=>String(t).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ o.innerHTML=`<div class="sh nxsh"><b>Elige una carta</b><input class="alq" type="search" placeholder="Buscar freestyler…"><div class="nxf"></div><div class="nxpk"></div><div class="nxbt"><button class="btn s" data-c="">Dejar vacío</button><button class="btn s" data-x="1">Cancelar</button></div></div>`;
+ const grid=()=>{const own=albOwn(),sel=shopS().vitc||[],l=ALB.filter(c=>own[c.id]>0&&(!sel.includes(c.id)||sel[i]===c.id)&&(!r||c.r===r)&&(!q||norm(c.n).includes(q))).sort(cardSort);
+  o.querySelector('.nxpk').innerHTML=l.map(c=>`<button data-c="${c.id}"><div>${albCard(c,1)}</div></button>`).join('')||'<span class="mu">No hay cartas.</span>'};
+ const filt=()=>{o.querySelector('.nxf').innerHTML=rarH(r,open,'',()=>'')};
+ o.querySelector('input').oninput=e=>{q=norm(e.target.value.trim());grid()};
+ o.onclick=e=>{const t=e.target.closest('[data-t]'),k=e.target.closest('[data-r]'),c=e.target.closest('[data-c]');
+  if(t){open=!open;filt()}else if(k){r=k.dataset.r;open=false;filt();grid()}
+  else if(c){const v=[0,1,2].map(j=>(shopS().vitc||[])[j]||'');v[i]=c.dataset.c;o.remove();shopSave({...shopS(),vitc:v},'No se pudo guardar la vitrina.')}
+  else if(e.target===o||e.target.closest('[data-x]'))o.remove()};
+ filt();grid();document.body.appendChild(o)};
 
 /* Limitados en el panel */
 LIM_ITEMS.splice(LIM_ITEMS.length-1,0,{id:'suit_navidad',n:'Traje Navidad Freestyle',ic:'🎅'},{id:'snd_trineo',n:'Sonido Trineo Mágico',ic:'🛷'});
@@ -8543,6 +8555,8 @@ limApplyAll();try{R()}catch(e){}later();
 <style id="pvcss">.pv{max-width:720px;margin:0 auto}.pv .pbn{flex-direction:column;align-items:center;text-align:center;gap:10px;padding:22px 16px}.pv .pbn>div:last-child{width:100%;display:flex;flex-direction:column;align-items:center}.pv .pbn h1{max-width:100%}.pv .pinfo{text-align:center;margin:0 0 12px}.pv .pinfo .pchips,.pv .pinfo .pmeds{justify-content:center}
 .pv-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;margin:0 0 6px;border-radius:18px;background:var(--cd);border:1px solid var(--bd)}.pv-tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border:0;border-radius:13px;background:none;color:var(--mu);font:800 12px/1.2 inherit;font-family:inherit;cursor:pointer}.pv-tabs i{font-style:normal;font-size:19px}.pv-tabs button.on{background:var(--ac);color:#111}
 .pv-h{margin:18px 4px 8px;font-size:16px;font-weight:900}.pv-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.pv-t{display:flex;align-items:center;gap:10px;min-width:0;padding:14px 12px;border-radius:16px;background:var(--cd);border:1px solid var(--bd);color:var(--tx);font-family:inherit;text-align:left;cursor:pointer}.pv-t>i{font-style:normal;font-size:26px;flex:none}.pv-t span{min-width:0}.pv-t small{display:block;font-size:12px;color:var(--mu)}.pv-t b{font-size:15px;overflow-wrap:anywhere}.pv-a{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:0 0 12px}.pv .nxvit{margin:0}.pv-t .coin{display:block;width:28px;height:28px}.nxsl>div,.nxpk button>div{min-width:0;width:100%}.nxsl .alk-rr,.nxpk .alk-rr{font-size:11px;letter-spacing:0;padding:2px 4px}.nxsl .alk-lgi,.nxpk .alk-lgi{width:18px;height:18px}.nxsl .alk,.nxpk .alk{zoom:.55;width:100%;min-width:0;max-width:100%;margin:0}</style>
+<style>.rarb::before,.rarb::after,.raro button::before,.raro button::after{display:none!important}.rarf{margin:8px 0 12px}.rarb,.raro button{padding:9px 14px;border-radius:12px;border:2px solid var(--rc);background:var(--cd);color:var(--tx);font-family:inherit;font-weight:800;font-size:13px;cursor:pointer}.rarb{width:100%}.raro{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.raro button{flex:1 0 28%}.raro button.on{background:var(--rc);color:#111}
+.ov .sh.nxsh{display:flex;flex-direction:column;gap:6px;height:85vh;max-height:85vh;overflow:hidden}.nxsh>*{flex:none}.nxsh .alq{width:100%}.nxsh .rarf{margin:0}.nxsh .nxpk{flex:1 1 0;min-height:0;overflow-y:auto;align-content:start;margin:4px 0}.nxbt{display:grid;grid-template-columns:1fr 1fr;gap:8px}.nxbt .btn{margin:0}</style>
 </body></html>
 
 
