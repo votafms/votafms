@@ -2356,7 +2356,8 @@ const colr=l=>l.i==='in'?'#FACC15':l.c;
 const sz=rd=>rd.p.reduce((s,p)=>s+p.c+3,0);
 const fmt=v=>v==null?'':String(v).replace('.',',');
 const fmtKey=v=>String(v).replace('.',',');
-const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow,sv:(d.shop&&typeof d.shop==='object'&&d.shop.v>=2)?1:0,pz:(d.shop&&typeof d.shop==='object'&&d.shop.pass&&d.shop.pass.t)?{m:d.shop.pass.m,t:d.shop.pass.t,lv:+d.shop.pass.lv||0}:null});
+const pubShop=s=>{if(!s||typeof s!=='object')return null;const c=Array.isArray(s.vitc)?s.vitc:[],al={};c.forEach(id=>{if(id&&s.alb&&s.alb[id])al[id]=s.alb[id]});return {v:s.v,own:Array.isArray(s.own)?s.own:[],frame:s.frame||'',title:s.title||'',bn:s.bn||'',ng:s.ng||'',vit:s.vit||'',vitc:c,alb:al}};
+const pub=d=>({u:d.u||'',p:d.p||'',m:d.m||'',a:d.a||'',joined:d.joined||'',foto:d.foto||'',tema:d.tema||'',dz:d.dz||'',rp:d.rp||0,rv:d.rv||0,st:d.st||null,fit:Array.isArray(d.fit)?d.fit:[],stkShow:!!d.stkShow,sv:(d.shop&&typeof d.shop==='object'&&d.shop.v>=2)?1:0,shop:pubShop(d.shop),pz:(d.shop&&typeof d.shop==='object'&&d.shop.pass&&d.shop.pass.t)?{m:d.shop.pass.m,t:d.shop.pass.t,lv:+d.shop.pass.lv||0}:null});
 const today=()=>new Date().toLocaleDateString('es');
 
 async function initFB(){
@@ -3735,7 +3736,7 @@ function userV(){if(!S.uProf)return `<button class="back" onclick="go('search')"
  const nm=esc(S.uProf.u);
  const btn=(!S.me||mine)?'':st==='friend'?`<span class="pill next">Son amigos</span><button class="btn" style="margin-left:8px" onclick="openChat('${S.uid}','${nm}')">💬 Enviar mensaje</button>`:st==='sent'?`<button class="btn s" onclick="rejectFriend('${fr.id}')">Solicitud enviada · Cancelar</button>`:st==='incoming'?`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Aceptar solicitud de amistad</button>`:`<button class="btn" onclick="friendAct('${S.uid}','${nm}')">Enviar solicitud de amistad</button>`;
  const body=canSee?`${statsCard(S.uVotes||[])}<div class="sec"><span>Historial de batallas</span><span>${(S.uVotes||[]).length}</span></div>${voteList(S.uVotes,'user')}`:`<div class="card" style="text-align:center"><b>Historial privado</b><div class="mu" style="margin-top:6px">Solo los amigos pueden ver las batallas votadas de este usuario. Envíale una solicitud y, cuando la acepte, podrás verlo.</div></div>`;
- return `<button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${likeBarH(S.uid)}${canSee?rankCardH(S.uVotes||[]):''}${btn?`<div style="margin:-6px 0 14px">${btn}</div>`:''}${body}`}
+ return `<div class="pv"><button class="back" onclick="go('search')">${ico('back',18)} Buscar</button>${profileHead(S.uProf,false,S.uid)}${btn?`<div class="pv-a">${btn}</div>`:''}${likeBarH(S.uid)}${canSee?'<div class="pv-h">Rango</div>'+rankCardH(S.uVotes||[]):''}${body}</div>`}
 function vdV(){const v=S.viewList[S.vi];if(!v)return searchV();const nv=voteNorm(v),o=outcomeOf(v),a=nv.ta,b=nv.tb,w=outcomeText(v,o),l=L.find(x=>x.i===v.l);
  return `<button class="back" onclick="go('${S.vb==='perfil'?'perfil':'user'}')">${ico('back',18)} Volver</button><div class="banner" style="--c:${l.c};--c2:${l.c2}">${logo(l,56)}<div style="flex:1;min-width:0"><span class="kicker">Voto de ${esc(v.u||'')}</span><h1 style="font-size:19px">${esc(v.a)} vs ${esc(v.b)}</h1><p>${esc(l.n)} · ${esc(v.date||'')}</p></div></div><div class="win">${w}</div><div class="card"><div class="tbl"><span></span><span class="h" style="color:var(--ac)">${esc(v.a)}</span><span class="h" style="color:var(--b2)">${esc(v.b)}</span>${(v.fmt==='actual'&&v.sc?actRowsV(v):v.rows).map(r=>`<span class="n">${esc(r.r)}</span><span class="c">${fmt(r.ta)}</span><span class="c">${fmt(r.tb)}</span>`).join('')}<b>Total</b><span class="c">${fmt(a)}</span><span class="c">${fmt(b)}</span></div></div>${S.vb==='perfil'?`<div class="row" style="gap:8px;margin-top:6px"><button class="btn" style="margin:0" onclick="editMine()">Editar voto</button><button class="btn s" style="margin:0" onclick="deleteMine()">Borrar voto</button></div>`:'<div class="mu" style="text-align:center">Solo lectura: este voto no se puede modificar.</div>'}`}
 
@@ -3755,36 +3756,24 @@ function donoAlert(){
 function perfilV(){
  if(!S.me)return `<div class="hero"><span class="kicker">Tu cuenta</span><h1>Guarda tus votos</h1><p>Crea una cuenta para votar, ver tus estadísticas y aparecer en la comunidad.</p></div><div style="height:14px"></div><button class="btn" onclick="openAuth('create')">Crear cuenta</button><button class="btn s" onclick="openAuth('in')">Ya tengo cuenta</button>`;
 
- const m=S.me;
- const tab=S.pfTab||'resumen',nv=S.myVotes?S.myVotes.length:'…';
- const T=[['resumen','Resumen'],['votos','Votos '+nv],['editar','Editar'],['cuenta','Cuenta']];
- const tabs=`<div class="seg s4 pftabs">${T.map(([k,t])=>`<button class="${tab===k?'on':''}" onclick="S.pfTab='${k}';R()">${t}</button>`).join('')}</div>`;
+ const m=S.me,tab=S.pfTab||'resumen',nv=S.myVotes?S.myVotes.length:'…',st=(m.st&&m.st.n)||0;
+ const T=[['resumen','🏠','Inicio'],['votos','🗳️','Votos'],['editar','✏️','Editar'],['cuenta','⚙️','Cuenta']];
+ const tabs=`<nav class="pv-tabs">${T.map(([k,ic,t])=>`<button class="${tab===k?'on':''}" onclick="S.pfTab='${k}';R()"><i>${ic}</i>${t}</button>`).join('')}</nav>`;
+ const H=t=>`<div class="pv-h">${t}</div>`,tile=(ic,l,v,on)=>`<button class="pv-t" onclick="${on}"><i>${ic}</i><span><small>${l}</small><b>${v}</b></span></button>`;
  let body='';
  if(tab==='resumen'){
-  body=`${shopMiniH()}${rankCardH(S.myVotes)}${pfQuickH()}${S.myVotes?statsCard(S.myVotes):''}`}
+  body=`${rankCardH(S.myVotes)}<div class="pv-g">${tile('🔥','Racha',st+(st===1?' día':' días'),'S.stkOpen=true;S.stkTierSel=null;R()')}${tile('🏆','Logros',achCount()+'/'+ACH_N,'openAch()')}${tile('<em class="coin bigc"></em>','Tienda',coinBal()+' monedas',"go('tienda')")}${tile('🔗','Perfil','Compartir','shareProfile()')}</div>${window.nxVitMe?nxVitMe():''}${H('Comunidad')}${likeBarH(m.uid)}${S.myVotes?H('Actividad')+statsCard(S.myVotes):''}`}
+ else if(tab==='votos'){body=`${H('Mis votos · '+nv)}${voteList(S.myVotes,'perfil')}`}
  else if(tab==='editar'){
-  body=`<div class="sec" style="margin-top:6px"><span>Información</span></div>
- <label class="btn s fotobtn" style="margin-bottom:12px">📷 Editar foto de perfil<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
- <div class="card"><b>Editar info</b><div class="mu" style="margin:4px 0 12px">Solo tú puedes cambiar esta información.</div>
- <label class="f">País</label><button class="selbtn" onclick="openPick('p')"><span class="sv${m.p?'':' ph'}">${m.p?`${flagOf(m.p)||'🌎'} ${esc(m.p)}`:'Elige tu país'}</span><span class="sc">▾</span></button>
- <label class="f" style="margin-top:12px">MC favorito</label><button class="selbtn" onclick="openPick('m')"><span class="sv${m.m?'':' ph'}">${m.m?`🎤 ${esc(m.m)}`:'Elige tu MC favorito'}</span><span class="sc">▾</span></button>
- <label class="f" style="margin-top:12px">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea>
- <button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
- ${nameCardH()}
- <button class="pfap" onclick="go('tienda')"><span><b><i class="coin"></i> Tienda</b><em>Colores, diseños, planillas, marcos y títulos con monedas</em></span><i>›</i></button>
- <button class="pfap" onclick="S.pfAp=!S.pfAp;R()"><span><b>🎨 Apariencia</b><em>Equipa tus colores y diseños de tarjeta</em></span><i>${S.pfAp?'▴':'▾'}</i></button>
- ${S.pfAp?themeCardH()+designCardH():''}`}
- else if(tab==='votos'){
-  body=`<div class="sec" style="margin-top:6px"><span>Mis votos</span><span>${nv}</span></div>${voteList(S.myVotes,'perfil')}`}
+  const sel=(l,k,v,t)=>`<label class="f">${l}</label><button class="selbtn" onclick="openPick('${k}')"><span class="sv${v?'':' ph'}">${v||t}</span><span class="sc">▾</span></button>`;
+  body=`${H('Foto y datos')}<div class="card"><label class="btn s fotobtn" style="margin:0 0 12px">📷 Cambiar foto<input type="file" accept="image/*" style="display:none" onchange="cambiarFoto(this.files[0])"></label>
+ ${sel('País','p',m.p?`${flagOf(m.p)||'🌎'} ${esc(m.p)}`:'','Elige tu país')}${sel('MC favorito','m',m.m?`🎤 ${esc(m.m)}`:'','Elige tu MC favorito')}
+ <label class="f">Sobre mí</label><textarea id="pf-a" rows="3" oninput="S.draftA=this.value">${esc(S.draftA!=null?S.draftA:(m.a||''))}</textarea><button class="btn sm" style="width:100%;justify-content:center" onclick="saveProf()">Guardar cambios</button></div>
+ ${H('Nombre')}${nameCardH()}${H('Apariencia')}<button class="pfap" onclick="S.pfAp=!S.pfAp;R()"><span><b>🎨 Colores y diseños</b></span><i>${S.pfAp?'▴':'▾'}</i></button>${S.pfAp?themeCardH()+designCardH():''}`}
  else{
-  body=`${supportH()}<div class="sec" style="margin-top:6px"><span>Sesión</span></div>
- ${isAdmin()?`<button class="btn" onclick="go('admin')">🛠 Panel de administrador</button>`:''}
- ${canEd()?`<button class="btn" onclick="edOpen()">🎨 Modo editor</button>`:''}
- <button class="btn s" onclick="switchAccount()">🔄 Cambiar de cuenta</button>
- <button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>
- <div class="sec"><span>Zona de peligro</span></div>
- <button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
- return `<div class="pfgrid"><div class="pfside">${profileHead(m,true)}${presToggleH()}<div class="sec"><span>En la comunidad</span></div><div class="pfacts">${likeBarH(m.uid)}<button class="btn s pfsh" onclick="shareProfile()">🔗 Compartir mi perfil</button></div></div><div class="pfmain"><div class="sec"><span>Mi cuenta</span></div>${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div></div>`}
+  body=`${H('Privacidad')}${presToggleH()}${isAdmin()||canEd()?H('Herramientas'):''}${isAdmin()?`<button class="btn" onclick="go('admin')">🛠 Panel de administrador</button>`:''}${canEd()?`<button class="btn" onclick="edOpen()">🎨 Modo editor</button>`:''}
+ ${H('Sesión')}<button class="btn s" onclick="switchAccount()">🔄 Cambiar de cuenta</button><button class="btn s" onclick="logout()">${ico('logout',18)} Cerrar sesión</button>${supportH()}${H('Zona de peligro')}<button class="btn s" style="color:#FF6B7A" onclick="S.delAsk=true;R()">Eliminar mi cuenta</button>`}
+ return `<div class="pv">${profileHead(m,true)}${tabs}${S.msgP?`<div class="ok">${esc(S.msgP)}</div>`:''}${body}</div>`}
 /* ===== Perfil: cabecera rápida, medallas favoritas y compartir ===== */
 const pfFav=u=>Array.isArray(u&&u.favAch)?u.favAch.filter(id=>ACH.some(a=>a.id===id)).slice(0,3):[];
 function pfQuickH(){const m=S.me,r=rankInfo(S.myVotes||[]),st=(m.st&&m.st.n)||0;
@@ -8505,8 +8494,8 @@ const _cm=chatMsgsH;chatMsgsH=function(){const c=S.chat;let h=_cm();if(!c)return
 const VIT=['vit_madera','vit_neon','vit_oro'];
 function vitH(u,me){const s=u&&u.shop;if(!s||!VIT.includes(s.vit))return '';const sel=Array.isArray(s.vitc)?s.vitc:[];
  const sl=[0,1,2].map(i=>{const c=ALB.find(x=>x.id===sel[i]);return `<${me?'button':'div'} class="nxsl"${me?` onclick="nxPick(${i})"`:''}>${c?`<div>${albCard(c,1)}</div>`:`<b>${me?'＋':'—'}</b>`}</${me?'button':'div'}>`}).join('');
- return `<div class="nxvit ${s.vit}">${sl}</div>`}
-const _ph=profileHead;profileHead=function(u,isMe,uid){return _ph(u,isMe,uid)+vitH(isMe?S.me:u,isMe)};
+ if(!me&&!sel.some(id=>ALB.some(c=>c.id===id)))return '';return `<div class="pv-h">Vitrina</div><div class="nxvit ${s.vit}">${sl}</div>`}
+const _ph=profileHead;profileHead=function(u,isMe,uid){return _ph(u,isMe,uid)+(isMe?'':vitH(u,false))};window.nxVitMe=()=>vitH(S.me,true);
 window.nxPick=i=>{const own=albOwn(),sel=shopS().vitc||[],o=document.createElement('div');o.className='ov';o.style.zIndex=9000;
  const l=ALB.filter(c=>own[c.id]>0&&(!sel.includes(c.id)||sel[i]===c.id));
  o.innerHTML=`<div class="sh" style="max-height:80vh;overflow:auto"><b>Elige una carta</b><div class="nxpk">${l.map(c=>`<button data-c="${c.id}"><div>${albCard(c,1)}</div></button>`).join('')||'<span class="mu">Aún no tienes cartas.</span>'}</div><button class="btn s" data-c="">Dejar vacío</button><button class="btn s" data-x="1">Cancelar</button></div>`;
@@ -8551,6 +8540,9 @@ const st=document.createElement('style');st.textContent=c;document.head.appendCh
 limApplyAll();try{R()}catch(e){}later();
 })();
 </script>
+<style id="pvcss">.pv{max-width:720px;margin:0 auto}.pv .pbn{flex-direction:column;align-items:center;text-align:center;gap:10px;padding:22px 16px}.pv .pbn>div:last-child{width:100%;display:flex;flex-direction:column;align-items:center}.pv .pbn h1{max-width:100%}.pv .pinfo{text-align:center;margin:0 0 12px}.pv .pinfo .pchips,.pv .pinfo .pmeds{justify-content:center}
+.pv-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:5px;margin:0 0 6px;border-radius:18px;background:var(--cd);border:1px solid var(--bd)}.pv-tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border:0;border-radius:13px;background:none;color:var(--mu);font:800 12px/1.2 inherit;font-family:inherit;cursor:pointer}.pv-tabs i{font-style:normal;font-size:19px}.pv-tabs button.on{background:var(--ac);color:#111}
+.pv-h{margin:18px 4px 8px;font-size:16px;font-weight:900}.pv-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.pv-t{display:flex;align-items:center;gap:10px;min-width:0;padding:14px 12px;border-radius:16px;background:var(--cd);border:1px solid var(--bd);color:var(--tx);font-family:inherit;text-align:left;cursor:pointer}.pv-t>i{font-style:normal;font-size:26px;flex:none}.pv-t span{min-width:0}.pv-t small{display:block;font-size:12px;color:var(--mu)}.pv-t b{font-size:15px;overflow-wrap:anywhere}.pv-a{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin:0 0 12px}.pv .nxvit{margin:0}.pv-t .coin{display:block;width:28px;height:28px}.nxsl>div,.nxpk button>div{min-width:0;width:100%}.nxsl .alk-rr,.nxpk .alk-rr{font-size:11px;letter-spacing:0;padding:2px 4px}.nxsl .alk-lgi,.nxpk .alk-lgi{width:18px;height:18px}.nxsl .alk,.nxpk .alk{zoom:.55;width:100%;min-width:0;max-width:100%;margin:0}</style>
 </body></html>
 
 
